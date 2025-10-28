@@ -1,33 +1,96 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RedDrop | Digital Blood Bank</title>
-    <link href="../../dist/output.css" rel="stylesheet" />
-  </head>
-  <body class="bg-red-50 text-gray-900">
-    <nav class="bg-red-600 text-white p-4">
-      <h1 class="text-2xl font-bold">🩸 RedDrop</h1>
-    </nav>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RedDrop | Digital Blood Bank</title>
+  <link href="../../dist/output.css" rel="stylesheet">
+</head>
+    <body class="h-full min-h-screen bg-white flex flex-col">
 
-    <section class="flex flex-col items-center justify-center text-center mt-20 px-6">
-      <h2 class="text-5xl font-extrabold text-red-700">Welcome to RedDrop</h2>
-      <p class="mt-4 text-lg text-gray-700 max-w-xl">
-        A smart digital blood bank system connecting donors, hospitals, and patients for faster and reliable blood services.
-      </p>
-      <div class="mt-8 flex gap-4">
-        <a href="#" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-6 rounded-lg shadow">
-          Get Started
-        </a>
-        <a href="#" class="border border-red-600 text-red-600 hover:bg-red-100 font-medium py-2 px-6 rounded-lg shadow">
-          Learn More
-        </a>
+    <!-- Header -->
+    <header class="w-full border-b border-red-100">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="h-9 w-9 rounded-md bg-red-600 flex items-center justify-center text-white font-bold">
+            B
+          </div>
+          <span class="text-lg font-semibold text-red-700">RedDrop</span>
+        </div>
+
+        <nav class="hidden md:flex items-center space-x-6 text-sm">
+          <a href="#work" class="text-gray-700 hover:text-red-700">Why RedDrop</a>
+          <a href="#stories" class="text-gray-700 hover:text-red-700">Stories</a>
+          <a href="#resources" class="text-gray-700 hover:text-red-700">Resources</a>
+        </nav>
+
+        <div class="flex items-center space-x-3">
+          <a href="login-signup.html" class="px-4 py-2 rounded-md border border-red-200 text-red-700 hover:bg-red-50">
+            Log in
+          </a>
+          <a href="register.html" class="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700">
+            Get Started
+          </a>
+        </div>
       </div>
-    </section>
+    </header>
 
-    <footer class="mt-20 py-6 bg-gray-100 text-center text-gray-500">
-      © 2025 RedDrop. All Rights Reserved.
+    <!-- Hero Section -->
+    <main class="flex-1">
+      <section class="relative overflow-hidden min-h-[90vh] flex items-center">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 lg:py-24 grid lg:grid-cols-2 gap-10 items-center">
+
+          <!-- Hero Text -->
+          <div>
+            <p class="inline-flex items-center space-x-2 text-sm text-red-700">
+              <span class="h-3 w-3 rounded-full bg-red-600 inline-block"></span>
+              <span>Live Blood Request</span>
+            </p>
+
+            <h1 class="mt-4 text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900">
+              Eliminate blood scarcity in <span class="text-red-600">NEPAL</span>
+            </h1>
+
+            <p class="mt-4 text-gray-600 max-w-xl">
+              Donate your time and blood to save lives and power a holistic blood
+              management cycle in your community.
+            </p>
+
+            <div class="mt-8 flex flex-wrap gap-3">
+              <a href="register.html" class="px-5 py-2.5 rounded-md bg-red-600 text-white hover:bg-red-700">
+                Donate Blood
+              </a>
+              <a href="login.html" class="px-5 py-2.5 rounded-md border border-gray-300 text-gray-800 hover:bg-gray-50">
+                Request Blood
+              </a>
+            </div>
+          </div>
+
+          <!-- Hero Image -->
+          <div class="relative w-full">
+            <div class="w-full h-full rounded-2xl bg-red-100 flex items-center justify-center">
+              <img
+                src="your-image-path.jpg"
+                alt="Blood donation campaign"
+                class="rounded-2xl object-cover w-full h-full"
+              />
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-200">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 text-sm text-gray-500 flex items-center justify-between">
+        <span>© 2025 RedDrop</span>
+        <div class="space-x-4">
+          <a href="#privacy" class="hover:text-gray-700">Privacy</a>
+          <a href="#terms" class="hover:text-gray-700">Terms</a>
+        </div>
+      </div>
     </footer>
+
   </body>
 </html>
