@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
 
     # Your custom apps
+    'loginsignup',
     
 ]
 
@@ -151,3 +152,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # DEFAULT AUTO FIELD
 # =====================
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+import os
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+SECRET_KEY = '@w@3^rb^nags)z83aizm830i!_c(%4i+8bd14pfw9k259ah+(j'
