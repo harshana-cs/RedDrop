@@ -1,178 +1,213 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blood Bank Management - Login</title>
-    <link href="../../dist/output.css" rel="stylesheet">
-  </head>
-  <body class="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
-    <div class="max-w-md w-full space-y-8">
-  <!-- Header -->
-  <div class="text-center">
-    <div class="mx-auto h-16 w-16 bg-red-500 rounded-full flex items-center justify-center">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M12 21C12 21 7 16.582 7 12a5 5 0 0110 0c0 4.582-5 9-5 9z" />
-      </svg>
-    </div>
-    <h2 class="mt-6 text-3xl font-bold text-gray-900">Blood Bank Management</h2>
-  </div>
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Blood Bank Management - Login</title>
+      <link href="../../dist/output.css" rel="stylesheet">
+    </head>
+    <body class="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
+      <div class="max-w-md w-full space-y-8">
 
-  <!-- LOGIN FORM -->
-  <div id="loginSection" class="space-y-8">
-    <p class="text-center text-sm text-gray-600">Sign in to your account</p>
-
-    <!-- Role Selection -->
-    <div class="bg-white rounded-lg p-4 shadow-sm">
-      <label class="block text-sm font-medium text-gray-700 mb-3">Select your role</label>
-      <div class="grid grid-cols-2 gap-3">
-        <button class="p-3 rounded-lg border-2 border-gray-200 text-gray-600 hover:border-gray-300">Patient/User</button>
-        <button class="p-3 rounded-lg border-2 border-gray-200 text-gray-600 hover:border-gray-300">Blood Donor</button>
-      </div>
-    </div>
-
-    <!-- Login Form -->
-    <div class="bg-white rounded-lg shadow-sm p-6">
-      <form class="space-y-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Email address</label>
-          <input type="email" placeholder="Enter your email"
-            class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Password</label>
-          <input type="password" placeholder="Enter your password"
-            class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
-        </div>
-
-        <div class="flex items-center justify-between">
-          <label class="flex items-center">
-            <input type="checkbox" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded" />
-            <span class="ml-2 text-sm text-gray-900">Remember me</span>
-          </label>
-          <a href="#" class="text-sm text-red-600 hover:text-red-500">Forgot password?</a>
-        </div>
-
-        <button type="submit"
-          class="w-full bg-red-600 text-white py-3 rounded-md font-medium hover:bg-red-700 transition">
-          Sign in
-        </button>
-      </form>
-    </div>
-
-    <!-- Switch to Signup -->
+    <!-- Header -->
     <div class="text-center">
-      <p class="text-sm text-gray-600">
-        Don’t have an account?
-        <a href="#" onclick="toggleForm('signup')" class="font-medium text-red-600 hover:text-red-500">Sign up here</a>
-      </p>
-    </div>
-  </div>
-
-  <!-- SIGNUP FORM -->
-  <div id="signupSection" class="hidden space-y-8">
-    <p class="text-center text-sm text-gray-600">Create your account</p>
-   <!-- Role Selection -->
-<div class="bg-white rounded-lg p-4 shadow-sm">
-  <label class="block text-sm font-medium text-gray-700 mb-3">Select your role</label>
-  <div class="grid grid-cols-2 gap-3">
-    <input type="radio" class="hidden peer" id="rolePatient" name="role" value="patient" checked />
-    <label class="flex items-center space-x-2 border-2 border-gray-200 rounded-lg p-3 hover:border-gray-300 cursor-pointer">
-      <input type="radio" name="role" value="patient" class="text-red-600 focus:ring-red-500" />
-      <span class="text-gray-700">Patient/User</span>
-    </label>
-    <input type="radio" class="hidden peer" id="roleDonor" name="role" value="donor" />
-    <label class="flex items-center space-x-2 border-2 border-gray-200
-        rounded-lg p-3 hover:border-gray-300 cursor-pointer">
-        <input type="radio" name="role" value="donor" class="text-red-600 focus:ring-red-500" />
-        <span class="text-gray-700">Blood Donor</span>
-    </label>
+      <div class="mx-auto h-16 w-16 bg-red-500 rounded-full flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 21C12 21 7 16.582 7 12a5 5 0 0110 0c0 4.582-5 9-5 9z" />
+        </svg>
+      </div>
+      <h2 class="mt-6 text-3xl font-bold text-gray-900">Blood Bank Management</h2>
     </div>
 
+    <!-- LOGIN FORM -->
+    <div id="loginSection" class="space-y-8">
+      <p class="text-center text-sm text-gray-600">Sign in to your account</p>
 
-    <!-- Signup Form -->
-    <div class="bg-white rounded-lg shadow-sm p-6">
-      <form class="space-y-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Full Name</label>
-          <input type="text" placeholder="Enter your full name"
-            class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Email address</label>
-          <input type="email" placeholder="Enter your email"
-            class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Phone Number</label>
-          <input type="tel" placeholder="Enter your phone number"
-            class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Address</label>
-          <input type="text" placeholder="Enter your address"
-            class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
-        </div>
-
+      <!-- Role Selection -->
+      <div class="bg-white rounded-lg p-4 shadow-sm">
+        <label class="block text-sm font-medium text-gray-700 mb-3">Select your role</label>
         <div class="grid grid-cols-2 gap-3">
+          <button class="p-3 rounded-lg border-2 border-gray-200 text-gray-600 hover:border-gray-300">Patient/User</button>
+          <button class="p-3 rounded-lg border-2 border-gray-200 text-gray-600 hover:border-gray-300">Blood Donor</button>
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <form class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email address</label>
+            <input type="email" placeholder="Enter your email"
+              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
+          </div>
+
           <div>
             <label class="block text-sm font-medium text-gray-700">Password</label>
             <input type="password" placeholder="Enter your password"
               class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Confirm Password</label>
-            <input type="password" placeholder="Confirm password"
-              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
-          </div>
-        </div>
 
-        <div class="flex items-center">
-          <input type="checkbox" id="terms" class="h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500" />
-          <label for="terms" class="ml-2 block text-sm text-gray-900">
-            I agree to the
-            <a href="#" class="text-red-600 font-medium hover:text-red-500">Terms</a> and
-            <a href="#" class="text-red-600 font-medium hover:text-red-500">Privacy Policy</a>
+          <div class="flex items-center justify-between">
+            <label class="flex items-center">
+              <input type="checkbox" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded" />
+              <span class="ml-2 text-sm text-gray-900">Remember me</span>
+            </label>
+            <a href="#" class="text-sm text-red-600 hover:text-red-500">Forgot password?</a>
+          </div>
+
+          <button type="submit"
+            class="w-full bg-red-600 text-white py-3 rounded-md font-medium hover:bg-red-700 transition">
+            Sign in
+          </button>
+        </form>
+      </div>
+
+      <!-- Switch to Signup -->
+      <div class="text-center">
+        <p class="text-sm text-gray-600">
+          Don’t have an account?
+          <a href="#" onclick="toggleForm('signup')" class="font-medium text-red-600 hover:text-red-500">Sign up here</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- SIGNUP FORM -->
+    <div id="signupSection" class="hidden space-y-8">
+      <p class="text-center text-sm text-gray-600">Create your account</p>
+
+      <!-- Role Selection -->
+      <div class="bg-white rounded-lg p-4 shadow-sm">
+        <label class="block text-sm font-medium text-gray-700 mb-3">Select your role</label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="flex items-center space-x-2 border-2 border-gray-200 rounded-lg p-3 hover:border-gray-300 cursor-pointer">
+            <input type="radio" name="role" value="patient" class="text-red-600 focus:ring-red-500" checked onchange="showUploadFields()" />
+            <span class="text-gray-700">Patient/User</span>
+          </label>
+
+          <label class="flex items-center space-x-2 border-2 border-gray-200 rounded-lg p-3 hover:border-gray-300 cursor-pointer">
+            <input type="radio" name="role" value="donor" class="text-red-600 focus:ring-red-500" onchange="showUploadFields()" />
+            <span class="text-gray-700">Blood Donor</span>
           </label>
         </div>
+      </div>
 
-        <button type="submit"
-          class="w-full bg-red-600 text-white py-3 rounded-md font-medium hover:bg-red-700 transition">
-          Create Account
-        </button>
-      </form>
+      <!-- Signup Form -->
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <form class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Full Name</label>
+            <input type="text" placeholder="Enter your full name"
+              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email address</label>
+            <input type="email" placeholder="Enter your email"
+              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+            <input type="tel" placeholder="Enter your phone number"
+              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Address</label>
+            <input type="text" placeholder="Enter your address"
+              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Password</label>
+              <input type="password" placeholder="Enter your password"
+                class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Confirm Password</label>
+              <input type="password" placeholder="Confirm password"
+                class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
+            </div>
+          </div>
+
+          <!-- Dynamic Upload Section -->
+          <div id="uploadSection" class="space-y-4"></div>
+
+          <div class="flex items-center">
+            <input type="checkbox" id="terms" class="h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500" />
+            <label for="terms" class="ml-2 block text-sm text-gray-900">
+              I agree to the
+              <a href="#" class="text-red-600 font-medium hover:text-red-500">Terms</a> and
+              <a href="#" class="text-red-600 font-medium hover:text-red-500">Privacy Policy</a>
+            </label>
+          </div>
+
+          <button type="submit"
+            class="w-full bg-red-600 text-white py-3 rounded-md font-medium hover:bg-red-700 transition">
+            Create Account
+          </button>
+        </form>
+      </div>
+
+      <!-- Switch to Login -->
+      <div class="text-center">
+        <p class="text-sm text-gray-600">
+          Already have an account?
+          <a href="#" onclick="toggleForm('login')" class="font-medium text-red-600 hover:text-red-500">Sign in here</a>
+        </p>
+      </div>
     </div>
 
-    <!-- Switch to Login -->
-    <div class="text-center">
-      <p class="text-sm text-gray-600">
-        Already have an account?
-        <a href="#" onclick="toggleForm('login')" class="font-medium text-red-600 hover:text-red-500">Sign in here</a>
-      </p>
-    </div>
   </div>
 
-</div>
+  <!-- JavaScript -->
+  <script>
+    function toggleForm(form) {
+      const login = document.getElementById("loginSection");
+      const signup = document.getElementById("signupSection");
 
-<script>
-  function toggleForm(form) {
-    const login = document.getElementById("loginSection");
-    const signup = document.getElementById("signupSection");
-
-    if (form === "signup") {
-      login.classList.add("hidden");
-      signup.classList.remove("hidden");
-    } else {
-      signup.classList.add("hidden");
-      login.classList.remove("hidden");
+      if (form === "signup") {
+        login.classList.add("hidden");
+        signup.classList.remove("hidden");
+      } else {
+        signup.classList.add("hidden");
+        login.classList.remove("hidden");
+      }
     }
-  }
-</script>
 
-  </body>
-</html>
+    function showUploadFields() {
+      const role = document.querySelector('input[name="role"]:checked').value;
+      const uploadSection = document.getElementById("uploadSection");
+
+      if (role === "patient") {
+        uploadSection.innerHTML = `
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Upload Blood Request Document</label>
+            <input type="file" accept="image/*, .pdf"
+              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm bg-white" />
+          </div>
+        `;
+      } else if (role === "donor") {
+        uploadSection.innerHTML = `
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Upload Citizenship Photo</label>
+            <input type="file" accept="image/*"
+              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm bg-white" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Upload Selfie</label>
+            <input type="file" accept="image/*"
+              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm bg-white" />
+          </div>
+        `;
+      }
+    }
+
+    // Initialize default view
+    showUploadFields();
+  </script>
+
+    </body>
+  </html>
