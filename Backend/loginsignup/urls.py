@@ -1,7 +1,10 @@
+# accounts/urls.py
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('patient/signup/', views.signup, name='patient_signup'),
-    path('', views.signup, name='home'),  # root of loginsignup/ redirects to signup
+    path("google_login/", views.google_login),
+    path("google_signup/", views.google_signup),
+    path("verify-code/", views.verify_code),
+    path("patient_signup_manually/", views.patient_signup_manually),
 ]

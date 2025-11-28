@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Request Dashboard</title>
+    <link href="../../dist/output.css" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'hlb-red': '#B91C1C',
+            'hlb-bg': '#FFF5F5',
+            'hlb-lightRed': '#FEE2E2',
+            'hlb-darkRed': '#991B1B',
+          },
+        },
+      },
+    }
+  </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .section { display: none; }
+        .section.active { display: block; }
+    </style>
+</head>
+<body class="bg-hlb-bg text-gray-800 font-sans">
+
+    <div class="min-h-screen">
+        <!-- Sidebar Navigation -->
+        <div class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-10">
+            <div class="flex flex-col h-full">
+                <!-- Logo -->
+                <div class="flex items-center justify-center h-16 border-b border-gray-200">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="droplets" class="text-red-600 w-8 h-8"></i>
+                        <span class="text-xl font-bold text-gray-900">Blood Bank</span>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="flex-1 px-4 py-6 space-y-2">
+                    <button onclick="showSection('dashboard')" class="nav-item active w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i data-lucide="home" class="w-5 h-5"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button onclick="showSection('request')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        <span>Request Blood</span>
+                    </button>
+                    <button onclick="showSection('history')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i data-lucide="history" class="w-5 h-5"></i>
+                        <span>Request History</span>
+                    </button>
+                    <button onclick="showSection('profile')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                        <i data-lucide="user" class="w-5 h-5"></i>
+                        <span>Profile</span>
+                    </button>
+                </nav>
+
+                <!-- User Info -->
+                <div class="border-t border-gray-200 p-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                            <i data-lucide="user" class="w-5 h-5 text-red-600"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900">John Doe</p>
+                            <p class="text-xs text-gray-500">john@example.com</p>
+                        </div>
+                    </div>
+                    <button class="mt-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="ml-64 p-8">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section active">
+                <!-- Welcome Section -->
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white mb-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-2xl font-bold">Welcome back, John Doe!</h1>
+                            <p class="text-blue-100 mt-1">Your blood request status and donor matches are updated below.</p>
+                        </div>
+                        <i data-lucide="heart" class="hidden md:block w-16 h-16 text-blue-200"></i>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <i data-lucide="file-text" class="w-6 h-6 text-blue-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Total Requests</p>
+                                <p class="text-2xl font-bold text-gray-900">3</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-yellow-100 rounded-lg">
+                                <i data-lucide="clock" class="w-6 h-6 text-yellow-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Pending</p>
+                                <p class="text-2xl font-bold text-gray-900">1</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-green-100 rounded-lg">
+                                <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Approved</p>
+                                <p class="text-2xl font-bold text-gray-900">2</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-red-100 rounded-lg">
+                                <i data-lucide="heart" class="w-6 h-6 text-red-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Received</p>
+                                <p class="text-2xl font-bold text-gray-900">1</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                    <div class="border-b border-gray-200">
+                        <nav class="flex space-x-8 px-6">
+                            <button onclick="showTab('requests')" class="tab-btn active py-4 px-1 border-b-2 border-red-500 font-medium text-sm text-red-600">
+                                Recent Requests
+                            </button>
+                            <button onclick="showTab('donors')" class="tab-btn py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700">
+                                Compatible Donors
+                            </button>
+                        </nav>
+                    </div>
+
+                    <div class="p-6">
+                        <!-- Recent Requests Tab -->
+                        <div id="requests-tab" class="tab-content">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-medium text-gray-900">Your Blood Requests</h3>
+                                <button onclick="showSection('request')" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center space-x-2">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                    <span>New Request</span>
+                                </button>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Blood Group</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Units</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Urgency</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <i data-lucide="droplets" class="w-4 h-4 text-red-500 mr-2"></i>
+                                                    <span class="text-sm font-medium text-gray-900">O+</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2 units</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-red-600 bg-red-100">Critical</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Bir Hospital</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-green-600 bg-green-100">Approved</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                <button onclick="showNotification('Contacting Jane Smith at +977-9841234568')" class="text-blue-600 hover:text-blue-900 text-xs block mb-1">Contact Donor</button>
+                                                <button onclick="confirmReceipt()" class="text-green-600 hover:text-green-900 text-xs block">Confirm Receipt</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <i data-lucide="droplets" class="w-4 h-4 text-red-500 mr-2"></i>
+                                                    <span class="text-sm font-medium text-gray-900">A+</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">1 units</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-orange-600 bg-orange-100">High</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Patan Hospital</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-yellow-600 bg-yellow-100">Pending</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-600">Waiting for approval</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <i data-lucide="droplets" class="w-4 h-4 text-red-500 mr-2"></i>
+                                                    <span class="text-sm font-medium text-gray-900">B+</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">3 units</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-yellow-600 bg-yellow-100">Medium</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Teaching Hospital</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-blue-600 bg-blue-100">Completed</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600">✓ Received</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Compatible Donors Tab -->
+                        <div id="donors-tab" class="tab-content hidden">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Compatible Donors Near You</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center space-x-2">
+                                            <i data-lucide="heart" class="w-5 h-5 text-red-500"></i>
+                                            <span class="font-medium text-gray-900">Jane Smith</span>
+                                        </div>
+                                        <span class="text-sm text-gray-500">O+</span>
+                                    </div>
+                                    <div class="space-y-2 text-sm text-gray-600">
+                                        <div class="flex items-center">
+                                            <i data-lucide="map-pin" class="w-4 h-4 mr-2"></i>
+                                            <span>Kathmandu (2.5 km)</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
+                                            <span>Last donation: 2024-01-15</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i data-lucide="heart" class="w-4 h-4 mr-2"></i>
+                                            <span>5 total donations</span>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 flex space-x-2">
+                                        <button onclick="showNotification('Contacting Jane Smith')" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">Contact</button>
+                                        <button class="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300">
+                                            <i data-lucide="phone" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center space-x-2">
+                                            <i data-lucide="heart" class="w-5 h-5 text-red-500"></i>
+                                            <span class="font-medium text-gray-900">Mike Johnson</span>
+                                        </div>
+                                        <span class="text-sm text-gray-500">O+</span>
+                                    </div>
+                                    <div class="space-y-2 text-sm text-gray-600">
+                                        <div class="flex items-center">
+                                            <i data-lucide="map-pin" class="w-4 h-4 mr-2"></i>
+                                            <span>Lalitpur (5.1 km)</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
+                                            <span>Last donation: 2024-01-10</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i data-lucide="heart" class="w-4 h-4 mr-2"></i>
+                                            <span>3 total donations</span>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 flex space-x-2">
+                                        <button onclick="showNotification('Contacting Mike Johnson')" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">Contact</button>
+                                        <button class="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300">
+                                            <i data-lucide="phone" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button onclick="showSection('request')" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition-colors text-left">
+                            <i data-lucide="plus" class="w-6 h-6 text-red-500 mr-3"></i>
+                            <div>
+                                <p class="font-medium text-gray-900">Request Blood</p>
+                                <p class="text-sm text-gray-500">Submit a new blood request</p>
+                            </div>
+                        </button>
+
+                        <button onclick="showSection('history')" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-left">
+                            <i data-lucide="history" class="w-6 h-6 text-blue-500 mr-3"></i>
+                            <div>
+                                <p class="font-medium text-gray-900">View History</p>
+                                <p class="text-sm text-gray-500">Check your request history</p>
+                            </div>
+                        </button>
+
+                        <button onclick="showSection('profile')" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors text-left">
+                            <i data-lucide="user" class="w-6 h-6 text-green-500 mr-3"></i>
+                            <div>
+                                <p class="font-medium text-gray-900">Update Profile</p>
+                                <p class="text-sm text-gray-500">Manage your information</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Request Blood Section -->
+            <div id="request" class="section">
+                <div class="max-w-4xl mx-auto space-y-6">
+                    <!-- Header -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="p-2 bg-red-100 rounded-lg">
+                                <i data-lucide="plus" class="w-6 h-6 text-red-600"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-900">Request Blood</h1>
+                                <p class="text-gray-600">Submit a new blood request with required documentation</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Request Form -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <h2 class="text-lg font-medium text-gray-900">Blood Request Details</h2>
+                            <p class="text-sm text-gray-600 mt-1">Please fill in all required fields. Your request will be reviewed by admin.</p>
+                        </div>
+
+                        <form id="bloodRequestForm" class="p-6 space-y-6">
+                            <!-- Blood Group and Units -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Required Blood Group *</label>
+                                    <select id="bloodGroup" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                        <option value="">Select blood group</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Units Required *</label>
+                                    <input type="number" min="1" max="10" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter number of units">
+                                </div>
+                            </div>
+
+                            <!-- Urgency Level -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-3">Urgency Level *</label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <label class="relative flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
+                                        <input type="radio" name="urgency" value="Critical" required class="sr-only">
+                                        <div class="p-2 rounded-full bg-red-100">
+                                            <i data-lucide="alert-circle" class="w-4 h-4 text-red-600"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">Critical</p>
+                                            <p class="text-xs text-gray-500">Within 24 hours</p>
+                                        </div>
+                                    </label>
+
+                                    <label class="relative flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
+                                        <input type="radio" name="urgency" value="High" class="sr-only">
+                                        <div class="p-2 rounded-full bg-orange-100">
+                                            <i data-lucide="alert-circle" class="w-4 h-4 text-orange-600"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">High</p>
+                                            <p class="text-xs text-gray-500">Within 48 hours</p>
+                                        </div>
+                                    </label>
+
+                                    <label class="relative flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
+                                        <input type="radio" name="urgency" value="Medium" class="sr-only">
+                                        <div class="p-2 rounded-full bg-yellow-100">
+                                            <i data-lucide="alert-circle" class="w-4 h-4 text-yellow-600"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">Medium</p>
+                                            <p class="text-xs text-gray-500">Within 1 week</p>
+                                        </div>
+                                    </label>
+
+                                    <label class="relative flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
+                                        <input type="radio" name="urgency" value="Low" class="sr-only">
+                                        <div class="p-2 rounded-full bg-green-100">
+                                            <i data-lucide="alert-circle" class="w-4 h-4 text-green-600"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">Low</p>
+                                            <p class="text-xs text-gray-500">Within 2 weeks</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Hospital and Required Date -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Hospital *</label>
+                                    <select required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                        <option value="">Select hospital</option>
+                                        <option value="Bir Hospital">Bir Hospital</option>
+                                        <option value="Patan Hospital">Patan Hospital</option>
+                                        <option value="Teaching Hospital">Teaching Hospital</option>
+                                        <option value="Nepal Medical College">Nepal Medical College</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Required Date *</label>
+                                    <input type="date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                </div>
+                            </div>
+
+                            <!-- Reason for Request -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Blood Request *</label>
+                                <textarea rows="4" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Please describe the reason for blood request (surgery, accident, medical condition, etc.)"></textarea>
+                            </div>
+
+                            <!-- Contact Information -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person *</label>
+                                    <input type="text" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Name of contact person">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Contact Phone *</label>
+                                    <input type="tel" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Contact phone number">
+                                </div>
+                            </div>
+
+                            <!-- Document Upload -->
+                            <div class="space-y-4">
+                                <h3 class="text-lg font-medium text-gray-900">Required Documents</h3>
+                                
+                                <!-- Hospital Document -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Hospital Verification Document *</label>
+                                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                        <i data-lucide="upload" class="mx-auto w-12 h-12 text-gray-400"></i>
+                                        <div class="mt-4">
+                                            <label class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 cursor-pointer inline-block">
+                                                Upload Hospital Document
+                                                <input type="file" id="hospitalDoc" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="handleFileUpload('hospitalDoc', this)">
+                                            </label>
+                                        </div>
+                                        <p class="mt-2 text-xs text-gray-500">PDF, JPG, PNG up to 5MB</p>
+                                    </div>
+                                    <div id="hospitalDoc-status" class="mt-2 hidden text-sm text-green-600 flex items-center">
+                                        <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i>
+                                        <span></span>
+                                    </div>
+                                </div>
+
+                                <!-- Doctor's Note -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Doctor's Note *</label>
+                                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                        <i data-lucide="file-text" class="mx-auto w-12 h-12 text-gray-400"></i>
+                                        <div class="mt-4">
+                                            <label class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 cursor-pointer inline-block">
+                                                Upload Doctor's Note
+                                                <input type="file" id="doctorNote" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="handleFileUpload('doctorNote', this)">
+                                            </label>
+                                        </div>
+                                        <p class="mt-2 text-xs text-gray-500">PDF, JPG, PNG up to 5MB</p>
+                                    </div>
+                                    <div id="doctorNote-status" class="mt-2 hidden text-sm text-green-600 flex items-center">
+                                        <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i>
+                                        <span></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Compatible Donors Info -->
+                            <div id="compatibleInfo" class="bg-blue-50 rounded-lg p-4 hidden">
+                                <h4 class="text-sm font-medium text-blue-900 mb-2">Compatible Blood Groups</h4>
+                                <div id="compatibleList" class="flex flex-wrap gap-2"></div>
+                                <p class="text-xs text-blue-700 mt-2">We will match you with donors having these compatible blood groups.</p>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="flex justify-end space-x-4">
+                                <button type="button" onclick="showSection('dashboard')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 flex items-center space-x-2">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                    <span>Submit Request</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Request History Section -->
+            <div id="history" class="section">
+                <div class="max-w-4xl mx-auto space-y-6">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center space-x-3 mb-6">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <i data-lucide="history" class="w-6 h-6 text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-900">Request History</h1>
+                                <p class="text-gray-600">View all your past blood requests</p>
+                            </div>
+                        </div>
+
+                        <!-- History Table -->
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Blood Group</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Units</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-15</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <i data-lucide="droplets" class="w-4 h-4 text-red-500 mr-2"></i>
+                                                <span class="text-sm font-medium">O+</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2 units</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Bir Hospital</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-green-600 bg-green-100">Completed</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <button class="text-blue-600 hover:text-blue-900">View Details</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-20</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <i data-lucide="droplets" class="w-4 h-4 text-red-500 mr-2"></i>
+                                                <span class="text-sm font-medium">A+</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">1 units</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Patan Hospital</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-yellow-600 bg-yellow-100">Pending</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <button class="text-blue-600 hover:text-blue-900">View Details</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-10</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <i data-lucide="droplets" class="w-4 h-4 text-red-500 mr-2"></i>
+                                                <span class="text-sm font-medium">B+</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">3 units</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Teaching Hospital</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-green-600 bg-green-100">Completed</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <button class="text-blue-600 hover:text-blue-900">View Details</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Section -->
+            <div id="profile" class="section">
+                <div class="max-w-5xl mx-auto space-y-6">
+                    <!-- Header -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-900">User Profile</h1>
+                                <p class="text-gray-600 mt-1">Manage your account settings and personal information</p>
+                            </div>
+                            <button onclick="showNotification('Logged out successfully!')" class="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-800 flex items-center space-x-2">
+                                <i data-lucide="log-out" class="w-4 h-4"></i>
+                                <span>Logout</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Personal Information -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-gray-900">Personal Information</h2>
+                            <button onclick="toggleEdit('personal')" class="text-gray-600 hover:text-gray-900 flex items-center space-x-1">
+                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                <span class="text-sm">Edit</span>
+                            </button>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Full Name</label>
+                                    <p class="text-gray-900 font-medium">John Doe</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Email Address</label>
+                                    <p class="text-gray-900 font-medium">john.doe@email.com</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Phone Number</label>
+                                    <p class="text-gray-900 font-medium">+1 (555) 123-4567</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Date of Birth</label>
+                                    <p class="text-gray-900 font-medium">January 15, 1990</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Gender</label>
+                                    <p class="text-gray-900 font-medium">Male</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Blood Type</label>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-900 text-white">
+                                        A+
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-gray-900">Contact Information</h2>
+                            <button onclick="toggleEdit('contact')" class="text-gray-600 hover:text-gray-900 flex items-center space-x-1">
+                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                <span class="text-sm">Edit</span>
+                            </button>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="md:col-span-3">
+                                    <label class="block text-sm text-gray-600 mb-1">Street Address</label>
+                                    <p class="text-gray-900 font-medium">123 Main Street, Apt 4B</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">City</label>
+                                    <p class="text-gray-900 font-medium">New York</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">State</label>
+                                    <p class="text-gray-900 font-medium">NY</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">ZIP Code</label>
+                                    <p class="text-gray-900 font-medium">10001</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medical Information -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-gray-900">Medical Information</h2>
+                            <button onclick="toggleEdit('medical')" class="text-gray-600 hover:text-gray-900 flex items-center space-x-1">
+                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                <span class="text-sm">Edit</span>
+                            </button>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Weight</label>
+                                    <p class="text-gray-900 font-medium">75 kg</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Height</label>
+                                    <p class="text-gray-900 font-medium">180 cm</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Allergies</label>
+                                    <p class="text-gray-900 font-medium">Penicillin, Peanuts</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Medical Conditions</label>
+                                    <p class="text-gray-900 font-medium">None reported</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Emergency Contact -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-gray-900">Emergency Contact</h2>
+                            <button onclick="toggleEdit('emergency')" class="text-gray-600 hover:text-gray-900 flex items-center space-x-1">
+                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                                <span class="text-sm">Edit</span>
+                            </button>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Contact Name</label>
+                                    <p class="text-gray-900 font-medium">Jane Doe</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Relationship</label>
+                                    <p class="text-gray-900 font-medium">Spouse</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Phone Number</label>
+                                    <p class="text-gray-900 font-medium">+1 (555) 987-6543</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-600 mb-1">Email Address</label>
+                                    <p class="text-gray-900 font-medium">jane.doe@email.com</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Settings -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <h2 class="text-lg font-semibold text-gray-900">Account Settings</h2>
+                        </div>
+                        <div class="p-6">
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between py-3 border-b border-gray-200">
+                                    <div>
+                                        <p class="text-gray-900 font-medium">Email Notifications</p>
+                                        <p class="text-sm text-gray-600">Receive updates about blood requests</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between py-3 border-b border-gray-200">
+                                    <div>
+                                        <p class="text-gray-900 font-medium">SMS Notifications</p>
+                                        <p class="text-sm text-gray-600">Get text messages for urgent requests</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between py-3">
+                                    <div>
+                                        <p class="text-gray-900 font-medium">Push Notifications</p>
+                                        <p class="text-sm text-gray-600">Receive app notifications</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notification" class="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg hidden transform transition-all duration-300">
+        <div class="flex items-center space-x-2">
+            <i data-lucide="check-circle" class="w-5 h-5"></i>
+            <span id="notificationText"></span>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active', 'bg-red-50', 'text-red-600');
+            });
+            event.target.closest('.nav-item').classList.add('active', 'bg-red-50', 'text-red-600');
+            
+            // Reinitialize icons
+            lucide.createIcons();
+        }
+
+        // Tab switching
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-red-500', 'text-red-600');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+            event.target.classList.add('border-red-500', 'text-red-600');
+            event.target.classList.remove('border-transparent', 'text-gray-500');
+            
+            lucide.createIcons();
+        }
+
+        // Notification
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notificationText');
+            text.textContent = message;
+            notification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 3000);
+            
+            lucide.createIcons();
+        }
+
+        // Confirm receipt
+        function confirmReceipt() {
+            showNotification('Blood receipt confirmed! Thank you for the feedback.');
+        }
+
+        // File upload handler
+        function handleFileUpload(fieldId, input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const status = document.getElementById(fieldId + '-status');
+                const span = status.querySelector('span');
+                span.textContent = file.name;
+                status.classList.remove('hidden');
+                lucide.createIcons();
+            }
+        }
+
+        // Blood group compatibility
+        const bloodGroupCompatibility = {
+            'A+': ['A+', 'AB+'],
+            'A-': ['A+', 'A-', 'AB+', 'AB-'],
+            'B+': ['B+', 'AB+'],
+            'B-': ['B+', 'B-', 'AB+', 'AB-'],
+            'AB+': ['AB+'],
+            'AB-': ['AB+', 'AB-'],
+            'O+': ['A+', 'B+', 'AB+', 'O+'],
+            'O-': ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+        };
+
+        // Show compatible blood groups
+        document.getElementById('bloodGroup')?.addEventListener('change', function(e) {
+            const selectedGroup = e.target.value;
+            const compatibleInfo = document.getElementById('compatibleInfo');
+            const compatibleList = document.getElementById('compatibleList');
+            
+            if (selectedGroup && bloodGroupCompatibility[selectedGroup]) {
+                const compatible = bloodGroupCompatibility[selectedGroup];
+                compatibleList.innerHTML = compatible.map(bg => 
+                    `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${bg === selectedGroup ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">
+                        <i data-lucide="droplets" class="w-3 h-3 mr-1"></i>
+                        ${bg}
+                    </span>`
+                ).join('');
+                compatibleInfo.classList.remove('hidden');
+                lucide.createIcons();
+            } else {
+                compatibleInfo.classList.add('hidden');
+            }
+        });
+
+        // Form submission
+        document.getElementById('bloodRequestForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            showNotification('Blood request submitted successfully! Admin will review and approve.');
+            setTimeout(() => {
+                showSection('dashboard');
+            }, 2000);
+        });
+
+        // Radio button styling
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const parent = this.closest('.grid');
+                parent.querySelectorAll('label').forEach(label => {
+                    label.classList.remove('border-red-300', 'bg-red-50');
+                    label.classList.add('border-gray-200');
+                });
+                if (this.checked) {
+                    this.closest('label').classList.add('border-red-300', 'bg-red-50');
+                    this.closest('label').classList.remove('border-gray-200');
+                }
+            });
+        });
+
+        // Initialize icons on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

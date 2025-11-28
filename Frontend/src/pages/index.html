@@ -1,96 +1,167 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full">
-  <head>
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RedDrop | Digital Blood Bank</title>
+
+  <!-- Tailwind CSS -->
   <link href="../../dist/output.css" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'hlb-red': '#B91C1C',
+            'hlb-bg': '#FFF5F5',
+            'hlb-lightRed': '#FEE2E2',
+            'hlb-darkRed': '#991B1B',
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+  </style>
 </head>
-    <body class="h-full min-h-screen bg-white flex flex-col">
 
-    <!-- Header -->
-    <header class="w-full border-b border-red-100">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <div class="h-9 w-9 rounded-md bg-red-600 flex items-center justify-center text-white font-bold">
-            B
-          </div>
-          <span class="text-lg font-semibold text-red-700">RedDrop</span>
-        </div>
+<body class="bg-hlb-bg text-gray-800 font-sans">
 
-        <nav class="hidden md:flex items-center space-x-6 text-sm">
-          <a href="#work" class="text-gray-700 hover:text-red-700">Why RedDrop</a>
-          <a href="#stories" class="text-gray-700 hover:text-red-700">Stories</a>
-          <a href="#resources" class="text-gray-700 hover:text-red-700">Resources</a>
-        </nav>
+  <!-- Navbar -->
+  <header class="bg-hlb-red text-white fixed top-0 left-0 w-full z-50 shadow-lg">
+    <nav class="container mx-auto flex justify-between items-center py-4 px-6">
+      <h1 class="text-3xl font-bold tracking-wide">RedDrop</h1>
 
-        <div class="flex items-center space-x-3">
-          <a href="login-signup.html" class="px-4 py-2 rounded-md border border-red-200 text-red-700 hover:bg-red-50">
-            Log in
-          </a>
-          <a href="register.html" class="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700">
-            Get Started
-          </a>
-        </div>
+      <!-- Desktop Menu -->
+      <div class="hidden md:flex space-x-8 items-center text-lg">
+        <a href="#why" class="hover:text-hlb-lightRed transition">Why RedDrop</a>
+        <a href="#work" class="hover:text-hlb-lightRed transition">Our Work</a>
+        <a href="#about" class="hover:text-hlb-lightRed transition">About Us</a>
+        <a href="#involved" class="hover:text-hlb-lightRed transition">Get Involved</a>
+        <a href="#stories" class="hover:text-hlb-lightRed transition">Blood Stories</a>
+
+        <a href="login-signup.html"
+           class="border border-white px-4 py-2 rounded-full hover:bg-white hover:text-hlb-red transition font-medium">
+          Login
+        </a>
+
+        <a href="login-signup.html"
+           class="bg-white text-hlb-red px-5 py-2 rounded-full hover:bg-gray-100 transition font-medium">
+          Sign Up
+        </a>
       </div>
-    </header>
 
-    <!-- Hero Section -->
-    <main class="flex-1">
-      <section class="relative overflow-hidden min-h-[90vh] flex items-center">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 lg:py-24 grid lg:grid-cols-2 gap-10 items-center">
+      <!-- Mobile Menu Button -->
+      <button id="menu-toggle" class="md:hidden">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 6h16M4 12h16m-7 6h7" />
+        </svg>
+      </button>
+    </nav>
 
-          <!-- Hero Text -->
-          <div>
-            <p class="inline-flex items-center space-x-2 text-sm text-red-700">
-              <span class="h-3 w-3 rounded-full bg-red-600 inline-block"></span>
-              <span>Live Blood Request</span>
-            </p>
+    <!-- Mobile Menu -->
+    <div id="mobile-menu"
+      class="hidden md:hidden bg-hlb-red text-white w-full flex flex-col items-center space-y-4 py-4">
+      <a href="#why">Why RedDrop</a>
+      <a href="#work">Our Work</a>
+      <a href="#about">About Us</a>
+      <a href="#involved">Get Involved</a>
+      <a href="#stories">Blood Stories</a>
 
-            <h1 class="mt-4 text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900">
-              Eliminate blood scarcity in <span class="text-red-600">NEPAL</span>
-            </h1>
+      <a href="login-signup.html"
+         class="border border-white px-4 py-2 rounded-full hover:bg-white hover:text-hlb-red transition">
+        Login
+      </a>
+      <a href="login-signup.html"
+         class="bg-white text-hlb-red px-4 py-2 rounded-full hover:bg-gray-100 transition">
+        Sign Up
+      </a>
+    </div>
+  </header>
 
-            <p class="mt-4 text-gray-600 max-w-xl">
-              Donate your time and blood to save lives and power a holistic blood
-              management cycle in your community.
-            </p>
+  <!-- Hero Section -->
+  <section class="relative min-h-[95vh] flex items-center bg-cover bg-center"
+    style="background-image: url('https://images.unsplash.com/photo-1603988363659-489cf6a11e4b?auto=format&fit=crop&w=1470&q=80')">
+    
+    <div class="absolute inset-0 bg-hlb-red/30 backdrop-blur-sm"></div>
 
-            <div class="mt-8 flex flex-wrap gap-3">
-              <a href="register.html" class="px-5 py-2.5 rounded-md bg-red-600 text-white hover:bg-red-700">
-                Donate Blood
-              </a>
-              <a href="login.html" class="px-5 py-2.5 rounded-md border border-gray-300 text-gray-800 hover:bg-gray-50">
-                Request Blood
-              </a>
-            </div>
-          </div>
+    <div class="relative container mx-auto text-center px-6 mt-20">
+      <h2 class="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg">
+        Give Blood. Save Lives.
+      </h2>
 
-          <!-- Hero Image -->
-          <div class="relative w-full">
-            <div class="w-full h-full rounded-2xl bg-red-100 flex items-center justify-center">
-              <img
-                src="your-image-path.jpg"
-                alt="Blood donation campaign"
-                class="rounded-2xl object-cover w-full h-full"
-              />
-            </div>
-          </div>
+      <p class="text-lg md:text-xl text-white mt-6 max-w-2xl mx-auto opacity-90">
+        RedDrop is a digital platform that connects donors, recipients, and hospitals efficiently and securely.
+      </p>
 
-        </div>
-      </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="border-t border-gray-200">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 text-sm text-gray-500 flex items-center justify-between">
-        <span>© 2025 RedDrop</span>
-        <div class="space-x-4">
-          <a href="#privacy" class="hover:text-gray-700">Privacy</a>
-          <a href="#terms" class="hover:text-gray-700">Terms</a>
-        </div>
+      <div class="mt-8">
+        <a href="#donate"
+          class="bg-white text-hlb-red px-10 py-3 rounded-full text-lg shadow-md
+                 hover:bg-gray-100 transition font-semibold">
+          Donate Now
+        </a>
       </div>
-    </footer>
+    </div>
+  </section>
 
-  </body>
+  <!-- Why RedDrop -->
+  <section id="why" class="py-20 container mx-auto px-6">
+    <h3 class="text-4xl font-bold text-hlb-red text-center mb-10">Why Choose RedDrop?</h3>
+
+    <div class="grid md:grid-cols-3 gap-10">
+      <div class="bg-white shadow-xl rounded-2xl p-6 border-t-4 border-hlb-red">
+        <h4 class="font-semibold text-xl mb-2 text-hlb-red">Donors</h4>
+        <p>Receive reminders, track donation history, and find nearby blood donation events.</p>
+      </div>
+
+      <div class="bg-white shadow-xl rounded-2xl p-6 border-t-4 border-hlb-red">
+        <h4 class="font-semibold text-xl mb-2 text-hlb-red">Hospitals</h4>
+        <p>Manage blood inventory, verify donors, and request blood quickly and safely.</p>
+      </div>
+
+      <div class="bg-white shadow-xl rounded-2xl p-6 border-t-4 border-hlb-red">
+        <h4 class="font-semibold text-xl mb-2 text-hlb-red">Recipients</h4>
+        <p>Request blood urgently and get matched with compatible donors in real-time.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Donate Section -->
+  <section id="donate" class="py-20 bg-hlb-lightRed">
+    <div class="container mx-auto px-6 text-center">
+      <h3 class="text-4xl font-bold text-hlb-red mb-8">Become a Donor</h3>
+      <p class="text-lg mb-6 text-gray-700">Your contribution today can save someone's tomorrow.</p>
+
+      <a href="login-signup.html"
+        class="bg-hlb-red text-white px-8 py-3 rounded-full text-lg hover:bg-hlb-darkRed transition">
+        Register as Donor
+      </a>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about" class="py-20 container mx-auto px-6 text-center">
+    <h3 class="text-4xl font-bold text-hlb-red mb-6">About Us</h3>
+    <p class="max-w-3xl mx-auto text-lg text-gray-700 leading-relaxed">
+      RedDrop is a platform created to streamline and digitalize blood donation in Nepal.
+      We aim to build a safer, faster and transparent blood resource system for everyone.
+    </p>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-hlb-red text-white py-6 text-center shadow-inner">
+    <p class="text-sm">&copy; 2025 RedDrop | All Rights Reserved</p>
+  </footer>
+
+  <script>
+    const toggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('mobile-menu');
+    toggle.addEventListener('click', () => menu.classList.toggle('hidden'));
+  </script>
+
+</body>
 </html>

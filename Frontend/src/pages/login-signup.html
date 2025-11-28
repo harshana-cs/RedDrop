@@ -1,213 +1,296 @@
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Blood Bank Management - Login</title>
-      <link href="../../dist/output.css" rel="stylesheet">
-    </head>
-    <body class="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
-      <div class="max-w-md w-full space-y-8">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Header -->
-    <div class="text-center">
-      <div class="mx-auto h-16 w-16 bg-red-500 rounded-full flex items-center justify-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 21C12 21 7 16.582 7 12a5 5 0 0110 0c0 4.582-5 9-5 9z" />
-        </svg>
-      </div>
-      <h2 class="mt-6 text-3xl font-bold text-gray-900">Blood Bank Management</h2>
+  <title>RedDrop | Login</title>
+
+  <!-- Tailwind -->
+<link href="../../dist/output.css" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'hlb-red': '#B91C1C',
+            'hlb-bg': '#FFF5F5',
+            'hlb-lightRed': '#FEE2E2',
+            'hlb-darkRed': '#991B1B',
+          },
+        },
+      },
+    }
+  </script>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+
+<body class="min-h-screen bg-hlb-bg text-gray-800 font-sans flex items-center justify-center p-6">
+
+<div class="w-full max-w-4xl bg-white shadow-xl rounded-2xl overflow-hidden grid md:grid-cols-2">
+
+  <!-- LEFT Panel -->
+  <div class="bg-red-600 text-white p-10 flex flex-col justify-between">
+    <div>
+      <h1 class="text-4xl font-bold">RedDrop</h1>
+      <p class="mt-4 text-lg opacity-90">Manage blood donations & requests efficiently.</p>
     </div>
 
-    <!-- LOGIN FORM -->
+    <div class="space-y-4 mt-10">
+      <div class="flex items-center space-x-3"><span class="text-xl">🛡</span><p>Secure & Private</p></div>
+      <div class="flex items-center space-x-3"><span class="text-xl">⏰</span><p>24/7 Access</p></div>
+      <div class="flex items-center space-x-3"><span class="text-xl">👥</span><p>Community Driven</p></div>
+    </div>
+  </div>
+
+  <!-- RIGHT Panel -->
+  <div class="p-10">
+
+    <!-- LOGIN Section -->
     <div id="loginSection" class="space-y-8">
-      <p class="text-center text-sm text-gray-600">Sign in to your account</p>
 
-      <!-- Role Selection -->
-      <div class="bg-white rounded-lg p-4 shadow-sm">
-        <label class="block text-sm font-medium text-gray-700 mb-3">Select your role</label>
-        <div class="grid grid-cols-2 gap-3">
-          <button class="p-3 rounded-lg border-2 border-gray-200 text-gray-600 hover:border-gray-300">Patient/User</button>
-          <button class="p-3 rounded-lg border-2 border-gray-200 text-gray-600 hover:border-gray-300">Blood Donor</button>
+      <h2 class="text-3xl font-semibold text-gray-900">Welcome Back</h2>
+      <p class="text-gray-600">Sign in to access your account</p>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm" class="space-y-6">
+
+        <div>
+          <label class="text-sm text-gray-700">Email Address</label>
+          <input id="loginEmail" type="email" placeholder="you@example.com"
+                 class="w-full mt-1 border px-3 py-2 rounded-md focus:ring-red-500 focus:border-red-500" required>
         </div>
+
+        <div>
+          <label class="text-sm text-gray-700">Password</label>
+          <input id="loginPassword" type="password" placeholder="Enter password"
+                 class="w-full mt-1 border px-3 py-2 rounded-md focus:ring-red-500 focus:border-red-500" required>
+        </div>
+
+        <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-xl font-medium hover:bg-red-700">
+          Sign In
+        </button>
+      </form>
+
+      <!-- GOOGLE LOGIN -->
+      <div class="mt-4">
+        <div id="g_id_onload"
+     data-client_id="320231613519-n8ppnf9bof8r6js60el89rar1mvtl8lo.apps.googleusercontent.com"
+     data-callback="handleGoogleLogin"
+     data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin" data-type="standard" data-size="large"></div>
       </div>
 
-      <!-- Login Form -->
-      <div class="bg-white rounded-lg shadow-sm p-6">
-        <form class="space-y-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Email address</label>
-            <input type="email" placeholder="Enter your email"
-              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Password</label>
-            <input type="password" placeholder="Enter your password"
-              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
-          </div>
-
-          <div class="flex items-center justify-between">
-            <label class="flex items-center">
-              <input type="checkbox" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded" />
-              <span class="ml-2 text-sm text-gray-900">Remember me</span>
-            </label>
-            <a href="#" class="text-sm text-red-600 hover:text-red-500">Forgot password?</a>
-          </div>
-
-          <button type="submit"
-            class="w-full bg-red-600 text-white py-3 rounded-md font-medium hover:bg-red-700 transition">
-            Sign in
-          </button>
-        </form>
-      </div>
-
-      <!-- Switch to Signup -->
-      <div class="text-center">
-        <p class="text-sm text-gray-600">
-          Don’t have an account?
-          <a href="#" onclick="toggleForm('signup')" class="font-medium text-red-600 hover:text-red-500">Sign up here</a>
-        </p>
-      </div>
+      <p class="text-center text-sm mt-4">
+        Don't have an account?
+        <button onclick="toggleForm('signup')" class="text-red-600 font-medium hover:underline">Sign up here</button>
+      </p>
     </div>
 
-    <!-- SIGNUP FORM -->
+
+    <!-- SIGNUP Section -->
     <div id="signupSection" class="hidden space-y-8">
-      <p class="text-center text-sm text-gray-600">Create your account</p>
+
+      <h2 class="text-3xl font-semibold text-gray-900">Create Account</h2>
 
       <!-- Role Selection -->
-      <div class="bg-white rounded-lg p-4 shadow-sm">
-        <label class="block text-sm font-medium text-gray-700 mb-3">Select your role</label>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Select Role</label>
         <div class="grid grid-cols-2 gap-3">
-          <label class="flex items-center space-x-2 border-2 border-gray-200 rounded-lg p-3 hover:border-gray-300 cursor-pointer">
-            <input type="radio" name="role" value="patient" class="text-red-600 focus:ring-red-500" checked onchange="showUploadFields()" />
-            <span class="text-gray-700">Patient/User</span>
+          <label class="signupRole flex items-center space-x-2 p-3 border rounded-xl cursor-pointer">
+            <input type="radio" name="role" value="patient" checked>
+            <span>Patient/User</span>
           </label>
 
-          <label class="flex items-center space-x-2 border-2 border-gray-200 rounded-lg p-3 hover:border-gray-300 cursor-pointer">
-            <input type="radio" name="role" value="donor" class="text-red-600 focus:ring-red-500" onchange="showUploadFields()" />
-            <span class="text-gray-700">Blood Donor</span>
+          <label class="signupRole flex items-center space-x-2 p-3 border rounded-xl cursor-pointer">
+            <input type="radio" name="role" value="donor">
+            <span>Blood Donor</span>
           </label>
         </div>
       </div>
 
-      <!-- Signup Form -->
-      <div class="bg-white rounded-lg shadow-sm p-6">
-        <form class="space-y-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Full Name</label>
-            <input type="text" placeholder="Enter your full name"
-              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
-          </div>
+      <!-- SIGNUP FORM -->
+      <form id="signupForm" class="space-y-5">
+        <input id="fullname" type="text" placeholder="Full Name" class="input" required>
+        <input id="emailaddress" type="email" placeholder="Email Address" class="input" required>
+        <input id="phonenumber" type="tel" placeholder="Phone Number" class="input" required>
+        <!-- <input id="address" type="text" placeholder="Address" class="input" required> -->
+        <input id="password" type="password" placeholder="Password" class="input" required>
+        <input id="confirmpassword" type="password" placeholder="Confirm Password" class="input" required>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Email address</label>
-            <input type="email" placeholder="Enter your email"
-              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
-          </div>
+        <label class="flex items-center"><input type="checkbox" class="mr-2" required> I agree to Terms</label>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Phone Number</label>
-            <input type="tel" placeholder="Enter your phone number"
-              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
-          </div>
+        <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-xl font-medium hover:bg-red-700">
+          Create Account
+        </button>
+      </form>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Address</label>
-            <input type="text" placeholder="Enter your address"
-              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Password</label>
-              <input type="password" placeholder="Enter your password"
-                class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Confirm Password</label>
-              <input type="password" placeholder="Confirm password"
-                class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm" />
-            </div>
-          </div>
-
-          <!-- Dynamic Upload Section -->
-          <div id="uploadSection" class="space-y-4"></div>
-
-          <div class="flex items-center">
-            <input type="checkbox" id="terms" class="h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500" />
-            <label for="terms" class="ml-2 block text-sm text-gray-900">
-              I agree to the
-              <a href="#" class="text-red-600 font-medium hover:text-red-500">Terms</a> and
-              <a href="#" class="text-red-600 font-medium hover:text-red-500">Privacy Policy</a>
-            </label>
-          </div>
-
-          <button type="submit"
-            class="w-full bg-red-600 text-white py-3 rounded-md font-medium hover:bg-red-700 transition">
-            Create Account
-          </button>
-        </form>
+      <!-- GOOGLE SIGNUP -->
+      <div class="mt-4">
+        <div class="g_id_signin" data-size="large"></div>
       </div>
 
-      <!-- Switch to Login -->
-      <div class="text-center">
-        <p class="text-sm text-gray-600">
-          Already have an account?
-          <a href="#" onclick="toggleForm('login')" class="font-medium text-red-600 hover:text-red-500">Sign in here</a>
-        </p>
-      </div>
+      <p class="text-center text-sm mt-4">
+        Already have an account?
+        <button onclick="toggleForm('login')" class="text-red-600 font-medium hover:underline">Login here</button>
+      </p>
     </div>
 
   </div>
+</div>
 
-  <!-- JavaScript -->
-  <script>
-    function toggleForm(form) {
-      const login = document.getElementById("loginSection");
-      const signup = document.getElementById("signupSection");
 
-      if (form === "signup") {
-        login.classList.add("hidden");
-        signup.classList.remove("hidden");
-      } else {
-        signup.classList.add("hidden");
-        login.classList.remove("hidden");
-      }
+<!-- JS -->
+
+<script>
+function toggleForm(form) {
+  document.getElementById("loginSection").classList.toggle("hidden", form === "signup");
+  document.getElementById("signupSection").classList.toggle("hidden", form === "login");
+}
+
+function getSelectedRoleSignup() {
+  return document.querySelector("input[name='role']:checked")?.value || "patient";
+}
+
+// Handle Google login/signup
+window.handleGoogleLogin = async (response) => {
+    console.log("Google credential token:", response.credential);
+
+    const isLogin = !document.getElementById("loginSection").classList.contains("hidden");
+    const signup_role = getSelectedRoleSignup();
+
+    try {
+        if (isLogin) {
+            // LOGIN FLOW
+            const res = await fetch("http://localhost:8000/loginsignup/google_login/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ credential: response.credential })
+            });
+
+            const data = await res.json();
+            console.log("Login attempt:", data);
+if (data.success) {
+    alert(`Welcome ${data.fullname}!`);
+
+    // Show priority modal
+    document.getElementById("priorityModal").classList.remove("hidden");
+
+    // Store user type for redirect
+    localStorage.setItem("user_type", data.user_type);
+}
+
+
+        } else {
+            // SIGNUP FLOW
+            const res = await fetch("http://localhost:8000/loginsignup/google_signup/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    credential: response.credential,
+                    user_type: signup_role
+                })
+            });
+
+            const data = await res.json();
+            console.log("Signup attempt:", data);
+
+            if (!data.success) return alert(data.message);
+
+            const code = prompt("Enter the verification code sent to your email:");
+            if (!code) return;
+
+            const verifyRes = await fetch("http://localhost:8000/loginsignup/verify-code/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: data.email, code })
+            });
+
+            const verifyData = await verifyRes.json();
+            if (verifyData.success) {
+                alert("Verification successful! You can now login.");
+                toggleForm("login"); // switch to login form
+            } else {
+                alert("Invalid verification code.");
+            }
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("Unexpected error occurred.");
     }
+};
+document.getElementById("signupForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    function showUploadFields() {
-      const role = document.querySelector('input[name="role"]:checked').value;
-      const uploadSection = document.getElementById("uploadSection");
+    const payload = {
+        fullname: document.getElementById("fullname").value,
+        emailaddress: document.getElementById("emailaddress").value,
+        phonenumber: document.getElementById("phonenumber").value,
+        address: document.getElementById("address").value,
+        password: document.getElementById("password").value,
+        confirmpassword: document.getElementById("confirmpassword").value,
+    };
 
-      if (role === "patient") {
-        uploadSection.innerHTML = `
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Upload Blood Request Document</label>
-            <input type="file" accept="image/*, .pdf"
-              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm bg-white" />
-          </div>
-        `;
-      } else if (role === "donor") {
-        uploadSection.innerHTML = `
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Upload Citizenship Photo</label>
-            <input type="file" accept="image/*"
-              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm bg-white" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Upload Selfie</label>
-            <input type="file" accept="image/*"
-              class="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-red-500 focus:border-red-500 text-sm bg-white" />
-          </div>
-        `;
-      }
+    const res = await fetch("http://localhost:8000/patient/signup/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    alert(data.message);
+
+    if (data.success) {
+        toggleForm("login");
     }
+});
+// Handle Modal Buttons
+document.getElementById("urgentBtn").addEventListener("click", () => {
+    const role = localStorage.getItem("user_type");
 
-    // Initialize default view
-    showUploadFields();
-  </script>
+    if (role === "patient") {
+        window.location.href = "blood_request.html";
+    } else {
+        alert("Only patients can request blood.");
+        window.location.href = "dashboard.html";
+    }
+});
 
-    </body>
-  </html>
+document.getElementById("skipBtn").addEventListener("click", () => {
+    window.location.href = "dashboard.html";
+});
+
+</script>
+
+
+<style>
+.input { @apply w-full border px-3 py-2 rounded-md focus:ring-red-500 focus:border-red-500; }
+.signupRole input:checked + span { @apply text-red-600 font-semibold; }
+</style>
+<!-- PRIORITY POPUP MODAL -->
+<div id="priorityModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden">
+  <div class="bg-white w-11/12 max-w-md rounded-xl p-6 shadow-xl text-center">
+
+    <h2 class="text-2xl font-semibold text-gray-900">Need Blood Urgently?</h2>
+    <p class="text-gray-600 mt-2">If this is an emergency, you can request blood immediately.</p>
+
+    <div class="mt-6 space-y-4">
+      <button id="urgentBtn"
+              class="w-full bg-red-600 text-white py-3 rounded-lg text-lg font-medium hover:bg-red-700">
+        Request Blood
+      </button>
+
+      <button id="skipBtn"
+              class="w-full border border-gray-300 py-3 rounded-lg text-lg font-medium hover:bg-gray-100">
+        Skip to Dashboard
+      </button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -30,16 +30,18 @@ INSTALLED_APPS = [
 
     # Your custom apps
     'loginsignup',
+    'corsheaders',
     
 ]
 
 MIDDLEWARE = [
+     'corsheaders.middleware.CorsMiddleware',   
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'allauth.account.middleware.AccountMiddleware',  # Required for allauth
+    'allauth.account.middleware.AccountMiddleware',  
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -157,3 +159,31 @@ import os
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 SECRET_KEY = '@w@3^rb^nags)z83aizm830i!_c(%4i+8bd14pfw9k259ah+(j'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:8000",  # Django backend itself (optional)
+    "http://localhost:8000",  # Django backend
+    "http://127.0.0.1:5500",  # your frontend origin
+    "http://localhost:5500",
+]
+
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'accept',
+    'authorization',
+    'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'DELETE',
+    'OPTIONS',
+]
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'harshanabhandari2@gmail.com'
+EMAIL_HOST_PASSWORD = 'xooq mnge rekx cyrk' 
