@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blood Request Dashboard</title>
     <link href="../../dist/output.css" rel="stylesheet">
+    <!-- Font Awesome CDN -->
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-pIVz5f8Xc5X7ZpLxgZ5yY3L9w+qk5m5N7xw1Y8lq6K3kM7k1F6f4bq7pZ9R5y3xYtF9I4F7K5Q6T8F9k6R7Q==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
 
+<!-- 
   <script>
     tailwind.config = {
       theme: {
@@ -19,8 +22,8 @@
         },
       },
     }
-  </script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+  </script> -->
+    <!-- <script src="https://unpkg.com/lucide@latest"></script> -->
     <style>
         .section { display: none; }
         .section.active { display: block; }
@@ -35,36 +38,58 @@
                 <!-- Logo -->
                 <div class="flex items-center justify-center h-16 border-b border-gray-200">
                     <div class="flex items-center space-x-2">
-                        <i data-lucide="droplets" class="text-red-600 w-8 h-8"></i>
+                        <img src="/assets/remixicon/icons/Buildings/home-2-fill.svg" class="w-8 h-8" />
+
+
                         <span class="text-xl font-bold text-gray-900">Blood Bank</span>
                     </div>
                 </div>
 
-                <!-- Navigation -->
-                <nav class="flex-1 px-4 py-6 space-y-2">
-                    <button onclick="showSection('dashboard')" class="nav-item active w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
-                        <i data-lucide="home" class="w-5 h-5"></i>
-                        <span>Dashboard</span>
-                    </button>
-                    <button onclick="showSection('request')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
-                        <i data-lucide="plus" class="w-5 h-5"></i>
-                        <span>Request Blood</span>
-                    </button>
-                    <button onclick="showSection('history')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
-                        <i data-lucide="history" class="w-5 h-5"></i>
-                        <span>Request History</span>
-                    </button>
-                    <button onclick="showSection('profile')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
-                        <i data-lucide="user" class="w-5 h-5"></i>
-                        <span>Profile</span>
-                    </button>
-                </nav>
+               
+<div class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-10">
+    <div class="flex flex-col h-full">
+        <!-- Logo -->
+        <div class="flex items-center justify-center h-16 border-b border-gray-200">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-tint text-red-600 w-8 h-8"></i>
+                <span class="text-xl font-bold text-gray-900">Blood Bank</span>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 px-4 py-6 space-y-2">
+            <button onclick="showSection('dashboard')" class="nav-item active w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                <img src="../assets/remixicon/icons/Buildings/home-2-fill.svg"
+     class="w-6 h-6" alt="dashboard" />
+
+                <span>Dashboard</span>
+            </button>
+            <button onclick="showSection('request')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                <img src="../assets/remixicon/icons/System/history-fill.svg"
+     class="w-6 h-6" alt="request history" />
+
+                <span>Request Blood</span>
+            </button>
+            <button onclick="showSection('history')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                <img src="../assets/remixicon/icons/Document/file-history-fill.svg"
+     class="w-6 h-6" alt="request history" />
+                <span>Request History</span>
+            </button>
+            <!-- Redirect to profile.html -->
+            <button onclick="window.location.href='profile.html'" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                <img src="../assets/remixicon/icons/User & Faces/user-3-fill.svg"
+     class="w-6 h-6" alt="profile" />
+                <span>Profile</span>
+            </button>
+        </nav>
+    </div>
+</div>
 
                 <!-- User Info -->
                 <div class="border-t border-gray-200 p-4">
                     <div class="flex items-center space-x-3">
                         <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                            <i data-lucide="user" class="w-5 h-5 text-red-600"></i>
+                            <i class="fas fa-user w-5 h-5 text-red-600"></i>
                         </div>
                         <div class="flex-1">
                             <p class="text-sm font-medium text-gray-900">John Doe</p>
@@ -89,7 +114,7 @@
                             <h1 class="text-2xl font-bold">Welcome back, John Doe!</h1>
                             <p class="text-blue-100 mt-1">Your blood request status and donor matches are updated below.</p>
                         </div>
-                        <i data-lucide="heart" class="hidden md:block w-16 h-16 text-blue-200"></i>
+                        <i class="fas fa-heart hidden md:block w-16 h-16 text-blue-200"></i>
                     </div>
                 </div>
 
@@ -98,7 +123,7 @@
                     <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                         <div class="flex items-center">
                             <div class="p-2 bg-blue-100 rounded-lg">
-                                <i data-lucide="file-text" class="w-6 h-6 text-blue-600"></i>
+                               <i class="fas fa-file-alt w-6 h-6 text-blue-600"></i>
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600">Total Requests</p>
@@ -110,7 +135,7 @@
                     <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                         <div class="flex items-center">
                             <div class="p-2 bg-yellow-100 rounded-lg">
-                                <i data-lucide="clock" class="w-6 h-6 text-yellow-600"></i>
+                                <i class="fas fa-clock w-6 h-6 text-yellow-600"></i>
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600">Pending</p>
@@ -122,7 +147,7 @@
                     <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                         <div class="flex items-center">
                             <div class="p-2 bg-green-100 rounded-lg">
-                                <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
+                                <i class="fas fa-check-circle w-6 h-6 text-green-600"></i>
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600">Approved</p>
@@ -134,7 +159,7 @@
                     <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                         <div class="flex items-center">
                             <div class="p-2 bg-red-100 rounded-lg">
-                                <i data-lucide="heart" class="w-6 h-6 text-red-600"></i>
+                                <i class="fas fa-heart w-6 h-6 text-red-600"></i>
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600">Received</p>
@@ -163,7 +188,9 @@
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-lg font-medium text-gray-900">Your Blood Requests</h3>
                                 <button onclick="showSection('request')" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center space-x-2">
-                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                    <img src="../assets/remixicon/icons/System/add-line.svg"
+     class="w-6 h-6" alt="add" />
+
                                     <span>New Request</span>
                                 </button>
                             </div>
@@ -184,7 +211,7 @@
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
-                                                    <i data-lucide="droplets" class="w-4 h-4 text-red-500 mr-2"></i>
+                                                    <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
                                                     <span class="text-sm font-medium text-gray-900">O+</span>
                                                 </div>
                                             </td>
@@ -204,7 +231,7 @@
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
-                                                    <i data-lucide="droplets" class="w-4 h-4 text-red-500 mr-2"></i>
+                                                    <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
                                                     <span class="text-sm font-medium text-gray-900">A+</span>
                                                 </div>
                                             </td>
@@ -221,7 +248,7 @@
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
-                                                    <i data-lucide="droplets" class="w-4 h-4 text-red-500 mr-2"></i>
+                                                    <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
                                                     <span class="text-sm font-medium text-gray-900">B+</span>
                                                 </div>
                                             </td>
@@ -247,29 +274,29 @@
                                 <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                                     <div class="flex items-center justify-between mb-3">
                                         <div class="flex items-center space-x-2">
-                                            <i data-lucide="heart" class="w-5 h-5 text-red-500"></i>
+                                            <i class="fas fa-heart w-5 h-5 text-red-500"></i>
                                             <span class="font-medium text-gray-900">Jane Smith</span>
                                         </div>
                                         <span class="text-sm text-gray-500">O+</span>
                                     </div>
                                     <div class="space-y-2 text-sm text-gray-600">
                                         <div class="flex items-center">
-                                            <i data-lucide="map-pin" class="w-4 h-4 mr-2"></i>
+                                            <i class="fas fa-map-pin w-4 h-4 mr-2"></i>
                                             <span>Kathmandu (2.5 km)</span>
                                         </div>
                                         <div class="flex items-center">
-                                            <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
+                                            <i class="fas fa-calendar w-4 h-4 mr-2"></i>
                                             <span>Last donation: 2024-01-15</span>
                                         </div>
                                         <div class="flex items-center">
-                                            <i data-lucide="heart" class="w-4 h-4 mr-2"></i>
+                                            <i class="fas fa-heart w-4 h-4 mr-2"></i>
                                             <span>5 total donations</span>
                                         </div>
                                     </div>
                                     <div class="mt-4 flex space-x-2">
                                         <button onclick="showNotification('Contacting Jane Smith')" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">Contact</button>
                                         <button class="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300">
-                                            <i data-lucide="phone" class="w-4 h-4"></i>
+                                            <i class="fas fa-phone w-4 h-4"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -277,29 +304,29 @@
                                 <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
                                     <div class="flex items-center justify-between mb-3">
                                         <div class="flex items-center space-x-2">
-                                            <i data-lucide="heart" class="w-5 h-5 text-red-500"></i>
+                                            <i class="fas fa-heart w-5 h-5 text-red-500"></i>
                                             <span class="font-medium text-gray-900">Mike Johnson</span>
                                         </div>
                                         <span class="text-sm text-gray-500">O+</span>
                                     </div>
                                     <div class="space-y-2 text-sm text-gray-600">
                                         <div class="flex items-center">
-                                            <i data-lucide="map-pin" class="w-4 h-4 mr-2"></i>
+                                            <i class="fas fa-map-pin w-4 h-4 mr-2"></i>
                                             <span>Lalitpur (5.1 km)</span>
                                         </div>
                                         <div class="flex items-center">
-                                            <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
+                                            <i class="fas fa-calendar w-4 h-4 mr-2"></i>
                                             <span>Last donation: 2024-01-10</span>
                                         </div>
                                         <div class="flex items-center">
-                                            <i data-lucide="heart" class="w-4 h-4 mr-2"></i>
+                                            <i class="fas fa-heart w-4 h-4 mr-2"></i>
                                             <span>3 total donations</span>
                                         </div>
                                     </div>
                                     <div class="mt-4 flex space-x-2">
                                         <button onclick="showNotification('Contacting Mike Johnson')" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">Contact</button>
                                         <button class="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300">
-                                            <i data-lucide="phone" class="w-4 h-4"></i>
+                                            <i class="fas fa-phone w-4 h-4"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -313,7 +340,7 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <button onclick="showSection('request')" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition-colors text-left">
-                            <i data-lucide="plus" class="w-6 h-6 text-red-500 mr-3"></i>
+                            <i class="fas fa-plus w-6 h-6 text-red-500 mr-3"></i>
                             <div>
                                 <p class="font-medium text-gray-900">Request Blood</p>
                                 <p class="text-sm text-gray-500">Submit a new blood request</p>
@@ -321,7 +348,7 @@
                         </button>
 
                         <button onclick="showSection('history')" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-left">
-                            <i data-lucide="history" class="w-6 h-6 text-blue-500 mr-3"></i>
+                            <i class="fas fa-history w-6 h-6 text-blue-500 mr-3"></i>
                             <div>
                                 <p class="font-medium text-gray-900">View History</p>
                                 <p class="text-sm text-gray-500">Check your request history</p>
@@ -329,7 +356,7 @@
                         </button>
 
                         <button onclick="showSection('profile')" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors text-left">
-                            <i data-lucide="user" class="w-6 h-6 text-green-500 mr-3"></i>
+                            <i class="fas fa-user w-6 h-6 text-green-500 mr-3"></i>
                             <div>
                                 <p class="font-medium text-gray-900">Update Profile</p>
                                 <p class="text-sm text-gray-500">Manage your information</p>
@@ -346,7 +373,7 @@
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                         <div class="flex items-center space-x-3">
                             <div class="p-2 bg-red-100 rounded-lg">
-                                <i data-lucide="plus" class="w-6 h-6 text-red-600"></i>
+                                <i class="fas fa-plus w-4 h-4"></i>
                             </div>
                             <div>
                                 <h1 class="text-2xl font-bold text-gray-900">Request Blood</h1>
@@ -393,7 +420,7 @@
                                     <label class="relative flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
                                         <input type="radio" name="urgency" value="Critical" required class="sr-only">
                                         <div class="p-2 rounded-full bg-red-100">
-                                            <i data-lucide="alert-circle" class="w-4 h-4 text-red-600"></i>
+                                            <i class="fas fa-exclamation-circle w-4 h-4 text-red-600"></i>
                                         </div>
                                         <div class="ml-3">
                                             <p class="text-sm font-medium text-gray-900">Critical</p>
@@ -404,7 +431,7 @@
                                     <label class="relative flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
                                         <input type="radio" name="urgency" value="High" class="sr-only">
                                         <div class="p-2 rounded-full bg-orange-100">
-                                            <i data-lucide="alert-circle" class="w-4 h-4 text-orange-600"></i>
+                                            <i class="fas fa-exclamation-circle w-4 h-4 text-orange-600"></i>
                                         </div>
                                         <div class="ml-3">
                                             <p class="text-sm font-medium text-gray-900">High</p>
@@ -415,7 +442,7 @@
                                     <label class="relative flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
                                         <input type="radio" name="urgency" value="Medium" class="sr-only">
                                         <div class="p-2 rounded-full bg-yellow-100">
-                                            <i data-lucide="alert-circle" class="w-4 h-4 text-yellow-600"></i>
+                                            <i class="fas fa-exclamation-circle w-4 h-4 text-yellow-600"></i>
                                         </div>
                                         <div class="ml-3">
                                             <p class="text-sm font-medium text-gray-900">Medium</p>
@@ -426,7 +453,7 @@
                                     <label class="relative flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
                                         <input type="radio" name="urgency" value="Low" class="sr-only">
                                         <div class="p-2 rounded-full bg-green-100">
-                                            <i data-lucide="alert-circle" class="w-4 h-4 text-green-600"></i>
+                                            <i class="fas fa-exclamation-circle w-4 h-4 text-green-600"></i>
                                         </div>
                                         <div class="ml-3">
                                             <p class="text-sm font-medium text-gray-900">Low</p>
@@ -483,7 +510,7 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Hospital Verification Document *</label>
                                     <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                                        <i data-lucide="upload" class="mx-auto w-12 h-12 text-gray-400"></i>
+                                        <i class="fas fa-upload mx-auto w-12 h-12 text-gray-400"></i>
                                         <div class="mt-4">
                                             <label class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 cursor-pointer inline-block">
                                                 Upload Hospital Document
@@ -502,7 +529,7 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Doctor's Note *</label>
                                     <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                                        <i data-lucide="file-text" class="mx-auto w-12 h-12 text-gray-400"></i>
+                                        <i class="fas fa-file-alt mx-auto w-12 h-12 text-gray-400"></i>
                                         <div class="mt-4">
                                             <label class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 cursor-pointer inline-block">
                                                 Upload Doctor's Note
@@ -512,7 +539,7 @@
                                         <p class="mt-2 text-xs text-gray-500">PDF, JPG, PNG up to 5MB</p>
                                     </div>
                                     <div id="doctorNote-status" class="mt-2 hidden text-sm text-green-600 flex items-center">
-                                        <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i>
+                                        <i class="fas fa-check-circle w-4 h-4 mr-2"></i>
                                         <span></span>
                                     </div>
                                 </div>
@@ -531,7 +558,7 @@
                                     Cancel
                                 </button>
                                 <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 flex items-center space-x-2">
-                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                    <i class="fas fa-plus w-4 h-4"></i>
                                     <span>Submit Request</span>
                                 </button>
                             </div>
@@ -546,7 +573,7 @@
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                         <div class="flex items-center space-x-3 mb-6">
                             <div class="p-2 bg-blue-100 rounded-lg">
-                                <i data-lucide="history" class="w-6 h-6 text-blue-600"></i>
+                                <i class="fas fa-history w-6 h-6 text-blue-600"></i>
                             </div>
                             <div>
                                 <h1 class="text-2xl font-bold text-gray-900">Request History</h1>
@@ -572,7 +599,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-15</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
-                                                <i data-lucide="droplets" class="w-4 h-4 text-red-500 mr-2"></i>
+                                                <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
                                                 <span class="text-sm font-medium">O+</span>
                                             </div>
                                         </td>
@@ -589,7 +616,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-20</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
-                                                <i data-lucide="droplets" class="w-4 h-4 text-red-500 mr-2"></i>
+                                                <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
                                                 <span class="text-sm font-medium">A+</span>
                                             </div>
                                         </td>
@@ -606,7 +633,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-10</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
-                                                <i data-lucide="droplets" class="w-4 h-4 text-red-500 mr-2"></i>
+                                                <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
                                                 <span class="text-sm font-medium">B+</span>
                                             </div>
                                         </td>
@@ -637,332 +664,144 @@
                                 <p class="text-gray-600 mt-1">Manage your account settings and personal information</p>
                             </div>
                             <button onclick="showNotification('Logged out successfully!')" class="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-800 flex items-center space-x-2">
-                                <i data-lucide="log-out" class="w-4 h-4"></i>
+                                <i class="fas fa-sign-out-alt w-4 h-4"></i>
                                 <span>Logout</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Personal Information -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                        <div class="p-6 border-b border-gray-200 flex items-center justify-between">
-                            <h2 class="text-lg font-semibold text-gray-900">Personal Information</h2>
-                            <button onclick="toggleEdit('personal')" class="text-gray-600 hover:text-gray-900 flex items-center space-x-1">
-                                <i data-lucide="edit-2" class="w-4 h-4"></i>
-                                <span class="text-sm">Edit</span>
-                            </button>
-                        </div>
-                        <div class="p-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Full Name</label>
-                                    <p class="text-gray-900 font-medium">John Doe</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Email Address</label>
-                                    <p class="text-gray-900 font-medium">john.doe@email.com</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Phone Number</label>
-                                    <p class="text-gray-900 font-medium">+1 (555) 123-4567</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Date of Birth</label>
-                                    <p class="text-gray-900 font-medium">January 15, 1990</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Gender</label>
-                                    <p class="text-gray-900 font-medium">Male</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Blood Type</label>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-900 text-white">
-                                        A+
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Contact Information -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                        <div class="p-6 border-b border-gray-200 flex items-center justify-between">
-                            <h2 class="text-lg font-semibold text-gray-900">Contact Information</h2>
-                            <button onclick="toggleEdit('contact')" class="text-gray-600 hover:text-gray-900 flex items-center space-x-1">
-                                <i data-lucide="edit-2" class="w-4 h-4"></i>
-                                <span class="text-sm">Edit</span>
-                            </button>
-                        </div>
-                        <div class="p-6">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div class="md:col-span-3">
-                                    <label class="block text-sm text-gray-600 mb-1">Street Address</label>
-                                    <p class="text-gray-900 font-medium">123 Main Street, Apt 4B</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">City</label>
-                                    <p class="text-gray-900 font-medium">New York</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">State</label>
-                                    <p class="text-gray-900 font-medium">NY</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">ZIP Code</label>
-                                    <p class="text-gray-900 font-medium">10001</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Medical Information -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                        <div class="p-6 border-b border-gray-200 flex items-center justify-between">
-                            <h2 class="text-lg font-semibold text-gray-900">Medical Information</h2>
-                            <button onclick="toggleEdit('medical')" class="text-gray-600 hover:text-gray-900 flex items-center space-x-1">
-                                <i data-lucide="edit-2" class="w-4 h-4"></i>
-                                <span class="text-sm">Edit</span>
-                            </button>
-                        </div>
-                        <div class="p-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Weight</label>
-                                    <p class="text-gray-900 font-medium">75 kg</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Height</label>
-                                    <p class="text-gray-900 font-medium">180 cm</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Allergies</label>
-                                    <p class="text-gray-900 font-medium">Penicillin, Peanuts</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Medical Conditions</label>
-                                    <p class="text-gray-900 font-medium">None reported</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Emergency Contact -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                        <div class="p-6 border-b border-gray-200 flex items-center justify-between">
-                            <h2 class="text-lg font-semibold text-gray-900">Emergency Contact</h2>
-                            <button onclick="toggleEdit('emergency')" class="text-gray-600 hover:text-gray-900 flex items-center space-x-1">
-                                <i data-lucide="edit-2" class="w-4 h-4"></i>
-                                <span class="text-sm">Edit</span>
-                            </button>
-                        </div>
-                        <div class="p-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Contact Name</label>
-                                    <p class="text-gray-900 font-medium">Jane Doe</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Relationship</label>
-                                    <p class="text-gray-900 font-medium">Spouse</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Phone Number</label>
-                                    <p class="text-gray-900 font-medium">+1 (555) 987-6543</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm text-gray-600 mb-1">Email Address</label>
-                                    <p class="text-gray-900 font-medium">jane.doe@email.com</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Account Settings -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                        <div class="p-6 border-b border-gray-200">
-                            <h2 class="text-lg font-semibold text-gray-900">Account Settings</h2>
-                        </div>
-                        <div class="p-6">
-                            <div class="space-y-4">
-                                <div class="flex items-center justify-between py-3 border-b border-gray-200">
-                                    <div>
-                                        <p class="text-gray-900 font-medium">Email Notifications</p>
-                                        <p class="text-sm text-gray-600">Receive updates about blood requests</p>
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" checked class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
-                                    </label>
-                                </div>
-                                <div class="flex items-center justify-between py-3 border-b border-gray-200">
-                                    <div>
-                                        <p class="text-gray-900 font-medium">SMS Notifications</p>
-                                        <p class="text-sm text-gray-600">Get text messages for urgent requests</p>
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" checked class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
-                                    </label>
-                                </div>
-                                <div class="flex items-center justify-between py-3">
-                                    <div>
-                                        <p class="text-gray-900 font-medium">Push Notifications</p>
-                                        <p class="text-sm text-gray-600">Receive app notifications</p>
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+   div>
     </div>
 
-    <!-- Notification Toast -->
-    <div id="notification" class="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg hidden transform transition-all duration-300">
-        <div class="flex items-center space-x-2">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
-            <span id="notificationText"></span>
-        </div>
-    </div>
+    <!-- ~~~{"id":"55682","variant":"standard","title":"Full Dashboard Script with Editable Profile"} -->
+<script>
 
-    <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
+document.addEventListener("DOMContentLoaded", async function() {
+    const email = localStorage.getItem("user_email"); // user email from login
 
-        // Navigation
-        function showSection(sectionId) {
-            // Hide all sections
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            // Show selected section
-            document.getElementById(sectionId).classList.add('active');
-            
-            // Update nav items
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active', 'bg-red-50', 'text-red-600');
-            });
-            event.target.closest('.nav-item').classList.add('active', 'bg-red-50', 'text-red-600');
-            
-            // Reinitialize icons
-            lucide.createIcons();
+    /* REMOVE LUCIDE COMPLETELY — no initialization needed */
+
+    
+
+    
+
+    // LOGOUT
+    window.logout = function() {
+        localStorage.removeItem("user_email");
+        window.location.href = "login.html";
+    };
+
+    // NAVIGATION
+    window.showSection = function(sectionId) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active', 'bg-red-50', 'text-red-600'));
+        event.target.closest('.nav-item').classList.add('active', 'bg-red-50', 'text-red-600');
+    };
+
+    // dashboard.js
+window.showTab = function(tabName) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+    const target = document.getElementById(tabName + '-tab');
+    if(target) target.classList.remove('hidden');
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-red-500', 'text-red-600');
+        btn.classList.add('border-transparent', 'text-gray-500');
+    });
+
+    if(event.target) {
+        event.target.classList.add('border-red-500', 'text-red-600');
+        event.target.classList.remove('border-transparent', 'text-gray-500');
+    }
+};
+
+
+    // NOTIFICATION
+    window.showNotification = function(message) {
+        const notification = document.getElementById('notification');
+        const text = document.getElementById('notificationText');
+        text.textContent = message;
+        notification.classList.remove('hidden');
+
+        setTimeout(() => notification.classList.add('hidden'), 3000);
+    };
+
+    // CONFIRM RECEIPT
+    window.confirmReceipt = function() {
+        showNotification('Blood receipt confirmed! Thank you for the feedback.');
+    };
+
+    // FILE UPLOAD
+    window.handleFileUpload = function(fieldId, input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const status = document.getElementById(fieldId + '-status');
+            const span = status.querySelector('span');
+            span.textContent = file.name;
+            status.classList.remove('hidden');
         }
+    };
 
-        // Tab switching
-        function showTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.add('hidden');
+    // BLOOD GROUP COMPATIBILITY
+    const bloodGroupCompatibility = {
+        'A+': ['A+', 'AB+'],
+        'A-': ['A+', 'A-', 'AB+', 'AB-'],
+        'B+': ['B+', 'AB+'],
+        'B-': ['B+', 'B-', 'AB+', 'AB-'],
+        'AB+': ['AB+'],
+        'AB-': ['AB+', 'AB-'],
+        'O+': ['A+', 'B+', 'AB+', 'O+'],
+        'O-': ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+    };
+
+    document.getElementById('bloodGroup')?.addEventListener('change', function(e) {
+        const selectedGroup = e.target.value;
+        const compatibleInfo = document.getElementById('compatibleInfo');
+        const compatibleList = document.getElementById('compatibleList');
+
+        if (selectedGroup && bloodGroupCompatibility[selectedGroup]) {
+            const compatible = bloodGroupCompatibility[selectedGroup];
+
+            compatibleList.innerHTML = compatible.map(bg =>
+                `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                ${bg===selectedGroup?'bg-red-100 text-red-800':'bg-blue-100 text-blue-800'}">
+                    <i class="fas fa-tint w-3 h-3 mr-1"></i> ${bg}
+                </span>`
+            ).join('');
+
+            compatibleInfo.classList.remove('hidden');
+        } else {
+            compatibleInfo.classList.add('hidden');
+        }
+    });
+
+    // BLOOD REQUEST FORM
+    document.getElementById('bloodRequestForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        showNotification('Blood request submitted successfully! Admin will review and approve.');
+        setTimeout(() => showSection('dashboard'), 2000);
+    });
+
+    // RADIO BUTTON STYLING
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const parent = this.closest('.grid');
+            parent.querySelectorAll('label').forEach(label => {
+                label.classList.remove('border-red-300', 'bg-red-50');
+                label.classList.add('border-gray-200');
             });
-            document.getElementById(tabName + '-tab').classList.remove('hidden');
-            
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('border-red-500', 'text-red-600');
-                btn.classList.add('border-transparent', 'text-gray-500');
-            });
-            event.target.classList.add('border-red-500', 'text-red-600');
-            event.target.classList.remove('border-transparent', 'text-gray-500');
-            
-            lucide.createIcons();
-        }
-
-        // Notification
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            const text = document.getElementById('notificationText');
-            text.textContent = message;
-            notification.classList.remove('hidden');
-            
-            setTimeout(() => {
-                notification.classList.add('hidden');
-            }, 3000);
-            
-            lucide.createIcons();
-        }
-
-        // Confirm receipt
-        function confirmReceipt() {
-            showNotification('Blood receipt confirmed! Thank you for the feedback.');
-        }
-
-        // File upload handler
-        function handleFileUpload(fieldId, input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const status = document.getElementById(fieldId + '-status');
-                const span = status.querySelector('span');
-                span.textContent = file.name;
-                status.classList.remove('hidden');
-                lucide.createIcons();
+            if (this.checked) {
+                this.closest('label').classList.add('border-red-300', 'bg-red-50');
+                this.closest('label').classList.remove('border-gray-200');
             }
-        }
-
-        // Blood group compatibility
-        const bloodGroupCompatibility = {
-            'A+': ['A+', 'AB+'],
-            'A-': ['A+', 'A-', 'AB+', 'AB-'],
-            'B+': ['B+', 'AB+'],
-            'B-': ['B+', 'B-', 'AB+', 'AB-'],
-            'AB+': ['AB+'],
-            'AB-': ['AB+', 'AB-'],
-            'O+': ['A+', 'B+', 'AB+', 'O+'],
-            'O-': ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
-        };
-
-        // Show compatible blood groups
-        document.getElementById('bloodGroup')?.addEventListener('change', function(e) {
-            const selectedGroup = e.target.value;
-            const compatibleInfo = document.getElementById('compatibleInfo');
-            const compatibleList = document.getElementById('compatibleList');
-            
-            if (selectedGroup && bloodGroupCompatibility[selectedGroup]) {
-                const compatible = bloodGroupCompatibility[selectedGroup];
-                compatibleList.innerHTML = compatible.map(bg => 
-                    `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${bg === selectedGroup ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">
-                        <i data-lucide="droplets" class="w-3 h-3 mr-1"></i>
-                        ${bg}
-                    </span>`
-                ).join('');
-                compatibleInfo.classList.remove('hidden');
-                lucide.createIcons();
-            } else {
-                compatibleInfo.classList.add('hidden');
-            }
         });
+    });
 
-        // Form submission
-        document.getElementById('bloodRequestForm')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            showNotification('Blood request submitted successfully! Admin will review and approve.');
-            setTimeout(() => {
-                showSection('dashboard');
-            }, 2000);
-        });
+});
+</script>
 
-        // Radio button styling
-        document.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const parent = this.closest('.grid');
-                parent.querySelectorAll('label').forEach(label => {
-                    label.classList.remove('border-red-300', 'bg-red-50');
-                    label.classList.add('border-gray-200');
-                });
-                if (this.checked) {
-                    this.closest('label').classList.add('border-red-300', 'bg-red-50');
-                    this.closest('label').classList.remove('border-gray-200');
-                }
-            });
-        });
 
-        // Initialize icons on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            lucide.createIcons();
-        });
-    </script>
 </body>
 </html>

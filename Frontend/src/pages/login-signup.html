@@ -3,35 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>RedDrop | Login</title>
 
-  <!-- Tailwind -->
-<link href="../../dist/output.css" rel="stylesheet">
+  <!-- Tailwind CSS (compiled output) -->
+<link href="../../dist/output.css" rel="stylesheet" />
 
+<!-- ICONS -->
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+
+<!-- Google Login -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
+
+
+  <!-- Tailwind Config
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            'hlb-red': '#B91C1C',
-            'hlb-bg': '#FFF5F5',
-            'hlb-lightRed': '#FEE2E2',
-            'hlb-darkRed': '#991B1B',
+            "hlb-red": "#B91C1C",
+            "hlb-bg": "#FFF5F5",
+            "hlb-lightRed": "#FEE2E2",
+            "hlb-darkRed": "#991B1B",
           },
         },
       },
     }
-  </script>
+  </script> -->
 
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    .input { @apply w-full border px-3 py-2 rounded-md focus:ring-red-500 focus:border-red-500; }
+    .signupRole input:checked + span { @apply text-red-600 font-semibold; }
+  </style>
 </head>
 
 <body class="min-h-screen bg-hlb-bg text-gray-800 font-sans flex items-center justify-center p-6">
 
 <div class="w-full max-w-4xl bg-white shadow-xl rounded-2xl overflow-hidden grid md:grid-cols-2">
 
-  <!-- LEFT Panel -->
+  <!-- LEFT PANEL -->
   <div class="bg-red-600 text-white p-10 flex flex-col justify-between">
     <div>
       <h1 class="text-4xl font-bold">RedDrop</h1>
@@ -39,34 +50,30 @@
     </div>
 
     <div class="space-y-4 mt-10">
-      <div class="flex items-center space-x-3"><span class="text-xl">🛡</span><p>Secure & Private</p></div>
-      <div class="flex items-center space-x-3"><span class="text-xl">⏰</span><p>24/7 Access</p></div>
-      <div class="flex items-center space-x-3"><span class="text-xl">👥</span><p>Community Driven</p></div>
+      <div class="flex items-center space-x-3"><i class="ri-shield-check-line text-2xl"></i><p>Secure & Private</p></div>
+      <div class="flex items-center space-x-3"><i class="ri-time-line text-2xl"></i><p>24/7 Access</p></div>
+      <div class="flex items-center space-x-3"><i class="ri-team-line text-2xl"></i><p>Community Driven</p></div>
     </div>
   </div>
 
-  <!-- RIGHT Panel -->
+  <!-- RIGHT PANEL -->
   <div class="p-10">
 
-    <!-- LOGIN Section -->
+    <!-- LOGIN SECTION -->
     <div id="loginSection" class="space-y-8">
-
       <h2 class="text-3xl font-semibold text-gray-900">Welcome Back</h2>
       <p class="text-gray-600">Sign in to access your account</p>
 
       <!-- LOGIN FORM -->
       <form id="loginForm" class="space-y-6">
-
         <div>
           <label class="text-sm text-gray-700">Email Address</label>
-          <input id="loginEmail" type="email" placeholder="you@example.com"
-                 class="w-full mt-1 border px-3 py-2 rounded-md focus:ring-red-500 focus:border-red-500" required>
+          <input id="loginEmail" type="email" placeholder="you@example.com" class="input" required>
         </div>
 
         <div>
           <label class="text-sm text-gray-700">Password</label>
-          <input id="loginPassword" type="password" placeholder="Enter password"
-                 class="w-full mt-1 border px-3 py-2 rounded-md focus:ring-red-500 focus:border-red-500" required>
+          <input id="loginPassword" type="password" placeholder="Enter password" class="input" required>
         </div>
 
         <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-xl font-medium hover:bg-red-700">
@@ -74,13 +81,14 @@
         </button>
       </form>
 
-      <!-- GOOGLE LOGIN -->
+      <!-- GOOGLE LOGIN BUTTON -->
       <div class="mt-4">
         <div id="g_id_onload"
-     data-client_id="320231613519-n8ppnf9bof8r6js60el89rar1mvtl8lo.apps.googleusercontent.com"
-     data-callback="handleGoogleLogin"
-     data-auto_prompt="false">
+          data-client_id="320231613519-n8ppnf9bof8r6js60el89rar1mvtl8lo.apps.googleusercontent.com"
+          data-callback="handleGoogleLogin"
+          data-auto_prompt="false">
         </div>
+
         <div class="g_id_signin" data-type="standard" data-size="large"></div>
       </div>
 
@@ -90,13 +98,11 @@
       </p>
     </div>
 
-
-    <!-- SIGNUP Section -->
+    <!-- SIGNUP SECTION -->
     <div id="signupSection" class="hidden space-y-8">
-
       <h2 class="text-3xl font-semibold text-gray-900">Create Account</h2>
 
-      <!-- Role Selection -->
+      <!-- ROLE SELECTION -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Select Role</label>
         <div class="grid grid-cols-2 gap-3">
@@ -117,7 +123,6 @@
         <input id="fullname" type="text" placeholder="Full Name" class="input" required>
         <input id="emailaddress" type="email" placeholder="Email Address" class="input" required>
         <input id="phonenumber" type="tel" placeholder="Phone Number" class="input" required>
-        <!-- <input id="address" type="text" placeholder="Address" class="input" required> -->
         <input id="password" type="password" placeholder="Password" class="input" required>
         <input id="confirmpassword" type="password" placeholder="Confirm Password" class="input" required>
 
@@ -142,9 +147,26 @@
   </div>
 </div>
 
+<!-- POPUP MODAL -->
+<div id="priorityModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden">
+  <div class="bg-white w-11/12 max-w-md rounded-xl p-6 shadow-xl text-center">
 
-<!-- JS -->
+    <h2 class="text-2xl font-semibold text-gray-900">Need Blood Urgently?</h2>
+    <p class="text-gray-600 mt-2">If this is an emergency, you can request blood immediately.</p>
 
+    <div class="mt-6 space-y-4">
+      <button id="urgentBtn" class="w-full bg-red-600 text-white py-3 rounded-lg text-lg font-medium hover:bg-red-700">
+        Request Blood
+      </button>
+
+      <button id="skipBtn" class="w-full border border-gray-300 py-3 rounded-lg text-lg font-medium hover:bg-gray-100">
+        Skip to Dashboard
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- JAVASCRIPT -->
 <script>
 function toggleForm(form) {
   document.getElementById("loginSection").classList.toggle("hidden", form === "signup");
@@ -155,16 +177,16 @@ function getSelectedRoleSignup() {
   return document.querySelector("input[name='role']:checked")?.value || "patient";
 }
 
-// Handle Google login/signup
+/* GOOGLE LOGIN HANDLER */
 window.handleGoogleLogin = async (response) => {
-    console.log("Google credential token:", response.credential);
+    console.log("Google credential:", response.credential);
 
     const isLogin = !document.getElementById("loginSection").classList.contains("hidden");
     const signup_role = getSelectedRoleSignup();
 
     try {
         if (isLogin) {
-            // LOGIN FLOW
+            // LOGIN
             const res = await fetch("http://localhost:8000/loginsignup/google_login/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -172,20 +194,20 @@ window.handleGoogleLogin = async (response) => {
             });
 
             const data = await res.json();
-            console.log("Login attempt:", data);
-if (data.success) {
+            console.log("Login:", data);
+
+            if (data.success) {
     alert(`Welcome ${data.fullname}!`);
-
-    // Show priority modal
     document.getElementById("priorityModal").classList.remove("hidden");
-
-    // Store user type for redirect
     localStorage.setItem("user_type", data.user_type);
+
+    // Also save email for profile
+    localStorage.setItem("emailaddress", data.email || data.emailaddress); // make sure you save the correct email
 }
 
 
         } else {
-            // SIGNUP FLOW
+            // SIGNUP
             const res = await fetch("http://localhost:8000/loginsignup/google_signup/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -196,11 +218,11 @@ if (data.success) {
             });
 
             const data = await res.json();
-            console.log("Signup attempt:", data);
+            console.log("Signup:", data);
 
             if (!data.success) return alert(data.message);
 
-            const code = prompt("Enter the verification code sent to your email:");
+            const code = prompt("Enter verification code sent to email:");
             if (!code) return;
 
             const verifyRes = await fetch("http://localhost:8000/loginsignup/verify-code/", {
@@ -211,8 +233,8 @@ if (data.success) {
 
             const verifyData = await verifyRes.json();
             if (verifyData.success) {
-                alert("Verification successful! You can now login.");
-                toggleForm("login"); // switch to login form
+                alert("Verification successful! Please login.");
+                toggleForm("login");
             } else {
                 alert("Invalid verification code.");
             }
@@ -223,6 +245,9 @@ if (data.success) {
         alert("Unexpected error occurred.");
     }
 };
+
+
+// MANUAL SIGNUP
 document.getElementById("signupForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -230,7 +255,6 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
         fullname: document.getElementById("fullname").value,
         emailaddress: document.getElementById("emailaddress").value,
         phonenumber: document.getElementById("phonenumber").value,
-        address: document.getElementById("address").value,
         password: document.getElementById("password").value,
         confirmpassword: document.getElementById("confirmpassword").value,
     };
@@ -244,11 +268,54 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
     const data = await res.json();
     alert(data.message);
 
-    if (data.success) {
-        toggleForm("login");
-    }
+    if (data.success) toggleForm("login");
 });
-// Handle Modal Buttons
+function priorityModal(fullname) {
+    // Show modal
+    document.getElementById("priorityModal").classList.remove("hidden");
+
+    // Optional: personalize greeting
+    console.log("Welcome:", fullname);
+
+    // Add button actions
+    document.getElementById("urgentBtn").onclick = () => {
+      window.location.href = "blood_request.html";
+    };
+
+    document.getElementById("skipBtn").onclick = () => {
+      window.location.href ="blood_request.html";
+    };
+  }
+/* ---- MANUAL LOGIN ---- */
+  const loginForm = document.getElementById("loginForm");
+  loginForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const emailaddress = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+
+    try {
+      const res = await fetch("http://localhost:8000/loginsignup/patient/login/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emailaddress, password })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+    localStorage.setItem("emailaddress", data.emailaddress); // ✅ matches profile page
+    localStorage.setItem("user_type", "patient");
+    priorityModal(data.fullname);
+}
+ else {
+        alert(data.message);
+      }
+    } catch (err) {
+    alert("Login failed: " + err.message);
+}
+
+  });
+// MODAL BUTTONS
 document.getElementById("urgentBtn").addEventListener("click", () => {
     const role = localStorage.getItem("user_type");
 
@@ -256,41 +323,14 @@ document.getElementById("urgentBtn").addEventListener("click", () => {
         window.location.href = "blood_request.html";
     } else {
         alert("Only patients can request blood.");
-        window.location.href = "dashboard.html";
+        window.location.href = "blood_request.html";
     }
 });
 
 document.getElementById("skipBtn").addEventListener("click", () => {
-    window.location.href = "dashboard.html";
+    window.location.href = "blood_request.html";
 });
-
 </script>
-
-
-<style>
-.input { @apply w-full border px-3 py-2 rounded-md focus:ring-red-500 focus:border-red-500; }
-.signupRole input:checked + span { @apply text-red-600 font-semibold; }
-</style>
-<!-- PRIORITY POPUP MODAL -->
-<div id="priorityModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden">
-  <div class="bg-white w-11/12 max-w-md rounded-xl p-6 shadow-xl text-center">
-
-    <h2 class="text-2xl font-semibold text-gray-900">Need Blood Urgently?</h2>
-    <p class="text-gray-600 mt-2">If this is an emergency, you can request blood immediately.</p>
-
-    <div class="mt-6 space-y-4">
-      <button id="urgentBtn"
-              class="w-full bg-red-600 text-white py-3 rounded-lg text-lg font-medium hover:bg-red-700">
-        Request Blood
-      </button>
-
-      <button id="skipBtn"
-              class="w-full border border-gray-300 py-3 rounded-lg text-lg font-medium hover:bg-gray-100">
-        Skip to Dashboard
-      </button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>

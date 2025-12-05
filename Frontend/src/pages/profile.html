@@ -1,0 +1,343 @@
+ 
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link href="../../dist/output.css" rel="stylesheet">
+    <!-- <link rel="stylesheet" href="/assets/remixicon/icons"> -->
+
+ </head>
+ <body>
+<body class="bg-hlb-bg text-gray-800 font-sans">
+
+
+
+
+<!-- Sidebar Navigation -->
+<div class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-10">
+    <div class="flex flex-col h-full">
+        <!-- Logo -->
+        <div class="flex items-center justify-center h-16 border-b border-gray-200">
+            <div class="flex items-center space-x-2">
+                <i class="ri-drop-fill text-red-600 text-2xl"></i>
+                <span class="text-xl font-bold text-gray-900">Blood Bank</span>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 px-4 py-6 space-y-2">
+            <button onclick="showSection('dashboard')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100">
+               <img src="../assets/remixicon/icons/Buildings/home-2-fill.svg"
+     class="w-6 h-6" alt="dashboard" />
+
+
+                <span>Dashboard</span>
+            </button>
+
+            <button onclick="showSection('request')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100">
+                <img src="../assets/remixicon/icons/System/history-fill.svg"
+     class="w-6 h-6" alt="request history" />
+
+
+                <span>Request Blood</span>
+            </button>
+
+            <button onclick="showSection('history')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100">
+                <img src="../assets/remixicon/icons/Document/file-history-fill.svg"
+     class="w-6 h-6" alt="request history" />
+
+                <span>Request History</span>
+            </button>
+
+            <button onclick="showSection('profile')" class="nav-item active w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg bg-gray-100">
+                <img src="../assets/remixicon/icons/User & Faces/user-3-fill.svg"
+     class="w-6 h-6" alt="profile" />
+
+                <span>Profile</span>
+            </button>
+        </nav>
+    </div>
+</div>
+
+<!-- Profile Section -->
+<div id="profile" class="section ml-64 p-6">
+    <div class="max-w-5xl mx-auto space-y-6">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">User Profile</h1>
+                <p class="text-gray-600 mt-1">Manage your account settings and personal information</p>
+            </div>
+            <button onclick="logout()" class="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-800 flex items-center space-x-2">
+                <i class="ri-logout-box-line text-lg"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+
+        <!-- Personal Information -->
+        <div id="personal" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Personal Information</h2>
+                <button onclick="toggleEdit('personal')" class="text-gray-600 hover:text-gray-900">Edit</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Full Name</label>
+                    <p id="fullnameField" class="editable text-gray-900 font-medium">John Doe</p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Email Address</label>
+                    <p id="emailaddressField" class="editable text-gray-900 font-medium">john.doe@email.com</p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Phone Number</label>
+                    <p id="phonenumberField" class="editable text-gray-900 font-medium">+1 (555) 123-4567</p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Date of Birth</label>
+                    <p id="date_of_birthField" class="editable text-gray-900 font-medium">1990-01-15</p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Gender</label>
+                    <p id="genderField" class="editable text-gray-900 font-medium">Male</p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Blood Type</label>
+                    <p id="blood_typeField" class="editable text-gray-900 font-medium">A+</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div id="contact" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Contact Information</h2>
+                <button onclick="toggleEdit('contact')" class="text-gray-600 hover:text-gray-900">Edit</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-3">
+                    <label class="block text-sm text-gray-600 mb-1">Street Address</label>
+                    <p id="street_addressField" class="editable text-gray-900 font-medium">123 Main Street</p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">City</label>
+                    <p id="cityField" class="editable text-gray-900 font-medium">New York</p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">State</label>
+                    <p id="stateField" class="editable text-gray-900 font-medium">NY</p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">ZIP Code</label>
+                    <p id="zip_codeField" class="editable text-gray-900 font-medium">10001</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medical Information -->
+        <div id="medical" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Medical Information</h2>
+                <button onclick="toggleEdit('medical')" class="text-gray-600 hover:text-gray-900">Edit</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Weight</label>
+                    <p id="weightField" class="editable text-gray-900 font-medium">75 kg</p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Height</label>
+                    <p id="heightField" class="editable text-gray-900 font-medium">180 cm</p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Allergies</label>
+                    <p id="allergiesField" class="editable text-gray-900 font-medium">Penicillin, Peanuts</p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Medical Conditions</label>
+                    <p id="medical_conditionsField" class="editable text-gray-900 font-medium">None</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Contact -->
+        <div id="emergency" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
+                <h2 class="text-lg font-semibold text-gray-900">Emergency Contact</h2>
+                <button onclick="toggleEdit('emergency')" class="text-gray-600 hover:text-gray-900">Edit</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Contact Name</label>
+                    <p id="emergency_nameField" class="editable text-gray-900 font-medium">Jane Doe</p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Relationship</label>
+                    <p id="emergency_relationshipField" class="editable text-gray-900 font-medium">Spouse</p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Phone Number</label>
+                    <p id="emergency_phoneField" class="editable text-gray-900 font-medium">+1 (555) 987-6543</p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Email Address</label>
+                    <p id="emergency_emailField" class="editable text-gray-900 font-medium">jane.doe@email.com</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Settings -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Account Settings</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex items-center justify-between py-3 border-b border-gray-200">
+                    <div>
+                        <p class="text-gray-900 font-medium">Email Notifications</p>
+                        <p class="text-sm text-gray-600">Receive updates about blood requests</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" checked class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+                    </label>
+                </div>
+                <div class="flex items-center justify-between py-3 border-b border-gray-200">
+                    <div>
+                        <p class="text-gray-900 font-medium">SMS Notifications</p>
+                        <p class="text-sm text-gray-600">Get text messages for urgent requests</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" checked class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+                    </label>
+                </div>
+                <div class="flex items-center justify-between py-3">
+                    <div>
+                        <p class="text-gray-900 font-medium">Push Notifications</p>
+                        <p class="text-sm text-gray-600">Receive app notifications</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Toast -->
+<div id="notification" class="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg hidden transform transition-all duration-300">
+    <div class="flex items-center space-x-2">
+        <i class="ri-checkbox-circle-line text-lg"></i>
+        <span id="notificationText"></span>
+    </div>
+</div>
+
+
+
+
+    <!-- ~~~{"id":"55682","variant":"standard","title":"Full Dashboard Script with Editable Profile"} -->
+<script>
+let email = localStorage.getItem("emailaddress"); // make global
+
+document.addEventListener("DOMContentLoaded", async function() {
+
+    // Load profile
+    async function loadProfile() {
+        if (!email) {
+            console.error("No email found");
+            return;
+        }
+        try {
+            const res = await fetch(`http://localhost:8000/loginsignup/patient/profile/?email=${email}`);
+            const data = await res.json();
+            if (data.success && data.data) {
+                const profile = data.data;
+                for (const key in profile) {
+                    const el = document.getElementById(key + "Field");
+                    if (el) el.textContent = profile[key] || "Not provided";
+                }
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    await loadProfile();
+
+    // ---------- EDITABLE FUNCTION ----------
+    window.toggleEdit = function(section) {
+        const sectionEl = document.getElementById(section);
+        const fields = sectionEl.querySelectorAll(".editable");
+
+        fields.forEach(f => {
+            const value = f.textContent.trim();
+            f.innerHTML = `<input type="text" class="w-full border px-2 py-1 rounded" value="${value}" />`;
+        });
+
+        // Remove old save button if exists
+        const oldBtn = sectionEl.querySelector(".save-btn");
+        if (oldBtn) oldBtn.remove();
+
+        // Add save button
+        const saveBtn = document.createElement("button");
+        saveBtn.textContent = "Save";
+        saveBtn.className = "save-btn mt-3 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700";
+
+        // Bind click to saveProfile with the section
+        saveBtn.addEventListener("click", () => saveProfile(section));
+
+        sectionEl.appendChild(saveBtn);
+    };
+
+    // ---------- SAVE PROFILE ----------
+    async function saveProfile(section) {
+        const payload = { emailaddress: email };
+        const sectionEl = document.getElementById(section);
+
+        sectionEl.querySelectorAll(".editable").forEach(f => {
+            const input = f.querySelector("input");
+            if (input) {
+                const key = f.id.replace("Field", "");
+                payload[key] = input.value.trim();
+            }
+        });
+if (payload.date_of_birth) {
+    payload.date_of_birth = payload.date_of_birth.replace(/\//g, '-'); // 2003/07/17 → 2003-07-17
+}
+
+        try {
+            const res = await fetch("http://localhost:8000/loginsignup/patient/profile/update/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            showNotification(data.message || "Profile updated!");
+            if (data.success) await loadProfile();
+        } catch (err) {
+            console.error("Error saving profile:", err);
+            showNotification("Failed to update profile. Please try again.");
+        }
+    }
+
+    // ---------- NOTIFICATION ----------
+    window.showNotification = function(message) {
+        const notification = document.getElementById('notification');
+        const text = document.getElementById('notificationText');
+        text.textContent = message;
+        notification.classList.remove('hidden');
+
+        setTimeout(() => notification.classList.add('hidden'), 3000);
+    };
+
+});
+
+
+</script>
+</body>
+</html>
