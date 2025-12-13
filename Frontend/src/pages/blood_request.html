@@ -390,6 +390,7 @@
                         </div>
 
                         <form id="bloodRequestForm" class="p-6 space-y-6">
+                             <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                             <!-- Blood Group and Units -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
@@ -462,26 +463,126 @@
                                     </label>
                                 </div>
                             </div>
+<div>
+  <label class="block text-sm font-medium text-gray-700 mb-2">District *</label>
+  <select id="districtSelect" required 
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
+      <option value="">Select District</option>
 
-                            <!-- Hospital and Required Date -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Hospital *</label>
-                                    <select required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                                        <option value="">Select hospital</option>
-                                        <option value="Bir Hospital">Bir Hospital</option>
-                                        <option value="Patan Hospital">Patan Hospital</option>
-                                        <option value="Teaching Hospital">Teaching Hospital</option>
-                                        <option value="Nepal Medical College">Nepal Medical College</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
+      <!-- Province 1 -->
+      <option value="Bhojpur">Bhojpur</option>
+      <option value="Dhankuta">Dhankuta</option>
+      <option value="Ilam">Ilam</option>
+      <option value="Jhapa">Jhapa</option>
+      <option value="Khotang">Khotang</option>
+      <option value="Morang">Morang</option>
+      <option value="Okhaldhunga">Okhaldhunga</option>
+      <option value="Panchthar">Panchthar</option>
+      <option value="Sankhuwasabha">Sankhuwasabha</option>
+      <option value="Solukhumbu">Solukhumbu</option>
+      <option value="Sunsari">Sunsari</option>
+      <option value="Taplejung">Taplejung</option>
+      <option value="Terhathum">Terhathum</option>
+      <option value="Udayapur">Udayapur</option>
 
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Required Date *</label>
-                                    <input type="date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                                </div>
-                            </div>
+      <!-- Madhesh Province -->
+      <option value="Bara">Bara</option>
+      <option value="Dhanusha">Dhanusha</option>
+      <option value="Mahottari">Mahottari</option>
+      <option value="Parsa">Parsa</option>
+      <option value="Rautahat">Rautahat</option>
+      <option value="Saptari">Saptari</option>
+      <option value="Sarlahi">Sarlahi</option>
+      <option value="Siraha">Siraha</option>
+
+      <!-- Bagmati Province -->
+      <option value="Bhaktapur">Bhaktapur</option>
+      <option value="Chitwan">Chitwan</option>
+      <option value="Dhading">Dhading</option>
+      <option value="Dolakha">Dolakha</option>
+      <option value="Kathmandu">Kathmandu</option>
+      <option value="Kavrepalanchok">Kavrepalanchok</option>
+      <option value="Lalitpur">Lalitpur</option>
+      <option value="Makwanpur">Makwanpur</option>
+      <option value="Nuwakot">Nuwakot</option>
+      <option value="Ramechhap">Ramechhap</option>
+      <option value="Rasuwa">Rasuwa</option>
+      <option value="Sindhuli">Sindhuli</option>
+      <option value="Sindhupalchok">Sindhupalchok</option>
+
+      <!-- Gandaki Province -->
+      <option value="Baglung">Baglung</option>
+      <option value="Gorkha">Gorkha</option>
+      <option value="Kaski">Kaski</option>
+      <option value="Lamjung">Lamjung</option>
+      <option value="Manang">Manang</option>
+      <option value="Mustang">Mustang</option>
+      <option value="Myagdi">Myagdi</option>
+      <option value="Nawalpur">Nawalpur</option>
+      <option value="Parbat">Parbat</option>
+      <option value="Syangja">Syangja</option>
+      <option value="Tanahun">Tanahun</option>
+
+      <!-- Lumbini Province -->
+      <option value="Arghakhanchi">Arghakhanchi</option>
+      <option value="Banke">Banke</option>
+      <option value="Bardiya">Bardiya</option>
+      <option value="Dang">Dang</option>
+      <option value="Gulmi">Gulmi</option>
+      <option value="Kapilvastu">Kapilvastu</option>
+      <option value="Parasi">Parasi</option> <!-- Nawalparasi West -->
+      <option value="Palpa">Palpa</option>
+      <option value="Pyuthan">Pyuthan</option>
+      <option value="Rolpa">Rolpa</option>
+      <option value="Rukum East">Rukum East</option>
+      <option value="Rupandehi">Rupandehi</option>
+
+      <!-- Karnali Province -->
+      <option value="Dailekh">Dailekh</option>
+      <option value="Dolpa">Dolpa</option>
+      <option value="Humla">Humla</option>
+      <option value="Jajarkot">Jajarkot</option>
+      <option value="Jumla">Jumla</option>
+      <option value="Kalikot">Kalikot</option>
+      <option value="Mugu">Mugu</option>
+      <option value="Rukum West">Rukum West</option>
+      <option value="Salyan">Salyan</option>
+      <option value="Surkhet">Surkhet</option>
+
+      <!-- Sudurpashchim Province -->
+      <option value="Achham">Achham</option>
+      <option value="Baitadi">Baitadi</option>
+      <option value="Bajhang">Bajhang</option>
+      <option value="Bajura">Bajura</option>
+      <option value="Dadeldhura">Dadeldhura</option>
+      <option value="Darchula">Darchula</option>
+      <option value="Doti">Doti</option>
+      <option value="Kailali">Kailali</option>
+      <option value="Kanchanpur">Kanchanpur</option>
+
+      <!-- Other Option -->
+      <option value="Other">Other</option>
+  </select>
+  
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Hospital -->
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Hospital *</label>
+        <select id="hospitalSelect" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+            <option value="">Select hospital</option>
+        </select>
+    </div>
+
+    <!-- Required Date -->
+    <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Required Date *</label>
+        <input type="date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+    </div>
+</div>
+
 
                             <!-- Reason for Request -->
                             <div>
@@ -675,6 +776,16 @@
 
     <!-- ~~~{"id":"55682","variant":"standard","title":"Full Dashboard Script with Editable Profile"} -->
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+    const showRequest = localStorage.getItem("showRequestSection");
+    if (showRequest === "true") {
+        const requestSection = document.getElementById("request");
+        requestSection.classList.remove("hidden");
+
+        // Clear the flag after using
+        localStorage.removeItem("showRequestSection");
+    }
+});
 
 document.addEventListener("DOMContentLoaded", async function() {
     const email = localStorage.getItem("user_email"); // user email from login
@@ -800,6 +911,177 @@ window.showTab = function(tabName) {
     });
 
 });
+const hospitalsByDistrict = {
+  "Achham": ["Bayalpata Hospital"],
+  "Arghakhanchi": ["Arghakhanchi District Hospital"],
+  "Baglung": ["Baglung District Hospital", "Dhaulagiri Zonal Hospital"],
+  "Baitadi": ["Baitadi District Hospital"],
+  "Bajhang": ["Bajhang District Hospital"],
+  "Bajura": ["Bajura District Hospital"],
+  "Banke": ["Nepalgunj Medical College", "Bheri Hospital"],
+  "Bara": ["Kalaiya Hospital"],
+  "Bardiya": ["Bardiya District Hospital"],
+  "Bhaktapur": ["Bhaktapur Hospital", "Korea Nepal Friendship Hospital", "Nagarik Hospital"],
+  "Bhojpur": ["Bhojpur District Hospital"],
+  "Chitwan": ["Bharatpur Hospital", "Chitwan Medical College", "B.P. Koirala Memorial Cancer Hospital"],
+  "Dadeldhura": ["Dadeldhura Hospital"],
+  "Dailekh": ["Dailekh District Hospital"],
+  "Dang": ["Rapti Provincial Hospital"],
+  "Darchula": ["Darchula District Hospital"],
+  "Dhading": ["Dhading Hospital"],
+  "Dhankuta": ["Dhankuta Hospital"],
+  "Dhanusa": ["Janakpur Zonal Hospital", "Janaki Medical College"],
+  "Dolakha": ["Dolakha District Hospital"],
+  "Dolpa": ["Dolpa District Hospital"],
+  "Doti": ["Doti District Hospital"],
+  "Eastern Rukum": ["Rukum East District Hospital"],
+  "Gorkha": ["Gorkha District Hospital"],
+  "Gulmi": ["Gulmi District Hospital"],
+  "Humla": ["Humla District Hospital"],
+  "Ilam": ["Ilam District Hospital"],
+  "Jajarkot": ["Jajarkot District Hospital"],
+  "Jhapa": ["Mechi Zonal Hospital", "B&C Hospital", "Birta City Hospital"],
+  "Jumla": ["Karnali Academy of Health Sciences"],
+  "Kailali": ["Seti Provincial Hospital"],
+  "Kalikot": ["Kalikot District Hospital"],
+  "Kanchanpur": ["Mahakali Hospital"],
+  "Kapilvastu": ["Kapilvastu District Hospital"],
+  "Kaski": ["Gandaki Medical College", "Fewa City Hospital", "Manipal Teaching Hospital", "Western Regional Hospital"],
+  "Kathmandu": [
+      "Bir Hospital",
+      "Teaching Hospital",
+      "Grande International Hospital",
+      "Norvic International Hospital",
+      "Civil Hospital",
+      "Nepal Medical College",
+      "Nepal Korea Friendship Hospital",
+      "Nepal Medical College",
+      "HAMS Hospital",
+      "Mulpani Nagar Hospital",
+      "Nepal Orthopaedic Hospital",
+      "Shankarapur Hospital",
+      "Om Hospital & Research Centre",
+      "Medicare Hospital"
+  ],
+  "Kavrepalanchok": ["Dhulikhel Hospital"],
+  "Khotang": ["Khotang District Hospital"],
+  "Lalitpur": [
+      "Patan Hospital",
+      "B&B Hospital",
+      "Alka Hospital",
+      "Nepal Mediciti Hospital"
+  ],
+  "Lamjung": ["Lamjung District Hospital"],
+  "Mahottari": ["Jaleshwar Hospital"],
+  "Makwanpur": ["Hetauda Hospital"],
+  "Manang": ["Manang District Hospital"],
+  "Morang": ["Koshi Hospital", "Birat Medical College", "Nobel Medical College"],
+  "Mugu": ["Mugu District Hospital"],
+  "Mustang": ["Mustang District Hospital"],
+  "Myagdi": ["Myagdi District Hospital"],
+  "Nawalpur": ["Nawalpur District Hospital"],
+  "Nuwakot": ["Trishuli District Hospital"],
+  "Okhaldhunga": ["Okhaldhunga Community Hospital"],
+  "Palpa": ["Lumbini Medical College"],
+  "Panchthar": ["Panchthar District Hospital"],
+  "Parbat": ["Parbat District Hospital"],
+  "Parsa": ["Narayani Hospital"],
+  "Pyuthan": ["Pyuthan District Hospital"],
+  "Ramechhap": ["Ramechhap District Hospital"],
+  "Rasuwa": ["Rasuwa District Hospital"],
+  "Rautahat": ["Gaur Hospital"],
+  "Rolpa": ["Rolpa District Hospital"],
+  "Rupandehi": ["Universal College Hospital", "Lumbini Provincial Hospital", "Crimson Hospital"],
+  "Salyan": ["Salyan District Hospital"],
+  "Sindhuli": ["Sindhuli District Hospital"],
+  "Sindhupalchok": ["Sindhupalchok District Hospital"],
+  "Siraha": ["Siraha District Hospital"],
+  "Solukhumbu": ["Solukhumbu District Hospital"],
+  "Sunsari": ["Dharan B.P. Koirala Institute of Health Sciences"],
+  "Surkhet": ["Birendranagar Provincial Hospital"],
+  "Syangja": ["Syangja District Hospital"],
+  "Tanahun": ["Damauli District Hospital"],
+  "Taplejung": ["Taplejung District Hospital"],
+  "Terhathum": ["Terhathum District Hospital"],
+  "Udayapur": ["Udayapur District Hospital"]
+};
+const districtDropdown = document.getElementById("districtSelect");
+const hospitalDropdown = document.getElementById("hospitalSelect");
+
+districtDropdown.addEventListener("change", function() {
+    const selectedDistrict = this.value;
+
+    hospitalDropdown.innerHTML = '<option value="">Select Hospital</option>';
+
+    if (hospitalsByDistrict[selectedDistrict]) {
+        hospitalsByDistrict[selectedDistrict].forEach(hospital => {
+            const option = document.createElement("option");
+            option.value = hospital;
+            option.textContent = hospital;
+            hospitalDropdown.appendChild(option);
+        });
+
+        // Add "Other"
+        const otherOption = document.createElement("option");
+        otherOption.value = "Other";
+        otherOption.textContent = "Other";
+        hospitalDropdown.appendChild(otherOption);
+    }
+});
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.startsWith(name + "=")) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("bloodRequestForm");
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/blood_requests/api/create/", {
+    method: "POST",
+    credentials: "include",
+    headers: {
+        "X-CSRFToken": getCookie("csrftoken"),
+    },
+    body: formData
+});
+            let data = {};
+const contentType = response.headers.get("content-type");
+
+if (contentType && contentType.includes("application/json")) {
+    data = await response.json();
+}
+
+
+            if (response.ok) {
+                alert("Blood request submitted successfully!");
+                form.reset();
+            } else {
+                alert("Error: " + JSON.stringify(data));
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Failed to submit request.");
+        }
+    });
+});
+
+
 </script>
 
 

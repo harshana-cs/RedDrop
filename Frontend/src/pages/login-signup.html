@@ -315,21 +315,25 @@ function priorityModal(fullname) {
 }
 
   });
-// MODAL BUTTONS
-document.getElementById("urgentBtn").addEventListener("click", () => {
-    const role = localStorage.getItem("user_type");
+ // Event listener for the "urgent" button
+    document.getElementById("urgentBtn").addEventListener("click", () => {
+        const role = localStorage.getItem("user_type");
 
-    if (role === "patient") {
-        window.location.href = "blood_request.html";
-    } else {
-        alert("Only patients can request blood.");
-        window.location.href = "blood_request.html";
-    }
-});
+        if (role === "patient") {
+            // Set a flag to indicate the request section should show
+            localStorage.setItem("showRequestSection", "true");
 
-document.getElementById("skipBtn").addEventListener("click", () => {
-    window.location.href = "blood_request.html";
-});
+            // Redirect to the blood request page and scroll to the request section
+            window.location.href = "blood_request.html#requestBlood";
+        } else {
+            alert("Only patients can request blood.");
+        }
+    });
+
+    // Event listener for the "skip" button
+    document.getElementById("skipBtn").addEventListener("click", () => {
+        window.location.href = "blood_request.html";
+    });
 </script>
 
 </body>
