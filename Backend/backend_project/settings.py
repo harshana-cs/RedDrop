@@ -1,4 +1,5 @@
 from pathlib import Path
+from corsheaders.defaults import default_headers
 
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,6 +32,7 @@ INSTALLED_APPS = [
     # Your custom apps
     'loginsignup',
     'corsheaders',
+    'blood_requests',
     
 ]
 
@@ -147,8 +149,10 @@ USE_TZ = True
 # =====================
 STATIC_URL = '/static/'
 
+# settings.py
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # =====================
 # DEFAULT AUTO FIELD
@@ -160,27 +164,36 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 SECRET_KEY = '@w@3^rb^nags)z83aizm830i!_c(%4i+8bd14pfw9k259ah+(j'
 
+from corsheaders.defaults import default_headers
+
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:8000",  # Django backend itself (optional)
-    "http://localhost:8000",  # Django backend
-    "http://127.0.0.1:5500",  # your frontend origin
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+    "http://127.0.0.1:5500",
     "http://localhost:5500",
 ]
 
-CORS_ALLOW_HEADERS = [
-    'content-type',
-    'accept',
-    'authorization',
-    'x-requested-with',
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-csrftoken",
+    "authorization",
+    "x-requested-with",
 ]
 
 CORS_ALLOW_METHODS = [
-    'GET',
-    'POST',
-    'PUT',
-    'DELETE',
-    'OPTIONS',
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    "OPTIONS",
 ]
+
+# Allow credentials (cookies)
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+]
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
