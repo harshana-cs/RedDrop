@@ -12,7 +12,7 @@ class GoogleSignup(models.Model):
 
     fullname = models.CharField(max_length=150)  # Added fullname field
     email = models.EmailField(unique=True)
-    credential = models.TextField()
+    credential = models.TextField(default="")
     verification_code = models.CharField(max_length=6)
     is_verified = models.BooleanField(default=False)
     user_type = models.CharField(max_length=20, choices=USER_TYPES, default="patient")

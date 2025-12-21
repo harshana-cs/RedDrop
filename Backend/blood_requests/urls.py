@@ -10,4 +10,6 @@ urlpatterns = [
 
     # API endpoint
     path("api/create/", views.api_create_request, name="api_create_request"),
+    path('api/user_requests/', views.api_user_requests, name='api_user_requests'),
+    path('api/confirm/<int:request_id>/', views.api_confirm_receipt, name='api_confirm_receipt'),
 ]

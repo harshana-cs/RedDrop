@@ -1,4 +1,3 @@
-{"id":"27451","variant":"standard","title":"Updated views.py with Patient insert after Google verification"}
 import json
 import random
 import string
@@ -8,10 +7,21 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from .models import GoogleSignup, Patient
 from django.core.mail import send_mail
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.contrib.auth.hashers import check_password
+
+# JWT imports
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.models import User
+# --- Create or get linked Django User for JWT ---
+from django.contrib.auth.models import User
+# rom rest_framework_simplejwt.tokens import RefreshToken
+from django.utils.crypto import get_random_string
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
 
 GOOGLE_CLIENT_ID = "320231613519-n8ppnf9bof8r6js60el89rar1mvtl8lo.apps.googleusercontent.com"
 
@@ -20,9 +30,17 @@ def generate_code():
     return ''.join(random.choices(string.digits, k=6))
 
 
-# --------------------------------------------------
-# GOOGLE SIGNUP (Create or update GoogleSignup only)
-# --------------------------------------------------
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+    return {
+        "refresh": str(refresh),
+        "access": str(refresh.access_token),
+    }
+
+
+# -----------------------------
+# GOOGLE SIGNUP
+# -----------------------------
 @csrf_exempt
 def google_signup(request):
     if request.method != "POST":
@@ -34,7 +52,6 @@ def google_signup(request):
 
     try:
         idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
-
         email = idinfo["email"]
         fullname = idinfo.get("name", "")
 
@@ -50,7 +67,6 @@ def google_signup(request):
             }
         )
 
-        # If user exists but NOT verified → update verification code
         if not created:
             user.verification_code = code
             user.is_verified = False
@@ -72,9 +88,9 @@ def google_signup(request):
         return JsonResponse({"success": False, "message": "Invalid Google token"})
 
 
-# --------------------------------------------------
-# GOOGLE LOGIN (Only if verified)
-# --------------------------------------------------
+# -----------------------------
+# GOOGLE LOGIN
+# -----------------------------
 @csrf_exempt
 def google_login(request):
     if request.method != "POST":
@@ -84,19 +100,47 @@ def google_login(request):
     token = data.get("credential")
 
     try:
+        # Verify Google credential
         idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
-
         email = idinfo["email"]
 
-        user = GoogleSignup.objects.filter(email=email, is_verified=True).first()
-        if not user:
+        # Check if Google user exists and is verified
+        google_user = GoogleSignup.objects.filter(email=email, is_verified=True).first()
+        if not google_user:
             return JsonResponse({"success": False, "message": "User not registered or not verified."})
+
+        # Get or create Patient object
+        patient_user, _ = Patient.objects.get_or_create(
+            emailaddress=email,
+            defaults={
+                "fullname": google_user.fullname,
+                "password": None,
+                "confirm_password": None,
+                "phonenumber": None
+            }
+        )
+
+        # Get or create Django User
+        user, created = User.objects.get_or_create(
+            username=email,
+            defaults={"first_name": google_user.fullname}
+        )
+        if created:
+            user.set_unusable_password()
+            user.save()
+
+        # Generate JWT tokens
+        tokens = RefreshToken.for_user(user)
 
         return JsonResponse({
             "success": True,
-            "fullname": user.fullname,
-            "user_type": user.user_type,
-            "email": user.email
+            "fullname": google_user.fullname,
+            "email": google_user.email,
+            "user_type": google_user.user_type,
+            "tokens": {
+                "refresh": str(tokens),
+                "access": str(tokens.access_token)
+            }
         })
 
     except Exception as e:
@@ -104,40 +148,59 @@ def google_login(request):
         return JsonResponse({"success": False, "message": "Invalid Google token"})
 
 
-# --------------------------------------------------
-# VERIFY GOOGLE CODE → Insert minimal info into Patient
-# --------------------------------------------------
+# -----------------------------
+# VERIFY GOOGLE CODE
+# -----------------------------
+
 @csrf_exempt
 def verify_code(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Invalid request method"}, status=405)
+
     data = json.loads(request.body)
     email = data.get("email")
     code = data.get("code")
 
-    user = GoogleSignup.objects.filter(email=email, verification_code=code).first()
-    if not user:
-        return JsonResponse({"success": False, "message": "Invalid code"})
+    google_user = GoogleSignup.objects.filter(
+        email=email,
+        verification_code=code
+    ).first()
 
-    # Mark Google user as verified
-    user.is_verified = True
-    user.save()
+    if not google_user:
+        return JsonResponse({"success": False, "message": "Invalid code"}, status=400)
 
-    # Create patient entry ONLY if not already created
+    # Mark Google signup as verified
+    google_user.is_verified = True
+    google_user.save()
+
+    # Ensure Patient exists
     Patient.objects.get_or_create(
-        emailaddress=user.email,
+        emailaddress=email,
         defaults={
-            "fullname": user.fullname,
+            "fullname": google_user.fullname,
             "password": None,
             "confirm_password": None,
             "phonenumber": None
         }
     )
 
+    # Ensure Django User exists (SAFE WAY)
+    user, created = User.objects.get_or_create(
+        username=email,
+        defaults={"email": email}
+    )
+
+    if created:
+        random_password = get_random_string(12)
+        user.set_password(random_password)
+        user.save()
+
     return JsonResponse({"success": True})
 
 
-# --------------------------------------------------
-# MANUAL SIGNUP (Normal full signup)
-# --------------------------------------------------
+# -----------------------------
+# MANUAL SIGNUP
+# -----------------------------
 @csrf_exempt
 def patient_signup_manually(request):
     if request.method != "POST":
@@ -146,7 +209,7 @@ def patient_signup_manually(request):
     data = json.loads(request.body)
 
     fullname = data.get("fullname")
-    emailaddress = data.get("emailaddress")
+    email = data.get("emailaddress")
     phonenumber = data.get("phonenumber")
     password = data.get("password")
     confirmpassword = data.get("confirmpassword")
@@ -154,26 +217,33 @@ def patient_signup_manually(request):
     if password != confirmpassword:
         return JsonResponse({"success": False, "message": "Passwords do not match"})
 
-    # Check email in BOTH Patient and GoogleSignup
-    if Patient.objects.filter(emailaddress=emailaddress).exists():
+    if Patient.objects.filter(emailaddress=email).exists():
         return JsonResponse({"success": False, "message": "Email already registered"})
 
-    if GoogleSignup.objects.filter(email=emailaddress).exists():
+    if GoogleSignup.objects.filter(email=email).exists():
         return JsonResponse({"success": False, "message": "Email already used for Google Signup"})
 
-
-    # Create patient
     patient = Patient(
         fullname=fullname,
-        emailaddress=emailaddress,
+        emailaddress=email,
         phonenumber=phonenumber
     )
     patient.password = make_password(password)
     patient.confirm_password = make_password(confirmpassword)
     patient.save()
 
+    # Also create Django User
+    User.objects.get_or_create(
+        username=email,
+        defaults={"email": email, "password": patient.password}
+    )
+
     return JsonResponse({"success": True, "message": "Account created successfully!"})
 
+
+# -----------------------------
+# MANUAL LOGIN
+# -----------------------------
 @csrf_exempt
 def patient_login(request):
     if request.method != "POST":
@@ -189,26 +259,40 @@ def patient_login(request):
     try:
         patient = Patient.objects.get(emailaddress=email)
 
-        # Correct way to check hashed password
-        if check_password(password, patient.password):
-            return JsonResponse({
-                "success": True,
-                "fullname": patient.fullname,
-                "emailaddress": patient.emailaddress,
-            })
-        else:
+        if not check_password(password, patient.password):
             return JsonResponse({"success": False, "message": "Incorrect password"})
+
+        # 🔐 SAFE Django User handling
+        django_user, created = User.objects.get_or_create(
+            username=email,
+            defaults={"email": email}
+        )
+
+        if created:
+            django_user.set_password(password)
+            django_user.save()
+
+        tokens = get_tokens_for_user(django_user)
+
+        return JsonResponse({
+            "success": True,
+            "fullname": patient.fullname,
+            "emailaddress": patient.emailaddress,
+            "tokens": tokens
+        })
 
     except Patient.DoesNotExist:
         return JsonResponse({"success": False, "message": "No account found with this email"})
+
+
     # Fetch profile
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_patient_profile(request):
     email = request.GET.get('email')
     if not email:
         return Response({"success": False, "message": "Email parameter missing"})
 
-    # Clean email and do case-insensitive search
     email = email.strip()
     patient = Patient.objects.filter(emailaddress__iexact=email).first()
 
@@ -235,16 +319,21 @@ def get_patient_profile(request):
         "emergency_phone": patient.emergency_phone,
         "emergency_email": patient.emergency_email
     }
+
     return Response({"success": True, "data": data})
+
 
 # Update profile
 from datetime import datetime
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def update_patient_profile(request):
     email = request.data.get('emailaddress')
+
     try:
         patient = Patient.objects.get(emailaddress=email)
+
         fields = [
             "fullname", "phonenumber", "date_of_birth", "gender", "blood_type",
             "street_address", "city", "state", "zip_code",
@@ -255,19 +344,21 @@ def update_patient_profile(request):
         for field in fields:
             if field in request.data:
                 value = request.data[field]
-                # Convert date_of_birth to proper format
+
                 if field == "date_of_birth" and value:
+                    from datetime import datetime
                     try:
-                        # Accept YYYY/MM/DD or YYYY-MM-DD
-                        value = datetime.strptime(value, "%Y/%m/%d").date()
+                        value = datetime.strptime(value, "%Y-%m-%d").date()
                     except ValueError:
-                        try:
-                            value = datetime.strptime(value, "%Y-%m-%d").date()
-                        except ValueError:
-                            return Response({"success": False, "message": "Invalid date format for date_of_birth. Use YYYY-MM-DD"})
+                        return Response({
+                            "success": False,
+                            "message": "Invalid date format. Use YYYY-MM-DD"
+                        })
+
                 setattr(patient, field, value)
-        
+
         patient.save()
         return Response({"success": True, "message": "Profile updated successfully."})
+
     except Patient.DoesNotExist:
         return Response({"success": False, "message": "Patient not found."})

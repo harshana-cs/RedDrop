@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from loginsignup.models import Patient
 
 BLOOD_TYPES = [
     ('A+', 'A+'), ('A-', 'A-'), ('B+', 'B+'), ('B-', 'B-'),
@@ -11,7 +12,13 @@ URGENCY_LEVELS = [
 ]
 
 class BloodRequest(models.Model):
-    patient = models.ForeignKey(User, on_delete=models.CASCADE)
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('completed', 'Completed'),
+    ]
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     blood_type = models.CharField(max_length=3, choices=BLOOD_TYPES)
     units_required = models.PositiveIntegerField()
     urgency = models.CharField(max_length=10, choices=URGENCY_LEVELS)
@@ -25,6 +32,8 @@ class BloodRequest(models.Model):
     doctor_note = models.FileField(upload_to='doctor_notes/')
     created_at = models.DateTimeField(auto_now_add=True)
     fulfilled = models.BooleanField(default=False)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')  # new field
+
 
     def __str__(self):
         return f"{self.patient.username} - {self.blood_type} ({self.units_required} units)"

@@ -1,14 +1,16 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
 from .forms import BloodRequestForm
 from .models import BloodRequest
+from loginsignup.models import Patient
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
 from .serializers import BloodRequestSerializer
+from django.shortcuts import get_object_or_404
+from django.db.models import Count
+
 
 # -----------------------------
 # Regular Django Views
@@ -16,12 +18,19 @@ from .serializers import BloodRequestSerializer
 
 @login_required
 def create_request(request):
-    """Standard Django form submission view"""
+    """
+    Standard Django form submission view using BloodRequestForm.
+    Maps the logged-in Django User to a Patient.
+    """
     if request.method == "POST":
         form = BloodRequestForm(request.POST, request.FILES)
         if form.is_valid():
             blood_request = form.save(commit=False)
-            blood_request.patient = request.user
+            patient = Patient.objects.filter(email=request.user.email).first()
+            if not patient:
+                messages.error(request, "Patient profile not found. Cannot submit request.")
+                return redirect("blood_request_list")
+            blood_request.patient = patient
             blood_request.save()
             messages.success(request, "Blood request submitted successfully!")
             return redirect("blood_request_list")
@@ -31,28 +40,116 @@ def create_request(request):
 
 @login_required
 def request_list(request):
-    """List of blood requests for the logged-in user"""
-    requests = request.user.bloodrequest_set.all()
-    return render(request, "blood_requests/request_list.html", {"requests": requests})
+    """
+    List all blood requests for the logged-in patient.
+    """
+    patient = Patient.objects.filter(emailaddress=request.user.email).first()
+    if not patient:
+        messages.error(request, "Patient profile not found.")
+        return redirect("/")
+    requests_qs = BloodRequest.objects.filter(patient=patient)
+    return render(request, "blood_requests/request_list.html", {"requests": requests_qs})
+
 
 def create_request_view(request):
-    """Render the JS frontend page for fetch/SPA submissions"""
+    """
+    Render the JS frontend page for fetch/SPA submissions.
+    """
+    return render(request, "blood_requests/blood_request.html")
+
+@login_required
+def dashboard_view(request):
+    """
+    Render the JS frontend dashboard page for SPA-style interaction.
+    """
     return render(request, "blood_requests/blood_request.html")
 
 
 # -----------------------------
 # API-style View for JS Fetch
 # -----------------------------
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_user_requests(request):
+    """
+    Fetch blood requests for the logged-in patient (used in dashboard stats & table),
+    and include patient name and stats like total, approved, pending, completed requests.
+    """
+    patient = Patient.objects.filter(emailaddress=request.user.username).first()
+    if not patient:
+        return Response({"success": False, "message": "Patient not found"}, status=403)
+
+    # Fetch all requests for this patient
+    requests_qs = BloodRequest.objects.filter(patient=patient).order_by("-created_at")
+    serializer = BloodRequestSerializer(requests_qs, many=True)
+
+    # Compute dashboard stats
+    total_requests = requests_qs.count()
+    approved_requests = requests_qs.filter(status="approved").count()
+    pending_requests = requests_qs.filter(status="pending").count()
+    completed_requests = requests_qs.filter(status="completed").count()
+
+    return Response({
+        "success": True,
+        "patient_name": patient.fullname,
+        "stats": {
+            "total": total_requests,
+            "approved": approved_requests,
+            "pending": pending_requests,
+            "completed": completed_requests
+        },
+        "data": serializer.data
+    })
+
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def api_create_request(request):
     """
-    Accept JSON POST from frontend fetch with authentication.
-    Sets patient automatically from logged-in user.
+    API endpoint for creating blood requests using JWT authentication.
+    Accepts multipart/form-data including files.
     """
-    serializer = BloodRequestSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(patient=request.user)
-        return Response({"success": True, "data": serializer.data}, status=status.HTTP_201_CREATED)
-    return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        print("request.user:", request.user)
+        print("request.auth:", request.auth)
+
+        # Map JWT user to Patient
+        patient = Patient.objects.filter(emailaddress=request.user.username).first()
+        if not patient:
+            return Response({"success": False, "message": "Patient not found"}, status=403)
+
+        # Use serializer with files
+        serializer = BloodRequestSerializer(
+            data=request.data, 
+            context={"request": request}
+        )
+
+        if serializer.is_valid():
+            serializer.save(patient=patient)
+            return Response({"success": True, "data": serializer.data}, status=201)
+        else:
+            return Response({"success": False, "errors": serializer.errors}, status=400)
+
+    except Exception as e:
+        return Response({"success": False, "message": str(e)}, status=500)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_confirm_receipt(request, request_id):
+    """
+    API endpoint to mark a blood request as 'completed' / received.
+    """
+    patient = Patient.objects.filter(email=request.user.username).first()
+    if not patient:
+        return Response({"success": False, "message": "Patient not found"}, status=403)
+
+    blood_request = get_object_or_404(BloodRequest, id=request_id, patient=patient)
+    if blood_request.status != "approved":
+        return Response({
+            "success": False,
+            "message": "Only approved requests can be confirmed."
+        }, status=400)
+
+    blood_request.status = "completed"
+    blood_request.fulfilled = True
+    blood_request.save()
+    return Response({"success": True, "message": "Request marked as received!"})
