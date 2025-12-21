@@ -33,17 +33,7 @@
 
     <div class="min-h-screen">
         <!-- Sidebar Navigation -->
-        <div class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-10">
-            <div class="flex flex-col h-full">
-                <!-- Logo -->
-                <div class="flex items-center justify-center h-16 border-b border-gray-200">
-                    <div class="flex items-center space-x-2">
-                        <img src="/assets/remixicon/icons/Buildings/home-2-fill.svg" class="w-8 h-8" />
-
-
-                        <span class="text-xl font-bold text-gray-900">Blood Bank</span>
-                    </div>
-                </div>
+       
 
                
 <div class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-10">
@@ -56,34 +46,33 @@
             </div>
         </div>
 
-        <!-- Navigation -->
-        <nav class="flex-1 px-4 py-6 space-y-2">
-            <button onclick="showSection('dashboard')" class="nav-item active w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
-                <img src="../assets/remixicon/icons/Buildings/home-2-fill.svg"
-     class="w-6 h-6" alt="dashboard" />
+        
+            <!-- Navigation -->
+            <nav class="flex-1 px-4 py-6 space-y-2">
+                <button onclick="showSection('dashboard', event)"
+                        class="nav-item active w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100">
+                    <img src="../assets/remixicon/icons/Buildings/home-2-fill.svg" class="w-6 h-6">
+                    <span>Dashboard</span>
+                </button>
 
-                <span>Dashboard</span>
-            </button>
-            <button onclick="showSection('request')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
-                <img src="../assets/remixicon/icons/System/history-fill.svg"
-     class="w-6 h-6" alt="request history" />
+                <button onclick="showSection('request', event)"
+                        class="nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100">
+                    <img src="../assets/remixicon/icons/System/history-fill.svg" class="w-6 h-6">
+                    <span>Request Blood</span>
+                </button>
 
-                <span>Request Blood</span>
-            </button>
-            <button onclick="showSection('history')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
-                <img src="../assets/remixicon/icons/Document/file-history-fill.svg"
-     class="w-6 h-6" alt="request history" />
-                <span>Request History</span>
-            </button>
-            <!-- Redirect to profile.html -->
-            <button onclick="window.location.href='profile.html'" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
-                <img src="../assets/remixicon/icons/User & Faces/user-3-fill.svg"
-     class="w-6 h-6" alt="profile" />
-                <span>Profile</span>
-            </button>
-        </nav>
-    </div>
-</div>
+                <button onclick="showSection('history', event)"
+                        class="nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100">
+                    <img src="../assets/remixicon/icons/Document/file-history-fill.svg" class="w-6 h-6">
+                    <span>Request History</span>
+                </button>
+
+                <button onclick="window.location.href='profile.html'"
+                        class="nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100">
+                    <img src="../assets/remixicon/icons/User & Faces/user-3-fill.svg" class="w-6 h-6">
+                    <span>Profile</span>
+                </button>
+            </nav>
 
                 <!-- User Info -->
                 <div class="border-t border-gray-200 p-4">
@@ -111,7 +100,10 @@
                 <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white mb-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h1 class="text-2xl font-bold">Welcome back, John Doe!</h1>
+                            <h1 class="text-2xl font-bold">
+    Welcome back, <span id="welcomeName">User</span>!
+</h1>
+
                             <p class="text-blue-100 mt-1">Your blood request status and donor matches are updated below.</p>
                         </div>
                         <i class="fas fa-heart hidden md:block w-16 h-16 text-blue-200"></i>
@@ -127,7 +119,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600">Total Requests</p>
-                                <p class="text-2xl font-bold text-gray-900">3</p>
+                                <p id="total-requests" class="text-2xl font-bold text-gray-900">3</p>
                             </div>
                         </div>
                     </div>
@@ -139,7 +131,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600">Pending</p>
-                                <p class="text-2xl font-bold text-gray-900">1</p>
+                                <p id="pending-requests" class="text-2xl font-bold text-gray-900">1</p>
                             </div>
                         </div>
                     </div>
@@ -151,7 +143,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600">Approved</p>
-                                <p class="text-2xl font-bold text-gray-900">2</p>
+                                <p id="approved-requests" class="text-2xl font-bold text-gray-900">2</p>
                             </div>
                         </div>
                     </div>
@@ -163,7 +155,7 @@
                             </div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-600">Received</p>
-                                <p class="text-2xl font-bold text-gray-900">1</p>
+                                <p id="received-requests" class="text-2xl font-bold text-gray-900">1</p>
                             </div>
                         </div>
                     </div>
@@ -410,7 +402,7 @@
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Units Required *</label>
-                                    <input type="number" min="1" max="10" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter number of units">
+                                    <input type="number" min="1" max="10" id="unitsRequired" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter number of units">
                                 </div>
                             </div>
 
@@ -579,7 +571,7 @@
     <!-- Required Date -->
     <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Required Date *</label>
-        <input type="date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+        <input type="date" id="requiredDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
     </div>
 </div>
 
@@ -587,19 +579,19 @@
                             <!-- Reason for Request -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Blood Request *</label>
-                                <textarea rows="4" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Please describe the reason for blood request (surgery, accident, medical condition, etc.)"></textarea>
+                                <textarea rows="4" required id="reason" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Please describe the reason for blood request (surgery, accident, medical condition, etc.)"></textarea>
                             </div>
 
                             <!-- Contact Information -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person *</label>
-                                    <input type="text" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Name of contact person">
+                                    <input type="text" id="contactName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Name of contact person">
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Contact Phone *</label>
-                                    <input type="tel" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Contact phone number">
+                                    <input type="tel" id="contactPhone" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Contact phone number">
                                 </div>
                             </div>
 
@@ -771,62 +763,88 @@
                         </div>
                     </div>
 
-   div>
+   
     </div>
 
     <!-- ~~~{"id":"55682","variant":"standard","title":"Full Dashboard Script with Editable Profile"} -->
 <script>
+    const token = localStorage.getItem("access_token");
+
+    /* ✅ MUST BE FIRST – GLOBAL */
+window.showSection = function(sectionId, event) {
+    document.querySelectorAll('.section')
+        .forEach(s => s.classList.remove('active'));
+
+    const section = document.getElementById(sectionId);
+    if (section) section.classList.add('active');
+
+    document.querySelectorAll('.nav-item')
+        .forEach(item =>
+            item.classList.remove('active', 'bg-red-50', 'text-red-600')
+        );
+
+    if (event && event.target.closest('.nav-item')) {
+        event.target.closest('.nav-item')
+            .classList.add('active', 'bg-red-50', 'text-red-600');
+    }
+};
 document.addEventListener("DOMContentLoaded", () => {
     const showRequest = localStorage.getItem("showRequestSection");
     if (showRequest === "true") {
         const requestSection = document.getElementById("request");
-        requestSection.classList.remove("hidden");
-
-        // Clear the flag after using
+        if (requestSection) requestSection.classList.remove("hidden");
         localStorage.removeItem("showRequestSection");
     }
 });
 
-document.addEventListener("DOMContentLoaded", async function() {
-    const email = localStorage.getItem("user_email"); // user email from login
+document.addEventListener("DOMContentLoaded", function () {
 
-    /* REMOVE LUCIDE COMPLETELY — no initialization needed */
-
-    
-
-    
+    const email = localStorage.getItem("user_email");
 
     // LOGOUT
-    window.logout = function() {
+    window.logout = function () {
         localStorage.removeItem("user_email");
         window.location.href = "login.html";
     };
 
-    // NAVIGATION
-    window.showSection = function(sectionId) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.getElementById(sectionId).classList.add('active');
+    // SIDEBAR NAVIGATION
+    // ✅ DEFINE FIRST (GLOBAL)
 
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active', 'bg-red-50', 'text-red-600'));
-        event.target.closest('.nav-item').classList.add('active', 'bg-red-50', 'text-red-600');
-    };
+// window.showSection = function(sectionId, event) {
+//     document.querySelectorAll('.section')
+//         .forEach(s => s.classList.remove('active'));
 
-    // dashboard.js
-window.showTab = function(tabName) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+//     const section = document.getElementById(sectionId);
+//     if (section) section.classList.add('active');
+
+//     document.querySelectorAll('.nav-item')
+//         .forEach(item => item.classList.remove('active', 'bg-red-50', 'text-red-600'));
+
+//     if (event && event.target.closest('.nav-item')) {
+//         event.target.closest('.nav-item')
+//             .classList.add('active', 'bg-red-50', 'text-red-600');
+//     }
+// };
+
+
+window.showTab = function(tabName, event) {
+    document.querySelectorAll('.tab-content')
+        .forEach(tab => tab.classList.add('hidden'));
+
     const target = document.getElementById(tabName + '-tab');
-    if(target) target.classList.remove('hidden');
+    if (target) target.classList.remove('hidden');
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('border-red-500', 'text-red-600');
         btn.classList.add('border-transparent', 'text-gray-500');
     });
 
-    if(event.target) {
+    if (event && event.target) {
         event.target.classList.add('border-red-500', 'text-red-600');
         event.target.classList.remove('border-transparent', 'text-gray-500');
     }
 };
+
 
 
     // NOTIFICATION
@@ -1048,39 +1066,153 @@ document.addEventListener("DOMContentLoaded", () => {
 
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
+        const token = localStorage.getItem("access_token");  // now this will return the JWT
 
-        const formData = new FormData(form);
+        if (!token) {
+            alert("You are not logged in!");
+            return;
+        }
+
+        const getValue = (id) => {
+            const el = document.querySelector(id);
+            if (!el) { console.error(`Element ${id} not found`); return ""; }
+            return el.value;
+        };
+
+        const getFile = (id) => {
+            const el = document.querySelector(id);
+            if (!el || !el.files || el.files.length === 0) return null;
+            return el.files[0];
+        };
+
+        const formData = new FormData();
+        formData.append("blood_type", getValue("#bloodGroup"));
+        formData.append("units_required", getValue("#unitsRequired"));
+        formData.append("district", getValue("#districtSelect"));
+        formData.append("hospital", getValue("#hospitalSelect"));
+        formData.append("required_date", getValue("#requiredDate"));
+        formData.append("reason", getValue("#reason"));
+        formData.append("contact_name", getValue("#contactName"));
+        formData.append("contact_phone", getValue("#contactPhone"));
+        // Append urgency
+const urgency = document.querySelector('input[name="urgency"]:checked')?.value;
+if (urgency) formData.append("urgency", urgency);
+
+        const hospitalDoc = getFile("#hospitalDoc");
+        if (hospitalDoc) formData.append("hospital_doc", hospitalDoc);
+
+        const doctorNote = getFile("#doctorNote");
+        if (doctorNote) formData.append("doctor_note", doctorNote);
 
         try {
             const response = await fetch("http://127.0.0.1:8000/blood_requests/api/create/", {
     method: "POST",
-    credentials: "include",
     headers: {
-        "X-CSRFToken": getCookie("csrftoken"),
+        "Authorization": `Bearer ${token}`  // JWT token
     },
     body: formData
 });
-            let data = {};
-const contentType = response.headers.get("content-type");
+            const data = await response.json();
 
-if (contentType && contentType.includes("application/json")) {
-    data = await response.json();
-}
-
-
-            if (response.ok) {
+            if (data.success) {
                 alert("Blood request submitted successfully!");
                 form.reset();
             } else {
-                alert("Error: " + JSON.stringify(data));
+                console.error("Submission errors:", data.errors || data.message);
+                alert("Error submitting request. Check console for details.");
             }
         } catch (err) {
-            console.error(err);
-            alert("Failed to submit request.");
+            console.error("Fetch error:", err);
+            alert("Network error or server unavailable.");
         }
     });
 });
 
+    // ===== DASHBOARD STATS & TABLE =====
+    async function loadDashboard() {
+        if (!token) return;
+        try {
+            const res = await fetch("http://127.0.0.1:8000/blood_requests/api/user_requests/", {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
+            });
+            if (res.status === 401) { alert("Unauthorized. Please login again."); return; }
+
+            const data = await res.json();
+            //  if (!data.success) return;
+//             if (data.patient_name && data.user.name) {
+//     document.getElementById("welcomeName").textContent = data.patient_name;
+// }
+
+            if (!data.success) return;
+             if (data.patient_name ) {
+    document.getElementById("welcomeName").textContent = data.patient_name;
+}
+
+            const requests = data.data;
+
+           // Update stats cards from API stats
+if (data.stats) {
+    const { total, pending, approved, completed } = data.stats;
+
+    const totalEl = document.getElementById("total-requests");
+    const pendingEl = document.getElementById("pending-requests");
+    const approvedEl = document.getElementById("approved-requests");
+    const receivedEl = document.getElementById("received-requests");
+
+    if (totalEl) totalEl.textContent = total ?? 0;
+    if (pendingEl) pendingEl.textContent = pending ?? 0;
+    if (approvedEl) approvedEl.textContent = approved ?? 0;
+    if (receivedEl) receivedEl.textContent = completed ?? 0;
+}
+
+
+
+            // Populate table
+            const tbody = document.querySelector("#requests-tab tbody");
+            if (tbody) {
+                tbody.innerHTML = "";
+                const statusColors = {
+                    pending: ["text-yellow-600", "bg-yellow-100"],
+                    approved: ["text-green-600", "bg-green-100"],
+                    rejected: ["text-red-600", "bg-red-100"],
+                    completed: ["text-blue-600", "bg-blue-100"]
+                };
+                requests.forEach(req => {
+                    const [textClass, bgClass] = statusColors[req.status] || ["text-gray-600", "bg-gray-100"];
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap flex items-center">
+                                <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
+                                <span class="text-sm font-medium text-gray-900">${req.blood_type}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${req.units_required} units</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${textClass} ${bgClass}">${req.urgency}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${req.hospital}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${textClass} ${bgClass}">
+                                    ${req.status.charAt(0).toUpperCase() + req.status.slice(1)}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                ${req.status === "pending"
+                                    ? `<span class="text-yellow-600">Waiting for admin approval</span>`
+                                    : `<button onclick="confirmReceipt(${req.id})" class="text-green-600 hover:text-green-900 text-xs block">Confirm Receipt</button>`}
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        } catch (err) {
+            console.error("Error loading dashboard:", err);
+        }
+    }
+
+   document.addEventListener("DOMContentLoaded", () => {
+    loadDashboard();
+});
 
 </script>
 

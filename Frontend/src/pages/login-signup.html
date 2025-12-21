@@ -176,7 +176,24 @@ function toggleForm(form) {
 function getSelectedRoleSignup() {
   return document.querySelector("input[name='role']:checked")?.value || "patient";
 }
+async function refreshToken() {
+    const refresh = localStorage.getItem("refresh");
+    if (!refresh) return;
 
+    const res = await fetch("http://127.0.0.1:8000/api/token/refresh/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh })
+    });
+
+    const data = await res.json();
+    if (data.access) {
+        localStorage.setItem("access", data.access);
+    } else {
+        alert("Session expired, please login again.");
+        window.location.href = "/"; // redirect to login
+    }
+}
 /* GOOGLE LOGIN HANDLER */
 window.handleGoogleLogin = async (response) => {
     console.log("Google credential:", response.credential);
@@ -203,6 +220,12 @@ window.handleGoogleLogin = async (response) => {
 
     // Also save email for profile
     localStorage.setItem("emailaddress", data.email || data.emailaddress); // make sure you save the correct email
+ localStorage.setItem("access_token", data.tokens.access);  // use the correct key
+localStorage.setItem("refresh_token", data.tokens.refresh);
+
+
+
+
 }
 
 
