@@ -5,30 +5,23 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from .models import GoogleSignup, Patient
+from .models import GoogleSignup, Patient, Donor
 from django.core.mail import send_mail
 from django.contrib.auth.hashers import make_password, check_password
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-
-# JWT imports
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth.models import User
-# --- Create or get linked Django User for JWT ---
-from django.contrib.auth.models import User
-# rom rest_framework_simplejwt.tokens import RefreshToken
-from django.utils.crypto import get_random_string
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.models import User
+from django.utils.crypto import get_random_string
 
 GOOGLE_CLIENT_ID = "320231613519-n8ppnf9bof8r6js60el89rar1mvtl8lo.apps.googleusercontent.com"
 
-
+# -----------------------------
+# Utilities
+# -----------------------------
 def generate_code():
     return ''.join(random.choices(string.digits, k=6))
-
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -37,6 +30,24 @@ def get_tokens_for_user(user):
         "access": str(refresh.access_token),
     }
 
+def is_donor_profile_complete(donor):
+    required_fields = [
+        donor.first_name,
+        donor.last_name,
+        donor.phone_number,
+        donor.date_of_birth,
+        donor.gender,
+        donor.blood_type,
+        donor.address,
+        donor.city,
+        donor.state,
+        donor.zip_code,
+        donor.emergency_contact_name,
+        donor.emergency_contact_phone,
+        donor.weight,
+        donor.accepted_terms,
+    ]
+    return all(required_fields)
 
 # -----------------------------
 # GOOGLE SIGNUP
@@ -72,7 +83,6 @@ def google_signup(request):
             user.is_verified = False
             user.save()
 
-        # Send verification email
         send_mail(
             subject="RedDrop Verification Code",
             message=f"Your verification code is: {code}",
@@ -87,71 +97,81 @@ def google_signup(request):
         print("Google signup error:", e)
         return JsonResponse({"success": False, "message": "Invalid Google token"})
 
-
 # -----------------------------
 # GOOGLE LOGIN
 # -----------------------------
 @csrf_exempt
 def google_login(request):
     if request.method != "POST":
-        return JsonResponse({"success": False, "message": "Invalid request method"})
-
-    data = json.loads(request.body)
-    token = data.get("credential")
+        return JsonResponse({"success": False, "message": "Invalid method"})
 
     try:
-        # Verify Google credential
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
-        email = idinfo["email"]
+        body = json.loads(request.body)
+        credential = body.get("credential")
 
-        # Check if Google user exists and is verified
-        google_user = GoogleSignup.objects.filter(email=email, is_verified=True).first()
-        if not google_user:
-            return JsonResponse({"success": False, "message": "User not registered or not verified."})
+        idinfo = id_token.verify_oauth2_token(credential, requests.Request(), GOOGLE_CLIENT_ID)
+        email = idinfo.get("email")
+        fullname = idinfo.get("name")
 
-        # Get or create Patient object
-        patient_user, _ = Patient.objects.get_or_create(
-            emailaddress=email,
-            defaults={
-                "fullname": google_user.fullname,
-                "password": None,
-                "confirm_password": None,
-                "phonenumber": None
-            }
-        )
+        google_user = GoogleSignup.objects.get(email=email, is_verified=True)
+        user_type = google_user.user_type
 
-        # Get or create Django User
-        user, created = User.objects.get_or_create(
-            username=email,
-            defaults={"first_name": google_user.fullname}
-        )
-        if created:
-            user.set_unusable_password()
-            user.save()
+        tokens = RefreshToken.for_user(User.objects.get(username=email))
 
-        # Generate JWT tokens
-        tokens = RefreshToken.for_user(user)
+        # ================= PATIENT =================
+        if user_type == "patient":
+            patient, _ = Patient.objects.get_or_create(
+                emailaddress=email,
+                defaults={"fullname": fullname}
+            )
+            return JsonResponse({
+                "success": True,
+                "user_type": "patient",
+                "fullname": patient.fullname,
+                "emailaddress": patient.emailaddress,
+                "tokens": {
+                    "access": str(tokens.access_token),
+                    "refresh": str(tokens),
+                }
+            })
 
-        return JsonResponse({
-            "success": True,
-            "fullname": google_user.fullname,
-            "email": google_user.email,
-            "user_type": google_user.user_type,
-            "tokens": {
-                "refresh": str(tokens),
-                "access": str(tokens.access_token)
-            }
-        })
+        # ================= DONOR =================
+        if user_type == "donor":
+            donor, created = Donor.objects.get_or_create(
+                email=email,
+                defaults={
+                    "first_name": fullname.split(" ", 1)[0],
+                    "last_name": fullname.split(" ", 1)[1] if len(fullname.split(" ", 1)) > 1 else "",
+                }
+            )
 
+            profile_complete = is_donor_profile_complete(donor)
+            redirect_url = "donor_dashboard.html" if profile_complete else "donor_registration.html"
+
+            return JsonResponse({
+                "success": True,
+                "user_type": "donor",
+                "profile_complete": profile_complete,
+                "redirect": redirect_url,
+                "email": donor.email,
+                "fullname": f"{donor.first_name} {donor.last_name}".strip(),
+                "tokens": {
+                    "access": str(tokens.access_token),
+                    "refresh": str(tokens),
+                }
+            })
+
+        return JsonResponse({"success": False, "message": "Invalid user type"})
+
+    except GoogleSignup.DoesNotExist:
+        return JsonResponse({"success": False, "message": "Account not registered"})
     except Exception as e:
         print("Google login error:", e)
-        return JsonResponse({"success": False, "message": "Invalid Google token"})
-
+        return JsonResponse({"success": False, "message": "Login failed"})
 
 # -----------------------------
 # VERIFY GOOGLE CODE
 # -----------------------------
-
 @csrf_exempt
 def verify_code(request):
     if request.method != "POST":
@@ -161,19 +181,14 @@ def verify_code(request):
     email = data.get("email")
     code = data.get("code")
 
-    google_user = GoogleSignup.objects.filter(
-        email=email,
-        verification_code=code
-    ).first()
-
+    google_user = GoogleSignup.objects.filter(email=email, verification_code=code).first()
     if not google_user:
         return JsonResponse({"success": False, "message": "Invalid code"}, status=400)
 
-    # Mark Google signup as verified
     google_user.is_verified = True
     google_user.save()
 
-    # Ensure Patient exists
+    # Create Patient if user_type is patient
     Patient.objects.get_or_create(
         emailaddress=email,
         defaults={
@@ -184,19 +199,30 @@ def verify_code(request):
         }
     )
 
-    # Ensure Django User exists (SAFE WAY)
+    # Create Django User for JWT
     user, created = User.objects.get_or_create(
         username=email,
         defaults={"email": email}
     )
-
     if created:
         random_password = get_random_string(12)
         user.set_password(random_password)
         user.save()
 
-    return JsonResponse({"success": True})
+    # Create Donor minimal info if user_type is donor
+    if google_user.user_type == "donor":
+        name_parts = google_user.fullname.strip().split(" ", 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ""
+        Donor.objects.get_or_create(
+            email=email,
+            defaults={
+                "first_name": first_name,
+                "last_name": last_name,
+            }
+        )
 
+    return JsonResponse({"success": True})
 
 # -----------------------------
 # MANUAL SIGNUP
@@ -207,7 +233,6 @@ def patient_signup_manually(request):
         return JsonResponse({"success": False, "message": "Invalid request"}, status=400)
 
     data = json.loads(request.body)
-
     fullname = data.get("fullname")
     email = data.get("emailaddress")
     phonenumber = data.get("phonenumber")
@@ -232,14 +257,12 @@ def patient_signup_manually(request):
     patient.confirm_password = make_password(confirmpassword)
     patient.save()
 
-    # Also create Django User
     User.objects.get_or_create(
         username=email,
         defaults={"email": email, "password": patient.password}
     )
 
     return JsonResponse({"success": True, "message": "Account created successfully!"})
-
 
 # -----------------------------
 # MANUAL LOGIN
@@ -258,16 +281,13 @@ def patient_login(request):
 
     try:
         patient = Patient.objects.get(emailaddress=email)
-
         if not check_password(password, patient.password):
             return JsonResponse({"success": False, "message": "Incorrect password"})
 
-        # 🔐 SAFE Django User handling
         django_user, created = User.objects.get_or_create(
             username=email,
             defaults={"email": email}
         )
-
         if created:
             django_user.set_password(password)
             django_user.save()
@@ -280,12 +300,12 @@ def patient_login(request):
             "emailaddress": patient.emailaddress,
             "tokens": tokens
         })
-
     except Patient.DoesNotExist:
         return JsonResponse({"success": False, "message": "No account found with this email"})
 
-
-    # Fetch profile
+# -----------------------------
+# GET / UPDATE PATIENT PROFILE
+# -----------------------------
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_patient_profile(request):
@@ -293,9 +313,7 @@ def get_patient_profile(request):
     if not email:
         return Response({"success": False, "message": "Email parameter missing"})
 
-    email = email.strip()
-    patient = Patient.objects.filter(emailaddress__iexact=email).first()
-
+    patient = Patient.objects.filter(emailaddress__iexact=email.strip()).first()
     if not patient:
         return Response({"success": False, "message": "Patient not found."})
 
@@ -319,46 +337,55 @@ def get_patient_profile(request):
         "emergency_phone": patient.emergency_phone,
         "emergency_email": patient.emergency_email
     }
-
     return Response({"success": True, "data": data})
-
-
-# Update profile
-from datetime import datetime
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def update_patient_profile(request):
     email = request.data.get('emailaddress')
-
     try:
         patient = Patient.objects.get(emailaddress=email)
-
         fields = [
             "fullname", "phonenumber", "date_of_birth", "gender", "blood_type",
             "street_address", "city", "state", "zip_code",
             "weight", "height", "allergies", "medical_conditions",
             "emergency_name", "emergency_relationship", "emergency_phone", "emergency_email"
         ]
-
         for field in fields:
             if field in request.data:
                 value = request.data[field]
-
                 if field == "date_of_birth" and value:
                     from datetime import datetime
                     try:
                         value = datetime.strptime(value, "%Y-%m-%d").date()
                     except ValueError:
-                        return Response({
-                            "success": False,
-                            "message": "Invalid date format. Use YYYY-MM-DD"
-                        })
-
+                        return Response({"success": False, "message": "Invalid date format. Use YYYY-MM-DD"})
                 setattr(patient, field, value)
-
         patient.save()
         return Response({"success": True, "message": "Profile updated successfully."})
-
     except Patient.DoesNotExist:
         return Response({"success": False, "message": "Patient not found."})
+
+# -----------------------------
+# UPDATE DONOR PROFILE
+# -----------------------------
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def update_donor_profile(request):
+    email = request.data.get('email')
+    try:
+        donor = Donor.objects.get(email=email)
+        fields = [
+            "first_name", "last_name", "phone_number", "date_of_birth", "gender",
+            "blood_type", "address", "city", "state", "zip_code",
+            "emergency_contact_name", "emergency_contact_phone",
+            "weight", "has_diabetes", "has_hypertension", "has_heart_disease",
+            "no_medical_conditions", "accepted_terms", "consent_notifications"
+        ]
+        for field in fields:
+            if field in request.data:
+                setattr(donor, field, request.data[field])
+        donor.save()
+        return Response({"success": True, "message": "Donor profile updated successfully."})
+    except Donor.DoesNotExist:
+        return Response({"success": False, "message": "Donor not found."})

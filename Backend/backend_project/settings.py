@@ -75,13 +75,14 @@ WSGI_APPLICATION = 'backend_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'RedDrop',
-        'USER': 'postgres',
-        'PASSWORD': 'Harshana123',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': 'RedDrop',         # Your database name
+        'USER': 'postgres',        # Your PostgreSQL username
+        'PASSWORD': 'Harshana123', # Your PostgreSQL password
+        'HOST': 'localhost',       # Usually localhost for local DB
+        'PORT': '5432',            # Default PostgreSQL port
     }
 }
+
 
 # =====================
 # REST FRAMEWORK CONFIG

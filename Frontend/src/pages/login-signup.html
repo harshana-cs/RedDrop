@@ -5,18 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RedDrop | Login</title>
 
-  <!-- Tailwind CSS (compiled output) -->
-<link href="../../dist/output.css" rel="stylesheet" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- ICONS -->
-<link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+  <!-- ICONS -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
 
-<!-- Google Login -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Google Login -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-
-
-  <!-- Tailwind Config
   <script>
     tailwind.config = {
       theme: {
@@ -30,7 +27,7 @@
         },
       },
     }
-  </script> -->
+  </script>
 
   <style>
     .input { @apply w-full border px-3 py-2 rounded-md focus:ring-red-500 focus:border-red-500; }
@@ -94,7 +91,7 @@
 
       <p class="text-center text-sm mt-4">
         Don't have an account?
-        <button onclick="toggleForm('signup')" class="text-red-600 font-medium hover:underline">Sign up here</button>
+        <button type="button" onclick="toggleForm('signup')" class="text-red-600 font-medium hover:underline">Sign up here</button>
       </p>
     </div>
 
@@ -140,26 +137,32 @@
 
       <p class="text-center text-sm mt-4">
         Already have an account?
-        <button onclick="toggleForm('login')" class="text-red-600 font-medium hover:underline">Login here</button>
+        <button type="button" onclick="toggleForm('login')" class="text-red-600 font-medium hover:underline">Login here</button>
       </p>
     </div>
 
   </div>
 </div>
 
-<!-- POPUP MODAL -->
-<div id="priorityModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden">
+<!-- PRIORITY MODAL -->
+<div id="priorityModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
   <div class="bg-white w-11/12 max-w-md rounded-xl p-6 shadow-xl text-center">
+    <h2 class="text-2xl font-semibold text-gray-900">
+      Need Blood Urgently?
+    </h2>
 
-    <h2 class="text-2xl font-semibold text-gray-900">Need Blood Urgently?</h2>
-    <p class="text-gray-600 mt-2">If this is an emergency, you can request blood immediately.</p>
+    <p class="text-gray-600 mt-2">
+      If this is an emergency, you can request blood immediately.
+    </p>
 
     <div class="mt-6 space-y-4">
-      <button id="urgentBtn" class="w-full bg-red-600 text-white py-3 rounded-lg text-lg font-medium hover:bg-red-700">
+      <button id="urgentBtn"
+              class="w-full bg-red-600 text-white py-3 rounded-lg text-lg font-medium hover:bg-red-700">
         Request Blood
       </button>
 
-      <button id="skipBtn" class="w-full border border-gray-300 py-3 rounded-lg text-lg font-medium hover:bg-gray-100">
+      <button id="skipBtn"
+              class="w-full border border-gray-300 py-3 rounded-lg text-lg font-medium hover:bg-gray-100">
         Skip to Dashboard
       </button>
     </div>
@@ -176,6 +179,7 @@ function toggleForm(form) {
 function getSelectedRoleSignup() {
   return document.querySelector("input[name='role']:checked")?.value || "patient";
 }
+
 async function refreshToken() {
     const refresh = localStorage.getItem("refresh");
     if (!refresh) return;
@@ -191,9 +195,10 @@ async function refreshToken() {
         localStorage.setItem("access", data.access);
     } else {
         alert("Session expired, please login again.");
-        window.location.href = "/"; // redirect to login
+        window.location.href = "/";
     }
 }
+
 /* GOOGLE LOGIN HANDLER */
 window.handleGoogleLogin = async (response) => {
     console.log("Google credential:", response.credential);
@@ -214,20 +219,25 @@ window.handleGoogleLogin = async (response) => {
             console.log("Login:", data);
 
             if (data.success) {
-    alert(`Welcome ${data.fullname}!`);
-    document.getElementById("priorityModal").classList.remove("hidden");
-    localStorage.setItem("user_type", data.user_type);
+                localStorage.setItem("user_type", data.user_type);
+                localStorage.setItem("emailaddress", data.email || data.emailaddress);
+                localStorage.setItem("access_token", data.tokens.access);
+                localStorage.setItem("refresh_token", data.tokens.refresh);
 
-    // Also save email for profile
-    localStorage.setItem("emailaddress", data.email || data.emailaddress); // make sure you save the correct email
- localStorage.setItem("access_token", data.tokens.access);  // use the correct key
-localStorage.setItem("refresh_token", data.tokens.refresh);
-
-
-
-
-}
-
+                if (data.user_type === "donor") {
+                    if (!data.profile_complete) {
+                        window.location.href = "donor_register.html";
+                    } else {
+                        window.location.href = "donor_dashboard.html";
+                    }
+                } else {
+                    // patient
+                    alert(`Welcome ${data.fullname}!`);
+                    showPriorityModal();
+                }
+            } else {
+                alert(data.message || "Login failed");
+            }
 
         } else {
             // SIGNUP
@@ -269,10 +279,11 @@ localStorage.setItem("refresh_token", data.tokens.refresh);
     }
 };
 
-
 // MANUAL SIGNUP
 document.getElementById("signupForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    const signup_role = getSelectedRoleSignup();
 
     const payload = {
         fullname: document.getElementById("fullname").value,
@@ -280,6 +291,7 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
         phonenumber: document.getElementById("phonenumber").value,
         password: document.getElementById("password").value,
         confirmpassword: document.getElementById("confirmpassword").value,
+        role: signup_role
     };
 
     const res = await fetch("http://localhost:8000/patient/signup/", {
@@ -291,72 +303,69 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
     const data = await res.json();
     alert(data.message);
 
-    if (data.success) toggleForm("login");
+    if (data.success) {
+        if (signup_role === "donor") {
+            window.location.href = "donor_register.html";
+        } else {
+            toggleForm("login");
+        }
+    }
 });
-function priorityModal(fullname) {
-    // Show modal
-    document.getElementById("priorityModal").classList.remove("hidden");
 
-    // Optional: personalize greeting
-    console.log("Welcome:", fullname);
+function showPriorityModal() {
+    console.log("Showing priority modal");
+    const modal = document.getElementById("priorityModal");
+    
+    // Remove hidden and add flex to make it visible
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
 
-    // Add button actions
     document.getElementById("urgentBtn").onclick = () => {
-      window.location.href = "blood_request.html";
+        const role = localStorage.getItem("user_type");
+        if (role === "patient") {
+            localStorage.setItem("showRequestSection", "true");
+            window.location.href = "blood_request.html#requestBlood";
+        } else {
+            alert("Only patients can request blood.");
+        }
     };
 
     document.getElementById("skipBtn").onclick = () => {
-      window.location.href ="blood_request.html";
+        window.location.href = "blood_request.html";
     };
-  }
+}
+
 /* ---- MANUAL LOGIN ---- */
-  const loginForm = document.getElementById("loginForm");
-  loginForm?.addEventListener("submit", async (e) => {
+const loginForm = document.getElementById("loginForm");
+loginForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const emailaddress = document.getElementById("loginEmail").value;
     const password = document.getElementById("loginPassword").value;
 
     try {
-      const res = await fetch("http://localhost:8000/loginsignup/patient/login/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emailaddress, password })
-      });
+        const res = await fetch("http://localhost:8000/loginsignup/patient/login/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ emailaddress, password })
+        });
 
-      const data = await res.json();
-      if (data.success) {
-    localStorage.setItem("emailaddress", data.emailaddress); // ✅ matches profile page
-    localStorage.setItem("user_type", "patient");
-    priorityModal(data.fullname);
-}
- else {
-        alert(data.message);
-      }
-    } catch (err) {
-    alert("Login failed: " + err.message);
-}
-
-  });
- // Event listener for the "urgent" button
-    document.getElementById("urgentBtn").addEventListener("click", () => {
-        const role = localStorage.getItem("user_type");
-
-        if (role === "patient") {
-            // Set a flag to indicate the request section should show
-            localStorage.setItem("showRequestSection", "true");
-
-            // Redirect to the blood request page and scroll to the request section
-            window.location.href = "blood_request.html#requestBlood";
+        const data = await res.json();
+        if (data.success) {
+            localStorage.setItem("emailaddress", data.emailaddress);
+            localStorage.setItem("user_type", "patient");
+            localStorage.setItem("fullname", data.fullname);
+            
+            alert(`Welcome ${data.fullname}!`);
+            showPriorityModal();
         } else {
-            alert("Only patients can request blood.");
+            alert(data.message);
         }
-    });
-
-    // Event listener for the "skip" button
-    document.getElementById("skipBtn").addEventListener("click", () => {
-        window.location.href = "blood_request.html";
-    });
+    } catch (err) {
+        console.error("Login error:", err);
+        alert("Login failed: " + err.message);
+    }
+});
 </script>
 
 </body>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blood Donation Portal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> -->
+<style>
+    .blood-red { color: #8a0303; }
+    .bg-blood-red { background-color: #8a0303; }
+    .border-blood-red { border-color: #8a0303; }
+    .hover\:bg-dark-red:hover { background-color: #5a0101; }
+    @keyframes pulse-blood { 0%,100%{opacity:1;}50%{opacity:.7;} }
+    .pulse-blood { animation: pulse-blood 2s infinite; }
+    input[type="checkbox"]:checked { background-color: #8a0303; border-color: #8a0303; }
+    .preview-img { max-width: 150px; max-height: 150px; margin-top: 0.5rem; border: 1px solid #ccc; border-radius: 0.5rem; }
+</style>
+</head>
+<body class="bg-gray-50">
+<div class="min-h-screen">
+<header class="bg-white shadow">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <div class="flex items-center">
+            <div class="w-10 h-10 rounded-full bg-blood-red flex items-center justify-center mr-3">
+                <i class="fas fa-tint text-white text-xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold blood-red">Blood Donation Portal</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="hidden md:block"><span class="text-gray-600">Welcome, Donor!</span></div>
+            <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                <i class="fas fa-user text-gray-600"></i>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="container mx-auto px-4 py-6">
+    <div class="flex flex-col lg:flex-row gap-6">
+        <!-- Left Sidebar -->
+        <aside class="lg:w-1/4">
+            <div class="bg-white rounded-lg shadow p-4 mb-6">
+                <h2 class="text-xl font-bold mb-4 blood-red">Dashboard</h2>
+                <nav class="space-y-2">
+                    <a href="#" class="flex items-center p-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-blood-red transition-colors">
+                        <i class="fas fa-history w-6 mr-3"></i> <span>Donation History</span>
+                    </a>
+                    <a href="#" class="flex items-center p-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-blood-red transition-colors">
+                        <i class="fas fa-campground w-6 mr-3"></i> <span>Donation Camps</span>
+                    </a>
+                    <a href="#" class="flex items-center p-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-blood-red transition-colors">
+                        <i class="fas fa-trophy w-6 mr-3"></i> <span>Leaderboard</span>
+                    </a>
+                    <a href="#" class="flex items-center p-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-blood-red transition-colors">
+                        <i class="fas fa-user-circle w-6 mr-3"></i> <span>Profile</span>
+                    </a>
+                </nav>
+            </div>
+            <div class="bg-blood-red text-white rounded-lg shadow p-4">
+                <h3 class="text-lg font-bold mb-3">Your Impact</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between"><span>Total Donations</span><span class="font-bold">5</span></div>
+                    <div class="flex justify-between"><span>Lives Saved</span><span class="font-bold">15</span></div>
+                    <div class="flex justify-between"><span>Last Donation</span><span class="font-bold">2 months ago</span></div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-red-300 text-center text-sm">Thank you for being a life-saver!</div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="lg:w-3/4">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mr-4">
+                        <i class="fas fa-user-plus blood-red text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold blood-red">Donor Registration</h2>
+                        <p class="text-gray-600">Join our life-saving community by registering as a blood donor</p>
+                    </div>
+                </div>
+                <div class="border-t pt-6">
+                    <form id="donorRegistrationForm" enctype="multipart/form-data">
+                        <!-- Personal Information Section -->
+                        <div class="mb-8">
+                            <h3 class="text-xl font-bold mb-4 blood-red">Personal Information</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="firstName">First Name <span class="text-red-500">*</span></label>
+                                    <input type="text" id="firstName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" required>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="lastName">Last Name <span class="text-red-500">*</span></label>
+                                    <input type="text" id="lastName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" required>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="email">Email Address <span class="text-red-500">*</span></label>
+                                    <input type="email" id="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" required>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="phone">Phone Number <span class="text-red-500">*</span></label>
+                                    <input type="tel" id="phone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" required>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="dob">Date of Birth <span class="text-red-500">*</span></label>
+                                    <input type="text" id="dob" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" placeholder="mm/dd/yyyy" required>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="gender">Gender <span class="text-red-500">*</span></label>
+                                    <select id="gender" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" required>
+                                        <option value="">Select Gender</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                        <option value="prefer-not-to-say">Prefer not to say</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="bloodType">Blood Type <span class="text-red-500">*</span></label>
+                                    <select id="bloodType" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" required>
+                                        <option value="">Select Blood Type</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <label class="block text-gray-700 font-medium mb-2" for="address">Address <span class="text-red-500">*</span></label>
+                                <input type="text" id="address" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" placeholder="Enter your street address" required>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+                                <div><label class="block text-gray-700 font-medium mb-2" for="city">City <span class="text-red-500">*</span></label>
+                                    <input type="text" id="city" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" required>
+                                </div>
+                                <div><label class="block text-gray-700 font-medium mb-2" for="state">State <span class="text-red-500">*</span></label>
+                                    <input type="text" id="state" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" required>
+                                </div>
+                                <div><label class="block text-gray-700 font-medium mb-2" for="zip">ZIP Code <span class="text-red-500">*</span></label>
+                                    <input type="text" id="zip" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" required>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                <div><label class="block text-gray-700 font-medium mb-2" for="emergencyContact">Emergency Contact Name <span class="text-red-500">*</span></label>
+                                    <input type="text" id="emergencyContact" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" required>
+                                </div>
+                                <div><label class="block text-gray-700 font-medium mb-2" for="emergencyPhone">Emergency Contact Phone <span class="text-red-500">*</span></label>
+                                    <input type="tel" id="emergencyPhone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Medical Information Section -->
+                        <div class="mb-8">
+                            <h3 class="text-xl font-bold mb-4 blood-red">Medical Information</h3>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-medium mb-2" for="weight">Weight (kg) <span class="text-red-500">*</span></label>
+                                <input type="number" id="weight" min="40" max="200" class="w-full md:w-1/3 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" placeholder="Enter weight in kg" required>
+                                <p class="text-sm text-gray-500 mt-1">Minimum weight for blood donation is 50kg</p>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-gray-700 font-medium mb-2">Medical Conditions</label>
+                                <div class="space-y-2">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="diabetes" class="w-5 h-5 text-blood-red rounded focus:ring-blood-red">
+                                        <label for="diabetes" class="ml-2 text-gray-700">Diabetes</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="hypertension" class="w-5 h-5 text-blood-red rounded focus:ring-blood-red">
+                                        <label for="hypertension" class="ml-2 text-gray-700">Hypertension</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="heartDisease" class="w-5 h-5 text-blood-red rounded focus:ring-blood-red">
+                                        <label for="heartDisease" class="ml-2 text-gray-700">Heart Disease</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="none" class="w-5 h-5 text-blood-red rounded focus:ring-blood-red">
+                                        <label for="none" class="ml-2 text-gray-700">None of the above</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Citizenship and Photo Upload -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="citizenship">Upload Citizenship/ID <span class="text-red-500">*</span></label>
+                                    <input type="file" id="citizenship" accept=".jpg,.jpeg,.png,.pdf" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" required>
+                                    <img id="citizenshipPreview" class="preview-img hidden" alt="Citizenship Preview">
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 font-medium mb-2" for="photo">Upload Photo <span class="text-red-500">*</span></label>
+                                    <input type="file" id="photo" accept=".jpg,.jpeg,.png" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blood-red focus:border-transparent" required>
+                                    <img id="photoPreview" class="preview-img hidden" alt="Photo Preview">
+                                </div>
+                            </div>
+
+                            <div class="space-y-3 mt-4">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="terms" class="w-5 h-5 text-blood-red rounded focus:ring-blood-red" required>
+                                    <label for="terms" class="ml-2 text-gray-700">I agree to the terms and conditions</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="notifications" class="w-5 h-5 text-blood-red rounded focus:ring-blood-red">
+                                    <label for="notifications" class="ml-2 text-gray-700">I consent to receive notifications about donation opportunities</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="flex flex-col md:flex-row justify-between items-center pt-6 border-t">
+                            <div class="mb-4 md:mb-0">
+                                <p class="text-gray-600 text-sm">
+                                    <i class="fas fa-info-circle blood-red mr-1"></i>
+                                    Your information is secure and will only be used for donation purposes.
+                                </p>
+                            </div>
+                            <div class="flex space-x-4">
+                                <button type="button" id="cancelBtn" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" class="px-6 py-3 bg-blood-red text-white font-medium rounded-lg hover:bg-dark-red transition-colors flex items-center">
+                                    <i class="fas fa-heartbeat mr-2"></i>
+                                    Register as Donor
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Call to action banner -->
+            <div class="mt-6 bg-gradient-to-r from-blood-red to-red-700 rounded-lg shadow p-6 text-white">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <div class="mb-4 md:mb-0">
+                        <h3 class="text-xl font-bold">Ready to save lives?</h3>
+                        <p>Your blood donation can save up to 3 lives. Register today!</p>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="mr-4 hidden md:block">
+                            <i class="fas fa-hand-holding-heart text-4xl"></i>
+                        </div>
+                        <button class="px-6 py-3 bg-white text-blood-red font-bold rounded-lg hover:bg-gray-100 transition-colors">Donate Now</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+const citizenshipInput = document.getElementById('citizenship');
+const citizenshipPreview = document.getElementById('citizenshipPreview');
+const photoInput = document.getElementById('photo');
+const photoPreview = document.getElementById('photoPreview');
+
+function previewFile(input, previewEl) {
+    input.addEventListener('change', () => {
+        const file = input.files[0];
+        if (!file) {
+            previewEl.src = '';
+            previewEl.classList.add('hidden');
+            return;
+        }
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                previewEl.src = e.target.result;
+                previewEl.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            previewEl.src = '';
+            previewEl.classList.add('hidden');
+        }
+    });
+}
+
+previewFile(citizenshipInput, citizenshipPreview);
+previewFile(photoInput, photoPreview);
+
+document.getElementById('donorRegistrationForm').addEventListener('submit', function(e){
+    e.preventDefault();
+
+    // Fetch form values
+    const dobStr = document.getElementById('dob').value;
+    const weight = parseFloat(document.getElementById('weight').value);
+    const bloodType = document.getElementById('bloodType').value;
+    const diabetes = document.getElementById('diabetes').checked;
+    const hypertension = document.getElementById('hypertension').checked;
+    const heartDisease = document.getElementById('heartDisease').checked;
+
+    const citizenshipFile = citizenshipInput.files[0];
+    const photoFile = photoInput.files[0];
+
+    // Check required files
+    if (!citizenshipFile || !photoFile) {
+        alert('ID and Photo are required.');
+        return;
+    }
+
+    // Check blood type
+    const validBloodTypes = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
+    if (!validBloodTypes.includes(bloodType)) {
+        alert('Please select a valid blood type.');
+        return;
+    }
+
+    // Validate age
+    const dob = new Date(dobStr);
+    if (isNaN(dob.getTime())) {
+        alert('Please enter a valid date of birth (mm/dd/yyyy).');
+        return;
+    }
+    const age = new Date().getFullYear() - dob.getFullYear();
+    if (age < 18) {
+        alert('You must be at least 18 years old to donate blood.');
+        return;
+    }
+
+    // Validate weight
+    if (weight < 50) {
+        alert('Minimum weight for blood donation is 50kg.');
+        return;
+    }
+
+    // Check medical conditions
+    if (diabetes || hypertension || heartDisease) {
+        alert('You are currently ineligible to donate due to medical conditions.');
+        return;
+    }
+
+    alert('Registration successful!');
+    this.reset();
+    citizenshipPreview.classList.add('hidden');
+    photoPreview.classList.add('hidden');
+});
+
+document.getElementById('cancelBtn').addEventListener('click', () => {
+    document.getElementById('donorRegistrationForm').reset();
+    citizenshipPreview.classList.add('hidden');
+    photoPreview.classList.add('hidden');
+});
+</script>
+</body>
+</html>

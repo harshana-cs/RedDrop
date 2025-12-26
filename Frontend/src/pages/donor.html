@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BloodBridge - Donor Dashboard</title>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        red: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            200: '#fecaca',
+                            300: '#fca5a5',
+                            400: '#f87171',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+        
+        .btn-primary {
+            @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors;
+        }
+        
+        .btn-secondary {
+            @apply bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors;
+        }
+        
+        .card {
+            @apply bg-white rounded-lg shadow-sm border border-gray-200;
+        }
+        
+        .tab-active {
+            @apply border-red-500 text-red-600;
+        }
+        
+        .tab-inactive {
+            @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Main Dashboard Container -->
+    <div class="min-h-screen flex">
+        <!-- Sidebar Navigation -->
+        <div class="hidden md:flex md:w-64 bg-white border-r border-gray-200 flex-col">
+            <!-- Logo -->
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="h-10 w-10 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-heart text-red-600 text-xl"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-900">BloodBridge</h1>
+                </div>
+                <p class="text-sm text-gray-500 mt-1">Donor Dashboard</p>
+            </div>
+            
+            <!-- User Profile -->
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="h-12 w-12 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold">
+                        JD
+                    </div>
+                    <div>
+                        <h2 class="font-medium text-gray-900">John Doe</h2>
+                        <p class="text-sm text-gray-500">Blood Type: O+</p>
+                        <div class="flex items-center mt-1">
+                            <i class="fas fa-star text-yellow-400 text-xs mr-1"></i>
+                            <span class="text-xs text-gray-600">Regular Donor (5 donations)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <div class="flex-1 p-4">
+                <nav class="space-y-1">
+                    <a href="#" class="flex items-center px-4 py-3 text-red-600 bg-red-50 rounded-lg">
+                        <i class="fas fa-home mr-3"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-history mr-3"></i>
+                        <span>Donation History</span>
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-calendar-alt mr-3"></i>
+                        <span>Donation Camps</span>
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-trophy mr-3"></i>
+                        <span>Leaderboard</span>
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-user mr-3"></i>
+                        <span>Profile</span>
+                    </a>
+                </nav>
+            </div>
+            
+            <!-- Logout -->
+            <div class="p-4 border-t border-gray-200">
+                <button id="logoutBtn" class="w-full flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors">
+                    <i class="fas fa-sign-out-alt mr-2"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Header -->
+        <div class="md:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <button id="mobileMenuBtn">
+                    <i class="fas fa-bars text-gray-700 text-xl"></i>
+                </button>
+                <div class="flex items-center space-x-2">
+                    <div class="h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-heart text-red-600"></i>
+                    </div>
+                    <h1 class="font-bold text-gray-900">BloodBridge</h1>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <div class="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-700 font-medium text-sm">
+                    JD
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Sidebar (Hidden by default) -->
+        <div id="mobileSidebar" class="hidden md:hidden fixed inset-0 z-50 bg-white flex flex-col">
+            <!-- Mobile Sidebar Header -->
+            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="h-10 w-10 bg-red-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-heart text-red-600 text-xl"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-900">BloodBridge</h1>
+                </div>
+                <button id="closeMobileMenuBtn">
+                    <i class="fas fa-times text-gray-700 text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile User Profile -->
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="h-12 w-12 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold">
+                        JD
+                    </div>
+                    <div>
+                        <h2 class="font-medium text-gray-900">John Doe</h2>
+                        <p class="text-sm text-gray-500">Blood Type: O+</p>
+                        <div class="flex items-center mt-1">
+                            <i class="fas fa-star text-yellow-400 text-xs mr-1"></i>
+                            <span class="text-xs text-gray-600">Regular Donor (5 donations)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile Navigation -->
+            <div class="flex-1 p-4">
+                <nav class="space-y-1">
+                    <a href="#" class="flex items-center px-4 py-3 text-red-600 bg-red-50 rounded-lg">
+                        <i class="fas fa-home mr-3"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-history mr-3"></i>
+                        <span>Donation History</span>
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-calendar-alt mr-3"></i>
+                        <span>Donation Camps</span>
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-trophy mr-3"></i>
+                        <span>Leaderboard</span>
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-user mr-3"></i>
+                        <span>Profile</span>
+                    </a>
+                </nav>
+            </div>
+            
+            <!-- Mobile Logout -->
+            <div class="p-4 border-t border-gray-200">
+                <button id="mobileLogoutBtn" class="w-full flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors">
+                    <i class="fas fa-sign-out-alt mr-2"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1">
+            <div class="p-4 md:p-6 space-y-6">
+                <!-- Welcome Section -->
+                <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-6 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-2xl font-bold">Welcome back, John Doe!</h1>
+                            <p class="text-red-100 mt-1">
+                                Thank you for being a lifesaver. Your donation history and upcoming opportunities are below.
+                            </p>
+                        </div>
+                        <div class="hidden md:block">
+                            <i class="fas fa-heart text-red-200 text-6xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="card p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-red-100 rounded-lg">
+                                <i class="fas fa-heart text-red-600 text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Total Donations</p>
+                                <p class="text-2xl font-bold text-gray-900">5</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-green-100 rounded-lg">
+                                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Verified</p>
+                                <p class="text-2xl font-bold text-gray-900">4</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-yellow-100 rounded-lg">
+                                <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Pending</p>
+                                <p class="text-2xl font-bold text-gray-900">1</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <i class="fas fa-calendar text-blue-600 text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Next Eligible</p>
+                                <p class="text-lg font-bold text-gray-900">45 days</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Eligibility Status -->
+                <div class="rounded-lg p-6 bg-yellow-50 border border-yellow-200">
+                    <div class="flex items-center">
+                        <div class="p-2 rounded-lg bg-yellow-100">
+                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium text-yellow-900">Donation Cooldown Period</h3>
+                            <p class="text-sm text-yellow-700">
+                                You can donate again on 2024-04-15 (45 days remaining)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs Section -->
+                <div class="card">
+                    <div class="border-b border-gray-200">
+                        <nav class="flex space-x-8 px-6">
+                            <button id="historyTab" class="tab-active py-4 px-1 border-b-2 font-medium text-sm">
+                                Donation History
+                            </button>
+                            <button id="campsTab" class="tab-inactive py-4 px-1 border-b-2 font-medium text-sm">
+                                Donation Camps
+                            </button>
+                            <button id="achievementsTab" class="tab-inactive py-4 px-1 border-b-2 font-medium text-sm">
+                                Achievements
+                            </button>
+                        </nav>
+                    </div>
+
+                    <div class="p-6">
+                        <!-- Donation History Tab Content (Active by default) -->
+                        <div id="historyContent" class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-medium text-gray-900">Your Donation History</h3>
+                                <a href="#" class="text-red-600 hover:text-red-700 text-sm font-medium">
+                                    View All →
+                                </a>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Date
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Blood Group
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Hospital
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Status
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Actions
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                2024-01-15
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-tint text-red-500 mr-2"></i>
+                                                    <span class="text-sm font-medium text-gray-900">
+                                                        O+
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                Bir Hospital
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-green-600 bg-green-100">
+                                                    Verified
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <button class="download-certificate text-blue-600 hover:text-blue-900" data-id="1">
+                                                    Download Certificate
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                2024-01-20
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-tint text-red-500 mr-2"></i>
+                                                    <span class="text-sm font-medium text-gray-900">
+                                                        O+
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                Patan Hospital
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-yellow-600 bg-yellow-100">
+                                                    Pending
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <span class="text-gray-400">No certificate</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                2023-10-15
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-tint text-red-500 mr-2"></i>
+                                                    <span class="text-sm font-medium text-gray-900">
+                                                        O+
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                Teaching Hospital
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-green-600 bg-green-100">
+                                                    Verified
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                <button class="download-certificate text-blue-600 hover:text-blue-900" data-id="3">
+                                                    Download Certificate
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Donation Camps Tab Content (Hidden by default) -->
+                        <div id="campsContent" class="hidden space-y-4">
+                            <h3 class="text-lg font-medium text-gray-900">Upcoming Donation Camps</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <!-- Camp 1 -->
+                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h4 class="font-medium text-gray-900">Community Blood Drive</h4>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                                            Registered
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="space-y-2 text-sm text-gray-600">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-hospital mr-2"></i>
+                                            <span>Bir Hospital</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-calendar mr-2"></i>
+                                            <span>2024-03-15 at 09:00 AM - 05:00 PM</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-map-marker-alt mr-2"></i>
+                                            <span>Kathmandu, Nepal</span>
+                                        </div>
+                                        <p class="text-xs text-gray-500">Monthly community blood donation drive</p>
+                                    </div>
+
+                                    <div class="mt-4 flex space-x-2">
+                                        <button class="btn-secondary flex-1 text-sm py-2" disabled>
+                                            Registered
+                                        </button>
+                                        <button class="btn-secondary text-sm py-2 px-3">
+                                            <i class="fas fa-phone"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Camp 2 -->
+                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h4 class="font-medium text-gray-900">Emergency Blood Camp</h4>
+                                    </div>
+                                    
+                                    <div class="space-y-2 text-sm text-gray-600">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-hospital mr-2"></i>
+                                            <span>Patan Hospital</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-calendar mr-2"></i>
+                                            <span>2024-03-20 at 10:00 AM - 06:00 PM</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-map-marker-alt mr-2"></i>
+                                            <span>Lalitpur, Nepal</span>
+                                        </div>
+                                        <p class="text-xs text-gray-500">Emergency blood donation camp for critical patients</p>
+                                    </div>
+
+                                    <div class="mt-4 flex space-x-2">
+                                        <button class="register-camp btn-primary flex-1 text-sm py-2" data-id="2">
+                                            Register
+                                        </button>
+                                        <button class="btn-secondary text-sm py-2 px-3">
+                                            <i class="fas fa-phone"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Camp 3 -->
+                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h4 class="font-medium text-gray-900">University Blood Drive</h4>
+                                    </div>
+                                    
+                                    <div class="space-y-2 text-sm text-gray-600">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-hospital mr-2"></i>
+                                            <span>Teaching Hospital</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-calendar mr-2"></i>
+                                            <span>2024-03-25 at 08:00 AM - 04:00 PM</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-map-marker-alt mr-2"></i>
+                                            <span>Kathmandu University</span>
+                                        </div>
+                                        <p class="text-xs text-gray-500">Blood donation drive organized by medical students</p>
+                                    </div>
+
+                                    <div class="mt-4 flex space-x-2">
+                                        <button class="register-camp btn-primary flex-1 text-sm py-2" data-id="3">
+                                            Register
+                                        </button>
+                                        <button class="btn-secondary text-sm py-2 px-3">
+                                            <i class="fas fa-phone"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Achievements Tab Content (Hidden by default) -->
+                        <div id="achievementsContent" class="hidden space-y-4">
+                            <h3 class="text-lg font-medium text-gray-900">Your Achievements</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <!-- Achievement 1 -->
+                                <div class="rounded-lg p-4 border bg-green-50 border-green-200">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="text-2xl">🥇</div>
+                                        <div class="flex-1">
+                                            <h4 class="font-medium text-green-900">First Donation</h4>
+                                            <p class="text-sm text-green-700">Completed your first blood donation</p>
+                                            <p class="text-xs text-green-600 mt-1">Achieved on 2023-01-15</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Achievement 2 -->
+                                <div class="rounded-lg p-4 border bg-green-50 border-green-200">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="text-2xl">🏆</div>
+                                        <div class="flex-1">
+                                            <h4 class="font-medium text-green-900">Regular Donor</h4>
+                                            <p class="text-sm text-green-700">Donated blood 3 times</p>
+                                            <p class="text-xs text-green-600 mt-1">Achieved on 2023-10-15</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Achievement 3 -->
+                                <div class="rounded-lg p-4 border bg-green-50 border-green-200">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="text-2xl">💝</div>
+                                        <div class="flex-1">
+                                            <h4 class="font-medium text-green-900">Life Saver</h4>
+                                            <p class="text-sm text-green-700">Donated blood 5 times</p>
+                                            <p class="text-xs text-green-600 mt-1">Achieved on 2024-01-15</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Achievement 4 -->
+                                <div class="rounded-lg p-4 border bg-gray-50 border-gray-200">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="text-2xl">👑</div>
+                                        <div class="flex-1">
+                                            <h4 class="font-medium text-gray-900">Hero Donor</h4>
+                                            <p class="text-sm text-gray-600">Donated blood 10 times</p>
+                                            <div class="mt-2">
+                                                <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                                    <span>Progress</span>
+                                                    <span>5/10</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-red-500 h-2 rounded-full" style="width: 50%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <a href="#" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition-colors">
+                            <i class="fas fa-calendar text-red-500 mr-3 text-xl"></i>
+                            <div>
+                                <p class="font-medium text-gray-900">Find Camps</p>
+                                <p class="text-sm text-gray-500">Register for donation camps</p>
+                            </div>
+                        </a>
+
+                        <a href="#" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors">
+                            <i class="fas fa-history text-blue-500 mr-3 text-xl"></i>
+                            <div>
+                                <p class="font-medium text-gray-900">View History</p>
+                                <p class="text-sm text-gray-500">Check your donation history</p>
+                            </div>
+                        </a>
+
+                        <a href="#" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors">
+                            <i class="fas fa-trophy text-green-500 mr-3 text-xl"></i>
+                            <div>
+                                <p class="font-medium text-gray-900">Leaderboard</p>
+                                <p class="text-sm text-gray-500">See top donors ranking</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Tab Switching Functionality
+        const historyTab = document.getElementById('historyTab');
+        const campsTab = document.getElementById('campsTab');
+        const achievementsTab = document.getElementById('achievementsTab');
+        
+        const historyContent = document.getElementById('historyContent');
+        const campsContent = document.getElementById('campsContent');
+        const achievementsContent = document.getElementById('achievementsContent');
+        
+        // Set initial active tab
+        setActiveTab('historyTab');
+        
+        historyTab.addEventListener('click', () => setActiveTab('historyTab'));
+        campsTab.addEventListener('click', () => setActiveTab('campsTab'));
+        achievementsTab.addEventListener('click', () => setActiveTab('achievementsTab'));
+        
+        function setActiveTab(activeTabId) {
+            // Reset all tabs to inactive
+            [historyTab, campsTab, achievementsTab].forEach(tab => {
+                tab.classList.remove('tab-active');
+                tab.classList.add('tab-inactive');
+            });
+            
+            // Hide all content
+            [historyContent, campsContent, achievementsContent].forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Activate selected tab
+            const activeTab = document.getElementById(activeTabId);
+            activeTab.classList.remove('tab-inactive');
+            activeTab.classList.add('tab-active');
+            
+            // Show corresponding content
+            if (activeTabId === 'historyTab') {
+                historyContent.classList.remove('hidden');
+            } else if (activeTabId === 'campsTab') {
+                campsContent.classList.remove('hidden');
+            } else if (activeTabId === 'achievementsTab') {
+                achievementsContent.classList.remove('hidden');
+            }
+        }
+        
+        // Mobile Menu Functionality
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const closeMobileMenuBtn = document.getElementById('closeMobileMenuBtn');
+        const mobileSidebar = document.getElementById('mobileSidebar');
+        
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileSidebar.classList.remove('hidden');
+            });
+        }
+        
+        if (closeMobileMenuBtn) {
+            closeMobileMenuBtn.addEventListener('click', () => {
+                mobileSidebar.classList.add('hidden');
+            });
+        }
+        
+        // Register Camp Button
+        const registerCampButtons = document.querySelectorAll('.register-camp');
+        registerCampButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const campId = this.getAttribute('data-id');
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Successfully registered for the blood donation camp!',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#ef4444'
+                });
+                
+                // Update button state
+                this.textContent = 'Registered';
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-secondary');
+                this.disabled = true;
+            });
+        });
+        
+        // Download Certificate
+        const downloadCertificateButtons = document.querySelectorAll('.download-certificate');
+        downloadCertificateButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const donationId = this.getAttribute('data-id');
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Certificate downloaded successfully!',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#ef4444'
+                });
+            });
+        });
+        
+        // Logout Functionality
+        const logoutBtn = document.getElementById('logoutBtn');
+        const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
+        
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'You will be logged out of your account.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Yes, logout'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Logged out!',
+                            text: 'You have been successfully logged out.',
+                            icon: 'success',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#ef4444'
+                        }).then(() => {
+                            // Redirect to login page in a real application
+                            window.location.href = '#';
+                        });
+                    }
+                });
+            });
+        }
+        
+        if (mobileLogoutBtn) {
+            mobileLogoutBtn.addEventListener('click', () => {
+                mobileSidebar.classList.add('hidden');
+                
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'You will be logged out of your account.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Yes, logout'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Logged out!',
+                            text: 'You have been successfully logged out.',
+                            icon: 'success',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#ef4444'
+                        }).then(() => {
+                            // Redirect to login page in a real application
+                            window.location.href = '#';
+                        });
+                    }
+                });
+            });
+        }
+        
+        // Make mobile sidebar links close the sidebar when clicked
+        const mobileLinks = document.querySelectorAll('#mobileSidebar a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileSidebar.classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

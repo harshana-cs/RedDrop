@@ -97,162 +97,258 @@
             <!-- Dashboard Section -->
             <div id="dashboard" class="section active">
                 <!-- Welcome Section -->
-                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white mb-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h1 class="text-2xl font-bold">
-    Welcome back, <span id="welcomeName">User</span>!
-</h1>
-
-                            <p class="text-blue-100 mt-1">Your blood request status and donor matches are updated below.</p>
+                <div class="relative overflow-hidden bg-gradient-to-r from-red-500 via-red-600 to-orange-500 rounded-2xl p-8 text-white mb-8 shadow-lg">
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3Cpattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"%3E%3Cpath d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/%3E%3C/pattern%3E%3C/defs%3E%3Crect width="100%25" height="100%25" fill="url(%23grid)"/%3E%3C/svg%3E')] opacity-20"></div>
+                    <div class="relative flex items-center justify-between">
+                        <div class="max-w-2xl">
+                            <div class="flex items-center space-x-4 mb-4">
+                                <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-hand-wave w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-red-100">Welcome back!</p>
+                                    <h1 class="text-3xl font-bold mt-1">
+                                        <span id="welcomeName" class="bg-gradient-to-r from-white to-red-100 bg-clip-text text-transparent">User</span>
+                                    </h1>
+                                </div>
+                            </div>
+                            <p class="text-red-100/80 text-lg mb-6">Your blood request status and donor matches are updated below.</p>
+                            <div class="flex flex-wrap gap-4">
+                                <div class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
+                                    <i class="fas fa-bell w-4 h-4"></i>
+                                    <span class="text-sm">2 Active Requests</span>
+                                </div>
+                                <div class="flex items-center space-x-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
+                                    <i class="fas fa-heart w-4 h-4"></i>
+                                    <span class="text-sm">5 Available Donors</span>
+                                </div>
+                            </div>
                         </div>
-                        <i class="fas fa-heart hidden md:block w-16 h-16 text-blue-200"></i>
+                        <i class="fas fa-heartbeat hidden md:block w-24 h-24 text-white/20 animate-pulse"></i>
                     </div>
                 </div>
 
                 <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                        <div class="flex items-center">
-                            <div class="p-2 bg-blue-100 rounded-lg">
-                               <i class="fas fa-file-alt w-6 h-6 text-blue-600"></i>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 mb-2">Total Requests</p>
+                                <p id="total-requests" class="text-3xl font-bold text-gray-900">3</p>
                             </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Total Requests</p>
-                                <p id="total-requests" class="text-2xl font-bold text-gray-900">3</p>
+                            <div class="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+                                <i class="fas fa-file-alt text-white w-7 h-7"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="h-2 bg-blue-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full w-3/4"></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                        <div class="flex items-center">
-                            <div class="p-2 bg-yellow-100 rounded-lg">
-                                <i class="fas fa-clock w-6 h-6 text-yellow-600"></i>
+                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 mb-2">Pending</p>
+                                <p id="pending-requests" class="text-3xl font-bold text-gray-900">1</p>
                             </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Pending</p>
-                                <p id="pending-requests" class="text-2xl font-bold text-gray-900">1</p>
+                            <div class="w-14 h-14 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center shadow-md">
+                                <i class="fas fa-clock text-white w-7 h-7"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="h-2 bg-yellow-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full w-1/3"></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                        <div class="flex items-center">
-                            <div class="p-2 bg-green-100 rounded-lg">
-                                <i class="fas fa-check-circle w-6 h-6 text-green-600"></i>
+                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 mb-2">Approved</p>
+                                <p id="approved-requests" class="text-3xl font-bold text-gray-900">2</p>
                             </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Approved</p>
-                                <p id="approved-requests" class="text-2xl font-bold text-gray-900">2</p>
+                            <div class="w-14 h-14 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-md">
+                                <i class="fas fa-check-circle text-white w-7 h-7"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="h-2 bg-green-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full w-2/3"></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                        <div class="flex items-center">
-                            <div class="p-2 bg-red-100 rounded-lg">
-                                <i class="fas fa-heart w-6 h-6 text-red-600"></i>
+                    <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600 mb-2">Received</p>
+                                <p id="received-requests" class="text-3xl font-bold text-gray-900">1</p>
                             </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Received</p>
-                                <p id="received-requests" class="text-2xl font-bold text-gray-900">1</p>
+                            <div class="w-14 h-14 bg-gradient-to-r from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-md animate-pulse">
+                                <i class="fas fa-heart text-white w-7 h-7"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="h-2 bg-red-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-red-500 to-red-600 rounded-full w-1/3"></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Tabs -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-                    <div class="border-b border-gray-200">
-                        <nav class="flex space-x-8 px-6">
-                            <button onclick="showTab('requests')" class="tab-btn active py-4 px-1 border-b-2 border-red-500 font-medium text-sm text-red-600">
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 mb-8 overflow-hidden">
+                    <div class="border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                        <nav class="flex space-x-8 px-8">
+                            <button onclick="showTab('requests')" class="tab-btn active py-5 px-1 border-b-2 border-red-500 font-semibold text-sm text-red-600 relative group">
                                 Recent Requests
+                                <span class="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-red-500 to-red-600"></span>
                             </button>
-                            <button onclick="showTab('donors')" class="tab-btn py-4 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700">
+                            <button onclick="showTab('donors')" class="tab-btn py-5 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 transition-colors relative group">
                                 Compatible Donors
+                                <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300 group-hover:w-full"></span>
                             </button>
                         </nav>
                     </div>
 
-                    <div class="p-6">
+                    <div class="p-8">
                         <!-- Recent Requests Tab -->
                         <div id="requests-tab" class="tab-content">
-                            <div class="flex items-center justify-between mb-4">
-                                <h3 class="text-lg font-medium text-gray-900">Your Blood Requests</h3>
-                                <button onclick="showSection('request')" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center space-x-2">
-                                    <img src="../assets/remixicon/icons/System/add-line.svg"
-     class="w-6 h-6" alt="add" />
-
-                                    <span>New Request</span>
+                            <div class="flex items-center justify-between mb-8">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-900">Your Blood Requests</h3>
+                                    <p class="text-gray-500 text-sm mt-1">Track and manage your active requests</p>
+                                </div>
+                                <button onclick="showSection('request')" class="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center space-x-3 hover:scale-105">
+                                    <div class="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                                        <img src="../assets/remixicon/icons/System/add-line.svg" class="w-4 h-4 filter invert">
+                                    </div>
+                                    <span class="font-semibold">New Request</span>
                                 </button>
                             </div>
 
-                            <div class="overflow-x-auto">
+                            <div class="overflow-hidden rounded-xl border border-gray-200">
                                 <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
+                                    <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
                                         <tr>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Blood Group</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Units</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Urgency</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Blood Group</th>
+                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Units</th>
+                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Urgency</th>
+                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Hospital</th>
+                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
-                                                    <span class="text-sm font-medium text-gray-900">O+</span>
+                                    <tbody class="bg-white divide-y divide-gray-100">
+                                        <tr class="hover:bg-red-50/50 transition-colors duration-200">
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                                        <i class="fas fa-tint w-5 h-5 text-red-600"></i>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-sm font-semibold text-gray-900">O+</span>
+                                                        <p class="text-xs text-gray-500">Universal Donor</p>
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2 units</td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-red-600 bg-red-100">Critical</span>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="text-sm font-semibold text-gray-900">2 units</span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Bir Hospital</td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-green-600 bg-green-100">Approved</span>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-red-100 to-red-50 text-red-700">
+                                                    <i class="fas fa-exclamation-circle w-3 h-3 mr-1"></i>
+                                                    Critical
+                                                </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                                <button onclick="showNotification('Contacting Jane Smith at +977-9841234568')" class="text-blue-600 hover:text-blue-900 text-xs block mb-1">Contact Donor</button>
-                                                <button onclick="confirmReceipt()" class="text-green-600 hover:text-green-900 text-xs block">Confirm Receipt</button>
+                                            <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">Bir Hospital</td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-green-100 to-green-50 text-green-700">
+                                                    <i class="fas fa-check-circle w-3 h-3 mr-1"></i>
+                                                    Approved
+                                                </span>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap text-sm">
+                                                <div class="flex flex-col space-y-2">
+                                                    <button onclick="showNotification('Contacting Jane Smith at +977-9841234568')" class="text-blue-600 hover:text-blue-900 text-xs font-medium hover:underline flex items-center">
+                                                        <i class="fas fa-phone w-3 h-3 mr-1"></i>
+                                                        Contact Donor
+                                                    </button>
+                                                    <button onclick="confirmReceipt()" class="text-green-600 hover:text-green-900 text-xs font-medium hover:underline flex items-center">
+                                                        <i class="fas fa-check-circle w-3 h-3 mr-1"></i>
+                                                        Confirm Receipt
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
-                                                    <span class="text-sm font-medium text-gray-900">A+</span>
+                                        <tr class="hover:bg-orange-50/50 transition-colors duration-200">
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                                        <i class="fas fa-tint w-5 h-5 text-orange-600"></i>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-sm font-semibold text-gray-900">A+</span>
+                                                        <p class="text-xs text-gray-500">Most Common</p>
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">1 units</td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-orange-600 bg-orange-100">High</span>
+                                            <td class="px-8 py-5 whitespace-nowrap text-sm font-semibold text-gray-900">1 unit</td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-orange-100 to-orange-50 text-orange-700">
+                                                    <i class="fas fa-exclamation-circle w-3 h-3 mr-1"></i>
+                                                    High
+                                                </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Patan Hospital</td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-yellow-600 bg-yellow-100">Pending</span>
+                                            <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">Patan Hospital</td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-yellow-100 to-yellow-50 text-yellow-700">
+                                                    <i class="fas fa-clock w-3 h-3 mr-1"></i>
+                                                    Pending
+                                                </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-yellow-600">Waiting for approval</td>
+                                            <td class="px-8 py-5 whitespace-nowrap text-sm font-medium text-yellow-600">
+                                                <div class="flex items-center px-3 py-2 bg-yellow-50 rounded-lg">
+                                                    <i class="fas fa-hourglass-half w-3 h-3 mr-2"></i>
+                                                    Waiting for approval
+                                                </div>
+                                            </td>
                                         </tr>
-                                        <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="flex items-center">
-                                                    <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
-                                                    <span class="text-sm font-medium text-gray-900">B+</span>
+                                        <tr class="hover:bg-blue-50/50 transition-colors duration-200">
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                        <i class="fas fa-tint w-5 h-5 text-blue-600"></i>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-sm font-semibold text-gray-900">B+</span>
+                                                        <p class="text-xs text-gray-500">Less Common</p>
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">3 units</td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-yellow-600 bg-yellow-100">Medium</span>
+                                            <td class="px-8 py-5 whitespace-nowrap text-sm font-semibold text-gray-900">3 units</td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-100 to-blue-50 text-blue-700">
+                                                    <i class="fas fa-exclamation-circle w-3 h-3 mr-1"></i>
+                                                    Medium
+                                                </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Teaching Hospital</td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-blue-600 bg-blue-100">Completed</span>
+                                            <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">Teaching Hospital</td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-indigo-100 to-indigo-50 text-indigo-700">
+                                                    <i class="fas fa-check-double w-3 h-3 mr-1"></i>
+                                                    Completed
+                                                </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600">✓ Received</td>
+                                            <td class="px-8 py-5 whitespace-nowrap text-sm font-medium text-green-600">
+                                                <div class="flex items-center px-3 py-2 bg-green-50 rounded-lg">
+                                                    <i class="fas fa-check w-3 h-3 mr-2"></i>
+                                                    ✓ Received
+                                                </div>
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -261,66 +357,155 @@
 
                         <!-- Compatible Donors Tab -->
                         <div id="donors-tab" class="tab-content hidden">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Compatible Donors Near You</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <div class="flex items-center space-x-2">
-                                            <i class="fas fa-heart w-5 h-5 text-red-500"></i>
-                                            <span class="font-medium text-gray-900">Jane Smith</span>
+                            <div class="flex items-center justify-between mb-8">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-900">Compatible Donors Near You</h3>
+                                    <p class="text-gray-500 text-sm mt-1">Available donors matching your blood type</p>
+                                </div>
+                                <button onclick="showNotification('Finding more donors...')" 
+                                        class="px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-xl hover:shadow transition-all duration-200 text-sm font-medium hover:scale-105">
+                                    <i class="fas fa-sync-alt w-4 h-4 mr-2"></i>
+                                    Refresh List
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div class="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                    <div class="flex items-center justify-between mb-6">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="relative">
+                                                <div class="w-14 h-14 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-md">
+                                                    <i class="fas fa-user text-white w-6 h-6"></i>
+                                                </div>
+                                                <div class="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                                                    <i class="fas fa-check text-white w-2 h-2"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900">Jane Smith</h4>
+                                                <div class="flex items-center space-x-2 mt-1">
+                                                    <span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">O+</span>
+                                                    <span class="text-xs text-gray-500">Verified Donor</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <span class="text-sm text-gray-500">O+</span>
                                     </div>
-                                    <div class="space-y-2 text-sm text-gray-600">
+                                    
+                                    <div class="space-y-4 mb-6">
                                         <div class="flex items-center">
-                                            <i class="fas fa-map-pin w-4 h-4 mr-2"></i>
-                                            <span>Kathmandu (2.5 km)</span>
+                                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-map-pin w-4 h-4 text-blue-600"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">Kathmandu</p>
+                                                <p class="text-xs text-gray-500">2.5 km away</p>
+                                            </div>
                                         </div>
+                                        
                                         <div class="flex items-center">
-                                            <i class="fas fa-calendar w-4 h-4 mr-2"></i>
-                                            <span>Last donation: 2024-01-15</span>
+                                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-calendar w-4 h-4 text-purple-600"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">Last Donation</p>
+                                                <p class="text-xs text-gray-500">2024-01-15</p>
+                                            </div>
                                         </div>
+                                        
                                         <div class="flex items-center">
-                                            <i class="fas fa-heart w-4 h-4 mr-2"></i>
-                                            <span>5 total donations</span>
+                                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-heart w-4 h-4 text-red-600"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">5 total donations</p>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="mt-4 flex space-x-2">
-                                        <button onclick="showNotification('Contacting Jane Smith')" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">Contact</button>
-                                        <button class="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300">
-                                            <i class="fas fa-phone w-4 h-4"></i>
+                                    
+                                    <div class="mt-6 flex space-x-3">
+                                        <button onclick="showNotification('Contacting Jane Smith')" 
+                                                class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-3 rounded-xl hover:shadow-lg transition-all duration-200 font-medium text-sm hover:scale-105">
+                                            <i class="fas fa-phone w-4 h-4 mr-2"></i>
+                                            Contact
+                                        </button>
+                                        <button class="w-12 h-12 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-xl hover:shadow transition-all duration-200 flex items-center justify-center hover:scale-105">
+                                            <i class="fas fa-ellipsis-h w-4 h-4"></i>
                                         </button>
                                     </div>
                                 </div>
 
-                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <div class="flex items-center space-x-2">
-                                            <i class="fas fa-heart w-5 h-5 text-red-500"></i>
-                                            <span class="font-medium text-gray-900">Mike Johnson</span>
-                                        </div>
-                                        <span class="text-sm text-gray-500">O+</span>
-                                    </div>
-                                    <div class="space-y-2 text-sm text-gray-600">
-                                        <div class="flex items-center">
-                                            <i class="fas fa-map-pin w-4 h-4 mr-2"></i>
-                                            <span>Lalitpur (5.1 km)</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <i class="fas fa-calendar w-4 h-4 mr-2"></i>
-                                            <span>Last donation: 2024-01-10</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <i class="fas fa-heart w-4 h-4 mr-2"></i>
-                                            <span>3 total donations</span>
+                                <div class="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                                    <div class="flex items-center justify-between mb-6">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="relative">
+                                                <div class="w-14 h-14 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shadow-md">
+                                                    <i class="fas fa-user text-white w-6 h-6"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900">Mike Johnson</h4>
+                                                <div class="flex items-center space-x-2 mt-1">
+                                                    <span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">O+</span>
+                                                    <span class="text-xs text-gray-500">Available</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="mt-4 flex space-x-2">
-                                        <button onclick="showNotification('Contacting Mike Johnson')" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">Contact</button>
-                                        <button class="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300">
-                                            <i class="fas fa-phone w-4 h-4"></i>
+                                    
+                                    <div class="space-y-4 mb-6">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-map-pin w-4 h-4 text-blue-600"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">Lalitpur</p>
+                                                <p class="text-xs text-gray-500">5.1 km away</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-calendar w-4 h-4 text-purple-600"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">Last Donation</p>
+                                                <p class="text-xs text-gray-500">2024-01-10</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                                                <i class="fas fa-heart w-4 h-4 text-red-600"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">3 total donations</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-6 flex space-x-3">
+                                        <button onclick="showNotification('Contacting Mike Johnson')" 
+                                                class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-3 rounded-xl hover:shadow-lg transition-all duration-200 font-medium text-sm hover:scale-105">
+                                            <i class="fas fa-phone w-4 h-4 mr-2"></i>
+                                            Contact
+                                        </button>
+                                        <button class="w-12 h-12 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-xl hover:shadow transition-all duration-200 flex items-center justify-center hover:scale-105">
+                                            <i class="fas fa-ellipsis-h w-4 h-4"></i>
                                         </button>
                                     </div>
+                                </div>
+
+                                <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-center hover:border-red-400 transition-all duration-300 hover:-translate-y-1">
+                                    <div class="w-20 h-20 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full flex items-center justify-center mb-6">
+                                        <i class="fas fa-plus w-8 h-8 text-gray-400"></i>
+                                    </div>
+                                    <h4 class="font-bold text-gray-700 mb-2">Find More Donors</h4>
+                                    <p class="text-sm text-gray-500 mb-6">Search for additional compatible donors in your area</p>
+                                    <button onclick="showNotification('Searching for more donors...')" 
+                                            class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 font-medium text-sm hover:scale-105">
+                                        <i class="fas fa-search w-4 h-4 mr-2"></i>
+                                        Search Now
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -328,424 +513,784 @@
                 </div>
 
                 <!-- Quick Actions -->
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <button onclick="showSection('request')" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition-colors text-left">
-                            <i class="fas fa-plus w-6 h-6 text-red-500 mr-3"></i>
-                            <div>
-                                <p class="font-medium text-gray-900">Request Blood</p>
-                                <p class="text-sm text-gray-500">Submit a new blood request</p>
+                <div class="bg-gradient-to-r from-white to-gray-50 rounded-2xl shadow-lg border border-gray-100 p-8">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Quick Actions</h3>
+                            <p class="text-gray-500 text-sm mt-1">Frequently used actions to save time</p>
+                        </div>
+                        <span class="px-3 py-1 bg-gradient-to-r from-red-100 to-red-50 text-red-700 text-sm font-medium rounded-full">
+                            <i class="fas fa-bolt w-3 h-3 mr-1"></i>
+                            Quick Access
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <button onclick="showSection('request')" 
+                                class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 text-left group">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-14 h-14 bg-gradient-to-r from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-200">
+                                    <i class="fas fa-plus text-white w-7 h-7"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-lg mb-1">Request Blood</p>
+                                    <p class="text-sm text-gray-500 mb-4">Submit a new blood request</p>
+                                    <span class="text-xs font-medium text-red-600 flex items-center">
+                                        Start Now
+                                        <i class="fas fa-arrow-right w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform"></i>
+                                    </span>
+                                </div>
                             </div>
                         </button>
 
-                        <button onclick="showSection('history')" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-left">
-                            <i class="fas fa-history w-6 h-6 text-blue-500 mr-3"></i>
-                            <div>
-                                <p class="font-medium text-gray-900">View History</p>
-                                <p class="text-sm text-gray-500">Check your request history</p>
+                        <button onclick="showSection('history')" 
+                                class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 text-left group">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-200">
+                                    <i class="fas fa-history text-white w-7 h-7"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-lg mb-1">View History</p>
+                                    <p class="text-sm text-gray-500 mb-4">Check your request history</p>
+                                    <span class="text-xs font-medium text-blue-600 flex items-center">
+                                        View Details
+                                        <i class="fas fa-arrow-right w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform"></i>
+                                    </span>
+                                </div>
                             </div>
                         </button>
 
-                        <button onclick="showSection('profile')" class="flex items-center p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors text-left">
-                            <i class="fas fa-user w-6 h-6 text-green-500 mr-3"></i>
-                            <div>
-                                <p class="font-medium text-gray-900">Update Profile</p>
-                                <p class="text-sm text-gray-500">Manage your information</p>
+                        <button onclick="showSection('profile')" 
+                                class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 text-left group">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-14 h-14 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-200">
+                                    <i class="fas fa-user text-white w-7 h-7"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900 text-lg mb-1">Update Profile</p>
+                                    <p class="text-sm text-gray-500 mb-4">Manage your information</p>
+                                    <span class="text-xs font-medium text-green-600 flex items-center">
+                                        Go to Profile
+                                        <i class="fas fa-arrow-right w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform"></i>
+                                    </span>
+                                </div>
                             </div>
                         </button>
                     </div>
                 </div>
             </div>
-
-            <!-- Request Blood Section -->
+                        <!-- Request Blood Section -->
             <div id="request" class="section">
-                <div class="max-w-4xl mx-auto space-y-6">
+                <div class="max-w-6xl mx-auto space-y-8">
                     <!-- Header -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center space-x-3">
-                            <div class="p-2 bg-red-100 rounded-lg">
-                                <i class="fas fa-plus w-4 h-4"></i>
+                    <div class="relative overflow-hidden bg-gradient-to-r from-red-500 via-red-600 to-orange-500 rounded-2xl shadow-lg">
+                        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3Cpattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"%3E%3Cpath d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/%3E%3C/pattern%3E%3C/defs%3E%3Crect width="100%25" height="100%25" fill="url(%23grid)"/%3E%3C/svg%3E')] opacity-20"></div>
+                        <div class="relative p-8 text-white">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-plus w-8 h-8"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h1 class="text-3xl font-bold mb-2">Request Blood</h1>
+                                    <p class="text-red-100/90 text-lg">Submit a new blood request with required documentation. Fill all required fields marked with *</p>
+                                </div>
                             </div>
-                            <div>
-                                <h1 class="text-2xl font-bold text-gray-900">Request Blood</h1>
-                                <p class="text-gray-600">Submit a new blood request with required documentation</p>
+                            <div class="mt-6 flex items-center space-x-4">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-3 h-3 bg-white rounded-full"></div>
+                                    <span class="text-sm font-medium">Basic Information</span>
+                                </div>
+                                <div class="flex-1 h-1 bg-white/30 rounded-full"></div>
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-3 h-3 bg-white/30 rounded-full"></div>
+                                    <span class="text-sm text-white/70">Documents</span>
+                                </div>
+                                <div class="flex-1 h-1 bg-white/30 rounded-full"></div>
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-3 h-3 bg-white/30 rounded-full"></div>
+                                    <span class="text-sm text-white/70">Review & Submit</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Request Form -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                        <div class="p-6 border-b border-gray-200">
-                            <h2 class="text-lg font-medium text-gray-900">Blood Request Details</h2>
-                            <p class="text-sm text-gray-600 mt-1">Please fill in all required fields. Your request will be reviewed by admin.</p>
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                        <div class="p-8 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-file-medical w-6 h-6 text-red-600"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-bold text-gray-900">Blood Request Details</h2>
+                                    <p class="text-gray-600 mt-1">Please fill in all required fields. Your request will be reviewed by admin.</p>
+                                </div>
+                            </div>
                         </div>
 
-                        <form id="bloodRequestForm" class="p-6 space-y-6">
-                             <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                        <form id="bloodRequestForm" class="p-8 space-y-8">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                            
                             <!-- Blood Group and Units -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Required Blood Group *</label>
-                                    <select id="bloodGroup" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                                        <option value="">Select blood group</option>
-                                        <option value="A+">A+</option>
-                                        <option value="A-">A-</option>
-                                        <option value="B+">B+</option>
-                                        <option value="B-">B-</option>
-                                        <option value="AB+">AB+</option>
-                                        <option value="AB-">AB-</option>
-                                        <option value="O+">O+</option>
-                                        <option value="O-">O-</option>
-                                    </select>
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="space-y-3">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                        Required Blood Group *
+                                        <span class="ml-2 px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">Important</span>
+                                    </label>
+                                    <div class="relative">
+                                        <select id="bloodGroup" required 
+                                                class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white appearance-none hover:border-gray-400 transition-colors">
+                                            <option value="">Select blood group</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                        </select>
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <i class="fas fa-chevron-down text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-500">Select the required blood type for patient</p>
                                 </div>
 
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Units Required *</label>
-                                    <input type="number" min="1" max="10" id="unitsRequired" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter number of units">
+                                <div class="space-y-3">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Units Required *</label>
+                                    <div class="relative">
+                                        <input type="number" min="1" max="10" id="unitsRequired" required 
+                                               class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
+                                               placeholder="Enter number of units (1-10)">
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                            <span class="text-gray-500">units</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-500">Each unit is approximately 450ml of blood</p>
                                 </div>
                             </div>
 
                             <!-- Urgency Level -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-3">Urgency Level *</label>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <label class="relative flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
+                            <div class="space-y-4">
+                                <label class="block text-sm font-semibold text-gray-700 mb-3">Urgency Level *</label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-red-300 transition-all duration-200 group bg-white hover:bg-red-50">
                                         <input type="radio" name="urgency" value="Critical" required class="sr-only">
-                                        <div class="p-2 rounded-full bg-red-100">
-                                            <i class="fas fa-exclamation-circle w-4 h-4 text-red-600"></i>
+                                        <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-red-500 to-red-600 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                            <i class="fas fa-exclamation-circle text-white w-5 h-5"></i>
                                         </div>
-                                        <div class="ml-3">
-                                            <p class="text-sm font-medium text-gray-900">Critical</p>
+                                        <div>
+                                            <p class="text-sm font-semibold text-gray-900">Critical</p>
                                             <p class="text-xs text-gray-500">Within 24 hours</p>
                                         </div>
+                                        <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full group-has-[:checked]:border-red-500 group-has-[:checked]:bg-red-500"></div>
                                     </label>
 
-                                    <label class="relative flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
+                                    <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-300 transition-all duration-200 group bg-white hover:bg-orange-50">
                                         <input type="radio" name="urgency" value="High" class="sr-only">
-                                        <div class="p-2 rounded-full bg-orange-100">
-                                            <i class="fas fa-exclamation-circle w-4 h-4 text-orange-600"></i>
+                                        <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                            <i class="fas fa-exclamation-circle text-white w-5 h-5"></i>
                                         </div>
-                                        <div class="ml-3">
-                                            <p class="text-sm font-medium text-gray-900">High</p>
+                                        <div>
+                                            <p class="text-sm font-semibold text-gray-900">High</p>
                                             <p class="text-xs text-gray-500">Within 48 hours</p>
                                         </div>
+                                        <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full group-has-[:checked]:border-orange-500 group-has-[:checked]:bg-orange-500"></div>
                                     </label>
 
-                                    <label class="relative flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
+                                    <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-yellow-300 transition-all duration-200 group bg-white hover:bg-yellow-50">
                                         <input type="radio" name="urgency" value="Medium" class="sr-only">
-                                        <div class="p-2 rounded-full bg-yellow-100">
-                                            <i class="fas fa-exclamation-circle w-4 h-4 text-yellow-600"></i>
+                                        <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-yellow-500 to-yellow-600 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                            <i class="fas fa-exclamation-circle text-white w-5 h-5"></i>
                                         </div>
-                                        <div class="ml-3">
-                                            <p class="text-sm font-medium text-gray-900">Medium</p>
+                                        <div>
+                                            <p class="text-sm font-semibold text-gray-900">Medium</p>
                                             <p class="text-xs text-gray-500">Within 1 week</p>
                                         </div>
+                                        <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full group-has-[:checked]:border-yellow-500 group-has-[:checked]:bg-yellow-500"></div>
                                     </label>
 
-                                    <label class="relative flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300">
+                                    <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-green-300 transition-all duration-200 group bg-white hover:bg-green-50">
                                         <input type="radio" name="urgency" value="Low" class="sr-only">
-                                        <div class="p-2 rounded-full bg-green-100">
-                                            <i class="fas fa-exclamation-circle w-4 h-4 text-green-600"></i>
+                                        <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                                            <i class="fas fa-exclamation-circle text-white w-5 h-5"></i>
                                         </div>
-                                        <div class="ml-3">
-                                            <p class="text-sm font-medium text-gray-900">Low</p>
+                                        <div>
+                                            <p class="text-sm font-semibold text-gray-900">Low</p>
                                             <p class="text-xs text-gray-500">Within 2 weeks</p>
                                         </div>
+                                        <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full group-has-[:checked]:border-green-500 group-has-[:checked]:bg-green-500"></div>
                                     </label>
                                 </div>
                             </div>
-<div>
-  <label class="block text-sm font-medium text-gray-700 mb-2">District *</label>
-  <select id="districtSelect" required 
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
-      <option value="">Select District</option>
 
-      <!-- Province 1 -->
-      <option value="Bhojpur">Bhojpur</option>
-      <option value="Dhankuta">Dhankuta</option>
-      <option value="Ilam">Ilam</option>
-      <option value="Jhapa">Jhapa</option>
-      <option value="Khotang">Khotang</option>
-      <option value="Morang">Morang</option>
-      <option value="Okhaldhunga">Okhaldhunga</option>
-      <option value="Panchthar">Panchthar</option>
-      <option value="Sankhuwasabha">Sankhuwasabha</option>
-      <option value="Solukhumbu">Solukhumbu</option>
-      <option value="Sunsari">Sunsari</option>
-      <option value="Taplejung">Taplejung</option>
-      <option value="Terhathum">Terhathum</option>
-      <option value="Udayapur">Udayapur</option>
+                            <!-- District and Hospital -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-3">District *</label>
+                                <div class="relative mb-8">
+                                    <select id="districtSelect" required 
+                                            class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 hover:border-gray-400 transition-colors bg-white appearance-none">
+                                        <option value="">Select District</option>
+                                        <!-- Province 1 -->
+                                        <option value="Bhojpur">Bhojpur</option>
+                                        <option value="Dhankuta">Dhankuta</option>
+                                        <option value="Ilam">Ilam</option>
+                                        <option value="Jhapa">Jhapa</option>
+                                        <option value="Khotang">Khotang</option>
+                                        <option value="Morang">Morang</option>
+                                        <option value="Okhaldhunga">Okhaldhunga</option>
+                                        <option value="Panchthar">Panchthar</option>
+                                        <option value="Sankhuwasabha">Sankhuwasabha</option>
+                                        <option value="Solukhumbu">Solukhumbu</option>
+                                        <option value="Sunsari">Sunsari</option>
+                                        <option value="Taplejung">Taplejung</option>
+                                        <option value="Terhathum">Terhathum</option>
+                                        <option value="Udayapur">Udayapur</option>
 
-      <!-- Madhesh Province -->
-      <option value="Bara">Bara</option>
-      <option value="Dhanusha">Dhanusha</option>
-      <option value="Mahottari">Mahottari</option>
-      <option value="Parsa">Parsa</option>
-      <option value="Rautahat">Rautahat</option>
-      <option value="Saptari">Saptari</option>
-      <option value="Sarlahi">Sarlahi</option>
-      <option value="Siraha">Siraha</option>
+                                        <!-- Madhesh Province -->
+                                        <option value="Bara">Bara</option>
+                                        <option value="Dhanusha">Dhanusha</option>
+                                        <option value="Mahottari">Mahottari</option>
+                                        <option value="Parsa">Parsa</option>
+                                        <option value="Rautahat">Rautahat</option>
+                                        <option value="Saptari">Saptari</option>
+                                        <option value="Sarlahi">Sarlahi</option>
+                                        <option value="Siraha">Siraha</option>
 
-      <!-- Bagmati Province -->
-      <option value="Bhaktapur">Bhaktapur</option>
-      <option value="Chitwan">Chitwan</option>
-      <option value="Dhading">Dhading</option>
-      <option value="Dolakha">Dolakha</option>
-      <option value="Kathmandu">Kathmandu</option>
-      <option value="Kavrepalanchok">Kavrepalanchok</option>
-      <option value="Lalitpur">Lalitpur</option>
-      <option value="Makwanpur">Makwanpur</option>
-      <option value="Nuwakot">Nuwakot</option>
-      <option value="Ramechhap">Ramechhap</option>
-      <option value="Rasuwa">Rasuwa</option>
-      <option value="Sindhuli">Sindhuli</option>
-      <option value="Sindhupalchok">Sindhupalchok</option>
+                                        <!-- Bagmati Province -->
+                                        <option value="Bhaktapur">Bhaktapur</option>
+                                        <option value="Chitwan">Chitwan</option>
+                                        <option value="Dhading">Dhading</option>
+                                        <option value="Dolakha">Dolakha</option>
+                                        <option value="Kathmandu">Kathmandu</option>
+                                        <option value="Kavrepalanchok">Kavrepalanchok</option>
+                                        <option value="Lalitpur">Lalitpur</option>
+                                        <option value="Makwanpur">Makwanpur</option>
+                                        <option value="Nuwakot">Nuwakot</option>
+                                        <option value="Ramechhap">Ramechhap</option>
+                                        <option value="Rasuwa">Rasuwa</option>
+                                        <option value="Sindhuli">Sindhuli</option>
+                                        <option value="Sindhupalchok">Sindhupalchok</option>
 
-      <!-- Gandaki Province -->
-      <option value="Baglung">Baglung</option>
-      <option value="Gorkha">Gorkha</option>
-      <option value="Kaski">Kaski</option>
-      <option value="Lamjung">Lamjung</option>
-      <option value="Manang">Manang</option>
-      <option value="Mustang">Mustang</option>
-      <option value="Myagdi">Myagdi</option>
-      <option value="Nawalpur">Nawalpur</option>
-      <option value="Parbat">Parbat</option>
-      <option value="Syangja">Syangja</option>
-      <option value="Tanahun">Tanahun</option>
+                                        <!-- Gandaki Province -->
+                                        <option value="Baglung">Baglung</option>
+                                        <option value="Gorkha">Gorkha</option>
+                                        <option value="Kaski">Kaski</option>
+                                        <option value="Lamjung">Lamjung</option>
+                                        <option value="Manang">Manang</option>
+                                        <option value="Mustang">Mustang</option>
+                                        <option value="Myagdi">Myagdi</option>
+                                        <option value="Nawalpur">Nawalpur</option>
+                                        <option value="Parbat">Parbat</option>
+                                        <option value="Syangja">Syangja</option>
+                                        <option value="Tanahun">Tanahun</option>
 
-      <!-- Lumbini Province -->
-      <option value="Arghakhanchi">Arghakhanchi</option>
-      <option value="Banke">Banke</option>
-      <option value="Bardiya">Bardiya</option>
-      <option value="Dang">Dang</option>
-      <option value="Gulmi">Gulmi</option>
-      <option value="Kapilvastu">Kapilvastu</option>
-      <option value="Parasi">Parasi</option> <!-- Nawalparasi West -->
-      <option value="Palpa">Palpa</option>
-      <option value="Pyuthan">Pyuthan</option>
-      <option value="Rolpa">Rolpa</option>
-      <option value="Rukum East">Rukum East</option>
-      <option value="Rupandehi">Rupandehi</option>
+                                        <!-- Lumbini Province -->
+                                        <option value="Arghakhanchi">Arghakhanchi</option>
+                                        <option value="Banke">Banke</option>
+                                        <option value="Bardiya">Bardiya</option>
+                                        <option value="Dang">Dang</option>
+                                        <option value="Gulmi">Gulmi</option>
+                                        <option value="Kapilvastu">Kapilvastu</option>
+                                        <option value="Parasi">Parasi</option>
+                                        <option value="Palpa">Palpa</option>
+                                        <option value="Pyuthan">Pyuthan</option>
+                                        <option value="Rolpa">Rolpa</option>
+                                        <option value="Rukum East">Rukum East</option>
+                                        <option value="Rupandehi">Rupandehi</option>
 
-      <!-- Karnali Province -->
-      <option value="Dailekh">Dailekh</option>
-      <option value="Dolpa">Dolpa</option>
-      <option value="Humla">Humla</option>
-      <option value="Jajarkot">Jajarkot</option>
-      <option value="Jumla">Jumla</option>
-      <option value="Kalikot">Kalikot</option>
-      <option value="Mugu">Mugu</option>
-      <option value="Rukum West">Rukum West</option>
-      <option value="Salyan">Salyan</option>
-      <option value="Surkhet">Surkhet</option>
+                                        <!-- Karnali Province -->
+                                        <option value="Dailekh">Dailekh</option>
+                                        <option value="Dolpa">Dolpa</option>
+                                        <option value="Humla">Humla</option>
+                                        <option value="Jajarkot">Jajarkot</option>
+                                        <option value="Jumla">Jumla</option>
+                                        <option value="Kalikot">Kalikot</option>
+                                        <option value="Mugu">Mugu</option>
+                                        <option value="Rukum West">Rukum West</option>
+                                        <option value="Salyan">Salyan</option>
+                                        <option value="Surkhet">Surkhet</option>
 
-      <!-- Sudurpashchim Province -->
-      <option value="Achham">Achham</option>
-      <option value="Baitadi">Baitadi</option>
-      <option value="Bajhang">Bajhang</option>
-      <option value="Bajura">Bajura</option>
-      <option value="Dadeldhura">Dadeldhura</option>
-      <option value="Darchula">Darchula</option>
-      <option value="Doti">Doti</option>
-      <option value="Kailali">Kailali</option>
-      <option value="Kanchanpur">Kanchanpur</option>
+                                        <!-- Sudurpashchim Province -->
+                                        <option value="Achham">Achham</option>
+                                        <option value="Baitadi">Baitadi</option>
+                                        <option value="Bajhang">Bajhang</option>
+                                        <option value="Bajura">Bajura</option>
+                                        <option value="Dadeldhura">Dadeldhura</option>
+                                        <option value="Darchula">Darchula</option>
+                                        <option value="Doti">Doti</option>
+                                        <option value="Kailali">Kailali</option>
+                                        <option value="Kanchanpur">Kanchanpur</option>
 
-      <!-- Other Option -->
-      <option value="Other">Other</option>
-  </select>
-  
-</div>
+                                        <!-- Other Option -->
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <i class="fas fa-map-marker-alt text-gray-400"></i>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                    <div class="space-y-3">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Hospital *</label>
+                                        <div class="relative">
+                                            <select id="hospitalSelect" required
+                                                    class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors bg-white appearance-none">
+                                                <option value="">Select hospital</option>
+                                            </select>
+                                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                <i class="fas fa-hospital text-gray-400"></i>
+                                            </div>
+                                        </div>
+                                    </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- Hospital -->
-    <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Hospital *</label>
-        <select id="hospitalSelect" required
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
-            <option value="">Select hospital</option>
-        </select>
-    </div>
-
-    <!-- Required Date -->
-    <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Required Date *</label>
-        <input type="date" id="requiredDate" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
-    </div>
-</div>
-
+                                    <div class="space-y-3">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Required Date *</label>
+                                        <div class="relative">
+                                            <input type="date" id="requiredDate" 
+                                                   class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors">
+                                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                <i class="fas fa-calendar-alt text-gray-400"></i>
+                                            </div>
+                                        </div>
+                                        <p class="text-xs text-gray-500">Select when the blood is needed</p>
+                                    </div>
+                                </div>
+                            </div>
 
                             <!-- Reason for Request -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Blood Request *</label>
-                                <textarea rows="4" required id="reason" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Please describe the reason for blood request (surgery, accident, medical condition, etc.)"></textarea>
+                            <div class="space-y-3">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Reason for Blood Request *</label>
+                                <textarea rows="4" required id="reason" 
+                                          class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
+                                          placeholder="Please describe the reason for blood request (surgery, accident, medical condition, etc.)"></textarea>
+                                <p class="text-xs text-gray-500">Be specific about the medical need</p>
                             </div>
 
                             <!-- Contact Information -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person *</label>
-                                    <input type="text" id="contactName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Name of contact person">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div class="space-y-3">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Contact Person *</label>
+                                    <div class="relative">
+                                        <input type="text" id="contactName" required 
+                                               class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
+                                               placeholder="Name of contact person">
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <i class="fas fa-user text-gray-400"></i>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Contact Phone *</label>
-                                    <input type="tel" id="contactPhone" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Contact phone number">
+                                <div class="space-y-3">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Contact Phone *</label>
+                                    <div class="relative">
+                                        <input type="tel" id="contactPhone" required 
+                                               class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
+                                               placeholder="Contact phone number">
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <i class="fas fa-phone text-gray-400"></i>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Document Upload -->
-                            <div class="space-y-4">
-                                <h3 class="text-lg font-medium text-gray-900">Required Documents</h3>
-                                
-                                <!-- Hospital Document -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Hospital Verification Document *</label>
-                                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                                        <i class="fas fa-upload mx-auto w-12 h-12 text-gray-400"></i>
-                                        <div class="mt-4">
-                                            <label class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 cursor-pointer inline-block">
-                                                Upload Hospital Document
+                            <div class="space-y-8">
+                                <div class="border-t border-gray-200 pt-8">
+                                    <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                            <i class="fas fa-file-upload w-5 h-5 text-blue-600"></i>
+                                        </div>
+                                        Required Documents
+                                    </h3>
+                                    
+                                    <!-- Hospital Document -->
+                                    <div class="mb-8">
+                                        <label class="block mb-4">
+                                            <span class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                                Hospital Verification Document *
+                                                <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">PDF, JPG, PNG up to 5MB</span>
+                                            </span>
+                                        </label>
+                                        <div class="border-3 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-red-400 transition-colors duration-200 bg-gradient-to-br from-gray-50 to-white">
+                                            <i class="fas fa-hospital mx-auto w-16 h-16 text-gray-400 mb-4"></i>
+                                            <h4 class="text-lg font-semibold text-gray-700 mb-2">Upload Hospital Document</h4>
+                                            <p class="text-gray-500 mb-6">Medical certificate or hospital admission proof</p>
+                                            <label class="bg-gradient-to-r from-red-500 to-red-600 text-white px-8 py-3 rounded-xl hover:shadow-lg transition-all duration-200 cursor-pointer inline-flex items-center space-x-2 hover:scale-105">
+                                                <i class="fas fa-cloud-upload-alt w-5 h-5"></i>
+                                                <span>Choose File</span>
                                                 <input type="file" id="hospitalDoc" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="handleFileUpload('hospitalDoc', this)">
                                             </label>
                                         </div>
-                                        <p class="mt-2 text-xs text-gray-500">PDF, JPG, PNG up to 5MB</p>
+                                        <div id="hospitalDoc-status" class="mt-4 hidden text-sm text-green-600 flex items-center bg-green-50 px-4 py-3 rounded-xl">
+                                            <i class="fas fa-check-circle w-5 h-5 mr-3"></i>
+                                            <div>
+                                                <span class="font-medium">File uploaded successfully:</span>
+                                                <span class="ml-2"></span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div id="hospitalDoc-status" class="mt-2 hidden text-sm text-green-600 flex items-center">
-                                        <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i>
-                                        <span></span>
-                                    </div>
-                                </div>
 
-                                <!-- Doctor's Note -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Doctor's Note *</label>
-                                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                                        <i class="fas fa-file-alt mx-auto w-12 h-12 text-gray-400"></i>
-                                        <div class="mt-4">
-                                            <label class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 cursor-pointer inline-block">
-                                                Upload Doctor's Note
+                                    <!-- Doctor's Note -->
+                                    <div>
+                                        <label class="block mb-4">
+                                            <span class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                                                Doctor's Note / Prescription *
+                                                <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">PDF, JPG, PNG up to 5MB</span>
+                                            </span>
+                                        </label>
+                                        <div class="border-3 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-red-400 transition-colors duration-200 bg-gradient-to-br from-gray-50 to-white">
+                                            <i class="fas fa-file-medical mx-auto w-16 h-16 text-gray-400 mb-4"></i>
+                                            <h4 class="text-lg font-semibold text-gray-700 mb-2">Upload Doctor's Note</h4>
+                                            <p class="text-gray-500 mb-6">Doctor's prescription or medical recommendation</p>
+                                            <label class="bg-gradient-to-r from-red-500 to-red-600 text-white px-8 py-3 rounded-xl hover:shadow-lg transition-all duration-200 cursor-pointer inline-flex items-center space-x-2 hover:scale-105">
+                                                <i class="fas fa-cloud-upload-alt w-5 h-5"></i>
+                                                <span>Choose File</span>
                                                 <input type="file" id="doctorNote" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="handleFileUpload('doctorNote', this)">
                                             </label>
                                         </div>
-                                        <p class="mt-2 text-xs text-gray-500">PDF, JPG, PNG up to 5MB</p>
-                                    </div>
-                                    <div id="doctorNote-status" class="mt-2 hidden text-sm text-green-600 flex items-center">
-                                        <i class="fas fa-check-circle w-4 h-4 mr-2"></i>
-                                        <span></span>
+                                        <div id="doctorNote-status" class="mt-4 hidden text-sm text-green-600 flex items-center bg-green-50 px-4 py-3 rounded-xl">
+                                            <i class="fas fa-check-circle w-5 h-5 mr-3"></i>
+                                            <div>
+                                                <span class="font-medium">File uploaded successfully:</span>
+                                                <span class="ml-2"></span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Compatible Donors Info -->
-                            <div id="compatibleInfo" class="bg-blue-50 rounded-lg p-4 hidden">
-                                <h4 class="text-sm font-medium text-blue-900 mb-2">Compatible Blood Groups</h4>
-                                <div id="compatibleList" class="flex flex-wrap gap-2"></div>
-                                <p class="text-xs text-blue-700 mt-2">We will match you with donors having these compatible blood groups.</p>
+                            <div id="compatibleInfo" class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6 hidden animate-fade-in">
+                                <div class="flex items-start space-x-4">
+                                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-heart text-white w-6 h-6"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-lg font-bold text-blue-900 mb-2">Compatible Blood Groups</h4>
+                                        <p class="text-blue-700 mb-4">Based on your selected blood type, these are the compatible donor groups:</p>
+                                        <div id="compatibleList" class="flex flex-wrap gap-3 mb-4"></div>
+                                        <p class="text-sm text-blue-700">We will match you with donors having these compatible blood groups. This increases your chances of finding a match quickly.</p>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Submit Button -->
-                            <div class="flex justify-end space-x-4">
-                                <button type="button" onclick="showSection('dashboard')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                                    Cancel
-                                </button>
-                                <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 flex items-center space-x-2">
-                                    <i class="fas fa-plus w-4 h-4"></i>
-                                    <span>Submit Request</span>
-                                </button>
+                            <!-- Submit Buttons -->
+                            <div class="border-t border-gray-200 pt-8">
+                                <div class="flex flex-col sm:flex-row justify-end space-y-4 sm:space-y-0 sm:space-x-4">
+                                    <button type="button" onclick="showSection('dashboard')" 
+                                            class="px-8 py-3.5 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium hover:scale-105">
+                                        <i class="fas fa-times w-4 h-4 mr-2"></i>
+                                        Cancel
+                                    </button>
+                                    <button type="submit" 
+                                            class="bg-gradient-to-r from-red-500 to-red-600 text-white px-8 py-3.5 rounded-xl hover:shadow-lg transition-all duration-200 font-semibold hover:scale-105 flex items-center justify-center space-x-2">
+                                        <i class="fas fa-paper-plane w-5 h-5"></i>
+                                        <span>Submit Request for Review</span>
+                                    </button>
+                                </div>
+                                <p class="text-sm text-gray-500 text-center mt-6">
+                                    <i class="fas fa-shield-alt w-4 h-4 mr-1 text-green-500"></i>
+                                    Your information is secure and will only be used for blood matching purposes
+                                </p>
                             </div>
                         </form>
                     </div>
-                </div>
-            </div>
 
-            <!-- Request History Section -->
-            <div id="history" class="section">
-                <div class="max-w-4xl mx-auto space-y-6">
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center space-x-3 mb-6">
-                            <div class="p-2 bg-blue-100 rounded-lg">
-                                <i class="fas fa-history w-6 h-6 text-blue-600"></i>
+                    <!-- Help Card -->
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-8 text-white">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                                <i class="fas fa-question-circle w-7 h-7"></i>
                             </div>
-                            <div>
-                                <h1 class="text-2xl font-bold text-gray-900">Request History</h1>
-                                <p class="text-gray-600">View all your past blood requests</p>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold mb-2">Need Help with Your Request?</h3>
+                                <p class="text-blue-100/90 mb-4">Contact our support team for assistance with the blood request process</p>
+                                <div class="flex flex-wrap gap-4">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-phone w-4 h-4"></i>
+                                        <span>+977-1-1234567</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-envelope w-4 h-4"></i>
+                                        <span>support@lifeline.com</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-clock w-4 h-4"></i>
+                                        <span>24/7 Emergency Support</span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-
-                        <!-- History Table -->
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Blood Group</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Units</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-15</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
-                                                <span class="text-sm font-medium">O+</span>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2 units</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Bir Hospital</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-green-600 bg-green-100">Completed</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <button class="text-blue-600 hover:text-blue-900">View Details</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-20</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
-                                                <span class="text-sm font-medium">A+</span>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">1 units</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Patan Hospital</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-yellow-600 bg-yellow-100">Pending</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <button class="text-blue-600 hover:text-blue-900">View Details</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-10</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
-                                                <span class="text-sm font-medium">B+</span>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">3 units</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Teaching Hospital</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full text-green-600 bg-green-100">Completed</span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <button class="text-blue-600 hover:text-blue-900">View Details</button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 </div>
             </div>
+                       <!-- Request History Section -->
+            <div id="history" class="section">
+                <div class="max-w-6xl mx-auto space-y-8">
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                        <div class="p-8">
+                            <div class="flex items-center justify-between mb-8">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-14 h-14 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-history text-white w-7 h-7"></i>
+                                    </div>
+                                    <div>
+                                        <h1 class="text-3xl font-bold text-gray-900">Request History</h1>
+                                        <p class="text-gray-600">View all your past blood requests and their status</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="relative">
+                                        <input type="text" placeholder="Search requests..." 
+                                               class="pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64 hover:border-gray-400 transition-colors">
+                                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                    </div>
+                                    <button class="px-4 py-2.5 border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-colors hover:scale-105">
+                                        <i class="fas fa-filter w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
 
+                            <!-- History Table -->
+                            <div class="overflow-hidden rounded-xl border border-gray-200">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+                                        <tr>
+                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
+                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Blood Group</th>
+                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Units</th>
+                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Hospital</th>
+                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-100">
+                                        <tr class="hover:bg-red-50/50 transition-colors duration-200">
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                        <i class="fas fa-calendar w-5 h-5 text-blue-600"></i>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-sm font-semibold text-gray-900">2024-01-15</span>
+                                                        <p class="text-xs text-gray-500">2:30 PM</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <div class="flex items-center space-x-2">
+                                                    <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                                        <i class="fas fa-tint w-4 h-4 text-red-600"></i>
+                                                    </div>
+                                                    <span class="text-sm font-semibold">O+</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="text-sm font-semibold text-gray-900">2 units</span>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="text-sm text-gray-900">Bir Hospital</span>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-green-100 to-green-50 text-green-700">
+                                                    <i class="fas fa-check-circle w-3 h-3 mr-1"></i>
+                                                    Completed
+                                                </span>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <button class="text-blue-600 hover:text-blue-900 font-medium text-sm flex items-center hover:underline">
+                                                    <i class="fas fa-eye w-4 h-4 mr-1"></i>
+                                                    View Details
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-orange-50/50 transition-colors duration-200">
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                        <i class="fas fa-calendar w-5 h-5 text-blue-600"></i>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-sm font-semibold text-gray-900">2024-01-20</span>
+                                                        <p class="text-xs text-gray-500">10:15 AM</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <div class="flex items-center space-x-2">
+                                                    <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                                        <i class="fas fa-tint w-4 h-4 text-red-600"></i>
+                                                    </div>
+                                                    <span class="text-sm font-semibold">A+</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="text-sm font-semibold text-gray-900">1 unit</span>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="text-sm text-gray-900">Patan Hospital</span>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-yellow-100 to-yellow-50 text-yellow-700">
+                                                    <i class="fas fa-clock w-3 h-3 mr-1"></i>
+                                                    Pending
+                                                </span>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <button class="text-blue-600 hover:text-blue-900 font-medium text-sm flex items-center hover:underline">
+                                                    <i class="fas fa-eye w-4 h-4 mr-1"></i>
+                                                    View Details
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-blue-50/50 transition-colors duration-200">
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                        <i class="fas fa-calendar w-5 h-5 text-blue-600"></i>
+                                                    </div>
+                                                    <div>
+                                                        <span class="text-sm font-semibold text-gray-900">2024-01-10</span>
+                                                        <p class="text-xs text-gray-500">11:45 AM</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <div class="flex items-center space-x-2">
+                                                    <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                                        <i class="fas fa-tint w-4 h-4 text-red-600"></i>
+                                                    </div>
+                                                    <span class="text-sm font-semibold">B+</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="text-sm font-semibold text-gray-900">3 units</span>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="text-sm text-gray-900">Teaching Hospital</span>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-green-100 to-green-50 text-green-700">
+                                                    <i class="fas fa-check-circle w-3 h-3 mr-1"></i>
+                                                    Completed
+                                                </span>
+                                            </td>
+                                            <td class="px-8 py-5 whitespace-nowrap">
+                                                <button class="text-blue-600 hover:text-blue-900 font-medium text-sm flex items-center hover:underline">
+                                                    <i class="fas fa-eye w-4 h-4 mr-1"></i>
+                                                    View Details
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Pagination -->
+                            <div class="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
+                                <div class="text-sm text-gray-700">
+                                    Showing <span class="font-semibold">1</span> to <span class="font-semibold">3</span> of <span class="font-semibold">12</span> entries
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors hover:scale-105">
+                                        <i class="fas fa-chevron-left w-4 h-4"></i>
+                                    </button>
+                                    <button class="px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">1</button>
+                                    <button class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors hover:scale-105">2</button>
+                                    <button class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors hover:scale-105">3</button>
+                                    <button class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors hover:scale-105">
+                                        <i class="fas fa-chevron-right w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Card -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-semibold text-blue-700 mb-2">Most Requested Type</p>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-tint w-5 h-5 text-blue-600"></i>
+                                        </div>
+                                        <span class="text-2xl font-bold text-gray-900">O+</span>
+                                    </div>
+                                    <p class="text-xs text-blue-600 mt-2">3 requests total</p>
+                                </div>
+                                <div class="w-12 h-12 bg-white/50 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-chart-line w-6 h-6 text-blue-600"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-6 border border-green-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-semibold text-green-700 mb-2">Success Rate</p>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-check-circle w-5 h-5 text-green-600"></i>
+                                        </div>
+                                        <span class="text-2xl font-bold text-gray-900">83%</span>
+                                    </div>
+                                    <p class="text-xs text-green-600 mt-2">5 of 6 completed</p>
+                                </div>
+                                <div class="w-12 h-12 bg-white/50 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-percentage w-6 h-6 text-green-600"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gradient-to-r from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-semibold text-purple-700 mb-2">Average Response Time</p>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-clock w-5 h-5 text-purple-600"></i>
+                                        </div>
+                                        <span class="text-2xl font-bold text-gray-900">18h</span>
+                                    </div>
+                                    <p class="text-xs text-purple-600 mt-2">From request to match</p>
+                                </div>
+                                <div class="w-12 h-12 bg-white/50 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-bolt w-6 h-6 text-purple-600"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Export Options -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900 mb-1">Export History</h3>
+                                <p class="text-gray-600 text-sm">Download your request history for records</p>
+                            </div>
+                            <div class="flex space-x-3">
+                                <button class="px-4 py-2.5 border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-colors flex items-center space-x-2 hover:scale-105">
+                                    <i class="fas fa-file-pdf w-4 h-4 text-red-500"></i>
+                                    <span class="text-sm font-medium">PDF</span>
+                                </button>
+                                <button class="px-4 py-2.5 border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-colors flex items-center space-x-2 hover:scale-105">
+                                    <i class="fas fa-file-excel w-4 h-4 text-green-500"></i>
+                                    <span class="text-sm font-medium">Excel</span>
+                                </button>
+                                <button class="px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 flex items-center space-x-2 hover:scale-105">
+                                    <i class="fas fa-print w-4 h-4"></i>
+                                    <span class="text-sm font-medium">Print</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Profile Section -->
             <div id="profile" class="section">
                 <div class="max-w-5xl mx-auto space-y-6">
