@@ -5,96 +5,173 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blood Request Dashboard</title>
     <link href="../../dist/output.css" rel="stylesheet">
-    <!-- Font Awesome CDN -->
-<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-pIVz5f8Xc5X7ZpLxgZ5yY3L9w+qk5m5N7xw1Y8lq6K3kM7k1F6f4bq7pZ9R5y3xYtF9I4F7K5Q6T8F9k6R7Q==" crossorigin="anonymous" referrerpolicy="no-referrer" /> -->
-
-<!-- 
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            'hlb-red': '#B91C1C',
-            'hlb-bg': '#FFF5F5',
-            'hlb-lightRed': '#FEE2E2',
-            'hlb-darkRed': '#991B1B',
-          },
-        },
-      },
-    }
-  </script> -->
-    <!-- <script src="https://unpkg.com/lucide@latest"></script> -->
     <style>
         .section { display: none; }
         .section.active { display: block; }
+        
+        /* Enhanced styles */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .shadow-soft {
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .card-hover:hover {
+            border-color: #e53e3e;
+            background: #fef2f2;
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
-<body class="bg-hlb-bg text-gray-800 font-sans">
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 font-sans">
 
     <div class="min-h-screen">
         <!-- Sidebar Navigation -->
-       
-
-               
-<div class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-10">
-    <div class="flex flex-col h-full">
-        <!-- Logo -->
-        <div class="flex items-center justify-center h-16 border-b border-gray-200">
-            <div class="flex items-center space-x-2">
-                <i class="fas fa-tint text-red-600 w-8 h-8"></i>
-                <span class="text-xl font-bold text-gray-900">Blood Bank</span>
-            </div>
-        </div>
-
-        
-            <!-- Navigation -->
-            <nav class="flex-1 px-4 py-6 space-y-2">
-                <button onclick="showSection('dashboard', event)"
-                        class="nav-item active w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100">
-                    <img src="../assets/remixicon/icons/Buildings/home-2-fill.svg" class="w-6 h-6">
-                    <span>Dashboard</span>
-                </button>
-
-                <button onclick="showSection('request', event)"
-                        class="nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100">
-                    <img src="../assets/remixicon/icons/System/history-fill.svg" class="w-6 h-6">
-                    <span>Request Blood</span>
-                </button>
-
-                <button onclick="showSection('history', event)"
-                        class="nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100">
-                    <img src="../assets/remixicon/icons/Document/file-history-fill.svg" class="w-6 h-6">
-                    <span>Request History</span>
-                </button>
-
-                <button onclick="window.location.href='profile.html'"
-                        class="nav-item w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100">
-                    <img src="../assets/remixicon/icons/User & Faces/user-3-fill.svg" class="w-6 h-6">
-                    <span>Profile</span>
-                </button>
-            </nav>
-
-                <!-- User Info -->
-                <div class="border-t border-gray-200 p-4">
+        <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-10">
+            <div class="flex flex-col h-full">
+                <!-- Logo -->
+                <div class="flex items-center justify-center h-20 border-b border-gray-100">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user w-5 h-5 text-red-600"></i>
+                        <div class="relative">
+                            <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-md">
+                                <i class="fas fa-tint text-white w-5 h-5"></i>
+                            </div>
+                            <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                         </div>
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-900">John Doe</p>
-                            <p class="text-xs text-gray-500">john@example.com</p>
+                        <div>
+                            <span class="text-xl font-bold text-black">RedDrop</span>
+<p class="text-xs text-gray-500">Blood Bank</p>
+
                         </div>
                     </div>
-                    <button class="mt-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                        Logout
+                </div>
+
+                <!-- Navigation -->
+                <nav class="flex-1 px-4 py-8 space-y-2">
+                    <button onclick="showSection('dashboard', event)"
+                            class="nav-item active w-full flex items-center space-x-4 px-4 py-4 rounded-xl hover:bg-red-50 transition-all duration-200">
+                        <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-sm">
+                            <img src="../assets/remixicon/icons/Buildings/home-2-fill.svg" class="w-5 h-5 filter invert">
+                        </div>
+                        <div class="text-left">
+                            <span class="font-medium text-gray-900">Dashboard</span>
+                            <p class="text-xs text-gray-500 mt-0.5">Overview & Stats</p>
+                        </div>
+                    </button>
+
+                    <button onclick="showSection('request', event)"
+                            class="nav-item w-full flex items-center space-x-4 px-4 py-4 rounded-xl hover:bg-red-50 transition-all duration-200">
+                        <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-sm">
+                            <img src="../assets/remixicon/icons/System/history-fill.svg" class="w-5 h-5 filter invert">
+                        </div>
+                        <div class="text-left">
+                            <span class="font-medium text-gray-900">Request Blood</span>
+                            <p class="text-xs text-gray-500 mt-0.5">New blood request</p>
+                        </div>
+                    </button>
+
+                    <button onclick="showSection('history', event)"
+                            class="nav-item w-full flex items-center space-x-4 px-4 py-4 rounded-xl hover:bg-red-50 transition-all duration-200">
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+                            <img src="../assets/remixicon/icons/Document/file-history-fill.svg" class="w-5 h-5 filter invert">
+                        </div>
+                        <div class="text-left">
+                            <span class="font-medium text-gray-900">History</span>
+                            <p class="text-xs text-gray-500 mt-0.5">Past requests</p>
+                        </div>
+                    </button>
+
+                    <button onclick="window.location.href='profile.html'"
+                            class="nav-item w-full flex items-center space-x-4 px-4 py-4 rounded-xl hover:bg-red-50 transition-all duration-200">
+                        <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-sm">
+                            <img src="../assets/remixicon/icons/User & Faces/user-3-fill.svg" class="w-5 h-5 filter invert">
+                        </div>
+                        <div class="text-left">
+                            <span class="font-medium text-gray-900">Profile</span>
+                            <p class="text-xs text-gray-500 mt-0.5">Account settings</p>
+                        </div>
+                    </button>
+                </nav>
+
+                <!-- User Info -->
+                <div class="border-t border-gray-100 p-6 bg-gradient-to-r from-gray-50 to-white">
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <div class="w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-md">
+                                <i class="fas fa-user text-white w-6 h-6"></i>
+                            </div>
+                            <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                        </div>
+                        <!-- <div class="flex-1">
+                            <p class="text-sm font-semibold text-gray-900">John Doe</p>
+                            <p class="text-xs text-gray-500 truncate">john@example.com</p>
+                            <div class="flex items-center mt-1">
+                                <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">Premium User</span>
+                            </div>
+                        </div> -->
+                    </div>
+                    <button onclick="logout()" class="mt-4 w-full px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2">
+                        <i class="fas fa-sign-out-alt w-4 h-4"></i>
+                        <span>Logout</span>
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Main Content -->
-        <div class="ml-64 p-8">
+        <div class="ml-64 p-8 animate-fade-in">
             <!-- Dashboard Section -->
+                    <!-- Dashboard Section -->
             <div id="dashboard" class="section active">
                 <!-- Welcome Section -->
                 <div class="relative overflow-hidden bg-gradient-to-r from-red-500 via-red-600 to-orange-500 rounded-2xl p-8 text-white mb-8 shadow-lg">
@@ -217,143 +294,197 @@
                     <div class="p-8">
                         <!-- Recent Requests Tab -->
                         <div id="requests-tab" class="tab-content">
-                            <div class="flex items-center justify-between mb-8">
-                                <div>
-                                    <h3 class="text-xl font-bold text-gray-900">Your Blood Requests</h3>
-                                    <p class="text-gray-500 text-sm mt-1">Track and manage your active requests</p>
-                                </div>
-                                <button onclick="showSection('request')" class="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center space-x-3 hover:scale-105">
-                                    <div class="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
-                                        <img src="../assets/remixicon/icons/System/add-line.svg" class="w-4 h-4 filter invert">
-                                    </div>
-                                    <span class="font-semibold">New Request</span>
-                                </button>
-                            </div>
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h3 class="text-xl font-bold text-gray-900">Your Blood Requests</h3>
+            <p class="text-gray-500 text-sm mt-1">Track and manage your active requests</p>
+        </div>
+        <button onclick="showSection('request')" class="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center space-x-3 hover:scale-105">
+            <div class="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+                <img src="../assets/remixicon/icons/System/add-line.svg" class="w-4 h-4 filter invert">
+            </div>
+            <span class="font-semibold">New Request</span>
+        </button>
+    </div>
 
-                            <div class="overflow-hidden rounded-xl border border-gray-200">
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
-                                        <tr>
-                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Blood Group</th>
-                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Units</th>
-                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Urgency</th>
-                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Hospital</th>
-                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                                            <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-100">
-                                        <tr class="hover:bg-red-50/50 transition-colors duration-200">
-                                            <td class="px-8 py-5 whitespace-nowrap">
-                                                <div class="flex items-center space-x-3">
-                                                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                                                        <i class="fas fa-tint w-5 h-5 text-red-600"></i>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-sm font-semibold text-gray-900">O+</span>
-                                                        <p class="text-xs text-gray-500">Universal Donor</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-8 py-5 whitespace-nowrap">
-                                                <span class="text-sm font-semibold text-gray-900">2 units</span>
-                                            </td>
-                                            <td class="px-8 py-5 whitespace-nowrap">
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-red-100 to-red-50 text-red-700">
-                                                    <i class="fas fa-exclamation-circle w-3 h-3 mr-1"></i>
-                                                    Critical
-                                                </span>
-                                            </td>
-                                            <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">Bir Hospital</td>
-                                            <td class="px-8 py-5 whitespace-nowrap">
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-green-100 to-green-50 text-green-700">
-                                                    <i class="fas fa-check-circle w-3 h-3 mr-1"></i>
-                                                    Approved
-                                                </span>
-                                            </td>
-                                            <td class="px-8 py-5 whitespace-nowrap text-sm">
-                                                <div class="flex flex-col space-y-2">
-                                                    <button onclick="showNotification('Contacting Jane Smith at +977-9841234568')" class="text-blue-600 hover:text-blue-900 text-xs font-medium hover:underline flex items-center">
-                                                        <i class="fas fa-phone w-3 h-3 mr-1"></i>
-                                                        Contact Donor
-                                                    </button>
-                                                    <button onclick="confirmReceipt()" class="text-green-600 hover:text-green-900 text-xs font-medium hover:underline flex items-center">
-                                                        <i class="fas fa-check-circle w-3 h-3 mr-1"></i>
-                                                        Confirm Receipt
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr class="hover:bg-orange-50/50 transition-colors duration-200">
-                                            <td class="px-8 py-5 whitespace-nowrap">
-                                                <div class="flex items-center space-x-3">
-                                                    <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                                                        <i class="fas fa-tint w-5 h-5 text-orange-600"></i>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-sm font-semibold text-gray-900">A+</span>
-                                                        <p class="text-xs text-gray-500">Most Common</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-8 py-5 whitespace-nowrap text-sm font-semibold text-gray-900">1 unit</td>
-                                            <td class="px-8 py-5 whitespace-nowrap">
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-orange-100 to-orange-50 text-orange-700">
-                                                    <i class="fas fa-exclamation-circle w-3 h-3 mr-1"></i>
-                                                    High
-                                                </span>
-                                            </td>
-                                            <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">Patan Hospital</td>
-                                            <td class="px-8 py-5 whitespace-nowrap">
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-yellow-100 to-yellow-50 text-yellow-700">
-                                                    <i class="fas fa-clock w-3 h-3 mr-1"></i>
-                                                    Pending
-                                                </span>
-                                            </td>
-                                            <td class="px-8 py-5 whitespace-nowrap text-sm font-medium text-yellow-600">
-                                                <div class="flex items-center px-3 py-2 bg-yellow-50 rounded-lg">
-                                                    <i class="fas fa-hourglass-half w-3 h-3 mr-2"></i>
-                                                    Waiting for approval
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr class="hover:bg-blue-50/50 transition-colors duration-200">
-                                            <td class="px-8 py-5 whitespace-nowrap">
-                                                <div class="flex items-center space-x-3">
-                                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                        <i class="fas fa-tint w-5 h-5 text-blue-600"></i>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-sm font-semibold text-gray-900">B+</span>
-                                                        <p class="text-xs text-gray-500">Less Common</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-8 py-5 whitespace-nowrap text-sm font-semibold text-gray-900">3 units</td>
-                                            <td class="px-8 py-5 whitespace-nowrap">
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-100 to-blue-50 text-blue-700">
-                                                    <i class="fas fa-exclamation-circle w-3 h-3 mr-1"></i>
-                                                    Medium
-                                                </span>
-                                            </td>
-                                            <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">Teaching Hospital</td>
-                                            <td class="px-8 py-5 whitespace-nowrap">
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-indigo-100 to-indigo-50 text-indigo-700">
-                                                    <i class="fas fa-check-double w-3 h-3 mr-1"></i>
-                                                    Completed
-                                                </span>
-                                            </td>
-                                            <td class="px-8 py-5 whitespace-nowrap text-sm font-medium text-green-600">
-                                                <div class="flex items-center px-3 py-2 bg-green-50 rounded-lg">
-                                                    <i class="fas fa-check w-3 h-3 mr-2"></i>
-                                                    ✓ Received
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+    <div class="overflow-hidden rounded-xl border border-gray-200">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+                <tr>
+                    <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Blood Group</th>
+                    <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Units</th>
+                    <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Urgency</th>
+                    <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Hospital</th>
+
+                    <!-- NEW TIME COLUMN -->
+                    <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Requested At
+                    </th>
+
+                    <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                    <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody class="bg-white divide-y divide-gray-100">
+
+                <!-- ROW 1 -->
+                <tr class="hover:bg-red-50/50 transition-colors duration-200">
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-tint w-5 h-5 text-red-600"></i>
+                            </div>
+                            <div>
+                                <span class="text-sm font-semibold text-gray-900">O+</span>
+                                <p class="text-xs text-gray-500">Universal Donor</p>
                             </div>
                         </div>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <span class="text-sm font-semibold text-gray-900">2 units</span>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-red-100 to-red-50 text-red-700">
+                            <i class="fas fa-exclamation-circle w-3 h-3 mr-1"></i>
+                            Critical
+                        </span>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">Bir Hospital</td>
+
+                    <!-- TIME -->
+                    <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">
+                        <div class="flex items-center">
+                            <i class="fas fa-clock w-4 h-4 text-gray-500 mr-2"></i>
+                            <span>12 Jan 2025, 10:45 AM</span>
+                        </div>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-green-100 to-green-50 text-green-700">
+                            <i class="fas fa-check-circle w-3 h-3 mr-1"></i>
+                            Approved
+                        </span>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap text-sm">
+                        <div class="flex flex-col space-y-2">
+                            <button onclick="showNotification('Contacting Jane Smith at +977-9841234568')" class="text-blue-600 hover:text-blue-900 text-xs font-medium hover:underline flex items-center">
+                                <i class="fas fa-phone w-3 h-3 mr-1"></i>
+                                Contact Donor
+                            </button>
+                            <button onclick="confirmReceipt()" class="text-green-600 hover:text-green-900 text-xs font-medium hover:underline flex items-center">
+                                <i class="fas fa-check-circle w-3 h-3 mr-1"></i>
+                                Confirm Receipt
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- ROW 2 -->
+                <tr class="hover:bg-orange-50/50 transition-colors duration-200">
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-tint w-5 h-5 text-orange-600"></i>
+                            </div>
+                            <div>
+                                <span class="text-sm font-semibold text-gray-900">A+</span>
+                                <p class="text-xs text-gray-500">Most Common</p>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap text-sm font-semibold text-gray-900">1 unit</td>
+
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-orange-100 to-orange-50 text-orange-700">
+                            <i class="fas fa-exclamation-circle w-3 h-3 mr-1"></i>
+                            High
+                        </span>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">Patan Hospital</td>
+
+                    <!-- TIME -->
+                    <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">
+                        <div class="flex items-center">
+                            <i class="fas fa-clock w-4 h-4 text-gray-500 mr-2"></i>
+                            <span>12 Jan 2025, 09:20 AM</span>
+                        </div>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-yellow-100 to-yellow-50 text-yellow-700">
+                            <i class="fas fa-clock w-3 h-3 mr-1"></i>
+                            Pending
+                        </span>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap text-sm font-medium text-yellow-600">
+                        <div class="flex items-center px-3 py-2 bg-yellow-50 rounded-lg">
+                            <i class="fas fa-hourglass-half w-3 h-3 mr-2"></i>
+                            Waiting for approval
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- ROW 3 -->
+                <tr class="hover:bg-blue-50/50 transition-colors duration-200">
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-tint w-5 h-5 text-blue-600"></i>
+                            </div>
+                            <div>
+                                <span class="text-sm font-semibold text-gray-900">B+</span>
+                                <p class="text-xs text-gray-500">Less Common</p>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap text-sm font-semibold text-gray-900">3 units</td>
+
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-100 to-blue-50 text-blue-700">
+                            <i class="fas fa-exclamation-circle w-3 h-3 mr-1"></i>
+                            Medium
+                        </span>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">Teaching Hospital</td>
+
+                    <!-- TIME -->
+                    <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">
+                        <div class="flex items-center">
+                            <i class="fas fa-clock w-4 h-4 text-gray-500 mr-2"></i>
+                            <span>11 Jan 2025, 05:10 PM</span>
+                        </div>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-indigo-100 to-indigo-50 text-indigo-700">
+                            <i class="fas fa-check-double w-3 h-3 mr-1"></i>
+                            Completed
+                        </span>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap text-sm font-medium text-green-600">
+                        <div class="flex items-center px-3 py-2 bg-green-50 rounded-lg">
+                            <i class="fas fa-check w-3 h-3 mr-2"></i>
+                            ✓ Received
+                        </div>
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
 
                         <!-- Compatible Donors Tab -->
                         <div id="donors-tab" class="tab-content hidden">
@@ -579,7 +710,8 @@
                     </div>
                 </div>
             </div>
-                        <!-- Request Blood Section -->
+
+             <!-- Request Blood Section -->
             <div id="request" class="section">
                 <div class="max-w-6xl mx-auto space-y-8">
                     <!-- Header -->
@@ -1027,7 +1159,8 @@
                     </div>
                 </div>
             </div>
-                       <!-- Request History Section -->
+
+                        <!-- Request History Section -->
             <div id="history" class="section">
                 <div class="max-w-6xl mx-auto space-y-8">
                     <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
@@ -1067,7 +1200,8 @@
                                             <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="bg-white divide-y divide-gray-100">
+                                    <tbody id="historyBody" class="bg-white divide-y divide-gray-100">
+
                                         <tr class="hover:bg-red-50/50 transition-colors duration-200">
                                             <td class="px-8 py-5 whitespace-nowrap">
                                                 <div class="flex items-center space-x-3">
@@ -1291,24 +1425,13 @@
                     </div>
                 </div>
             </div>
-            <!-- Profile Section -->
-            <div id="profile" class="section">
-                <div class="max-w-5xl mx-auto space-y-6">
-                    <!-- Header -->
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h1 class="text-2xl font-bold text-gray-900">User Profile</h1>
-                                <p class="text-gray-600 mt-1">Manage your account settings and personal information</p>
-                            </div>
-                            <button onclick="showNotification('Logged out successfully!')" class="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-800 flex items-center space-x-2">
-                                <i class="fas fa-sign-out-alt w-4 h-4"></i>
-                                <span>Logout</span>
-                            </button>
-                        </div>
-                    </div>
 
-   
+    <!-- Notification Toast -->
+    <div id="notification" class="fixed bottom-4 right-4 hidden animate-fade-in">
+        <div class="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3">
+            <i class="fas fa-check-circle w-5 h-5"></i>
+            <span id="notificationText" class="font-medium">Notification message here</span>
+        </div>
     </div>
 
     <!-- ~~~{"id":"55682","variant":"standard","title":"Full Dashboard Script with Editable Profile"} -->
@@ -1316,87 +1439,61 @@
     const token = localStorage.getItem("access_token");
 
     /* ✅ MUST BE FIRST – GLOBAL */
-window.showSection = function(sectionId, event) {
-    document.querySelectorAll('.section')
-        .forEach(s => s.classList.remove('active'));
+    window.showSection = function(sectionId, event) {
+        document.querySelectorAll('.section')
+            .forEach(s => s.classList.remove('active'));
 
-    const section = document.getElementById(sectionId);
-    if (section) section.classList.add('active');
+        const section = document.getElementById(sectionId);
+        if (section) section.classList.add('active');
 
-    document.querySelectorAll('.nav-item')
-        .forEach(item =>
-            item.classList.remove('active', 'bg-red-50', 'text-red-600')
-        );
+        document.querySelectorAll('.nav-item')
+            .forEach(item =>
+                item.classList.remove('active', 'bg-red-50', 'text-red-600')
+            );
 
-    if (event && event.target.closest('.nav-item')) {
-        event.target.closest('.nav-item')
-            .classList.add('active', 'bg-red-50', 'text-red-600');
-    }
-};
-document.addEventListener("DOMContentLoaded", () => {
-    const showRequest = localStorage.getItem("showRequestSection");
-    if (showRequest === "true") {
-        const requestSection = document.getElementById("request");
-        if (requestSection) requestSection.classList.remove("hidden");
-        localStorage.removeItem("showRequestSection");
-    }
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-
-    const email = localStorage.getItem("user_email");
-
-    // LOGOUT
-    window.logout = function () {
-        localStorage.removeItem("user_email");
-        window.location.href = "login.html";
+        if (event && event.target.closest('.nav-item')) {
+            event.target.closest('.nav-item')
+                .classList.add('active', 'bg-red-50', 'text-red-600');
+        }
     };
 
-    // SIDEBAR NAVIGATION
-    // ✅ DEFINE FIRST (GLOBAL)
+    window.showTab = function(tabName, event) {
+        document.querySelectorAll('.tab-content')
+            .forEach(tab => tab.classList.add('hidden'));
 
-// window.showSection = function(sectionId, event) {
-//     document.querySelectorAll('.section')
-//         .forEach(s => s.classList.remove('active'));
+        const target = document.getElementById(tabName + '-tab');
+        if (target) target.classList.remove('hidden');
 
-//     const section = document.getElementById(sectionId);
-//     if (section) section.classList.add('active');
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('border-red-500', 'text-red-600');
+            btn.classList.add('border-transparent', 'text-gray-500');
+        });
 
-//     document.querySelectorAll('.nav-item')
-//         .forEach(item => item.classList.remove('active', 'bg-red-50', 'text-red-600'));
-
-//     if (event && event.target.closest('.nav-item')) {
-//         event.target.closest('.nav-item')
-//             .classList.add('active', 'bg-red-50', 'text-red-600');
-//     }
-// };
-
-
-window.showTab = function(tabName, event) {
-    document.querySelectorAll('.tab-content')
-        .forEach(tab => tab.classList.add('hidden'));
-
-    const target = document.getElementById(tabName + '-tab');
-    if (target) target.classList.remove('hidden');
-
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('border-red-500', 'text-red-600');
-        btn.classList.add('border-transparent', 'text-gray-500');
-    });
-
-    if (event && event.target) {
-        event.target.classList.add('border-red-500', 'text-red-600');
-        event.target.classList.remove('border-transparent', 'text-gray-500');
-    }
-};
-
-
+        if (event && event.target) {
+            event.target.classList.add('border-red-500', 'text-red-600');
+            event.target.classList.remove('border-transparent', 'text-gray-500');
+        }
+    };
 
     // NOTIFICATION
     window.showNotification = function(message) {
-        const notification = document.getElementById('notification');
+        // Create notification if it doesn't exist
+        let notification = document.getElementById('notification');
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'notification';
+            notification.className = 'fixed bottom-4 right-4 hidden animate-fade-in z-50';
+            notification.innerHTML = `
+                <div class="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3">
+                    <i class="fas fa-check-circle w-5 h-5"></i>
+                    <span id="notificationText" class="font-medium"></span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+        }
+        
         const text = document.getElementById('notificationText');
-        text.textContent = message;
+        if (text) text.textContent = message;
         notification.classList.remove('hidden');
 
         setTimeout(() => notification.classList.add('hidden'), 3000);
@@ -1412,9 +1509,11 @@ window.showTab = function(tabName, event) {
         if (input.files && input.files[0]) {
             const file = input.files[0];
             const status = document.getElementById(fieldId + '-status');
-            const span = status.querySelector('span');
-            span.textContent = file.name;
-            status.classList.remove('hidden');
+            if (status) {
+                const span = status.querySelector('span');
+                if (span) span.textContent = file.name;
+                status.classList.remove('hidden');
+            }
         }
     };
 
@@ -1430,248 +1529,123 @@ window.showTab = function(tabName, event) {
         'O-': ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
     };
 
-    document.getElementById('bloodGroup')?.addEventListener('change', function(e) {
-        const selectedGroup = e.target.value;
-        const compatibleInfo = document.getElementById('compatibleInfo');
-        const compatibleList = document.getElementById('compatibleList');
-
-        if (selectedGroup && bloodGroupCompatibility[selectedGroup]) {
-            const compatible = bloodGroupCompatibility[selectedGroup];
-
-            compatibleList.innerHTML = compatible.map(bg =>
-                `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
-                ${bg===selectedGroup?'bg-red-100 text-red-800':'bg-blue-100 text-blue-800'}">
-                    <i class="fas fa-tint w-3 h-3 mr-1"></i> ${bg}
-                </span>`
-            ).join('');
-
-            compatibleInfo.classList.remove('hidden');
-        } else {
-            compatibleInfo.classList.add('hidden');
-        }
-    });
-
-    // BLOOD REQUEST FORM
-    document.getElementById('bloodRequestForm')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        showNotification('Blood request submitted successfully! Admin will review and approve.');
-        setTimeout(() => showSection('dashboard'), 2000);
-    });
-
-    // RADIO BUTTON STYLING
-    document.querySelectorAll('input[type="radio"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            const parent = this.closest('.grid');
-            parent.querySelectorAll('label').forEach(label => {
-                label.classList.remove('border-red-300', 'bg-red-50');
-                label.classList.add('border-gray-200');
-            });
-            if (this.checked) {
-                this.closest('label').classList.add('border-red-300', 'bg-red-50');
-                this.closest('label').classList.remove('border-gray-200');
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
             }
-        });
-    });
-
-});
-const hospitalsByDistrict = {
-  "Achham": ["Bayalpata Hospital"],
-  "Arghakhanchi": ["Arghakhanchi District Hospital"],
-  "Baglung": ["Baglung District Hospital", "Dhaulagiri Zonal Hospital"],
-  "Baitadi": ["Baitadi District Hospital"],
-  "Bajhang": ["Bajhang District Hospital"],
-  "Bajura": ["Bajura District Hospital"],
-  "Banke": ["Nepalgunj Medical College", "Bheri Hospital"],
-  "Bara": ["Kalaiya Hospital"],
-  "Bardiya": ["Bardiya District Hospital"],
-  "Bhaktapur": ["Bhaktapur Hospital", "Korea Nepal Friendship Hospital", "Nagarik Hospital"],
-  "Bhojpur": ["Bhojpur District Hospital"],
-  "Chitwan": ["Bharatpur Hospital", "Chitwan Medical College", "B.P. Koirala Memorial Cancer Hospital"],
-  "Dadeldhura": ["Dadeldhura Hospital"],
-  "Dailekh": ["Dailekh District Hospital"],
-  "Dang": ["Rapti Provincial Hospital"],
-  "Darchula": ["Darchula District Hospital"],
-  "Dhading": ["Dhading Hospital"],
-  "Dhankuta": ["Dhankuta Hospital"],
-  "Dhanusa": ["Janakpur Zonal Hospital", "Janaki Medical College"],
-  "Dolakha": ["Dolakha District Hospital"],
-  "Dolpa": ["Dolpa District Hospital"],
-  "Doti": ["Doti District Hospital"],
-  "Eastern Rukum": ["Rukum East District Hospital"],
-  "Gorkha": ["Gorkha District Hospital"],
-  "Gulmi": ["Gulmi District Hospital"],
-  "Humla": ["Humla District Hospital"],
-  "Ilam": ["Ilam District Hospital"],
-  "Jajarkot": ["Jajarkot District Hospital"],
-  "Jhapa": ["Mechi Zonal Hospital", "B&C Hospital", "Birta City Hospital"],
-  "Jumla": ["Karnali Academy of Health Sciences"],
-  "Kailali": ["Seti Provincial Hospital"],
-  "Kalikot": ["Kalikot District Hospital"],
-  "Kanchanpur": ["Mahakali Hospital"],
-  "Kapilvastu": ["Kapilvastu District Hospital"],
-  "Kaski": ["Gandaki Medical College", "Fewa City Hospital", "Manipal Teaching Hospital", "Western Regional Hospital"],
-  "Kathmandu": [
-      "Bir Hospital",
-      "Teaching Hospital",
-      "Grande International Hospital",
-      "Norvic International Hospital",
-      "Civil Hospital",
-      "Nepal Medical College",
-      "Nepal Korea Friendship Hospital",
-      "Nepal Medical College",
-      "HAMS Hospital",
-      "Mulpani Nagar Hospital",
-      "Nepal Orthopaedic Hospital",
-      "Shankarapur Hospital",
-      "Om Hospital & Research Centre",
-      "Medicare Hospital"
-  ],
-  "Kavrepalanchok": ["Dhulikhel Hospital"],
-  "Khotang": ["Khotang District Hospital"],
-  "Lalitpur": [
-      "Patan Hospital",
-      "B&B Hospital",
-      "Alka Hospital",
-      "Nepal Mediciti Hospital"
-  ],
-  "Lamjung": ["Lamjung District Hospital"],
-  "Mahottari": ["Jaleshwar Hospital"],
-  "Makwanpur": ["Hetauda Hospital"],
-  "Manang": ["Manang District Hospital"],
-  "Morang": ["Koshi Hospital", "Birat Medical College", "Nobel Medical College"],
-  "Mugu": ["Mugu District Hospital"],
-  "Mustang": ["Mustang District Hospital"],
-  "Myagdi": ["Myagdi District Hospital"],
-  "Nawalpur": ["Nawalpur District Hospital"],
-  "Nuwakot": ["Trishuli District Hospital"],
-  "Okhaldhunga": ["Okhaldhunga Community Hospital"],
-  "Palpa": ["Lumbini Medical College"],
-  "Panchthar": ["Panchthar District Hospital"],
-  "Parbat": ["Parbat District Hospital"],
-  "Parsa": ["Narayani Hospital"],
-  "Pyuthan": ["Pyuthan District Hospital"],
-  "Ramechhap": ["Ramechhap District Hospital"],
-  "Rasuwa": ["Rasuwa District Hospital"],
-  "Rautahat": ["Gaur Hospital"],
-  "Rolpa": ["Rolpa District Hospital"],
-  "Rupandehi": ["Universal College Hospital", "Lumbini Provincial Hospital", "Crimson Hospital"],
-  "Salyan": ["Salyan District Hospital"],
-  "Sindhuli": ["Sindhuli District Hospital"],
-  "Sindhupalchok": ["Sindhupalchok District Hospital"],
-  "Siraha": ["Siraha District Hospital"],
-  "Solukhumbu": ["Solukhumbu District Hospital"],
-  "Sunsari": ["Dharan B.P. Koirala Institute of Health Sciences"],
-  "Surkhet": ["Birendranagar Provincial Hospital"],
-  "Syangja": ["Syangja District Hospital"],
-  "Tanahun": ["Damauli District Hospital"],
-  "Taplejung": ["Taplejung District Hospital"],
-  "Terhathum": ["Terhathum District Hospital"],
-  "Udayapur": ["Udayapur District Hospital"]
-};
-const districtDropdown = document.getElementById("districtSelect");
-const hospitalDropdown = document.getElementById("hospitalSelect");
-
-districtDropdown.addEventListener("change", function() {
-    const selectedDistrict = this.value;
-
-    hospitalDropdown.innerHTML = '<option value="">Select Hospital</option>';
-
-    if (hospitalsByDistrict[selectedDistrict]) {
-        hospitalsByDistrict[selectedDistrict].forEach(hospital => {
-            const option = document.createElement("option");
-            option.value = hospital;
-            option.textContent = hospital;
-            hospitalDropdown.appendChild(option);
-        });
-
-        // Add "Other"
-        const otherOption = document.createElement("option");
-        otherOption.value = "Other";
-        otherOption.textContent = "Other";
-        hospitalDropdown.appendChild(otherOption);
+        }
+        return cookieValue;
     }
-});
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";");
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
-            if (cookie.startsWith(name + "=")) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-document.addEventListener("DOMContentLoaded", () => {
-    const form = document.getElementById("bloodRequestForm");
 
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const token = localStorage.getItem("access_token");  // now this will return the JWT
+    // HOSPITALS BY DISTRICT DATA
+    const hospitalsByDistrict = {
+        "Achham": ["Bayalpata Hospital"],
+        "Arghakhanchi": ["Arghakhanchi District Hospital"],
+        "Baglung": ["Baglung District Hospital", "Dhaulagiri Zonal Hospital"],
+        "Baitadi": ["Baitadi District Hospital"],
+        "Bajhang": ["Bajhang District Hospital"],
+        "Bajura": ["Bajura District Hospital"],
+        "Banke": ["Nepalgunj Medical College", "Bheri Hospital"],
+        "Bara": ["Kalaiya Hospital"],
+        "Bardiya": ["Bardiya District Hospital"],
+        "Bhaktapur": ["Bhaktapur Hospital", "Korea Nepal Friendship Hospital", "Nagarik Hospital"],
+        "Bhojpur": ["Bhojpur District Hospital"],
+        "Chitwan": ["Bharatpur Hospital", "Chitwan Medical College", "B.P. Koirala Memorial Cancer Hospital"],
+        "Dadeldhura": ["Dadeldhura Hospital"],
+        "Dailekh": ["Dailekh District Hospital"],
+        "Dang": ["Rapti Provincial Hospital"],
+        "Darchula": ["Darchula District Hospital"],
+        "Dhading": ["Dhading Hospital"],
+        "Dhankuta": ["Dhankuta Hospital"],
+        "Dhanusa": ["Janakpur Zonal Hospital", "Janaki Medical College"],
+        "Dolakha": ["Dolakha District Hospital"],
+        "Dolpa": ["Dolpa District Hospital"],
+        "Doti": ["Doti District Hospital"],
+        "Eastern Rukum": ["Rukum East District Hospital"],
+        "Gorkha": ["Gorkha District Hospital"],
+        "Gulmi": ["Gulmi District Hospital"],
+        "Humla": ["Humla District Hospital"],
+        "Ilam": ["Ilam District Hospital"],
+        "Jajarkot": ["Jajarkot District Hospital"],
+        "Jhapa": ["Mechi Zonal Hospital", "B&C Hospital", "Birta City Hospital"],
+        "Jumla": ["Karnali Academy of Health Sciences"],
+        "Kailali": ["Seti Provincial Hospital"],
+        "Kalikot": ["Kalikot District Hospital"],
+        "Kanchanpur": ["Mahakali Hospital"],
+        "Kapilvastu": ["Kapilvastu District Hospital"],
+        "Kaski": ["Gandaki Medical College", "Fewa City Hospital", "Manipal Teaching Hospital", "Western Regional Hospital"],
+        "Kathmandu": [
+            "Bir Hospital",
+            "Teaching Hospital",
+            "Grande International Hospital",
+            "Norvic International Hospital",
+            "Civil Hospital",
+            "Nepal Medical College",
+            "Nepal Korea Friendship Hospital",
+            "Nepal Medical College",
+            "HAMS Hospital",
+            "Mulpani Nagar Hospital",
+            "Nepal Orthopaedic Hospital",
+            "Shankarapur Hospital",
+            "Om Hospital & Research Centre",
+            "Medicare Hospital"
+        ],
+        "Kavrepalanchok": ["Dhulikhel Hospital"],
+        "Khotang": ["Khotang District Hospital"],
+        "Lalitpur": [
+            "Patan Hospital",
+            "B&B Hospital",
+            "Alka Hospital",
+            "Nepal Mediciti Hospital"
+        ],
+        "Lamjung": ["Lamjung District Hospital"],
+        "Mahottari": ["Jaleshwar Hospital"],
+        "Makwanpur": ["Hetauda Hospital"],
+        "Manang": ["Manang District Hospital"],
+        "Morang": ["Koshi Hospital", "Birat Medical College", "Nobel Medical College"],
+        "Mugu": ["Mugu District Hospital"],
+        "Mustang": ["Mustang District Hospital"],
+        "Myagdi": ["Myagdi District Hospital"],
+        "Nawalpur": ["Nawalpur District Hospital"],
+        "Nuwakot": ["Trishuli District Hospital"],
+        "Okhaldhunga": ["Okhaldhunga Community Hospital"],
+        "Palpa": ["Lumbini Medical College"],
+        "Panchthar": ["Panchthar District Hospital"],
+        "Parbat": ["Parbat District Hospital"],
+        "Parsa": ["Narayani Hospital"],
+        "Pyuthan": ["Pyuthan District Hospital"],
+        "Ramechhap": ["Ramechhap District Hospital"],
+        "Rasuwa": ["Rasuwa District Hospital"],
+        "Rautahat": ["Gaur Hospital"],
+        "Rolpa": ["Rolpa District Hospital"],
+        "Rupandehi": ["Universal College Hospital", "Lumbini Provincial Hospital", "Crimson Hospital"],
+        "Salyan": ["Salyan District Hospital"],
+        "Sindhuli": ["Sindhuli District Hospital"],
+        "Sindhupalchok": ["Sindhupalchok District Hospital"],
+        "Siraha": ["Siraha District Hospital"],
+        "Solukhumbu": ["Solukhumbu District Hospital"],
+        "Sunsari": ["Dharan B.P. Koirala Institute of Health Sciences"],
+        "Surkhet": ["Birendranagar Provincial Hospital"],
+        "Syangja": ["Syangja District Hospital"],
+        "Tanahun": ["Damauli District Hospital"],
+        "Taplejung": ["Taplejung District Hospital"],
+        "Terhathum": ["Terhathum District Hospital"],
+        "Udayapur": ["Udayapur District Hospital"]
+    };
 
-        if (!token) {
-            alert("You are not logged in!");
-            return;
-        }
-
-        const getValue = (id) => {
-            const el = document.querySelector(id);
-            if (!el) { console.error(`Element ${id} not found`); return ""; }
-            return el.value;
-        };
-
-        const getFile = (id) => {
-            const el = document.querySelector(id);
-            if (!el || !el.files || el.files.length === 0) return null;
-            return el.files[0];
-        };
-
-        const formData = new FormData();
-        formData.append("blood_type", getValue("#bloodGroup"));
-        formData.append("units_required", getValue("#unitsRequired"));
-        formData.append("district", getValue("#districtSelect"));
-        formData.append("hospital", getValue("#hospitalSelect"));
-        formData.append("required_date", getValue("#requiredDate"));
-        formData.append("reason", getValue("#reason"));
-        formData.append("contact_name", getValue("#contactName"));
-        formData.append("contact_phone", getValue("#contactPhone"));
-        // Append urgency
-const urgency = document.querySelector('input[name="urgency"]:checked')?.value;
-if (urgency) formData.append("urgency", urgency);
-
-        const hospitalDoc = getFile("#hospitalDoc");
-        if (hospitalDoc) formData.append("hospital_doc", hospitalDoc);
-
-        const doctorNote = getFile("#doctorNote");
-        if (doctorNote) formData.append("doctor_note", doctorNote);
-
-        try {
-            const response = await fetch("http://127.0.0.1:8000/blood_requests/api/create/", {
-    method: "POST",
-    headers: {
-        "Authorization": `Bearer ${token}`  // JWT token
-    },
-    body: formData
-});
-            const data = await response.json();
-
-            if (data.success) {
-                alert("Blood request submitted successfully!");
-                form.reset();
-            } else {
-                console.error("Submission errors:", data.errors || data.message);
-                alert("Error submitting request. Check console for details.");
-            }
-        } catch (err) {
-            console.error("Fetch error:", err);
-            alert("Network error or server unavailable.");
-        }
-    });
-});
+    // LOGOUT FUNCTION
+    window.logout = function() {
+        localStorage.removeItem("user_email");
+        localStorage.removeItem("access_token");
+        window.location.href = "login-signup.html";
+    };
 
     // ===== DASHBOARD STATS & TABLE =====
     async function loadDashboard() {
@@ -1681,41 +1655,40 @@ if (urgency) formData.append("urgency", urgency);
                 method: "GET",
                 headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
             });
-            if (res.status === 401) { alert("Unauthorized. Please login again."); return; }
+            if (res.status === 401) { 
+                showNotification("Unauthorized. Please login again.");
+                setTimeout(() => logout(), 2000);
+                return; 
+            }
 
             const data = await res.json();
-            //  if (!data.success) return;
-//             if (data.patient_name && data.user.name) {
-//     document.getElementById("welcomeName").textContent = data.patient_name;
-// }
-
             if (!data.success) return;
-             if (data.patient_name ) {
-    document.getElementById("welcomeName").textContent = data.patient_name;
-}
+            
+            if (data.patient_name) {
+                const welcomeName = document.getElementById("welcomeName");
+                if (welcomeName) welcomeName.textContent = data.patient_name;
+            }
 
             const requests = data.data;
 
-           // Update stats cards from API stats
-if (data.stats) {
-    const { total, pending, approved, completed } = data.stats;
+            // Update stats cards from API stats
+            if (data.stats) {
+                const { total, pending, approved, completed } = data.stats;
 
-    const totalEl = document.getElementById("total-requests");
-    const pendingEl = document.getElementById("pending-requests");
-    const approvedEl = document.getElementById("approved-requests");
-    const receivedEl = document.getElementById("received-requests");
+                const totalEl = document.getElementById("total-requests");
+                const pendingEl = document.getElementById("pending-requests");
+                const approvedEl = document.getElementById("approved-requests");
+                const receivedEl = document.getElementById("received-requests");
 
-    if (totalEl) totalEl.textContent = total ?? 0;
-    if (pendingEl) pendingEl.textContent = pending ?? 0;
-    if (approvedEl) approvedEl.textContent = approved ?? 0;
-    if (receivedEl) receivedEl.textContent = completed ?? 0;
-}
-
-
+                if (totalEl) totalEl.textContent = total ?? 0;
+                if (pendingEl) pendingEl.textContent = pending ?? 0;
+                if (approvedEl) approvedEl.textContent = approved ?? 0;
+                if (receivedEl) receivedEl.textContent = completed ?? 0;
+            }
 
             // Populate table
             const tbody = document.querySelector("#requests-tab tbody");
-            if (tbody) {
+            if (tbody && requests) {
                 tbody.innerHTML = "";
                 const statusColors = {
                     pending: ["text-yellow-600", "bg-yellow-100"],
@@ -1723,44 +1696,339 @@ if (data.stats) {
                     rejected: ["text-red-600", "bg-red-100"],
                     completed: ["text-blue-600", "bg-blue-100"]
                 };
+                
                 requests.forEach(req => {
-                    const [textClass, bgClass] = statusColors[req.status] || ["text-gray-600", "bg-gray-100"];
-                    tbody.innerHTML += `
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap flex items-center">
-                                <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
-                                <span class="text-sm font-medium text-gray-900">${req.blood_type}</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${req.units_required} units</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${textClass} ${bgClass}">${req.urgency}</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${req.hospital}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${textClass} ${bgClass}">
-                                    ${req.status.charAt(0).toUpperCase() + req.status.slice(1)}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                ${req.status === "pending"
-                                    ? `<span class="text-yellow-600">Waiting for admin approval</span>`
-                                    : `<button onclick="confirmReceipt(${req.id})" class="text-green-600 hover:text-green-900 text-xs block">Confirm Receipt</button>`}
-                            </td>
-                        </tr>
-                    `;
-                });
+    const [textClass, bgClass] = statusColors[req.status] || ["text-gray-600", "bg-gray-100"];
+
+    const requestedTime = req.created_at
+        ? new Date(req.created_at).toLocaleString()
+        : "N/A";
+
+    tbody.innerHTML += `
+        <tr>
+            <td class="px-6 py-4 whitespace-nowrap flex items-center">
+                <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
+                <span class="text-sm font-medium text-gray-900">${req.blood_type}</span>
+            </td>
+
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${req.units_required} units</td>
+
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${textClass} ${bgClass}">
+                    ${req.urgency}
+                </span>
+            </td>
+
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${req.hospital}</td>
+
+            <!-- NEW TIME COLUMN -->
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <i class="fas fa-clock w-4 h-4 text-gray-500 mr-2"></i>
+                ${requestedTime}
+            </td>
+
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${textClass} ${bgClass}">
+                    ${req.status.charAt(0).toUpperCase() + req.status.slice(1)}
+                </span>
+            </td>
+
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                ${req.status === "pending"
+                    ? `<span class="text-yellow-600">Waiting for admin approval</span>`
+                    : `<button onclick="confirmReceipt(${req.id})" class="text-green-600 hover:text-green-900 text-xs block">Confirm Receipt</button>`}
+            </td>
+        </tr>
+    `;
+});
             }
         } catch (err) {
             console.error("Error loading dashboard:", err);
+            showNotification("Error loading dashboard data");
         }
     }
 
-   document.addEventListener("DOMContentLoaded", () => {
-    loadDashboard();
-});
+    // INITIALIZE WHEN DOM IS LOADED
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log("DOM loaded, initializing...");
+        
+        // Load dashboard data
+        loadDashboard();
+        
+        // Check for show request section flag
+        const showRequest = localStorage.getItem("showRequestSection");
+        if (showRequest === "true") {
+            const requestBtn = document.querySelector('button[onclick*="request"]');
+            if (requestBtn) requestBtn.click();
+            localStorage.removeItem("showRequestSection");
+        }
 
+        // BLOOD GROUP COMPATIBILITY
+        const bloodGroupSelect = document.getElementById('bloodGroup');
+        if (bloodGroupSelect) {
+            bloodGroupSelect.addEventListener('change', function(e) {
+                const selectedGroup = e.target.value;
+                const compatibleInfo = document.getElementById('compatibleInfo');
+                const compatibleList = document.getElementById('compatibleList');
+
+                if (selectedGroup && bloodGroupCompatibility[selectedGroup]) {
+                    const compatible = bloodGroupCompatibility[selectedGroup];
+
+                    compatibleList.innerHTML = compatible.map(bg =>
+                        `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
+                        ${bg===selectedGroup?'bg-red-100 text-red-800':'bg-blue-100 text-blue-800'}">
+                            <i class="fas fa-tint w-3 h-3 mr-1"></i> ${bg}
+                        </span>`
+                    ).join('');
+
+                    compatibleInfo.classList.remove('hidden');
+                } else {
+                    compatibleInfo.classList.add('hidden');
+                }
+            });
+        }
+
+        // DISTRICT-HOSPITAL DROPDOWN
+        const districtDropdown = document.getElementById("districtSelect");
+        const hospitalDropdown = document.getElementById("hospitalSelect");
+
+        if (districtDropdown && hospitalDropdown) {
+            districtDropdown.addEventListener("change", function() {
+                const selectedDistrict = this.value;
+
+                hospitalDropdown.innerHTML = '<option value="">Select Hospital</option>';
+
+                if (hospitalsByDistrict[selectedDistrict]) {
+                    hospitalsByDistrict[selectedDistrict].forEach(hospital => {
+                        const option = document.createElement("option");
+                        option.value = hospital;
+                        option.textContent = hospital;
+                        hospitalDropdown.appendChild(option);
+                    });
+
+                    // Add "Other"
+                    const otherOption = document.createElement("option");
+                    otherOption.value = "Other";
+                    otherOption.textContent = "Other";
+                    hospitalDropdown.appendChild(otherOption);
+                }
+            });
+        }
+
+        // BLOOD REQUEST FORM SUBMISSION
+        const form = document.getElementById("bloodRequestForm");
+        if (form) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const token = localStorage.getItem("access_token");
+
+                if (!token) {
+                    showNotification("You are not logged in!");
+                    return;
+                }
+
+                const getValue = (id) => {
+                    const el = document.querySelector(id);
+                    if (!el) { 
+                        console.error(`Element ${id} not found`); 
+                        return ""; 
+                    }
+                    return el.value;
+                };
+
+                const getFile = (id) => {
+                    const el = document.querySelector(id);
+                    if (!el || !el.files || el.files.length === 0) return null;
+                    return el.files[0];
+                };
+
+                const formData = new FormData();
+                formData.append("blood_type", getValue("#bloodGroup"));
+                formData.append("units_required", getValue("#unitsRequired"));
+                formData.append("district", getValue("#districtSelect"));
+                formData.append("hospital", getValue("#hospitalSelect"));
+                formData.append("required_date", getValue("#requiredDate"));
+                formData.append("reason", getValue("#reason"));
+                formData.append("contact_name", getValue("#contactName"));
+                formData.append("contact_phone", getValue("#contactPhone"));
+                
+                // Append urgency
+                const urgency = document.querySelector('input[name="urgency"]:checked')?.value;
+                if (urgency) formData.append("urgency", urgency);
+
+                const hospitalDoc = getFile("#hospitalDoc");
+                if (hospitalDoc) formData.append("hospital_doc", hospitalDoc);
+
+                const doctorNote = getFile("#doctorNote");
+                if (doctorNote) formData.append("doctor_note", doctorNote);
+
+                try {
+                    showNotification("Submitting request...");
+                    
+                    const response = await fetch("http://127.0.0.1:8000/blood_requests/api/create/", {
+                        method: "POST",
+                        headers: { "Authorization": `Bearer ${token}` },
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+
+                    if (response.ok && data.success) {
+                        showNotification("Blood request submitted successfully!");
+                        form.reset();
+                        setTimeout(() => showSection('dashboard'), 1500);
+                        
+                        // Reload dashboard data
+                        loadDashboard();
+                    } else {
+                        console.error("Submission errors:", data.errors || data.message);
+                        showNotification(data.message || "Error submitting request");
+                    }
+                } catch (err) {
+                    console.error("Fetch error:", err);
+                    showNotification("Network error or server unavailable.");
+                }
+            });
+        }
+
+        // RADIO BUTTON STYLING
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const parent = this.closest('.grid');
+                if (parent) {
+                    parent.querySelectorAll('label').forEach(label => {
+                        label.classList.remove('border-red-300', 'bg-red-50');
+                        label.classList.add('border-gray-200');
+                    });
+                    if (this.checked) {
+                        this.closest('label').classList.add('border-red-300', 'bg-red-50');
+                        this.closest('label').classList.remove('border-gray-200');
+                    }
+                }
+            });
+        });
+
+        // Initialize active navigation item
+        const activeNavItem = document.querySelector('.nav-item.active');
+        if (activeNavItem) {
+            activeNavItem.classList.add('bg-red-50', 'text-red-600');
+        }
+
+        console.log("Initialization complete");
+    });
+
+    // Handle window load as backup
+    window.addEventListener('load', function() {
+        console.log("Window loaded");
+    });
+   async function loadHistory() {
+    try {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+            console.error("No token found");
+            return;
+        }
+
+        const res = await fetch("http://127.0.0.1:8000/blood_requests/api/user_requests/", {
+            headers: {
+                "Authorization": "Bearer " + token,
+                "Accept": "application/json"
+            }
+        });
+
+        if (!res.ok) {
+            console.error("HTTP Error:", res.status);
+            return;
+        }
+
+        const data = await res.json();
+        console.log("History Response:", data);
+
+        const tbody = document.getElementById("historyBody");
+        tbody.innerHTML = "";
+
+        data.data.forEach(item => {
+            const created = item.created_at
+                ? new Date(item.created_at)
+                : null;
+
+            const date = created
+                ? created.toISOString().split("T")[0]
+                : "N/A";
+
+            const time = created
+                ? created.toLocaleTimeString()
+                : "N/A";
+
+            tbody.innerHTML += `
+                <tr class="hover:bg-red-50/50 transition-colors duration-200">
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar w-5 h-5 text-blue-600"></i>
+                            </div>
+                            <div>
+                                <span class="text-sm font-semibold text-gray-900">${date}</span>
+                                <p class="text-xs text-gray-500">${time}</p>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-tint w-4 h-4 text-red-600"></i>
+                            </div>
+                            <span class="text-sm font-semibold">${item.blood_type}</span>
+                        </div>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <span class="text-sm font-semibold text-gray-900">${item.units_required} units</span>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <span class="text-sm text-gray-900">${item.hospital}</span>
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        ${statusBadge(item.status)}
+                    </td>
+
+                    <td class="px-8 py-5 whitespace-nowrap">
+                        <button class="text-blue-600 hover:text-blue-900 font-medium text-sm flex items-center hover:underline">
+                            <i class="fas fa-eye w-4 h-4 mr-1"></i>
+                            View Details
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+    } catch (error) {
+        console.error("History load error:", error);
+    }
+}
+
+function statusBadge(status) {
+    const text = status.charAt(0).toUpperCase() + status.slice(1);
+
+    if(status === "completed"){
+        return `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                    <i class="fas fa-check-circle w-3 h-3 mr-1"></i>${text}
+                </span>`;
+    }
+    if(status === "pending"){
+        return `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+                    <i class="fas fa-clock w-3 h-3 mr-1"></i>${text}
+                </span>`;
+    }
+    return `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                <i class="fas fa-times-circle w-3 h-3 mr-1"></i>${text}
+            </span>`;
+}
+loadHistory();
 </script>
-
 
 </body>
 </html>

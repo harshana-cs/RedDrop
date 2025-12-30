@@ -1,246 +1,533 @@
- 
- <!DOCTYPE html>
- <html lang="en">
- <head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
+    <title>Profile | Blood Bank</title>
     <link href="../../dist/output.css" rel="stylesheet">
-    <!-- <link rel="stylesheet" href="/assets/remixicon/icons"> -->
-
- </head>
- <body>
+    <style>
+        /* Additional custom styles for UI enhancement */
+        .nav-item {
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .nav-item.active {
+            background-color: #fee;
+            color: #dc2626;
+            font-weight: 600;
+        }
+        
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: #dc2626;
+            border-radius: 0 2px 2px 0;
+        }
+        
+        .nav-item:hover:not(.active) {
+            transform: translateX(4px);
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        }
+        
+        .info-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .info-card:hover {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(-2px);
+        }
+        
+        .info-card.personal {
+            border-left-color: #3b82f6;
+        }
+        
+        .info-card.contact {
+            border-left-color: #10b981;
+        }
+        
+        .info-card.medical {
+            border-left-color: #8b5cf6;
+        }
+        
+        .info-card.emergency {
+            border-left-color: #f59e0b;
+        }
+        
+        .editable {
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        
+        .editable:hover {
+            background-color: #f8fafc;
+        }
+        
+        .edit-btn {
+            transition: all 0.2s ease;
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+        
+        .edit-btn:hover {
+            background-color: #f1f5f9;
+            transform: translateY(-1px);
+        }
+        
+        .save-btn {
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.2), 0 2px 4px -1px rgba(220, 38, 38, 0.06);
+        }
+        
+        .save-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.2), 0 4px 6px -2px rgba(220, 38, 38, 0.05);
+        }
+        
+        .logout-btn {
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .logout-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .toggle-switch {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .blood-type-badge {
+            background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+            color: #7f1d1d;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .label {
+            color: #64748b;
+            font-size: 0.875rem;
+            letter-spacing: 0.025em;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .value {
+            color: #1e293b;
+            font-weight: 500;
+            font-size: 1.05rem;
+        }
+        
+        .profile-section-title {
+            position: relative;
+            padding-bottom: 12px;
+        }
+        
+        .profile-section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background-color: #dc2626;
+            border-radius: 3px;
+        }
+        
+        .notification-toast {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            z-index: 50;
+        }
+        
+        .account-settings-item {
+            transition: all 0.2s ease;
+        }
+        
+        .account-settings-item:hover {
+            background-color: #f8fafc;
+            border-radius: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 64px;
+            }
+            
+            .sidebar .nav-text {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 64px;
+            }
+        }
+    </style>
+</head>
 <body class="bg-hlb-bg text-gray-800 font-sans">
 
+<<!-- Sidebar Navigation -->
+        <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-10">
+            <div class="flex flex-col h-full">
+                <!-- Logo -->
+                <div class="flex items-center justify-center h-20 border-b border-gray-100">
+                    <div class="flex items-center space-x-3">
+                        <div class="relative">
+                            <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-md">
+                                <i class="fas fa-tint text-white w-5 h-5"></i>
+                            </div>
+                            <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
+                        </div>
+                        <div>
+                            <span class="text-xl font-bold text-black">RedDrop</span>
+<p class="text-xs text-gray-500">Blood Bank</p>
 
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Navigation -->
+                <nav class="flex-1 px-4 py-8 space-y-2">
+                    <button onclick="showSection('dashboard', event)"
+                            class="nav-item active w-full flex items-center space-x-4 px-4 py-4 rounded-xl hover:bg-red-50 transition-all duration-200">
+                        <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-sm">
+                            <img src="../assets/remixicon/icons/Buildings/home-2-fill.svg" class="w-5 h-5 filter invert">
+                        </div>
+                        <div class="text-left">
+                            <span class="font-medium text-gray-900">Dashboard</span>
+                            <p class="text-xs text-gray-500 mt-0.5">Overview & Stats</p>
+                        </div>
+                    </button>
 
-<!-- Sidebar Navigation -->
-<div class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-10">
-    <div class="flex flex-col h-full">
-        <!-- Logo -->
-        <div class="flex items-center justify-center h-16 border-b border-gray-200">
-            <div class="flex items-center space-x-2">
-                <i class="ri-drop-fill text-red-600 text-2xl"></i>
-                <span class="text-xl font-bold text-gray-900">Blood Bank</span>
+                    <button onclick="showSection('request', event)"
+                            class="nav-item w-full flex items-center space-x-4 px-4 py-4 rounded-xl hover:bg-red-50 transition-all duration-200">
+                        <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-sm">
+                            <img src="../assets/remixicon/icons/System/history-fill.svg" class="w-5 h-5 filter invert">
+                        </div>
+                        <div class="text-left">
+                            <span class="font-medium text-gray-900">Request Blood</span>
+                            <p class="text-xs text-gray-500 mt-0.5">New blood request</p>
+                        </div>
+                    </button>
+
+                    <button onclick="showSection('history', event)"
+                            class="nav-item w-full flex items-center space-x-4 px-4 py-4 rounded-xl hover:bg-red-50 transition-all duration-200">
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+                            <img src="../assets/remixicon/icons/Document/file-history-fill.svg" class="w-5 h-5 filter invert">
+                        </div>
+                        <div class="text-left">
+                            <span class="font-medium text-gray-900">History</span>
+                            <p class="text-xs text-gray-500 mt-0.5">Past requests</p>
+                        </div>
+                    </button>
+
+                    <button onclick="window.location.href='profile.html'"
+                            class="nav-item w-full flex items-center space-x-4 px-4 py-4 rounded-xl hover:bg-red-50 transition-all duration-200">
+                        <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-sm">
+                            <img src="../assets/remixicon/icons/User & Faces/user-3-fill.svg" class="w-5 h-5 filter invert">
+                        </div>
+                        <div class="text-left">
+                            <span class="font-medium text-gray-900">Profile</span>
+                            <p class="text-xs text-gray-500 mt-0.5">Account settings</p>
+                        </div>
+                    </button>
+                </nav>
+
+                <!-- User Info -->
+                <div class="border-t border-gray-100 p-6 bg-gradient-to-r from-gray-50 to-white">
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <div class="w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-md">
+                                <i class="fas fa-user text-white w-6 h-6"></i>
+                            </div>
+                            <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                        </div>
+                        <!-- <div class="flex-1">
+                            <p class="text-sm font-semibold text-gray-900">John Doe</p>
+                            <p class="text-xs text-gray-500 truncate">john@example.com</p>
+                            <div class="flex items-center mt-1">
+                                <span class="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">Premium User</span>
+                            </div>
+                        </div> -->
+                    </div>
+                    <button onclick="logout()" class="mt-4 w-full px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2">
+                        <i class="fas fa-sign-out-alt w-4 h-4"></i>
+                        <span>Logout</span>
+                    </button>
+                </div>
             </div>
         </div>
-
-        <!-- Navigation -->
-        <nav class="flex-1 px-4 py-6 space-y-2">
-            <button onclick="showSection('dashboard')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100">
-               <img src="../assets/remixicon/icons/Buildings/home-2-fill.svg"
-     class="w-6 h-6" alt="dashboard" />
-
-
-                <span>Dashboard</span>
-            </button>
-
-            <button onclick="showSection('request')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100">
-                <img src="../assets/remixicon/icons/System/history-fill.svg"
-     class="w-6 h-6" alt="request history" />
-
-
-                <span>Request Blood</span>
-            </button>
-
-            <button onclick="showSection('history')" class="nav-item w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100">
-                <img src="../assets/remixicon/icons/Document/file-history-fill.svg"
-     class="w-6 h-6" alt="request history" />
-
-                <span>Request History</span>
-            </button>
-
-            <button onclick="showSection('profile')" class="nav-item active w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg bg-gray-100">
-                <img src="../assets/remixicon/icons/User & Faces/user-3-fill.svg"
-     class="w-6 h-6" alt="profile" />
-
-                <span>Profile</span>
-            </button>
-        </nav>
-    </div>
-</div>
-
 <!-- Profile Section -->
-<div id="profile" class="section ml-64 p-6">
-    <div class="max-w-5xl mx-auto space-y-6">
+<div id="profile" class="section ml-64 p-8">
+    <div class="max-w-6xl mx-auto space-y-8">
         <!-- Header -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">User Profile</h1>
-                <p class="text-gray-600 mt-1">Manage your account settings and personal information</p>
+        <div class="section-header rounded-xl border border-gray-200 p-6 flex flex-col md:flex-row items-start md:items-center justify-between">
+            <div class="mb-4 md:mb-0">
+                <h1 class="text-3xl font-bold text-gray-900 tracking-tight">User Profile</h1>
+                <p class="text-gray-600 mt-2 flex items-center">
+                    <i class="ri-information-line mr-2"></i>
+                    Manage your account settings and personal information
+                </p>
             </div>
-            <button onclick="logout()" class="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-800 flex items-center space-x-2">
+            <button onclick="logout()" class="logout-btn bg-gray-900 text-white px-6 py-3 rounded-lg hover:bg-gray-800 flex items-center space-x-3 font-medium">
                 <i class="ri-logout-box-line text-lg"></i>
                 <span>Logout</span>
             </button>
         </div>
 
         <!-- Personal Information -->
-        <div id="personal" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
-                <h2 class="text-lg font-semibold text-gray-900">Personal Information</h2>
-                <button onclick="toggleEdit('personal')" class="text-gray-600 hover:text-gray-900">Edit</button>
+        <div id="personal" class="info-card personal bg-white rounded-xl border border-gray-200 p-6">
+            <div class="flex items-center justify-between border-b border-gray-200 pb-5 mb-6">
+                <div>
+                    <h2 class="profile-section-title text-xl font-bold text-gray-900">Personal Information</h2>
+                    <p class="text-gray-500 text-sm mt-2">Basic details about your identity and blood type</p>
+                </div>
+                <button onclick="toggleEdit('personal')" class="edit-btn text-gray-700 hover:text-gray-900 flex items-center space-x-2 font-medium">
+                    <i class="ri-edit-2-line"></i>
+                    <span>Edit</span>
+                </button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Full Name</label>
-                    <p id="fullnameField" class="editable text-gray-900 font-medium">John Doe</p>
+                    <label class="label mb-2">Full Name</label>
+                    <p id="fullnameField" class="editable value">John Doe</p>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Email Address</label>
-                    <p id="emailaddressField" class="editable text-gray-900 font-medium">john.doe@email.com</p>
+                    <label class="label mb-2">Email Address</label>
+                    <p id="emailaddressField" class="editable value flex items-center">
+                        <i class="ri-mail-line mr-2 text-gray-400"></i>
+                        john.doe@email.com
+                    </p>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Phone Number</label>
-                    <p id="phonenumberField" class="editable text-gray-900 font-medium">+1 (555) 123-4567</p>
+                    <label class="label mb-2">Phone Number</label>
+                    <p id="phonenumberField" class="editable value flex items-center">
+                        <i class="ri-phone-line mr-2 text-gray-400"></i>
+                        +1 (555) 123-4567
+                    </p>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Date of Birth</label>
-                    <p id="date_of_birthField" class="editable text-gray-900 font-medium">1990-01-15</p>
+                    <label class="label mb-2">Date of Birth</label>
+                    <p id="date_of_birthField" class="editable value flex items-center">
+                        <i class="ri-calendar-line mr-2 text-gray-400"></i>
+                        1990-01-15
+                    </p>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Gender</label>
-                    <p id="genderField" class="editable text-gray-900 font-medium">Male</p>
+                    <label class="label mb-2">Gender</label>
+                    <p id="genderField" class="editable value">Male</p>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Blood Type</label>
-                    <p id="blood_typeField" class="editable text-gray-900 font-medium">A+</p>
+                    <label class="label mb-2">Blood Type</label>
+                    <div class="flex items-center">
+                        <p id="blood_typeField" class="editable value blood-type-badge">A+</p>
+                        <span class="ml-3 text-sm text-gray-500">Universal donor: A+, AB+</span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Contact Information -->
-        <div id="contact" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
-                <h2 class="text-lg font-semibold text-gray-900">Contact Information</h2>
-                <button onclick="toggleEdit('contact')" class="text-gray-600 hover:text-gray-900">Edit</button>
+        <div id="contact" class="info-card contact bg-white rounded-xl border border-gray-200 p-6">
+            <div class="flex items-center justify-between border-b border-gray-200 pb-5 mb-6">
+                <div>
+                    <h2 class="profile-section-title text-xl font-bold text-gray-900">Contact Information</h2>
+                    <p class="text-gray-500 text-sm mt-2">Where you can be reached for blood donations</p>
+                </div>
+                <button onclick="toggleEdit('contact')" class="edit-btn text-gray-700 hover:text-gray-900 flex items-center space-x-2 font-medium">
+                    <i class="ri-edit-2-line"></i>
+                    <span>Edit</span>
+                </button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="md:col-span-3">
-                    <label class="block text-sm text-gray-600 mb-1">Street Address</label>
-                    <p id="street_addressField" class="editable text-gray-900 font-medium">123 Main Street</p>
+                    <label class="label mb-2">Street Address</label>
+                    <p id="street_addressField" class="editable value flex items-center">
+                        <i class="ri-map-pin-line mr-2 text-gray-400"></i>
+                        123 Main Street
+                    </p>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">City</label>
-                    <p id="cityField" class="editable text-gray-900 font-medium">New York</p>
+                    <label class="label mb-2">City</label>
+                    <p id="cityField" class="editable value">New York</p>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">State</label>
-                    <p id="stateField" class="editable text-gray-900 font-medium">NY</p>
+                    <label class="label mb-2">State</label>
+                    <p id="stateField" class="editable value">NY</p>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">ZIP Code</label>
-                    <p id="zip_codeField" class="editable text-gray-900 font-medium">10001</p>
+                    <label class="label mb-2">ZIP Code</label>
+                    <p id="zip_codeField" class="editable value">10001</p>
                 </div>
             </div>
         </div>
 
         <!-- Medical Information -->
-        <div id="medical" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
-                <h2 class="text-lg font-semibold text-gray-900">Medical Information</h2>
-                <button onclick="toggleEdit('medical')" class="text-gray-600 hover:text-gray-900">Edit</button>
+        <div id="medical" class="info-card medical bg-white rounded-xl border border-gray-200 p-6">
+            <div class="flex items-center justify-between border-b border-gray-200 pb-5 mb-6">
+                <div>
+                    <h2 class="profile-section-title text-xl font-bold text-gray-900">Medical Information</h2>
+                    <p class="text-gray-500 text-sm mt-2">Health details important for blood donation eligibility</p>
+                </div>
+                <button onclick="toggleEdit('medical')" class="edit-btn text-gray-700 hover:text-gray-900 flex items-center space-x-2 font-medium">
+                    <i class="ri-edit-2-line"></i>
+                    <span>Edit</span>
+                </button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Weight</label>
-                    <p id="weightField" class="editable text-gray-900 font-medium">75 kg</p>
+                    <label class="label mb-2">Weight</label>
+                    <p id="weightField" class="editable value flex items-center">
+                        <span class="text-lg font-semibold text-gray-900">75</span>
+                        <span class="ml-1 text-gray-600">kg</span>
+                    </p>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Height</label>
-                    <p id="heightField" class="editable text-gray-900 font-medium">180 cm</p>
+                    <label class="label mb-2">Height</label>
+                    <p id="heightField" class="editable value flex items-center">
+                        <span class="text-lg font-semibold text-gray-900">180</span>
+                        <span class="ml-1 text-gray-600">cm</span>
+                    </p>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Allergies</label>
-                    <p id="allergiesField" class="editable text-gray-900 font-medium">Penicillin, Peanuts</p>
+                    <label class="label mb-2">Allergies</label>
+                    <p id="allergiesField" class="editable value">Penicillin, Peanuts</p>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Medical Conditions</label>
-                    <p id="medical_conditionsField" class="editable text-gray-900 font-medium">None</p>
+                    <label class="label mb-2">Medical Conditions</label>
+                    <p id="medical_conditionsField" class="editable value">None</p>
                 </div>
             </div>
         </div>
 
         <!-- Emergency Contact -->
-        <div id="emergency" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
-                <h2 class="text-lg font-semibold text-gray-900">Emergency Contact</h2>
-                <button onclick="toggleEdit('emergency')" class="text-gray-600 hover:text-gray-900">Edit</button>
+        <div id="emergency" class="info-card emergency bg-white rounded-xl border border-gray-200 p-6">
+            <div class="flex items-center justify-between border-b border-gray-200 pb-5 mb-6">
+                <div>
+                    <h2 class="profile-section-title text-xl font-bold text-gray-900">Emergency Contact</h2>
+                    <p class="text-gray-500 text-sm mt-2">Who to contact in case of emergency</p>
+                </div>
+                <button onclick="toggleEdit('emergency')" class="edit-btn text-gray-700 hover:text-gray-900 flex items-center space-x-2 font-medium">
+                    <i class="ri-edit-2-line"></i>
+                    <span>Edit</span>
+                </button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Contact Name</label>
-                    <p id="emergency_nameField" class="editable text-gray-900 font-medium">Jane Doe</p>
+                    <label class="label mb-2">Contact Name</label>
+                    <p id="emergency_nameField" class="editable value flex items-center">
+                        <i class="ri-user-line mr-2 text-gray-400"></i>
+                        Jane Doe
+                    </p>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Relationship</label>
-                    <p id="emergency_relationshipField" class="editable text-gray-900 font-medium">Spouse</p>
+                    <label class="label mb-2">Relationship</label>
+                    <p id="emergency_relationshipField" class="editable value">Spouse</p>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Phone Number</label>
-                    <p id="emergency_phoneField" class="editable text-gray-900 font-medium">+1 (555) 987-6543</p>
+                    <label class="label mb-2">Phone Number</label>
+                    <p id="emergency_phoneField" class="editable value flex items-center">
+                        <i class="ri-phone-line mr-2 text-gray-400"></i>
+                        +1 (555) 987-6543
+                    </p>
                 </div>
                 <div>
-                    <label class="block text-sm text-gray-600 mb-1">Email Address</label>
-                    <p id="emergency_emailField" class="editable text-gray-900 font-medium">jane.doe@email.com</p>
+                    <label class="label mb-2">Email Address</label>
+                    <p id="emergency_emailField" class="editable value flex items-center">
+                        <i class="ri-mail-line mr-2 text-gray-400"></i>
+                        jane.doe@email.com
+                    </p>
                 </div>
             </div>
         </div>
 
         <!-- Account Settings -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="p-6 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900">Account Settings</h2>
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+                <h2 class="text-xl font-bold text-gray-900">Account Settings</h2>
+                <p class="text-gray-600 mt-1">Control how you receive notifications and updates</p>
             </div>
-            <div class="p-6 space-y-4">
-                <div class="flex items-center justify-between py-3 border-b border-gray-200">
-                    <div>
-                        <p class="text-gray-900 font-medium">Email Notifications</p>
-                        <p class="text-sm text-gray-600">Receive updates about blood requests</p>
+            <div class="p-6 space-y-2">
+                <div class="account-settings-item flex items-center justify-between p-4">
+                    <div class="flex-1">
+                        <p class="text-gray-900 font-semibold">Email Notifications</p>
+                        <p class="text-sm text-gray-600 mt-1">Receive updates about blood requests and donation opportunities</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" checked class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+                        <div class="toggle-switch w-12 h-6 bg-gray-300 peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
                     </label>
                 </div>
-                <div class="flex items-center justify-between py-3 border-b border-gray-200">
-                    <div>
-                        <p class="text-gray-900 font-medium">SMS Notifications</p>
-                        <p class="text-sm text-gray-600">Get text messages for urgent requests</p>
+                <div class="account-settings-item flex items-center justify-between p-4">
+                    <div class="flex-1">
+                        <p class="text-gray-900 font-semibold">SMS Notifications</p>
+                        <p class="text-sm text-gray-600 mt-1">Get text messages for urgent blood requests in your area</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" checked class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+                        <div class="toggle-switch w-12 h-6 bg-gray-300 peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
                     </label>
                 </div>
-                <div class="flex items-center justify-between py-3">
-                    <div>
-                        <p class="text-gray-900 font-medium">Push Notifications</p>
-                        <p class="text-sm text-gray-600">Receive app notifications</p>
+                <div class="account-settings-item flex items-center justify-between p-4">
+                    <div class="flex-1">
+                        <p class="text-gray-900 font-semibold">Push Notifications</p>
+                        <p class="text-sm text-gray-600 mt-1">Receive app notifications for blood donation reminders</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+                        <div class="toggle-switch w-12 h-6 bg-gray-300 peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
                     </label>
                 </div>
+                <div class="account-settings-item flex items-center justify-between p-4">
+                    <div class="flex-1">
+                        <p class="text-gray-900 font-semibold">Donation Eligibility Alerts</p>
+                        <p class="text-sm text-gray-600 mt-1">Get notified when you're eligible to donate blood again</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" checked class="sr-only peer">
+                        <div class="toggle-switch w-12 h-6 bg-gray-300 peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
+                    </label>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <p class="text-sm text-gray-600">
+                    <i class="ri-information-line mr-1"></i>
+                    Notification settings help us keep you informed about critical blood supply needs
+                </p>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Notification Toast -->
-<div id="notification" class="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg hidden transform transition-all duration-300">
-    <div class="flex items-center space-x-2">
-        <i class="ri-checkbox-circle-line text-lg"></i>
-        <span id="notificationText"></span>
+<div id="notification" class="notification-toast fixed top-6 right-6 bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-xl shadow-lg hidden transform transition-all duration-300">
+    <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+            <i class="ri-checkbox-circle-line text-lg"></i>
+        </div>
+        <div>
+            <p class="font-medium" id="notificationText">Profile updated successfully!</p>
+            <p class="text-sm text-white/80 mt-1">Your changes have been saved.</p>
+        </div>
+        <button onclick="document.getElementById('notification').classList.add('hidden')" class="ml-4 text-white/70 hover:text-white">
+            <i class="ri-close-line text-lg"></i>
+        </button>
     </div>
 </div>
 
-
-
-
-    <!-- ~~~{"id":"55682","variant":"standard","title":"Full Dashboard Script with Editable Profile"} -->
+<!-- Original Script (unchanged) -->
 <script>
 let email = localStorage.getItem("emailaddress"); // make global
 
@@ -276,7 +563,7 @@ document.addEventListener("DOMContentLoaded", async function() {
 
         fields.forEach(f => {
             const value = f.textContent.trim();
-            f.innerHTML = `<input type="text" class="w-full border px-2 py-1 rounded" value="${value}" />`;
+            f.innerHTML = `<input type="text" class="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition" value="${value}" />`;
         });
 
         // Remove old save button if exists
@@ -285,8 +572,9 @@ document.addEventListener("DOMContentLoaded", async function() {
 
         // Add save button
         const saveBtn = document.createElement("button");
-        saveBtn.textContent = "Save";
-        saveBtn.className = "save-btn mt-3 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700";
+        saveBtn.textContent = "Save Changes";
+        saveBtn.className = "save-btn mt-6 bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-3 rounded-lg hover:from-red-700 hover:to-red-800 font-medium flex items-center space-x-2";
+        saveBtn.innerHTML = '<i class="ri-save-line"></i><span>Save Changes</span>';
 
         // Bind click to saveProfile with the section
         saveBtn.addEventListener("click", () => saveProfile(section));
@@ -306,9 +594,9 @@ document.addEventListener("DOMContentLoaded", async function() {
                 payload[key] = input.value.trim();
             }
         });
-if (payload.date_of_birth) {
-    payload.date_of_birth = payload.date_of_birth.replace(/\//g, '-'); // 2003/07/17 → 2003-07-17
-}
+        if (payload.date_of_birth) {
+            payload.date_of_birth = payload.date_of_birth.replace(/\//g, '-'); // 2003/07/17 → 2003-07-17
+        }
 
         try {
             const res = await fetch("http://localhost:8000/loginsignup/patient/profile/update/", {
@@ -317,7 +605,7 @@ if (payload.date_of_birth) {
                 body: JSON.stringify(payload)
             });
             const data = await res.json();
-            showNotification(data.message || "Profile updated!");
+            showNotification(data.message || "Profile updated successfully!");
             if (data.success) await loadProfile();
         } catch (err) {
             console.error("Error saving profile:", err);
@@ -335,9 +623,21 @@ if (payload.date_of_birth) {
         setTimeout(() => notification.classList.add('hidden'), 3000);
     };
 
+    // ---------- LOGOUT (placeholder) ----------
+    window.logout = function() {
+        if (confirm("Are you sure you want to log out?")) {
+            localStorage.removeItem("emailaddress");
+            window.location.href = "login-signup.html";
+        }
+    };
+
+    // ---------- SHOW SECTION (placeholder) ----------
+    window.showSection = function(section) {
+        // This would typically navigate to different pages or show/hide sections
+        console.log(`Navigating to ${section} section`);
+        alert(`Navigating to ${section} section (functionality to be implemented)`);
+    };
 });
-
-
 </script>
 </body>
 </html>

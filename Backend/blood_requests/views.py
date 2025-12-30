@@ -72,22 +72,56 @@ def dashboard_view(request):
 @permission_classes([IsAuthenticated])
 def api_user_requests(request):
     """
-    Fetch blood requests for the logged-in patient (used in dashboard stats & table),
-    and include patient name and stats like total, approved, pending, completed requests.
+    Returns full request history + dashboard statistics
+    for logged in patient.
     """
+    # FIXED — always use emailaddress not email
     patient = Patient.objects.filter(emailaddress=request.user.username).first()
     if not patient:
         return Response({"success": False, "message": "Patient not found"}, status=403)
 
-    # Fetch all requests for this patient
     requests_qs = BloodRequest.objects.filter(patient=patient).order_by("-created_at")
     serializer = BloodRequestSerializer(requests_qs, many=True)
 
-    # Compute dashboard stats
     total_requests = requests_qs.count()
     approved_requests = requests_qs.filter(status="approved").count()
     pending_requests = requests_qs.filter(status="pending").count()
     completed_requests = requests_qs.filter(status="completed").count()
+
+    # ------- Most Requested Blood Group -------
+        # ------- Most Requested Blood Group -------
+    most_requested = (
+        requests_qs.values("blood_type")
+        .annotate(total=Count("blood_type"))
+        .order_by("-total")
+        .first()
+    )
+
+    most_requested_group = most_requested["blood_type"] if most_requested else None
+    most_requested_count = most_requested["total"] if most_requested else 0
+
+
+    # ------- Success Rate -------
+    success_rate = 0
+    if total_requests > 0:
+        success_rate = round((completed_requests / total_requests) * 100)
+
+    # ------- Average Response Time -------
+    # We assume you have an "approved_at" or update timestamp,
+    # if not then this will just return None gracefully
+    avg_response_hours = None
+    try:
+        completed = requests_qs.filter(status="completed")
+        if completed.exists():
+            diffs = [
+                (req.updated_at - req.created_at).total_seconds() / 3600
+                for req in completed
+                if req.updated_at
+            ]
+            if diffs:
+                avg_response_hours = round(sum(diffs) / len(diffs))
+    except:
+        avg_response_hours = None
 
     return Response({
         "success": True,
@@ -96,10 +130,15 @@ def api_user_requests(request):
             "total": total_requests,
             "approved": approved_requests,
             "pending": pending_requests,
-            "completed": completed_requests
+            "completed": completed_requests,
+            "most_requested_group": most_requested_group,
+            "most_requested_count": most_requested_count,
+            "success_rate": success_rate,
+            "avg_response_hours": avg_response_hours
         },
         "data": serializer.data
     })
+
 
 
 @api_view(["POST"])
@@ -135,14 +174,12 @@ def api_create_request(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def api_confirm_receipt(request, request_id):
-    """
-    API endpoint to mark a blood request as 'completed' / received.
-    """
-    patient = Patient.objects.filter(email=request.user.username).first()
+    patient = Patient.objects.filter(emailaddress=request.user.username).first()
     if not patient:
         return Response({"success": False, "message": "Patient not found"}, status=403)
 
     blood_request = get_object_or_404(BloodRequest, id=request_id, patient=patient)
+
     if blood_request.status != "approved":
         return Response({
             "success": False,
@@ -152,4 +189,5 @@ def api_confirm_receipt(request, request_id):
     blood_request.status = "completed"
     blood_request.fulfilled = True
     blood_request.save()
+
     return Response({"success": True, "message": "Request marked as received!"})

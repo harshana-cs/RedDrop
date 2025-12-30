@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'loginsignup',
     'corsheaders',
     'blood_requests',
+    'register_donor',
     
 ]
 
@@ -207,3 +208,11 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'harshanabhandari2@gmail.com'
 EMAIL_HOST_PASSWORD = 'xooq mnge rekx cyrk' 
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+]
+
+LOGIN_REDIRECT_URL = '/login-success/'

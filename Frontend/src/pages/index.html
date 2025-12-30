@@ -5,162 +5,515 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RedDrop | Digital Blood Bank</title>
 
-  <!-- Tailwind CSS -->
+  <!-- Tailwind CSS CDN for testing -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Awesome for icons -->
   <link href="../../dist/output.css" rel="stylesheet">
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            'hlb-red': '#B91C1C',
-            'hlb-bg': '#FFF5F5',
-            'hlb-lightRed': '#FEE2E2',
-            'hlb-darkRed': '#991B1B',
-          },
-        },
-      },
-    }
-  </script>
-
   <style>
     html { scroll-behavior: smooth; }
+    
+    /* Define animations */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-25px); }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+    
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Animation classes */
+    .animate-bounce {
+      animation: bounce 1s infinite;
+    }
+    
+    .animate-pulse-slow {
+      animation: pulse 3s ease-in-out infinite;
+    }
+    
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .animate-fade-in {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+    
+    /* Custom styles */
+    .gradient-text {
+      background: linear-gradient(90deg, #B91C1C, #991B1B);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(185, 28, 28, 0.15);
+    }
+    
+    .blood-drop {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .blood-drop::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: -10px;
+      width: 8px;
+      height: 8px;
+      background-color: #B91C1C;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
   </style>
 </head>
 
-<body class="bg-hlb-bg text-gray-800 font-sans">
+<body class="bg-[#FFF5F5] text-gray-800 font-sans overflow-x-hidden">
 
   <!-- Navbar -->
-  <header class="bg-hlb-red text-white fixed top-0 left-0 w-full z-50 shadow-lg">
+  <header class="bg-[#B91C1C] text-white fixed top-0 left-0 w-full z-50 shadow-lg backdrop-blur-md bg-opacity-95">
     <nav class="container mx-auto flex justify-between items-center py-4 px-6">
-      <h1 class="text-3xl font-bold tracking-wide">RedDrop</h1>
+      <div class="flex items-center space-x-2">
+        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+          <i class="fas fa-tint text-[#B91C1C] text-xl"></i>
+        </div>
+        <h1 class="text-3xl font-bold tracking-wide">Red<span class="font-extrabold">Drop</span></h1>
+      </div>
 
       <!-- Desktop Menu -->
       <div class="hidden md:flex space-x-8 items-center text-lg">
-        <a href="#why" class="hover:text-hlb-lightRed transition">Why RedDrop</a>
-        <a href="#work" class="hover:text-hlb-lightRed transition">Our Work</a>
-        <a href="#about" class="hover:text-hlb-lightRed transition">About Us</a>
-        <a href="#involved" class="hover:text-hlb-lightRed transition">Get Involved</a>
-        <a href="#stories" class="hover:text-hlb-lightRed transition">Blood Stories</a>
-
-        <a href="login-signup.html"
-           class="border border-white px-4 py-2 rounded-full hover:bg-white hover:text-hlb-red transition font-medium">
-          Login
+        <a href="#why" class="hover:text-[#FEE2E2] transition flex items-center space-x-1">
+          <i class="fas fa-heart text-sm"></i>
+          <span>Why RedDrop</span>
+        </a>
+        <a href="#work" class="hover:text-[#FEE2E2] transition flex items-center space-x-1">
+          <i class="fas fa-handshake text-sm"></i>
+          <span>Our Work</span>
+        </a>
+        <a href="#about" class="hover:text-[#FEE2E2] transition flex items-center space-x-1">
+          <i class="fas fa-users text-sm"></i>
+          <span>About Us</span>
+        </a>
+        <a href="#involved" class="hover:text-[#FEE2E2] transition flex items-center space-x-1">
+          <i class="fas fa-hands-helping text-sm"></i>
+          <span>Get Involved</span>
+        </a>
+        <a href="#stories" class="hover:text-[#FEE2E2] transition flex items-center space-x-1">
+          <i class="fas fa-book-open text-sm"></i>
+          <span>Blood Stories</span>
         </a>
 
-        <a href="login-signup.html"
-           class="bg-white text-hlb-red px-5 py-2 rounded-full hover:bg-gray-100 transition font-medium">
-          Sign Up
-        </a>
+        <div class="flex items-center space-x-4 ml-4">
+          <a href="login-signup.html"
+             class="border border-white px-5 py-2 rounded-full hover:bg-white hover:text-[#B91C1C] transition font-medium flex items-center space-x-2">
+            <i class="fas fa-sign-in-alt"></i>
+            <span>Login</span>
+          </a>
+
+          <a href="login-signup.html"
+             class="bg-white text-[#B91C1C] px-6 py-2.5 rounded-full hover:bg-gray-100 transition font-medium shadow-lg flex items-center space-x-2">
+            <i class="fas fa-user-plus"></i>
+            <span>Sign Up</span>
+          </a>
+        </div>
       </div>
 
       <!-- Mobile Menu Button -->
-      <button id="menu-toggle" class="md:hidden">
-        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M4 6h16M4 12h16m-7 6h7" />
-        </svg>
+      <button id="menu-toggle" class="md:hidden bg-white/10 p-2 rounded-lg">
+        <i class="fas fa-bars text-xl"></i>
       </button>
     </nav>
 
     <!-- Mobile Menu -->
     <div id="mobile-menu"
-      class="hidden md:hidden bg-hlb-red text-white w-full flex flex-col items-center space-y-4 py-4">
-      <a href="#why">Why RedDrop</a>
-      <a href="#work">Our Work</a>
-      <a href="#about">About Us</a>
-      <a href="#involved">Get Involved</a>
-      <a href="#stories">Blood Stories</a>
+      class="hidden md:hidden bg-[#991B1B] text-white w-full flex flex-col items-center space-y-4 py-6 px-4 animate-fade-in">
+      <a href="#why" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
+        <i class="fas fa-heart"></i>
+        <span>Why RedDrop</span>
+      </a>
+      <a href="#work" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
+        <i class="fas fa-handshake"></i>
+        <span>Our Work</span>
+      </a>
+      <a href="#about" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
+        <i class="fas fa-users"></i>
+        <span>About Us</span>
+      </a>
+      <a href="#involved" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
+        <i class="fas fa-hands-helping"></i>
+        <span>Get Involved</span>
+      </a>
+      <a href="#stories" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
+        <i class="fas fa-book-open"></i>
+        <span>Blood Stories</span>
+      </a>
 
-      <a href="login-signup.html"
-         class="border border-white px-4 py-2 rounded-full hover:bg-white hover:text-hlb-red transition">
-        Login
-      </a>
-      <a href="login-signup.html"
-         class="bg-white text-hlb-red px-4 py-2 rounded-full hover:bg-gray-100 transition">
-        Sign Up
-      </a>
+      <div class="flex flex-col space-y-4 w-full px-8 pt-4">
+        <a href="login-signup.html"
+           class="border border-white px-4 py-3 rounded-full hover:bg-white hover:text-[#B91C1C] transition text-center">
+          <i class="fas fa-sign-in-alt mr-2"></i>Login
+        </a>
+        <a href="login-signup.html"
+           class="bg-white text-[#B91C1C] px-4 py-3 rounded-full hover:bg-gray-100 transition text-center font-medium">
+          <i class="fas fa-user-plus mr-2"></i>Sign Up
+        </a>
+      </div>
     </div>
   </header>
 
   <!-- Hero Section -->
-  <section class="relative min-h-[95vh] flex items-center bg-cover bg-center"
-    style="background-image: url('https://images.unsplash.com/photo-1603988363659-489cf6a11e4b?auto=format&fit=crop&w=1470&q=80')">
+  <section class="relative min-h-screen flex items-center overflow-hidden">
+    <!-- Animated Background Elements -->
+    <div class="absolute inset-0 z-0">
+      <div class="absolute top-1/4 left-10 w-72 h-72 bg-[#B91C1C]/10 rounded-full blur-3xl animate-float"></div>
+      <div class="absolute bottom-1/4 right-10 w-96 h-96 bg-[#991B1B]/10 rounded-full blur-3xl animate-float" style="animation-delay: 2s;"></div>
+    </div>
     
-    <div class="absolute inset-0 bg-hlb-red/30 backdrop-blur-sm"></div>
+    <!-- Hero Image with Gradient Overlay -->
+    <div class="absolute inset-0 bg-gradient-to-r from-[#B91C1C]/40 via-[#B91C1C]/30 to-transparent z-0"></div>
+    <div class="absolute inset-0 bg-cover bg-center z-0" 
+         style="background-image: url('https://images.unsplash.com/photo-1603988363659-489cf6a11e4b?auto=format&fit=crop&w=1470&q=80&brightness=0.9')"></div>
 
-    <div class="relative container mx-auto text-center px-6 mt-20">
-      <h2 class="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg">
-        Give Blood. Save Lives.
-      </h2>
+    <div class="relative container mx-auto px-6 mt-16 z-10 animate-fade-in">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+          <i class="fas fa-heartbeat text-white"></i>
+          <span class="text-white font-medium">Saving Lives Since 2025</span>
+        </div>
+        
+        <h2 class="text-5xl md:text-7xl font-extrabold text-white drop-shadow-2xl leading-tight">
+          Give Blood<span class="blood-drop">.</span><br>
+          <span class="text-[#FEE2E2]">Save Lives</span>
+        </h2>
 
-      <p class="text-lg md:text-xl text-white mt-6 max-w-2xl mx-auto opacity-90">
-        RedDrop is a digital platform that connects donors, recipients, and hospitals efficiently and securely.
-      </p>
+        <p class="text-xl md:text-2xl text-white mt-8 mb-10 max-w-2xl opacity-95 leading-relaxed">
+          Join Nepal's largest digital blood bank network. Connect donors, recipients, and hospitals efficiently and securely.
+        </p>
 
-      <div class="mt-8">
-        <a href="#donate"
-          class="bg-white text-hlb-red px-10 py-3 rounded-full text-lg shadow-md
-                 hover:bg-gray-100 transition font-semibold">
-          Donate Now
-        </a>
+        <div class="flex flex-col sm:flex-row gap-6 mt-12">
+          <a href="#donate"
+            class="bg-white text-[#B91C1C] px-10 py-4 rounded-full text-lg shadow-xl
+                   hover:bg-gray-100 transition-all duration-300 font-bold text-center
+                   hover:scale-105 transform flex items-center justify-center space-x-3">
+            <i class="fas fa-tint"></i>
+            <span>Donate Now</span>
+          </a>
+          
+          <a href="#why"
+            class="border-2 border-white text-white px-10 py-4 rounded-full text-lg
+                   hover:bg-white hover:text-[#B91C1C] transition-all duration-300 font-medium text-center
+                   flex items-center justify-center space-x-3">
+            <i class="fas fa-play-circle"></i>
+            <span>Learn More</span>
+          </a>
+        </div>
+        
+        <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div class="text-center">
+            <div class="text-3xl font-bold text-white">10K+</div>
+            <div class="text-[#FEE2E2] text-sm">Donors Registered</div>
+          </div>
+          <div class="text-center">
+            <div class="text-3xl font-bold text-white">500+</div>
+            <div class="text-[#FEE2E2] text-sm">Lives Saved</div>
+          </div>
+          <div class="text-center">
+            <div class="text-3xl font-bold text-white">50+</div>
+            <div class="text-[#FEE2E2] text-sm">Partner Hospitals</div>
+          </div>
+          <div class="text-center">
+            <div class="text-3xl font-bold text-white">24/7</div>
+            <div class="text-[#FEE2E2] text-sm">Emergency Service</div>
+          </div>
+        </div>
       </div>
+    </div>
+    
+    <!-- Scroll Indicator -->
+    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+      <a href="#why" class="text-white text-2xl">
+        <i class="fas fa-chevron-down"></i>
+      </a>
     </div>
   </section>
 
   <!-- Why RedDrop -->
-  <section id="why" class="py-20 container mx-auto px-6">
-    <h3 class="text-4xl font-bold text-hlb-red text-center mb-10">Why Choose RedDrop?</h3>
+  <section id="why" class="py-24 container mx-auto px-6">
+    <div class="text-center mb-16">
+      <div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4">
+        <span class="text-[#B91C1C] font-semibold">Why Choose Us</span>
+      </div>
+      <h3 class="text-5xl font-bold gradient-text mb-6">Why RedDrop?</h3>
+      <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+        We bridge the gap between blood donors and those in need with cutting-edge technology
+      </p>
+    </div>
 
-    <div class="grid md:grid-cols-3 gap-10">
-      <div class="bg-white shadow-xl rounded-2xl p-6 border-t-4 border-hlb-red">
-        <h4 class="font-semibold text-xl mb-2 text-hlb-red">Donors</h4>
-        <p>Receive reminders, track donation history, and find nearby blood donation events.</p>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="bg-white shadow-2xl rounded-3xl p-8 border-l-8 border-[#B91C1C] card-hover">
+        <div class="w-16 h-16 bg-[#FEE2E2] rounded-2xl flex items-center justify-center mb-6">
+          <i class="fas fa-user-heart text-2xl text-[#B91C1C]"></i>
+        </div>
+        <h4 class="font-bold text-2xl mb-4 text-gray-800">For Donors</h4>
+        <p class="text-gray-600 mb-6 leading-relaxed">
+          Receive smart reminders, track your donation journey, and find nearby blood donation events with real-time updates.
+        </p>
+        <ul class="space-y-3">
+          <li class="flex items-center text-gray-700">
+            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
+            <span>Personalized donation schedule</span>
+          </li>
+          <li class="flex items-center text-gray-700">
+            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
+            <span>Digital health certificate</span>
+          </li>
+          <li class="flex items-center text-gray-700">
+            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
+            <span>Rewards & recognition</span>
+          </li>
+        </ul>
       </div>
 
-      <div class="bg-white shadow-xl rounded-2xl p-6 border-t-4 border-hlb-red">
-        <h4 class="font-semibold text-xl mb-2 text-hlb-red">Hospitals</h4>
-        <p>Manage blood inventory, verify donors, and request blood quickly and safely.</p>
+      <div class="bg-white shadow-2xl rounded-3xl p-8 border-l-8 border-[#B91C1C] card-hover">
+        <div class="w-16 h-16 bg-[#FEE2E2] rounded-2xl flex items-center justify-center mb-6">
+          <i class="fas fa-hospital-alt text-2xl text-[#B91C1C]"></i>
+        </div>
+        <h4 class="font-bold text-2xl mb-4 text-gray-800">For Hospitals</h4>
+        <p class="text-gray-600 mb-6 leading-relaxed">
+          Manage blood inventory efficiently, verify donors instantly, and request blood supplies with a single click.
+        </p>
+        <ul class="space-y-3">
+          <li class="flex items-center text-gray-700">
+            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
+            <span>Real-time inventory tracking</span>
+          </li>
+          <li class="flex items-center text-gray-700">
+            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
+            <span>Secure donor verification</span>
+          </li>
+          <li class="flex items-center text-gray-700">
+            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
+            <span>Automated blood matching</span>
+          </li>
+        </ul>
       </div>
 
-      <div class="bg-white shadow-xl rounded-2xl p-6 border-t-4 border-hlb-red">
-        <h4 class="font-semibold text-xl mb-2 text-hlb-red">Recipients</h4>
-        <p>Request blood urgently and get matched with compatible donors in real-time.</p>
+      <div class="bg-white shadow-2xl rounded-3xl p-8 border-l-8 border-[#B91C1C] card-hover">
+        <div class="w-16 h-16 bg-[#FEE2E2] rounded-2xl flex items-center justify-center mb-6">
+          <i class="fas fa-hand-holding-heart text-2xl text-[#B91C1C]"></i>
+        </div>
+        <h4 class="font-bold text-2xl mb-4 text-gray-800">For Recipients</h4>
+        <p class="text-gray-600 mb-6 leading-relaxed">
+          Request blood urgently and get matched with compatible donors in real-time with our intelligent matching system.
+        </p>
+        <ul class="space-y-3">
+          <li class="flex items-center text-gray-700">
+            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
+            <span>Emergency request system</span>
+          </li>
+          <li class="flex items-center text-gray-700">
+            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
+            <span>Real-time donor matching</span>
+          </li>
+          <li class="flex items-center text-gray-700">
+            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
+            <span>Status tracking & updates</span>
+          </li>
+        </ul>
       </div>
     </div>
   </section>
 
   <!-- Donate Section -->
-  <section id="donate" class="py-20 bg-hlb-lightRed">
-    <div class="container mx-auto px-6 text-center">
-      <h3 class="text-4xl font-bold text-hlb-red mb-8">Become a Donor</h3>
-      <p class="text-lg mb-6 text-gray-700">Your contribution today can save someone's tomorrow.</p>
+  <section id="donate" class="py-24 bg-gradient-to-r from-[#B91C1C] to-[#991B1B] relative overflow-hidden">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute inset-0" style="background-image: url(&quot;data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 20C60 10 80 10 90 20 100 30 100 50 90 60 80 70 60 70 50 60 40 70 20 70 10 60 0 50 0 30 10 20 20 10 40 10 50 20Z' fill='%23ffffff'/%3E%3C/svg%3E&quot;); background-size: 80px;"></div>
+    </div>
+    
+    <div class="relative container mx-auto px-6 text-center">
+      <div class="max-w-3xl mx-auto">
+        <div class="inline-block bg-white/20 backdrop-blur-sm rounded-full px-5 py-2 mb-6">
+          <span class="text-white font-semibold">Join Our Mission</span>
+        </div>
+        
+        <h3 class="text-5xl font-bold text-white mb-8">Become a Life Saver</h3>
+        
+        <p class="text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
+          Your single donation can save up to three lives. Register today and become part of Nepal's most trusted blood donation network.
+        </p>
 
-      <a href="login-signup.html"
-        class="bg-hlb-red text-white px-8 py-3 rounded-full text-lg hover:bg-hlb-darkRed transition">
-        Register as Donor
-      </a>
+        <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+          <a href="login-signup.html"
+            class="bg-white text-[#B91C1C] px-12 py-4 rounded-full text-lg font-bold
+                   hover:bg-gray-100 transition-all duration-300 shadow-2xl
+                   hover:scale-105 transform flex items-center space-x-3">
+            <i class="fas fa-user-plus"></i>
+            <span>Register as Donor</span>
+          </a>
+          
+          <a href="#stories"
+            class="border-2 border-white text-white px-12 py-4 rounded-full text-lg font-medium
+                   hover:bg-white hover:text-[#B91C1C] transition-all duration-300
+                   flex items-center space-x-3">
+            <i class="fas fa-play"></i>
+            <span>Watch Success Stories</span>
+          </a>
+        </div>
+        
+        <div class="mt-16 grid grid-cols-2 md:grid-cols-3 gap-8">
+          <div class="text-center">
+            <div class="text-4xl font-bold text-white mb-2">15 min</div>
+            <div class="text-white/80">Registration Time</div>
+          </div>
+          <div class="text-center">
+            <div class="text-4xl font-bold text-white mb-2">100%</div>
+            <div class="text-white/80">Safe & Verified</div>
+          </div>
+          <div class="text-center">
+            <div class="text-4xl font-bold text-white mb-2">Free</div>
+            <div class="text-white/80">No Cost Involved</div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- About -->
-  <section id="about" class="py-20 container mx-auto px-6 text-center">
-    <h3 class="text-4xl font-bold text-hlb-red mb-6">About Us</h3>
-    <p class="max-w-3xl mx-auto text-lg text-gray-700 leading-relaxed">
-      RedDrop is a platform created to streamline and digitalize blood donation in Nepal.
-      We aim to build a safer, faster and transparent blood resource system for everyone.
-    </p>
-  </section>
-
   <!-- Footer -->
-  <footer class="bg-hlb-red text-white py-6 text-center shadow-inner">
-    <p class="text-sm">&copy; 2025 RedDrop | All Rights Reserved</p>
+  <footer class="bg-gradient-to-r from-[#991B1B] to-[#B91C1C] text-white py-12">
+    <div class="container mx-auto px-6">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-8 md:mb-0">
+          <div class="flex items-center space-x-3 mb-4">
+            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+              <i class="fas fa-tint text-[#B91C1C] text-2xl"></i>
+            </div>
+            <h2 class="text-3xl font-bold">RedDrop</h2>
+          </div>
+          <p class="text-white/80 max-w-md">Connecting hearts through blood donation.<br>Every drop counts, every donor matters.</p>
+          
+          <div class="flex space-x-4 mt-6">
+            <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition">
+              <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition">
+              <i class="fab fa-linkedin-in"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-10">
+          <div>
+            <h4 class="font-bold text-lg mb-4">Quick Links</h4>
+            <ul class="space-y-2">
+              <li><a href="#why" class="text-white/80 hover:text-white transition">Why Donate</a></li>
+              <li><a href="#work" class="text-white/80 hover:text-white transition">Our Impact</a></li>
+              <li><a href="#stories" class="text-white/80 hover:text-white transition">Success Stories</a></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 class="font-bold text-lg mb-4">Resources</h4>
+            <ul class="space-y-2">
+              <li><a href="#" class="text-white/80 hover:text-white transition">Donor Guide</a></li>
+              <li><a href="#" class="text-white/80 hover:text-white transition">Blood Safety</a></li>
+              <li><a href="#" class="text-white/80 hover:text-white transition">Hospital Portal</a></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 class="font-bold text-lg mb-4">Contact</h4>
+            <ul class="space-y-2">
+              <li class="flex items-center space-x-2 text-white/80">
+                <i class="fas fa-phone"></i>
+                <span>+977-1-1234567</span>
+              </li>
+              <li class="flex items-center space-x-2 text-white/80">
+                <i class="fas fa-envelope"></i>
+                <span>help@reddrop.org</span>
+              </li>
+              <li class="flex items-center space-x-2 text-white/80">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Kathmandu, Nepal</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-white/20 mt-10 pt-8 text-center">
+        <p class="text-white/70">&copy; 2025 RedDrop | Digital Blood Bank. All Rights Reserved.</p>
+        <p class="text-white/60 text-sm mt-2">Made with <i class="fas fa-heart text-red-300"></i> for Nepal</p>
+      </div>
+    </div>
   </footer>
+
+  <!-- Floating Donate Button -->
+  <a href="#donate" class="fixed bottom-8 right-8 w-16 h-16 bg-[#B91C1C] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all duration-300 z-40 animate-pulse-slow">
+    <i class="fas fa-tint text-2xl"></i>
+  </a>
 
   <script>
     const toggle = document.getElementById('menu-toggle');
     const menu = document.getElementById('mobile-menu');
     toggle.addEventListener('click', () => menu.classList.toggle('hidden'));
+    
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        if(targetId === '#') return;
+        
+        const targetElement = document.querySelector(targetId);
+        if(targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+          
+          // Close mobile menu if open
+          if(!menu.classList.contains('hidden')) {
+            menu.classList.add('hidden');
+          }
+        }
+      });
+    });
+    
+    // Add scroll effect to navbar
+    window.addEventListener('scroll', function() {
+      const header = document.querySelector('header');
+      if (window.scrollY > 50) {
+        header.classList.add('shadow-xl');
+      } else {
+        header.classList.remove('shadow-xl');
+      }
+    });
   </script>
 
 </body>

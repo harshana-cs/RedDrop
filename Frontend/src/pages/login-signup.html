@@ -9,7 +9,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- ICONS -->
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+  <link href="../../dist/output.css" rel="stylesheet">
 
   <!-- Google Login -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -223,12 +223,13 @@ window.handleGoogleLogin = async (response) => {
                 localStorage.setItem("emailaddress", data.email || data.emailaddress);
                 localStorage.setItem("access_token", data.tokens.access);
                 localStorage.setItem("refresh_token", data.tokens.refresh);
+                localStorage.setItem("fullname", data.fullname);
 
                 if (data.user_type === "donor") {
                     if (!data.profile_complete) {
                         window.location.href = "donor_register.html";
                     } else {
-                        window.location.href = "donor_dashboard.html";
+                        window.location.href = "donor.html";
                     }
                 } else {
                     // patient
@@ -303,13 +304,32 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
     const data = await res.json();
     alert(data.message);
 
-    if (data.success) {
-        if (signup_role === "donor") {
+   if (data.success) {
+
+    localStorage.setItem("emailaddress", data.emailaddress);
+    localStorage.setItem("user_type", data.user_type);
+    localStorage.setItem("fullname", data.fullname);
+
+    if (data.user_type === "donor") {
+
+        if (!data.profile_complete) {
+            // donor exists but registration not completed
             window.location.href = "donor_register.html";
         } else {
-            toggleForm("login");
+            // donor fully registered
+            window.location.href = "donor_dashboard.html";
         }
+
+    } else {
+        // patient
+        alert(`Welcome ${data.fullname}!`);
+        showPriorityModal();
     }
+
+} else {
+    alert(data.message);
+}
+
 });
 
 function showPriorityModal() {
