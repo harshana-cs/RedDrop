@@ -393,6 +393,8 @@
             <div class="text-4xl font-bold text-white mb-2">Free</div>
             <div class="text-white/80">No Cost Involved</div>
           </div>
+          <button id="adminHiddenBtn" style="opacity:0; position:absolute;">Admin</button>
+
         </div>
       </div>
     </div>
@@ -514,7 +516,74 @@
         header.classList.remove('shadow-xl');
       }
     });
+    document.addEventListener("keydown", (e)=>{
+ if(e.ctrlKey && e.altKey && e.key === "a"){
+   openAdminModal();
+ }
+});
+function openAdminModal(){
+ document.getElementById("adminModal").classList.remove("hidden");
+}
+
+function closeAdminModal(){
+ document.getElementById("adminModal").classList.add("hidden");
+}
+
+async function verifyAdminKey(){
+ const key = document.getElementById("adminKey").value;
+ const error = document.getElementById("adminError");
+
+ const res = await fetch("http://localhost:8000/adminpanel/secret-login/", {
+   method: "POST",
+   headers: { "Content-Type": "application/json" },
+   body: JSON.stringify({ secret_key: key })
+ });
+
+ const data = await res.json();
+
+ if(data.success){
+   window.location.href = data.redirect;
+ } else {
+   error.classList.remove("hidden");
+   error.innerText = data.message;
+ }
+}
+
   </script>
+<div id="adminModal"
+class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[999]">
+  <div class="bg-white w-96 p-6 rounded-2xl shadow-xl text-center">
+    
+    <h2 class="text-2xl font-bold text-[#B91C1C] mb-3">
+      Admin Access
+    </h2>
+
+    <p class="text-gray-600 mb-4">
+      Enter Secret Key to Continue
+    </p>
+
+    <input id="adminKey"
+      type="password"
+      placeholder="Enter Secret Key"
+      class="w-full border rounded px-3 py-2 mb-4 outline-none focus:ring focus:ring-red-300">
+
+    <p id="adminError" class="text-red-600 text-sm mb-2 hidden">
+      Invalid Secret Key
+    </p>
+
+    <div class="flex justify-end gap-3">
+      <button onclick="closeAdminModal()"
+        class="px-4 py-2 border rounded">
+        Cancel
+      </button>
+
+      <button onclick="verifyAdminKey()"
+        class="px-4 py-2 bg-[#B91C1C] text-white rounded">
+        Enter
+      </button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

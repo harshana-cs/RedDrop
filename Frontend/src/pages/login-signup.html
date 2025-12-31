@@ -226,16 +226,18 @@ window.handleGoogleLogin = async (response) => {
                 localStorage.setItem("fullname", data.fullname);
 
                 if (data.user_type === "donor") {
-                    if (!data.profile_complete) {
-                        window.location.href = "donor_register.html";
-                    } else {
-                        window.location.href = "donor.html";
-                    }
-                } else {
-                    // patient
-                    alert(`Welcome ${data.fullname}!`);
-                    showPriorityModal();
-                }
+
+    if (!data.profile_complete) {
+        window.location.href = "donor_register.html";
+    } else {
+        window.location.href = "donor.html";
+    }
+
+} else {
+    alert(`Welcome ${data.fullname}!`);
+    showPriorityModal();
+}
+
             } else {
                 alert(data.message || "Login failed");
             }
@@ -315,9 +317,10 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
         if (!data.profile_complete) {
             // donor exists but registration not completed
             window.location.href = "donor_register.html";
+
         } else {
             // donor fully registered
-            window.location.href = "donor_dashboard.html";
+            window.location.href = "donor.html";
         }
 
     } else {
