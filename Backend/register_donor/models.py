@@ -30,18 +30,18 @@ class Donor(models.Model):
     accepted_terms = models.BooleanField(default=False)
     consent_notifications = models.BooleanField(default=False)
 
-    password = models.CharField(max_length=255, blank=True, null=True)
-    confirm_password = models.CharField(max_length=255, blank=True, null=True)
+    # password = models.CharField(max_length=255, blank=True, null=True)
+    # confirm_password = models.CharField(max_length=255, blank=True, null=True)
 
     created_on = models.DateTimeField(auto_now_add=True)
     
     is_profile_completed = models.BooleanField(default=False)
 
-    def set_password(self, raw_password):
-        self.password = make_password(raw_password)
+    # def set_password(self, raw_password):
+    #     self.password = make_password(raw_password)
 
-    def check_password(self, raw_password):
-        return django_check_password(raw_password, self.password)
+    # def check_password(self, raw_password):
+    #     return django_check_password(raw_password, self.password)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name or ''}"

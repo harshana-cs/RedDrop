@@ -3,7 +3,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from .models import Donor
 from datetime import datetime
-
+from django.shortcuts import render
+from django.urls import reverse
 @api_view(["POST"])
 @permission_classes([AllowAny])
 @authentication_classes([])
@@ -80,14 +81,5 @@ def register_donor(request):
             "success": False,
             "message": str(e)
         }, status=500)
-from django.shortcuts import redirect
-from .models import Donor   # ensure this exists
 
-def login_success(request):
-    user = request.user
-    donor = Donor.objects.filter(email=user.email).first()
 
-    if donor and donor.is_profile_completed:
-        return redirect("/donor.html")          # Already completed profile
-    else:
-        return redirect("/donor/register-page/")  # Needs registration

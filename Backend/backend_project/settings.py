@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'blood_requests',
     'register_donor',
+    'adminpanel',
     
 ]
 
@@ -54,18 +55,19 @@ ROOT_URLCONF = 'backend_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],   # 👈 only once
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
-                'django.template.context_processors.request',  # Required by allauth
+                'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'backend_project.wsgi.application'
 
@@ -216,3 +218,8 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 LOGIN_REDIRECT_URL = '/login-success/'
+from dotenv import load_dotenv
+import os
+load_dotenv()
+
+ADMIN_SECRET_KEY = os.getenv("ADMIN_SECRET_KEY")

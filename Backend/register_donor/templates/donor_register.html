@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Donor Registration</title>
+
+<link href="../../dist/output.css" rel="stylesheet">
+
+<style>
+.bg-hlb-bg{background:#FFF5F5;}
+.sidebar-fixed{position:fixed;inset:0 auto 0 0;width:16rem;background:#fff;
+border-right:1px solid #e5e7eb;z-index:1000}
+.preview-img{max-width:150px;border-radius:8px;border:1px solid #ddd;margin-top:6px}
+.modal-top{z-index:9999!important;}
+</style>
+</head>
+
+<body class="bg-hlb-bg text-gray-800">
+
+
+<!-- ================= Sidebar ================= -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+<div class="sidebar-fixed flex flex-col bg-white border-r">
+    
+    <!-- Logo -->
+    <div class="flex items-center justify-center h-16 border-b border-gray-200">
+        <div class="flex items-center space-x-2">
+            <div class="h-10 w-10 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-heart text-red-600"></i>
+            </div>
+            <h1 class="font-bold text-gray-900 text-xl">RedDrop</h1>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <!-- <div class="flex-1 p-4 overflow-y-auto">
+        <nav class="space-y-1">
+            <a href="donor.html" class="flex items-center px-4 py-3 text-red-600 bg-red-50 rounded-lg">
+                <i class="fas fa-home mr-3"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                <i class="fas fa-history mr-3"></i>
+                <span>Donation History</span>
+            </a>
+
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                <i class="fas fa-calendar-alt mr-3"></i>
+                <span>Donation Camps</span>
+            </a>
+
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                <i class="fas fa-trophy mr-3"></i>
+                <span>Leaderboard</span>
+            </a>
+
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
+                <i class="fas fa-user mr-3"></i>
+                <span>Profile</span>
+            </a>
+        </nav>
+    </div> -->
+
+    <!-- Logout -->
+    <!-- <div class="p-4 border-t border-gray-200">
+        <button id="logoutBtn"
+            class="w-full flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors">
+            <i class="fas fa-sign-out-alt mr-2"></i>
+            <span>Logout</span>
+        </button>
+    </div> -->
+</div>
+
+<!-- Mobile Header -->
+<div class="md:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+        <button id="mobileMenuBtn">
+            <i class="fas fa-bars text-gray-700 text-xl"></i>
+        </button>
+
+        <div class="flex items-center space-x-2">
+            <div class="h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-heart text-red-600"></i>
+            </div>
+            <h1 class="font-bold text-gray-900">BloodBridge</h1>
+        </div>
+    </div>
+
+    <div class="flex items-center space-x-3">
+        <div class="h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-700 font-medium text-sm">
+            JD
+        </div>
+    </div>
+</div>
+
+
+<!-- =============== MAIN CONTENT =============== -->
+<div class="ml-64 p-6">
+
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-sm border p-5 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold">Donor Registration</h1>
+            <p class="text-gray-600">Join our life-saving community</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <span class="text-gray-600">Welcome, Donor!</span>
+            <div class="w-10 h-10 bg-red-100 text-red-700 rounded-full flex items-center justify-center">
+                👤
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- FORM CARD -->
+    <div class="mt-6 bg-white rounded-lg shadow-sm border p-6">
+
+<form id="donorForm">
+
+<!-- PERSONAL -->
+<h2 class="text-lg font-semibold mb-4 border-b pb-2">Personal Information</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+        <label>First Name *</label>
+        <input name="first_name" required class="w-full border rounded px-3 py-2">
+    </div>
+
+    <div>
+        <label>Last Name *</label>
+        <input name="last_name" required class="w-full border rounded px-3 py-2">
+    </div>
+
+    <div>
+        <label>Email *</label>
+        <input type="email" name="email" required class="w-full border rounded px-3 py-2">
+    </div>
+
+    <div>
+        <label>Phone *</label>
+        <input type="tel" name="phone_number" required class="w-full border rounded px-3 py-2">
+    </div>
+
+    <div>
+        <label>Date of Birth *</label>
+        <input type="date" name="date_of_birth" id="dob" required class="w-full border rounded px-3 py-2">
+    </div>
+
+    <div>
+        <label>Gender *</label>
+        <select name="gender" required class="w-full border rounded px-3 py-2">
+            <option value="">Select</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Blood Type *</label>
+        <select name="blood_type" required class="w-full border rounded px-3 py-2">
+            <option value="">Select</option>
+            <option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option>
+            <option>O+</option><option>O-</option>
+            <option>AB+</option><option>AB-</option>
+        </select>
+    </div>
+
+    <div class="md:col-span-2">
+        <label>Street Address *</label>
+        <input name="address" required class="w-full border rounded px-3 py-2">
+    </div>
+
+    <div>
+        <label>City *</label>
+        <input name="city" required class="w-full border rounded px-3 py-2">
+    </div>
+
+    <div>
+        <label>State *</label>
+        <input name="state" required class="w-full border rounded px-3 py-2">
+    </div>
+
+    <div>
+        <label>Zip Code *</label>
+        <input name="zip_code" required class="w-full border rounded px-3 py-2">
+    </div>
+</div>
+
+
+
+<!-- EMERGENCY -->
+<h2 class="text-lg font-semibold mt-8 mb-4 border-b pb-2">Emergency Contact</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+        <label>Contact Name *</label>
+        <input name="emergency_contact_name" required class="w-full border rounded px-3 py-2">
+    </div>
+
+    <div>
+        <label>Contact Phone *</label>
+        <input name="emergency_contact_phone" required class="w-full border rounded px-3 py-2">
+    </div>
+</div>
+
+
+
+<!-- MEDICAL -->
+<h2 class="text-lg font-semibold mt-8 mb-4 border-b pb-2">Medical Information</h2>
+
+<div>
+    <label>Weight (KG) *</label>
+    <input type="number" name="weight" id="weight" required class="w-40 border rounded px-3 py-2">
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+
+    <label class="flex items-center gap-2 border p-3 rounded">
+        <input type="checkbox" name="has_diabetes">
+        Diabetes
+    </label>
+
+    <label class="flex items-center gap-2 border p-3 rounded">
+        <input type="checkbox" name="has_hypertension">
+        Hypertension
+    </label>
+
+    <label class="flex items-center gap-2 border p-3 rounded">
+        <input type="checkbox" name="has_heart_disease">
+        Heart Disease
+    </label>
+
+    <label class="flex items-center gap-2 border p-3 rounded">
+        <input type="checkbox" name="no_medical_conditions">
+        No Medical Conditions
+    </label>
+
+</div>
+
+
+
+<!-- FILE UPLOAD -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+
+    <div>
+        <label>Upload Citizenship *</label>
+        <input type="file" name="citizenship_id" id="citizenship" required>
+        <img id="citizenshipPreview" class="preview-img hidden">
+    </div>
+
+    <div>
+        <label>Upload Photo *</label>
+        <input type="file" name="photo" id="photo" required>
+        <img id="photoPreview" class="preview-img hidden">
+    </div>
+
+</div>
+
+
+
+<!-- CONSENT -->
+<div class="mt-6">
+
+<div class="mt-4 p-4 bg-red-100 rounded">
+    <label class="flex items-center gap-2">
+        <input type="checkbox" name="consent_notifications">
+        Receive Notifications
+    </label>
+</div>
+
+<div class="mt-4 p-4 bg-red-100 rounded">
+    <label class="flex items-center gap-2">
+        <input type="checkbox" name="accepted_terms" id="terms" required>
+        I agree to terms & conditions *
+    </label>
+</div>
+
+</div>
+
+
+
+<!-- BUTTONS -->
+<div class="mt-6 flex justify-end gap-4 border-t pt-4">
+    <button type="reset" class="px-6 py-2 border rounded">
+        Cancel
+    </button>
+
+    <button class="px-6 py-2 bg-red-600 text-white rounded">
+        Register
+    </button>
+</div>
+
+</form>
+
+</div>
+</div>
+
+
+
+<!-- SUCCESS MODAL -->
+<div id="successModal" class="fixed inset-0 hidden bg-black/50 flex items-center justify-center modal-top">
+    <div class="bg-white p-6 rounded-xl text-center shadow-xl">
+        <div class="text-4xl mb-3">✅</div>
+        <h2 class="text-xl font-bold mb-2">Registration Successful!</h2>
+        <p class="mb-4">Thank you for registering.</p>
+        <button id="continueBtn"
+        class="px-6 py-2 bg-red-600 text-white rounded">
+    Continue
+</button>
+
+
+    </div>
+</div>
+
+
+
+<script>
+
+/******** IMAGE PREVIEW *********/
+function preview(input, img){
+  input.addEventListener("change",()=>{
+      const f=input.files[0];
+      if(!f) return img.classList.add("hidden");
+      const r=new FileReader();
+      r.onload=e=>{img.src=e.target.result;img.classList.remove("hidden")}
+      r.readAsDataURL(f);
+  })
+}
+preview(citizenship,citizenshipPreview);
+preview(photo,photoPreview);
+
+
+/******** PREFILL LOGGED IN USER *********/
+window.addEventListener("DOMContentLoaded", () => {
+    const fullname = localStorage.getItem("fullname");
+    const email = localStorage.getItem("emailaddress");
+
+    if (fullname) {
+        const parts = fullname.split(" ");
+        document.querySelector("input[name='first_name']").value = parts[0] || "";
+        document.querySelector("input[name='last_name']").value  = parts.slice(1).join(" ") || "";
+    }
+
+    if (email) {
+        document.querySelector("input[name='email']").value = email;
+        document.querySelector("input[name='email']").readOnly = true;
+    }
+});
+
+
+/******** SUBMIT *********/
+document.getElementById("donorForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // validation
+    let age = new Date().getFullYear() - new Date(dob.value).getFullYear();
+    if(age < 18){
+        alert("Must be 18+ to donate");
+        return;
+    }
+
+    if(weight.value < 50){
+        alert("Minimum 50kg required");
+        return;
+    }
+
+    const formData = new FormData(e.target);
+
+    try {
+        const res = await fetch("http://localhost:8000/donor/register/", {
+            method: "POST",
+            credentials: "include",
+            body: formData
+        });
+
+        if(!res.ok){
+            alert("Server Error " + res.status);
+            return;
+        }
+
+        const data = await res.json();
+
+        if (data.success) {
+
+    // Update success modal text dynamically
+    document.querySelector("#successModal h2").innerText = "Registration Completed!";
+    document.querySelector("#successModal p").innerText =
+        "Please wait up to 5 minutes while the system approves your request. We will notify you via email once approval is completed.";
+
+    successModal.classList.remove("hidden");
+    e.target.reset();
+
+    document.getElementById("continueBtn").onclick = () => {
+    window.location.href = "donor.html";
+};
+
+}
+ else {
+            alert(data.message || "Registration Failed");
+        }
+
+    } catch (err) {
+        console.error(err);
+        alert("Something went wrong");
+    }
+});
+</script>
+
+
+</body>
+</html>

@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from .models import GoogleSignup, Patient, Donor
+from register_donor.models import Donor
 from django.core.mail import send_mail
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework.decorators import api_view, permission_classes
@@ -14,6 +15,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
+
+
 
 GOOGLE_CLIENT_ID = "320231613519-n8ppnf9bof8r6js60el89rar1mvtl8lo.apps.googleusercontent.com"
 
@@ -138,15 +141,16 @@ def google_login(request):
         # ================= DONOR =================
         if user_type == "donor":
             donor, created = Donor.objects.get_or_create(
-                email=email,
+                email=email.lower(),
                 defaults={
                     "first_name": fullname.split(" ", 1)[0],
                     "last_name": fullname.split(" ", 1)[1] if len(fullname.split(" ", 1)) > 1 else "",
                 }
             )
 
-            profile_complete = is_donor_profile_complete(donor)
-            redirect_url = "donor_dashboard.html" if profile_complete else "donor_registration.html"
+            profile_complete = donor.is_profile_completed
+            redirect_url = "donor.html" if profile_complete else "donor_register.html"
+
 
             return JsonResponse({
                 "success": True,
