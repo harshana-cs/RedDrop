@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RedDrop - Donor Dashboard</title>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
     <link href="../../dist/output.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -94,7 +94,7 @@
             @apply border-red-500 text-red-600 font-semibold relative;
         }
         
-        .tab-active::after {
+        /* .tab-active::after {
             content: '';
             position: absolute;
             bottom: -1px;
@@ -104,7 +104,7 @@
             height: 3px;
             background: linear-gradient(to right, #e53e3e, #c53030);
             border-radius: 3px;
-        }
+        } */
         
         .tab-inactive {
             @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-colors duration-200;
@@ -114,15 +114,7 @@
             @apply relative overflow-hidden rounded-2xl p-6 transition-all duration-300 transform hover:-translate-y-1;
         }
         
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(to right, var(--color-start), var(--color-end));
-        }
+        
         
         .pulse-dot {
             animation: pulse 2s infinite;
@@ -164,6 +156,21 @@
             @apply h-full rounded-full transition-all duration-500;
             background: linear-gradient(to right, #e53e3e, #c53030);
         }
+        
+        /* New Styles for Tab Content */
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+            animation: fadeIn 0.5s ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -192,44 +199,10 @@
                 </div>
             </div>
             
-            <!-- User Profile
-            <div class="p-6 border-b border-gray-100 bg-gradient-to-br from-gray-50 to-white mx-6 my-4 rounded-2xl shadow-sm">
-                <div class="flex items-center space-x-4">
-                    <div class="relative">
-                        <div class="h-16 w-16 bg-gradient-to-r from-red-500 to-red-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-md">
-                            JD
-                        </div>
-                        <div class="absolute -bottom-1 -right-1 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center border-2 border-white">
-                            <i class="fas fa-check text-xs"></i>
-                        </div>
-                    </div>
-                    <div>
-                         <h2 class="font-semibold text-gray-900">John Doe</h2>
-                        <div class="flex items-center mt-1">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
-                                <i class="fas fa-tint mr-1"></i>
-                                O+
-                            </span>
-                            <span class="ml-2 text-xs text-gray-500">Regular Donor</span>
-                        </div> -->
-                        <!-- <div class="flex items-center mt-2">
-                            <div class="flex">
-                                <i class="fas fa-star text-yellow-400 text-xs mr-1"></i>
-                                <i class="fas fa-star text-yellow-400 text-xs mr-1"></i>
-                                <i class="fas fa-star text-yellow-400 text-xs mr-1"></i>
-                                <i class="fas fa-star text-yellow-400 text-xs mr-1"></i>
-                                <i class="fas fa-star text-yellow-400 text-xs mr-1"></i>
-                            </div>
-                            <span class="text-xs text-gray-600 ml-2">5 donations</span>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-            
             <!-- Navigation -->
             <div class="flex-1 p-4">
                 <nav class="space-y-2">
-                    <a href="#" class="flex items-center px-5 py-4 text-red-600 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-100 shadow-sm transition-all duration-300 group">
+                    <a href="#" class="nav-link flex items-center px-5 py-4 text-red-600 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-100 shadow-sm transition-all duration-300 group" data-tab="dashboard">
                         <div class="p-2 bg-white rounded-lg shadow-sm mr-4 group-hover:bg-red-50 transition-colors">
                             <i class="fas fa-home text-red-500"></i>
                         </div>
@@ -238,26 +211,26 @@
                             <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                         </div>
                     </a>
-                    <a href="#" class="flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
+                    <a href="#" class="nav-link flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group" data-tab="donationHistory">
                         <div class="p-2 bg-gray-100 rounded-lg mr-4 group-hover:bg-gray-200 transition-colors">
                             <i class="fas fa-history text-gray-500"></i>
                         </div>
                         <span class="font-medium">Donation History</span>
                     </a>
-                    <a href="#" class="flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
+                    <a href="#" class="nav-link flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group" data-tab="donationCamps">
                         <div class="p-2 bg-gray-100 rounded-lg mr-4 group-hover:bg-gray-200 transition-colors">
                             <i class="fas fa-calendar-alt text-gray-500"></i>
                         </div>
                         <span class="font-medium">Donation Camps</span>
                         <span class="ml-auto notification-badge">3</span>
                     </a>
-                    <a href="#" class="flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
+                    <a href="#" class="nav-link flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group" data-tab="leaderboard">
                         <div class="p-2 bg-gray-100 rounded-lg mr-4 group-hover:bg-gray-200 transition-colors">
                             <i class="fas fa-trophy text-gray-500"></i>
                         </div>
                         <span class="font-medium">Leaderboard</span>
                     </a>
-                    <a href="#" class="flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group">
+                    <a href="#" class="nav-link flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-all duration-300 group" data-tab="profile">
                         <div class="p-2 bg-gray-100 rounded-lg mr-4 group-hover:bg-gray-200 transition-colors">
                             <i class="fas fa-user text-gray-500"></i>
                         </div>
@@ -369,33 +342,33 @@
             <!-- Mobile Navigation -->
             <div class="flex-1 p-4">
                 <nav class="space-y-2">
-                    <a href="#" class="flex items-center px-5 py-4 text-red-600 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-100">
+                    <a href="#" class="nav-link flex items-center px-5 py-4 text-red-600 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-100" data-tab="dashboard">
                         <div class="p-2 bg-white rounded-lg shadow-sm mr-4">
                             <i class="fas fa-home text-red-500"></i>
                         </div>
                         <span class="font-medium">Dashboard</span>
                     </a>
-                    <a href="#" class="flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">
+                    <a href="#" class="nav-link flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-colors" data-tab="donationHistory">
                         <div class="p-2 bg-gray-100 rounded-lg mr-4">
                             <i class="fas fa-history text-gray-500"></i>
                         </div>
                         <span class="font-medium">Donation History</span>
                     </a>
-                    <a href="#" class="flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">
+                    <a href="#" class="nav-link flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-colors" data-tab="donationCamps">
                         <div class="p-2 bg-gray-100 rounded-lg mr-4">
                             <i class="fas fa-calendar-alt text-gray-500"></i>
                         </div>
                         <span class="font-medium">Donation Camps</span>
                         <span class="ml-auto notification-badge">3</span>
                     </a>
-                    <a href="#" class="flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">
+                    <a href="#" class="nav-link flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-colors" data-tab="leaderboard">
                         <div class="p-2 bg-gray-100 rounded-lg mr-4">
                             <i class="fas fa-trophy text-gray-500"></i>
                         </div>
                         <span class="font-medium">Leaderboard</span>
                     </a>
-                    <a href="#" class="flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">
-                        <div class="rounded-2xl p-6 bg-gradient-to-r from-yellow-50 to-yellow-100 shadow-sm">
+                    <a href="#" class="nav-link flex items-center px-5 py-4 text-gray-700 hover:bg-gray-50 rounded-xl transition-colors" data-tab="profile">
+                        <div class="p-2 bg-gray-100 rounded-lg mr-4">
                             <i class="fas fa-user text-gray-500"></i>
                         </div>
                         <span class="font-medium">Profile</span>
@@ -415,535 +388,831 @@
         <!-- Main Content -->
         <div class="flex-1 animate-fade-in">
             <div class="p-6 md:p-8 space-y-8">
-                <!-- Welcome Section -->
-                <div class="gradient-bg rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
-                    <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
-                    
-                    <div class="flex items-center justify-between relative z-10">
-                        <div class="max-w-2xl">
-                            <div class="flex items-center space-x-3 mb-4">
-                                <h1 class="text-3xl font-bold">Welcome back, John!</h1>
-                                <div class="p-2 bg-white/20 rounded-full">
-                                    <i class="fas fa-heart text-white/80"></i>
+                
+                <!-- Dashboard Tab (Default) -->
+                <div id="dashboardContent" class="tab-content active">
+                    <!-- Welcome Section -->
+                    <div class="gradient-bg rounded-2xl p-8 text-white shadow-lg relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+                        <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
+                        
+                        <div class="flex items-center justify-between relative z-10">
+                            <div class="max-w-2xl">
+                                <div class="flex items-center space-x-3 mb-4">
+                                    <h1 class="text-3xl font-bold">Welcome back, John!</h1>
+                                    <div class="p-2 bg-white/20 rounded-full">
+                                        <i class="fas fa-heart text-white/80"></i>
+                                    </div>
+                                </div>
+                                <p class="text-white/90 text-lg leading-relaxed">
+                                    Thank you for being a life-saving hero. Your <span class="font-semibold">5 donations</span> have helped save up to <span class="font-semibold">15 lives</span>. Your next donation eligibility is in <span class="font-bold">45 days</span>.
+                                </p>
+                                <div class="flex items-center space-x-4 mt-6">
+                                    <button class="bg-white text-red-600 font-semibold py-3 px-6 rounded-xl hover:bg-white/90 transition-colors shadow-lg">
+                                        <i class="fas fa-bell mr-2"></i> Set Reminder
+                                    </button>
+                                    <button class="border-2 border-white/50 text-white font-semibold py-3 px-6 rounded-xl hover:bg-white/10 transition-colors">
+                                        <i class="fas fa-share mr-2"></i> Share Impact
+                                    </button>
                                 </div>
                             </div>
-                            <p class="text-white/90 text-lg leading-relaxed">
-                                Thank you for being a life-saving hero. Your <span class="font-semibold">5 donations</span> have helped save up to <span class="font-semibold">15 lives</span>. Your next donation eligibility is in <span class="font-bold">45 days</span>.
-                            </p>
-                            <div class="flex items-center space-x-4 mt-6">
-                                <button class="bg-white text-red-600 font-semibold py-3 px-6 rounded-xl hover:bg-white/90 transition-colors shadow-lg">
-                                    <i class="fas fa-bell mr-2"></i> Set Reminder
-                                </button>
-                                <button class="border-2 border-white/50 text-white font-semibold py-3 px-6 rounded-xl hover:bg-white/10 transition-colors">
-                                    <i class="fas fa-share mr-2"></i> Share Impact
-                                </button>
-                            </div>
-                        </div>
-                        <div class="hidden lg:block animate-float">
-                            <i class="fas fa-heart text-white/20 text-8xl"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-slide-up">
-                    <div class="stat-card bg-white" style="--color-start: #e53e3e; --color-end: #c53030">
-                        <div class="flex items-center">
-                            <div class="p-3 bg-red-100 rounded-xl shadow-sm">
-                                <i class="fas fa-heart text-red-600 text-xl"></i>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Total Donations</p>
-                                <p class="text-2xl font-bold text-gray-900">5</p>
-                            </div>
-                            <div class="ml-auto">
-                                <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <div class="flex justify-between text-xs text-gray-500 mb-1">
-                                <span>Life Impact</span>
-                                <span>Up to 15 lives</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 100%"></div>
+                            <div class="hidden lg:block animate-float">
+                                <i class="fas fa-heart text-white/20 text-8xl"></i>
                             </div>
                         </div>
                     </div>
 
-                    <div class="stat-card bg-white" style="--color-start: #38a169; --color-end: #2f855a">
-                        <div class="flex items-center">
-                            <div class="p-3 bg-green-100 rounded-xl shadow-sm">
-                                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-slide-up">
+                        <div class="stat-card bg-white" style="--color-start: #e53e3e; --color-end: #c53030">
+                            <div class="flex items-center">
+                                <div class="p-3 bg-red-100 rounded-xl shadow-sm">
+                                    <i class="fas fa-heart text-red-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Total Donations</p>
+                                    <p class="text-2xl font-bold text-gray-900">5</p>
+                                </div>
+                                <div class="ml-auto">
+                                    <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                                </div>
                             </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Verified</p>
-                                <p class="text-2xl font-bold text-gray-900">4</p>
+                            <div class="mt-4">
+                                <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                    <span>Life Impact</span>
+                                    <span>Up to 15 lives</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 100%"></div>
+                                </div>
                             </div>
                         </div>
-                        <div class="mt-4">
-                            <div class="flex justify-between text-xs text-gray-500 mb-1">
-                                <span>Success Rate</span>
-                                <span>80%</span>
+
+                        <div class="stat-card bg-white" style="--color-start: #38a169; --color-end: #2f855a">
+                            <div class="flex items-center">
+                                <div class="p-3 bg-green-100 rounded-xl shadow-sm">
+                                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Verified</p>
+                                    <p class="text-2xl font-bold text-gray-900">4</p>
+                                </div>
                             </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill bg-gradient-to-r from-green-500 to-green-600" style="width: 80%"></div>
+                            <div class="mt-4">
+                                <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                    <span>Success Rate</span>
+                                    <span>80%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill bg-gradient-to-r from-green-500 to-green-600" style="width: 80%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card bg-white" style="--color-start: #d69e2e; --color-end: #b7791f">
+                            <div class="flex items-center">
+                                <div class="p-3 bg-yellow-100 rounded-xl shadow-sm">
+                                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Pending</p>
+                                    <p class="text-2xl font-bold text-gray-900">1</p>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                                    <span class="text-xs text-gray-500">Awaiting verification</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card bg-white" style="--color-start: #3182ce; --color-end: #2c5282">
+                            <div class="flex items-center">
+                                <div class="p-3 bg-blue-100 rounded-xl shadow-sm">
+                                    <i class="fas fa-calendar text-blue-600 text-xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <p class="text-sm font-medium text-gray-600">Next Eligible</p>
+                                    <p class="text-2xl font-bold text-gray-900">45<span class="text-sm text-gray-500 ml-1">days</span></p>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                    <span>Progress</span>
+                                    <span>40%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill bg-gradient-to-r from-blue-500 to-blue-600" style="width: 40%"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="stat-card bg-white" style="--color-start: #d69e2e; --color-end: #b7791f">
+                    <!-- Eligibility Status -->
+                    <div class="rounded-2xl p-6 bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 shadow-sm">
                         <div class="flex items-center">
-                            <div class="p-3 bg-yellow-100 rounded-xl shadow-sm">
+                            <div class="p-3 rounded-xl bg-yellow-100 shadow-sm">
                                 <i class="fas fa-clock text-yellow-600 text-xl"></i>
                             </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Pending</p>
-                                <p class="text-2xl font-bold text-gray-900">1</p>
+                            <div class="ml-4 flex-1">
+                                <h3 class="text-lg font-semibold text-yellow-900">Donation Cooldown Period</h3>
+                                <p class="text-sm text-yellow-700">
+                                    You can donate again on <span class="font-bold">2024-04-15</span> (45 days remaining)
+                                </p>
+                                <div class="mt-3 flex items-center space-x-4">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                                        <span class="text-xs text-yellow-600">Cooldown Active</span>
+                                    </div>
+                                    <div class="text-xs text-yellow-600">Minimum gap between donations: 56 days</div>
+                                </div>
                             </div>
+                            <button class="btn-secondary px-6">
+                                <i class="fas fa-calendar-plus mr-2"></i> Add to Calendar
+                            </button>
                         </div>
-                        <div class="mt-4">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-                                <span class="text-xs text-gray-500">Awaiting verification</span>
+                    </div>
+
+                    <!-- Tabs Section -->
+                    <div class="card">
+                        <div class="border-b border-gray-200">
+                            <nav class="flex space-x-8 px-6">
+                                <button class="history-tab tab-active py-4 px-1 border-b-2 font-medium text-sm transition-all duration-300" data-subtab="history">
+                                    <i class="fas fa-history mr-2"></i> Donation History
+                                </button>
+                                <button class="camps-tab tab-inactive py-4 px-1 border-b-2 font-medium text-sm transition-all duration-300" data-subtab="camps">
+                                    <i class="fas fa-calendar-alt mr-2"></i> Donation Camps
+                                </button>
+                                <button class="achievements-tab tab-inactive py-4 px-1 border-b-2 font-medium text-sm transition-all duration-300" data-subtab="achievements">
+                                    <i class="fas fa-trophy mr-2"></i> Achievements
+                                </button>
+                            </nav>
+                        </div>
+
+                        <div class="p-6">
+                            <!-- Dashboard Donation History -->
+                            <div id="dashboardHistory" class="subtab-content active">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-900">Your Donation History</h3>
+                                        <p class="text-gray-500 text-sm mt-1">Track all your blood donation activities and certificates</p>
+                                    </div>
+                                    <button class="btn-primary text-sm py-2 px-4 view-all-history">
+                                        <i class="fas fa-external-link-alt mr-2"></i> View All
+                                    </button>
+                                </div>
+
+                                <div class="overflow-x-auto rounded-xl border border-gray-200 mt-4">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Date</th>
+                                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Blood Group</th>
+                                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Hospital</th>
+                                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <tr class="hover:bg-gray-50 transition-colors">
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm font-medium text-gray-900">2024-01-15</div>
+                                                    <div class="text-xs text-gray-500">3 months ago</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="p-2 bg-red-50 rounded-lg mr-3">
+                                                            <i class="fas fa-tint text-red-500"></i>
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-sm font-semibold text-gray-900">O+</span>
+                                                            <div class="text-xs text-gray-500">450ml</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm text-gray-900">Bir Hospital</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                                        <i class="fas fa-check-circle mr-1"></i> Verified
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Dashboard Donation Camps -->
+                            <div id="dashboardCamps" class="subtab-content hidden">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-900">Upcoming Camps</h3>
+                                        <p class="text-gray-500 text-sm mt-1">Register for upcoming blood donation camps</p>
+                                    </div>
+                                    <button class="btn-primary text-sm py-2 px-4 view-all-camps">
+                                        <i class="fas fa-external-link-alt mr-2"></i> View All
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                    <div class="border border-gray-200 rounded-xl p-4">
+                                        <h4 class="font-bold text-gray-900">Emergency Blood Camp</h4>
+                                        <p class="text-sm text-gray-600 mt-2">Patan Hospital • Mar 20</p>
+                                        <button class="btn-primary w-full mt-4 py-2 text-sm">Register</button>
+                                    </div>
+                                    <div class="border border-gray-200 rounded-xl p-4">
+                                        <h4 class="font-bold text-gray-900">University Drive</h4>
+                                        <p class="text-sm text-gray-600 mt-2">Teaching Hospital • Mar 25</p>
+                                        <button class="btn-primary w-full mt-4 py-2 text-sm">Register</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dashboard Achievements -->
+                            <div id="dashboardAchievements" class="subtab-content hidden">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-900">Your Achievements</h3>
+                                        <p class="text-gray-500 text-sm mt-1">Track your milestones and progress</p>
+                                    </div>
+                                    <button class="btn-primary text-sm py-2 px-4 view-all-achievements">
+                                        <i class="fas fa-external-link-alt mr-2"></i> View All
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                                    <div class="border border-green-200 rounded-xl p-4 bg-green-50">
+                                        <div class="text-2xl mb-2">🥇</div>
+                                        <h4 class="font-bold text-green-900">First Donation</h4>
+                                        <p class="text-sm text-green-700 mt-1">Completed first donation</p>
+                                    </div>
+                                    <div class="border border-green-200 rounded-xl p-4 bg-green-50">
+                                        <div class="text-2xl mb-2">🏆</div>
+                                        <h4 class="font-bold text-green-900">Regular Donor</h4>
+                                        <p class="text-sm text-green-700 mt-1">3 consecutive donations</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="stat-card bg-white" style="--color-start: #3182ce; --color-end: #2c5282">
-                        <div class="flex items-center">
-                            <div class="p-3 bg-blue-100 rounded-xl shadow-sm">
-                                <i class="fas fa-calendar text-blue-600 text-xl"></i>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-600">Next Eligible</p>
-                                <p class="text-2xl font-bold text-gray-900">45<span class="text-sm text-gray-500 ml-1">days</span></p>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <div class="flex justify-between text-xs text-gray-500 mb-1">
-                                <span>Progress</span>
-                                <span>40%</span>
-                            </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill bg-gradient-to-r from-blue-500 to-blue-600" style="width: 40%"></div>
-                            </div>
+                    <!-- Quick Actions -->
+                    <div class="card p-8">
+                        <h3 class="text-xl font-bold text-gray-900 mb-6">Quick Actions</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <button class="group flex items-center p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 hover:border-red-300 hover:bg-red-50 transition-all duration-300 shadow-sm hover:shadow-md go-to-camps">
+                                <div class="p-3 bg-red-100 rounded-lg shadow-sm mr-4 group-hover:bg-red-200 transition-colors">
+                                    <i class="fas fa-calendar text-red-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-900 group-hover:text-red-700">Find Camps</p>
+                                    <p class="text-sm text-gray-500 mt-1">Register for upcoming donation camps</p>
+                                </div>
+                            </button>
+
+                            <button class="group flex items-center p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-300 shadow-sm hover:shadow-md go-to-history">
+                                <div class="p-3 bg-blue-100 rounded-lg shadow-sm mr-4 group-hover:bg-blue-200 transition-colors">
+                                    <i class="fas fa-history text-blue-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-900 group-hover:text-blue-700">View History</p>
+                                    <p class="text-sm text-gray-500 mt-1">Check your complete donation history</p>
+                                </div>
+                            </button>
+
+                            <button class="group flex items-center p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-all duration-300 shadow-sm hover:shadow-md go-to-leaderboard">
+                                <div class="p-3 bg-green-100 rounded-lg shadow-sm mr-4 group-hover:bg-green-200 transition-colors">
+                                    <i class="fas fa-trophy text-green-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-900 group-hover:text-green-700">Leaderboard</p>
+                                    <p class="text-sm text-gray-500 mt-1">See top donors ranking and compete</p>
+                                </div>
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Eligibility Status -->
-                <div class="rounded-2xl p-6 bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 shadow-sm">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-xl bg-yellow-100 shadow-sm">
-                            <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                <!-- Donation History Tab -->
+                <div id="donationHistoryContent" class="tab-content">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900">Donation History</h1>
+                            <p class="text-gray-500 mt-2">Complete record of all your blood donations</p>
                         </div>
-                        <div class="ml-4 flex-1">
-                            <h3 class="text-lg font-semibold text-yellow-900">Donation Cooldown Period</h3>
-                            <p class="text-sm text-yellow-700">
-                                You can donate again on <span class="font-bold">2024-04-15</span> (45 days remaining)
-                            </p>
-                            <div class="mt-3 flex items-center space-x-4">
-                                <div class="flex items-center space-x-2">
-                                    <div class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-                                    <span class="text-xs text-yellow-600">Cooldown Active</span>
-                                </div>
-                                <div class="text-xs text-yellow-600">Minimum gap between donations: 56 days</div>
-                            </div>
-                        </div>
-                        <button class="btn-secondary px-6">
-                            <i class="fas fa-calendar-plus mr-2"></i> Add to Calendar
+                        <button class="btn-primary">
+                            <i class="fas fa-download mr-2"></i> Export All
                         </button>
                     </div>
-                </div>
 
-                <!-- Tabs Section -->
-                <div class="card">
-                    <div class="border-b border-gray-200">
-                        <nav class="flex space-x-8 px-6">
-                            <button id="historyTab" class="tab-active py-4 px-1 border-b-2 font-medium text-sm transition-all duration-300">
-                                <i class="fas fa-history mr-2"></i> Donation History
-                            </button>
-                            <button id="campsTab" class="tab-inactive py-4 px-1 border-b-2 font-medium text-sm transition-all duration-300">
-                                <i class="fas fa-calendar-alt mr-2"></i> Donation Camps
-                            </button>
-                            <button id="achievementsTab" class="tab-inactive py-4 px-1 border-b-2 font-medium text-sm transition-all duration-300">
-                                <i class="fas fa-trophy mr-2"></i> Achievements
-                            </button>
-                        </nav>
+                    <!-- Stats Summary -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="card p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 bg-red-100 rounded-xl mr-4">
+                                    <i class="fas fa-heart text-red-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Total Donations</p>
+                                    <p class="text-2xl font-bold text-gray-900">14</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 bg-green-100 rounded-xl mr-4">
+                                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Verified</p>
+                                    <p class="text-2xl font-bold text-gray-900">12</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 bg-blue-100 rounded-xl mr-4">
+                                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Lives Impacted</p>
+                                    <p class="text-2xl font-bold text-gray-900">42</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card p-6">
+                            <div class="flex items-center">
+                                <div class="p-3 bg-purple-100 rounded-xl mr-4">
+                                    <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">This Year</p>
+                                    <p class="text-2xl font-bold text-gray-900">5</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="p-6">
-                        <!-- Donation History Tab Content -->
-                        <div id="historyContent" class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h3 class="text-xl font-bold text-gray-900">Your Donation History</h3>
-                                    <p class="text-gray-500 text-sm mt-1">Track all your blood donation activities and certificates</p>
+                    <!-- Detailed History Table -->
+                    <div class="card">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-xl font-bold text-gray-900">All Donations</h3>
+                                <div class="flex items-center space-x-3">
+                                    <button class="btn-secondary px-4 py-2">
+                                        <i class="fas fa-filter mr-2"></i> Filter
+                                    </button>
+                                    <button class="btn-secondary px-4 py-2">
+                                        <i class="fas fa-calendar mr-2"></i> Timeline
+                                    </button>
                                 </div>
-                                <a href="#" class="btn-primary text-sm py-2 px-4">
-                                    <i class="fas fa-download mr-2"></i> Export All
-                                </a>
                             </div>
 
-                            <div class="overflow-x-auto rounded-xl border border-gray-200">
+                            <div class="overflow-x-auto">
                                 <table class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50">
                                         <tr>
-                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                                Date
-                                            </th>
-                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                                Blood Group
-                                            </th>
-                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                                Hospital
-                                            </th>
-                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                                Status
-                                            </th>
-                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                                Actions
-                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Date & Time</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Blood Group</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Location</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Volume</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Certificate</th>
                                         </tr>
                                     </thead>
                                     <tbody class="bg-white divide-y divide-gray-200">
                                         <tr class="hover:bg-gray-50 transition-colors">
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900 font-medium">2024-01-15</div>
-                                                <div class="text-xs text-gray-500">3 months ago</div>
+                                                <div class="text-sm font-medium text-gray-900">2024-03-15</div>
+                                                <div class="text-xs text-gray-500">10:30 AM</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="flex items-center">
-                                                    <div class="p-2 bg-red-50 rounded-lg mr-3">
-                                                        <i class="fas fa-tint text-red-500"></i>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-sm font-semibold text-gray-900">O+</span>
-                                                        <div class="text-xs text-gray-500">450ml donated</div>
-                                                    </div>
-                                                </div>
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                                    <i class="fas fa-tint mr-1"></i> O+
+                                                </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900 font-medium">Bir Hospital</div>
+                                            <td class="px-6 py-4">
+                                                <div class="text-sm text-gray-900">City Hospital</div>
                                                 <div class="text-xs text-gray-500">Kathmandu, Nepal</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
+                                                <div class="text-sm text-gray-900">450ml</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
                                                     <i class="fas fa-check-circle mr-1"></i> Verified
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <button class="download-certificate text-blue-600 hover:text-blue-900 flex items-center" data-id="1">
-                                                    <i class="fas fa-certificate mr-2"></i> Download
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <button class="download-certificate text-red-600 hover:text-red-800 text-sm font-medium">
+                                                    <i class="fas fa-download mr-1"></i> Download
                                                 </button>
                                             </td>
                                         </tr>
-                                        <tr class="hover:bg-gray-50 transition-colors">
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900 font-medium">2024-01-20</div>
-                                                <div class="text-xs text-gray-500">3 months ago</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="flex items-center">
-                                                    <div class="p-2 bg-red-50 rounded-lg mr-3">
-                                                        <i class="fas fa-tint text-red-500"></i>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-sm font-semibold text-gray-900">O+</span>
-                                                        <div class="text-xs text-gray-500">450ml donated</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900 font-medium">Patan Hospital</div>
-                                                <div class="text-xs text-gray-500">Lalitpur, Nepal</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200">
-                                                    <i class="fas fa-clock mr-1"></i> Pending
-                                                </span>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <span class="text-gray-400 flex items-center">
-                                                    <i class="fas fa-clock mr-2"></i> Awaiting
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50 transition-colors">
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900 font-medium">2023-10-15</div>
-                                                <div class="text-xs text-gray-500">5 months ago</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="flex items-center">
-                                                    <div class="p-2 bg-red-50 rounded-lg mr-3">
-                                                        <i class="fas fa-tint text-red-500"></i>
-                                                    </div>
-                                                    <div>
-                                                        <span class="text-sm font-semibold text-gray-900">O+</span>
-                                                        <div class="text-xs text-gray-500">450ml donated</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-900 font-medium">Teaching Hospital</div>
-                                                <div class="text-xs text-gray-500">Kathmandu, Nepal</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
-                                                    <i class="fas fa-check-circle mr-1"></i> Verified
-                                                </span>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <button class="download-certificate text-blue-600 hover:text-blue-900 flex items-center" data-id="3">
-                                                    <i class="fas fa-certificate mr-2"></i> Download
-                                                </button>
-                                            </td>
-                                        </tr>
+                                        <!-- More rows... -->
                                     </tbody>
                                 </table>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Donation Camps Tab Content -->
-                        <div id="campsContent" class="hidden space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h3 class="text-xl font-bold text-gray-900">Upcoming Donation Camps</h3>
-                                    <p class="text-gray-500 text-sm mt-1">Register for upcoming blood donation camps in your area</p>
+                <!-- Donation Camps Tab -->
+                <div id="donationCampsContent" class="tab-content">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900">Donation Camps</h1>
+                            <p class="text-gray-500 mt-2">Find and register for blood donation camps</p>
+                        </div>
+                        <button class="btn-primary">
+                            <i class="fas fa-plus mr-2"></i> Create Camp
+                        </button>
+                    </div>
+
+                    <!-- Camp Filters -->
+                    <div class="card p-6 mb-6">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between space-y-4 md:space-y-0">
+                            <div class="flex items-center space-x-4">
+                                <button class="btn-secondary px-4 py-2 active">
+                                    All Camps
+                                </button>
+                                <button class="btn-secondary px-4 py-2">
+                                    <i class="fas fa-map-marker-alt mr-2"></i> Nearby
+                                </button>
+                                <button class="btn-secondary px-4 py-2">
+                                    <i class="fas fa-fire mr-2"></i> Urgent
+                                </button>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="relative">
+                                    <input type="text" placeholder="Search camps..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
                                 </div>
-                                <div class="flex items-center space-x-2">
-                                    <button class="btn-secondary text-sm py-2 px-4">
-                                        <i class="fas fa-filter mr-2"></i> Filter
-                                    </button>
-                                    <button class="btn-primary text-sm py-2 px-4">
-                                        <i class="fas fa-map-marker-alt mr-2"></i> Nearby Camps
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Camp Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Camp Card 1 -->
+                        <div class="card hover:shadow-lg transition-all duration-300">
+                            <div class="p-6">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div>
+                                        <h3 class="font-bold text-gray-900 text-lg">Emergency Blood Drive</h3>
+                                        <p class="text-sm text-gray-500 mt-1">Urgent requirement for O+ blood</p>
+                                    </div>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                        <i class="fas fa-exclamation-circle mr-1"></i> Urgent
+                                    </span>
+                                </div>
+                                
+                                <div class="space-y-3 mb-6">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-hospital text-red-500 mr-3 w-5"></i>
+                                        <span>City Medical Center</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-calendar text-red-500 mr-3 w-5"></i>
+                                        <span>Apr 10, 2024 • 9 AM - 5 PM</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-map-marker-alt text-red-500 mr-3 w-5"></i>
+                                        <span>2.5 km away</span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm">
+                                        <span class="text-gray-600">Slots: </span>
+                                        <span class="font-semibold text-red-600">12/30 filled</span>
+                                    </div>
+                                    <button class="btn-primary px-4 py-2 text-sm">
+                                        <i class="fas fa-calendar-plus mr-2"></i>Register
                                     </button>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <!-- Camp 1 -->
-                                <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <h4 class="font-bold text-gray-900">Community Blood Drive</h4>
-                                        <span class="text-xs bg-green-100 text-green-800 px-3 py-1 rounded-full font-semibold border border-green-200">
-                                            <i class="fas fa-check-circle mr-1"></i> Registered
-                                        </span>
-                                    </div>
-                                    
-                                    <div class="space-y-3 text-sm text-gray-600 mb-4">
-                                        <div class="flex items-center">
-                                            <div class="p-2 bg-blue-50 rounded-lg mr-3">
-                                                <i class="fas fa-hospital text-blue-500"></i>
-                                            </div>
-                                            <span>Bir Hospital</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <div class="p-2 bg-purple-50 rounded-lg mr-3">
-                                                <i class="fas fa-calendar text-purple-500"></i>
-                                            </div>
-                                            <span>2024-03-15 • 09:00 AM - 05:00 PM</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <div class="p-2 bg-red-50 rounded-lg mr-3">
-                                                <i class="fas fa-map-marker-alt text-red-500"></i>
-                                            </div>
-                                            <span>Kathmandu, Nepal</span>
-                                        </div>
-                                        <p class="text-xs text-gray-500 bg-gray-50 p-2 rounded-lg">Monthly community blood donation drive organized by Red Cross</p>
-                                    </div>
+                        </div>
 
-                                    <div class="flex space-x-2">
-                                        <button class="btn-secondary flex-1 text-sm py-3" disabled>
-                                            <i class="fas fa-check mr-2"></i> Registered
-                                        </button>
-                                        <button class="p-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                                            <i class="fas fa-phone text-gray-600"></i>
-                                        </button>
+                        <!-- Camp Card 2 -->
+                        <div class="card hover:shadow-lg transition-all duration-300">
+                            <div class="p-6">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div>
+                                        <h3 class="font-bold text-gray-900 text-lg">Community Camp</h3>
+                                        <p class="text-sm text-gray-500 mt-1">Monthly community donation drive</p>
                                     </div>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i> Registered
+                                    </span>
                                 </div>
                                 
-                                <!-- Camp 2 -->
-                                <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <h4 class="font-bold text-gray-900">Emergency Blood Camp</h4>
-                                        <span class="text-xs bg-red-100 text-red-800 px-3 py-1 rounded-full font-semibold border border-red-200">
-                                            <i class="fas fa-exclamation-circle mr-1"></i> Urgent
-                                        </span>
+                                <div class="space-y-3 mb-6">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-hospital text-green-500 mr-3 w-5"></i>
+                                        <span>Red Cross Society</span>
                                     </div>
-                                    
-                                    <div class="space-y-3 text-sm text-gray-600 mb-4">
-                                        <div class="flex items-center">
-                                            <div class="p-2 bg-blue-50 rounded-lg mr-3">
-                                                <i class="fas fa-hospital text-blue-500"></i>
-                                            </div>
-                                            <span>Patan Hospital</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <div class="p-2 bg-purple-50 rounded-lg mr-3">
-                                                <i class="fas fa-calendar text-purple-500"></i>
-                                            </div>
-                                            <span>2024-03-20 • 10:00 AM - 06:00 PM</span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <div class="p-2 bg-red-50 rounded-lg mr-3">
-                                                <i class="fas fa-map-marker-alt text-red-500"></i>
-                                            </div>
-                                            <span>Lalitpur, Nepal</span>
-                                        </div>
-                                        <p class="text-xs text-gray-500 bg-gray-50 p-2 rounded-lg">Emergency blood donation camp for critical patients in ICU</p>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-calendar text-green-500 mr-3 w-5"></i>
+                                        <span>Apr 15, 2024 • 8 AM - 4 PM</span>
                                     </div>
-
-                                    <div class="flex space-x-2">
-                                        <button class="register-camp btn-primary flex-1 text-sm py-3" data-id="2">
-                                            <i class="fas fa-sign-in-alt mr-2"></i> Register Now
-                                        </button>
-                                        <button class="p-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                                            <i class="fas fa-phone text-gray-600"></i>
-                                        </button>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-map-marker-alt text-green-500 mr-3 w-5"></i>
+                                        <span>1.8 km away</span>
                                     </div>
                                 </div>
-                                
-                                <!-- Camp 3 -->
-                                <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <h4 class="font-bold text-gray-900">University Blood Drive</h4>
-                                        <span class="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-semibold border border-blue-200">
-                                            <i class="fas fa-graduation-cap mr-1"></i> Campus
-                                        </span>
+
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm">
+                                        <span class="text-gray-600">Your Slot: </span>
+                                        <span class="font-semibold text-green-600">10:30 AM</span>
                                     </div>
-                                    
-                                    <div class="space-y-3 text-sm text-gray-600 mb-4">
-                                        <div class="flex items-center">
-                                            <div class="p-2 bg-blue-50 rounded-lg mr-3">
-                                                <i class="fas fa-hospital text-blue-500"></i>
-                                            </div>
-                                            <span>Teaching Hospital</span>
+                                    <button class="btn-secondary px-4 py-2 text-sm" disabled>
+                                        <i class="fas fa-check mr-2"></i>Registered
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Camp Card 3 -->
+                        <div class="card hover:shadow-lg transition-all duration-300">
+                            <div class="p-6">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div>
+                                        <h3 class="font-bold text-gray-900 text-lg">University Drive</h3>
+                                        <p class="text-sm text-gray-500 mt-1">Student-led blood donation camp</p>
+                                    </div>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                                        <i class="fas fa-graduation-cap mr-1"></i> Campus
+                                    </span>
+                                </div>
+                                
+                                <div class="space-y-3 mb-6">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-hospital text-blue-500 mr-3 w-5"></i>
+                                        <span>University Campus</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-calendar text-blue-500 mr-3 w-5"></i>
+                                        <span>Apr 20, 2024 • 10 AM - 6 PM</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-map-marker-alt text-blue-500 mr-3 w-5"></i>
+                                        <span>4.2 km away</span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <div class="text-sm">
+                                        <span class="text-gray-600">Slots: </span>
+                                        <span class="font-semibold text-blue-600">8/25 filled</span>
+                                    </div>
+                                    <button class="btn-primary px-4 py-2 text-sm">
+                                        <i class="fas fa-calendar-plus mr-2"></i>Register
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leaderboard Tab -->
+                <div id="leaderboardContent" class="tab-content">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900">Leaderboard</h1>
+                            <p class="text-gray-500 mt-2">See where you stand among community heroes</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <span class="px-4 py-2 bg-red-100 text-red-800 rounded-xl font-semibold">
+                                <i class="fas fa-trophy mr-2"></i> Your Rank: #7
+                            </span>
+                            <button class="btn-primary">
+                                <i class="fas fa-share mr-2"></i> Share
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Top 3 Donors -->
+                        <div class="lg:col-span-2">
+                            <div class="card p-6">
+                                <h3 class="text-lg font-bold text-gray-900 mb-6">Top Donors This Month</h3>
+
+                                <div class="space-y-4">
+                                    <!-- First Place -->
+                                    <div class="flex items-center p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-xl border border-yellow-200">
+                                        <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full text-white font-bold text-lg mr-4">
+                                            1
                                         </div>
-                                        <div class="flex items-center">
-                                            <div class="p-2 bg-purple-50 rounded-lg mr-3">
-                                                <i class="fas fa-calendar text-purple-500"></i>
+                                        <div class="flex-1">
+                                            <div class="flex items-center">
+                                                <div class="h-10 w-10 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                                                    AS
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-bold text-gray-900">Amit Sharma</h4>
+                                                    <div class="flex items-center text-sm text-gray-600">
+                                                        <span class="mr-3">O+</span>
+                                                        <span>•</span>
+                                                        <span class="ml-3">15 donations</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <span>2024-03-25 • 08:00 AM - 04:00 PM</span>
                                         </div>
-                                        <div class="flex items-center">
-                                            <div class="p-2 bg-red-50 rounded-lg mr-3">
-                                                <i class="fas fa-map-marker-alt text-red-500"></i>
-                                            </div>
-                                            <span>Kathmandu University</span>
+                                        <div class="text-right">
+                                            <div class="text-2xl font-bold text-yellow-600">1,250</div>
+                                            <div class="text-sm text-gray-500">points</div>
                                         </div>
-                                        <p class="text-xs text-gray-500 bg-gray-50 p-2 rounded-lg">Blood donation drive organized by medical students association</p>
                                     </div>
 
-                                    <div class="flex space-x-2">
-                                        <button class="register-camp btn-primary flex-1 text-sm py-3" data-id="3">
-                                            <i class="fas fa-sign-in-alt mr-2"></i> Register Now
-                                        </button>
-                                        <button class="p-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                                            <i class="fas fa-phone text-gray-600"></i>
-                                        </button>
+                                    <!-- Your Rank -->
+                                    <div class="flex items-center p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-200">
+                                        <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-full text-white font-bold text-lg mr-4">
+                                            7
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="flex items-center">
+                                                <div class="h-10 w-10 bg-gradient-to-r from-red-600 to-red-700 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                                                    JD
+                                                </div>
+                                                <div>
+                                                    <h4 class="font-bold text-gray-900">John Doe (You)</h4>
+                                                    <div class="flex items-center text-sm text-gray-600">
+                                                        <span class="mr-3">O+</span>
+                                                        <span>•</span>
+                                                        <span class="ml-3">5 donations</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-2xl font-bold text-red-600">500</div>
+                                            <div class="text-sm text-gray-500">points</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Achievements Tab Content -->
-                        <div id="achievementsContent" class="hidden space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h3 class="text-xl font-bold text-gray-900">Your Achievements</h3>
-                                    <p class="text-gray-500 text-sm mt-1">Track your milestones and progress as a blood donor</p>
-                                </div>
-                                <div class="text-sm text-gray-600">
-                                    <span class="font-semibold text-red-600">500 points</span> • Level 3 Donor
+                        <!-- Your Stats -->
+                        <div class="lg:col-span-1">
+                            <div class="card p-6">
+                                <h3 class="text-lg font-bold text-gray-900 mb-6">Your Stats</h3>
+                                
+                                <div class="space-y-6">
+                                    <div>
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-sm text-gray-600">Monthly Rank</span>
+                                            <span class="font-semibold text-gray-900">#7</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 65%"></div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-sm text-gray-600">Donation Streak</span>
+                                            <span class="font-semibold text-gray-900">3 months</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 60%"></div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-sm text-gray-600">Points Progress</span>
+                                            <span class="font-semibold text-gray-900">500/1000</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 50%"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <!-- Achievement 1 -->
-                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200 shadow-sm">
-                                    <div class="flex items-center space-x-4">
-                                        <div class="text-3xl">🥇</div>
-                                        <div class="flex-1">
-                                            <h4 class="font-bold text-green-900">First Donation</h4>
-                                            <p class="text-sm text-green-700 mt-1">Completed your first blood donation</p>
-                                            <div class="flex items-center justify-between mt-3">
-                                                <span class="text-xs text-green-600 font-medium">Achieved on 2023-01-15</span>
-                                                <i class="fas fa-check-circle text-green-500"></i>
-                                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Tab -->
+                <div id="profileContent" class="tab-content">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900">Your Profile</h1>
+                            <p class="text-gray-500 mt-2">Manage your personal information and settings</p>
+                        </div>
+                        <button class="btn-primary">
+                            <i class="fas fa-edit mr-2"></i>Edit Profile
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Profile Card -->
+                        <div class="lg:col-span-1">
+                            <div class="card p-6">
+                                <div class="flex flex-col items-center">
+                                    <div class="relative mb-4">
+                                        <div class="h-32 w-32 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-lg">
+                                            JD
                                         </div>
+                                        <div class="absolute bottom-2 right-2 bg-green-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center border-2 border-white">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <h3 class="text-xl font-bold text-gray-900">John Doe</h3>
+                                    <p class="text-gray-500 text-sm mt-1">Blood Donor since 2020</p>
+                                    
+                                    <div class="mt-4">
+                                        <span class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 rounded-full text-white font-medium">
+                                            <i class="fas fa-heart mr-2"></i> Regular Donor
+                                        </span>
                                     </div>
                                 </div>
                                 
-                                <!-- Achievement 2 -->
-                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200 shadow-sm">
-                                    <div class="flex items-center space-x-4">
-                                        <div class="text-3xl">🏆</div>
-                                        <div class="flex-1">
-                                            <h4 class="font-bold text-green-900">Regular Donor</h4>
-                                            <p class="text-sm text-green-700 mt-1">Donated blood 3 times consecutively</p>
-                                            <div class="flex items-center justify-between mt-3">
-                                                <span class="text-xs text-green-600 font-medium">Achieved on 2023-10-15</span>
-                                                <i class="fas fa-check-circle text-green-500"></i>
-                                            </div>
+                                <div class="mt-8 space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-gray-600">Donor Level</span>
+                                        <span class="font-semibold text-red-600">Level 5</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-gray-600">Total Donations</span>
+                                        <span class="font-semibold text-gray-900">14</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-gray-600">Lives Impacted</span>
+                                        <span class="font-semibold text-gray-900">42</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-gray-600">Member Since</span>
+                                        <span class="font-semibold text-gray-900">2020</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Personal Information -->
+                        <div class="lg:col-span-2">
+                            <div class="card p-6">
+                                <h3 class="text-lg font-bold text-gray-900 mb-6">Personal Information</h3>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                            John Doe
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                            john.doe@example.com
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                            +977 98XXXXXX
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                            1990-05-15
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                            Kathmandu, Nepal
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <!-- Achievement 3 -->
-                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200 shadow-sm">
-                                    <div class="flex items-center space-x-4">
-                                        <div class="text-3xl">💝</div>
-                                        <div class="flex-1">
-                                            <h4 class="font-bold text-green-900">Life Saver</h4>
-                                            <p class="text-sm text-green-700 mt-1">Saved up to 15 lives with 5 donations</p>
-                                            <div class="flex items-center justify-between mt-3">
-                                                <span class="text-xs text-green-600 font-medium">Achieved on 2024-01-15</span>
-                                                <i class="fas fa-check-circle text-green-500"></i>
+
+                                <!-- Medical Information -->
+                                <div class="mt-8 pt-8 border-t border-gray-200">
+                                    <h3 class="text-lg font-bold text-gray-900 mb-6">Medical Information</h3>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Blood Group</label>
+                                            <div class="flex items-center">
+                                                <span class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-red-100 text-red-800 border border-red-200">
+                                                    <i class="fas fa-tint mr-2"></i> O Positive (O+)
+                                                </span>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Achievement 4 -->
-                                <div class="bg-gradient-to-br from-gray-50 to-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                                    <div class="flex items-center space-x-4">
-                                        <div class="text-3xl">👑</div>
-                                        <div class="flex-1">
-                                            <h4 class="font-bold text-gray-900">Hero Donor</h4>
-                                            <p class="text-sm text-gray-600 mt-1">Donate blood 10 times to unlock this badge</p>
-                                            <div class="mt-3">
-                                                <div class="flex justify-between text-xs text-gray-600 mb-2">
-                                                    <span class="font-medium">Progress</span>
-                                                    <span class="font-semibold">5/10</span>
-                                                </div>
-                                                <div class="progress-bar">
-                                                    <div class="progress-fill" style="width: 50%"></div>
-                                                </div>
-                                                <div class="mt-2 text-xs text-gray-500">
-                                                    <i class="fas fa-clock mr-1"></i> 5 more donations needed
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Achievement 5 -->
-                                <div class="bg-gradient-to-br from-gray-50 to-white rounded-xl p-5 border border-gray-200 shadow-sm">
-                                    <div class="flex items-center space-x-4">
-                                        <div class="text-3xl">⭐</div>
-                                        <div class="flex-1">
-                                            <h4 class="font-bold text-gray-900">Rare Blood Type</h4>
-                                            <p class="text-sm text-gray-600 mt-1">Special recognition for rare blood type donors</p>
-                                            <div class="mt-3">
-                                                <div class="flex justify-between text-xs text-gray-600 mb-2">
-                                                    <span class="font-medium">Your Type</span>
-                                                    <span class="font-semibold text-red-600">O+ (Common)</span>
-                                                </div>
-                                                <div class="text-xs text-gray-500">
-                                                    <i class="fas fa-info-circle mr-1"></i> Universal donor for O+ and AB+ recipients
-                                                </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Last Donation</label>
+                                            <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                                2024-03-15
                                             </div>
                                         </div>
                                     </div>
@@ -953,300 +1222,327 @@
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
-                <div class="card p-8">
-                    <h3 class="text-xl font-bold text-gray-900 mb-6">Quick Actions</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <a href="#" class="group flex items-center p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 hover:border-red-300 hover:bg-red-50 transition-all duration-300 shadow-sm hover:shadow-md">
-                            <div class="p-3 bg-red-100 rounded-lg shadow-sm mr-4 group-hover:bg-red-200 transition-colors">
-                                <i class="fas fa-calendar text-red-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-gray-900 group-hover:text-red-700">Find Camps</p>
-                                <p class="text-sm text-gray-500 mt-1">Register for upcoming donation camps</p>
-                            </div>
-                            <div class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                                <i class="fas fa-arrow-right text-red-500"></i>
-                            </div>
-                        </a>
-
-                        <a href="#" class="group flex items-center p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-300 shadow-sm hover:shadow-md">
-                            <div class="p-3 bg-blue-100 rounded-lg shadow-sm mr-4 group-hover:bg-blue-200 transition-colors">
-                                <i class="fas fa-history text-blue-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-gray-900 group-hover:text-blue-700">View History</p>
-                                <p class="text-sm text-gray-500 mt-1">Check your complete donation history</p>
-                            </div>
-                            <div class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                                <i class="fas fa-arrow-right text-blue-500"></i>
-                            </div>
-                        </a>
-
-                        <a href="#" class="group flex items-center p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-all duration-300 shadow-sm hover:shadow-md">
-                            <div class="p-3 bg-green-100 rounded-lg shadow-sm mr-4 group-hover:bg-green-200 transition-colors">
-                                <i class="fas fa-trophy text-green-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-gray-900 group-hover:text-green-700">Leaderboard</p>
-                                <p class="text-sm text-gray-500 mt-1">See top donors ranking and compete</p>
-                            </div>
-                            <div class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                                <i class="fas fa-arrow-right text-green-500"></i>
-                            </div>
-                        </a>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
+   <script>
+//     function getCookie(name) {
+//     let cookieValue = null;
+//     if (document.cookie && document.cookie !== '') {
+//         const cookies = document.cookie.split(';');
+//         for (let cookie of cookies) {
+//             cookie = cookie.trim();
+//             if (cookie.startsWith(name + '=')) {
+//                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+//                 break;
+//             }
+//         }
+//     }
+//     return cookieValue;
+// }
+
+// axios.defaults.headers.common['X-CSRFToken'] = getCookie('csrftoken');
+// axios.defaults.withCredentials = true;
+const token = localStorage.getItem("access_token");
+
+if (!token) {
+    window.location.href = "login-signup.html";
+}
+
+/* ================================
+   CONFIG
+================================ */
+axios.defaults.withCredentials = true;
+const API_BASE = "http://127.0.0.1:8000/api/donor";
+
+/* ================================
+   INIT ICONS
+================================ */
+lucide.createIcons();
+
+/* ================================
+   TAB MANAGEMENT
+================================ */
+const tabContents = document.querySelectorAll('.tab-content');
+const navLinks = document.querySelectorAll('.nav-link');
+const mobileNavLinks = document.querySelectorAll('#mobileSidebar .nav-link');
+
+// Function to switch tabs
+function switchTab(tabName) {
+    // Hide all tab contents
+    tabContents.forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    const activeTab = document.getElementById(`${tabName}Content`);
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+    
+    // Update active nav link
+    const allNavLinks = [...navLinks, ...mobileNavLinks];
+    allNavLinks.forEach(link => {
+        link.classList.remove('text-red-600', 'bg-gradient-to-r', 'from-red-50', 'to-red-100', 'border', 'border-red-100');
+        link.classList.add('text-gray-700', 'hover:bg-gray-50');
         
-        // Tab Switching Functionality
-        const historyTab = document.getElementById('historyTab');
-        const campsTab = document.getElementById('campsTab');
-        const achievementsTab = document.getElementById('achievementsTab');
+        // Update icon colors
+        const iconDiv = link.querySelector('div');
+        if (iconDiv) {
+            iconDiv.classList.remove('bg-white');
+            iconDiv.classList.add('bg-gray-100');
+        }
+    });
+    
+    // Activate current nav link
+    const currentLinks = document.querySelectorAll(`.nav-link[data-tab="${tabName}"]`);
+    currentLinks.forEach(link => {
+        link.classList.remove('text-gray-700', 'hover:bg-gray-50');
+        link.classList.add('text-red-600', 'bg-gradient-to-r', 'from-red-50', 'to-red-100', 'border', 'border-red-100');
         
-        const historyContent = document.getElementById('historyContent');
-        const campsContent = document.getElementById('campsContent');
-        const achievementsContent = document.getElementById('achievementsContent');
+        // Update icon color
+        const iconDiv = link.querySelector('div');
+        if (iconDiv) {
+            iconDiv.classList.remove('bg-gray-100');
+            iconDiv.classList.add('bg-white');
+        }
+    });
+    
+    // Close mobile menu if open
+    mobileSidebar.classList.add('hidden');
+}
+
+// Add event listeners to nav links
+navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const tabName = link.getAttribute('data-tab');
+        switchTab(tabName);
+    });
+});
+
+mobileNavLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const tabName = link.getAttribute('data-tab');
+        switchTab(tabName);
+    });
+});
+
+/* ================================
+   DASHBOARD SUBTABS
+================================ */
+const dashboardTabs = document.querySelectorAll('.history-tab, .camps-tab, .achievements-tab');
+const subtabContents = document.querySelectorAll('.subtab-content');
+
+dashboardTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        const subtab = tab.getAttribute('data-subtab');
         
-        // Set initial active tab
-        setActiveTab('historyTab');
+        // Update active tab styling
+        dashboardTabs.forEach(t => {
+            t.classList.remove('tab-active');
+            t.classList.add('tab-inactive');
+        });
+        tab.classList.remove('tab-inactive');
+        tab.classList.add('tab-active');
         
-        historyTab.addEventListener('click', () => setActiveTab('historyTab'));
-        campsTab.addEventListener('click', () => setActiveTab('campsTab'));
-        achievementsTab.addEventListener('click', () => setActiveTab('achievementsTab'));
+        // Show selected subtab
+        subtabContents.forEach(content => {
+            content.classList.remove('active');
+            content.classList.add('hidden');
+        });
         
-        function setActiveTab(activeTabId) {
-            // Reset all tabs to inactive
-            [historyTab, campsTab, achievementsTab].forEach(tab => {
-                tab.classList.remove('tab-active');
-                tab.classList.add('tab-inactive');
-            });
-            
-            // Hide all content
-            [historyContent, campsContent, achievementsContent].forEach(content => {
-                content.classList.add('hidden');
-            });
-            
-            // Activate selected tab
-            const activeTab = document.getElementById(activeTabId);
-            activeTab.classList.remove('tab-inactive');
-            activeTab.classList.add('tab-active');
-            
-            // Show corresponding content
-            if (activeTabId === 'historyTab') {
-                historyContent.classList.remove('hidden');
-            } else if (activeTabId === 'campsTab') {
-                campsContent.classList.remove('hidden');
-            } else if (activeTabId === 'achievementsTab') {
-                achievementsContent.classList.remove('hidden');
+        const activeContent = document.getElementById(`dashboard${subtab.charAt(0).toUpperCase() + subtab.slice(1)}`);
+        if (activeContent) {
+            activeContent.classList.remove('hidden');
+            activeContent.classList.add('active');
+        }
+    });
+});
+
+/* ================================
+   QUICK ACTIONS
+================================ */
+document.querySelector('.go-to-camps')?.addEventListener('click', () => switchTab('donationCamps'));
+document.querySelector('.go-to-history')?.addEventListener('click', () => switchTab('donationHistory'));
+document.querySelector('.go-to-leaderboard')?.addEventListener('click', () => switchTab('leaderboard'));
+document.querySelector('.view-all-history')?.addEventListener('click', () => switchTab('donationHistory'));
+document.querySelector('.view-all-camps')?.addEventListener('click', () => switchTab('donationCamps'));
+document.querySelector('.view-all-achievements')?.addEventListener('click', () => switchTab('leaderboard'));
+
+/* ================================
+   MOBILE MENU
+================================ */
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const closeMobileMenuBtn = document.getElementById('closeMobileMenuBtn');
+const mobileSidebar = document.getElementById('mobileSidebar');
+
+mobileMenuBtn?.addEventListener('click', () => mobileSidebar.classList.remove('hidden'));
+closeMobileMenuBtn?.addEventListener('click', () => mobileSidebar.classList.add('hidden'));
+
+/* ================================
+   FETCH DONOR PROFILE
+================================ */
+async function loadDonorProfile() {
+    try {
+        console.log("JWT:", localStorage.getItem("access_token"));
+
+        const res = await axios.get(`${API_BASE}/dashboard/profile/`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("access_token")}`
             }
-        }
-        
-        // Mobile Menu Functionality
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const closeMobileMenuBtn = document.getElementById('closeMobileMenuBtn');
-        const mobileSidebar = document.getElementById('mobileSidebar');
-        
-        if (mobileMenuBtn) {
-            mobileMenuBtn.addEventListener('click', () => {
-                mobileSidebar.classList.remove('hidden');
-            });
-        }
-        
-        if (closeMobileMenuBtn) {
-            closeMobileMenuBtn.addEventListener('click', () => {
-                mobileSidebar.classList.add('hidden');
-            });
-        }
-        
-        // Register Camp Button
-        const registerCampButtons = document.querySelectorAll('.register-camp');
-        registerCampButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const campId = this.getAttribute('data-id');
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Successfully registered for the blood donation camp!',
-                    icon: 'success',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#ef4444',
-                    background: '#fff',
-                    color: '#374151',
-                    customClass: {
-                        popup: 'rounded-2xl shadow-xl',
-                        confirmButton: 'rounded-lg px-6 py-2 font-medium'
-                    }
-                });
-                
-                // Update button state
-                this.innerHTML = '<i class="fas fa-check mr-2"></i> Registered';
-                this.classList.remove('btn-primary');
-                this.classList.add('btn-secondary');
-                this.disabled = true;
-                
-                // Update badge to registered
-                const campCard = this.closest('.bg-gradient-to-br');
-                const badge = campCard.querySelector('span');
-                if (badge) {
-                    badge.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Registered';
-                    badge.classList.remove('bg-red-100', 'text-red-800', 'border-red-200');
-                    badge.classList.add('bg-green-100', 'text-green-800', 'border-green-200');
-                }
-            });
         });
-        
-        // Download Certificate
-        const downloadCertificateButtons = document.querySelectorAll('.download-certificate');
-        downloadCertificateButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const donationId = this.getAttribute('data-id');
-                Swal.fire({
-                    title: 'Downloading...',
-                    text: 'Your certificate is being generated',
-                    icon: 'info',
-                    showConfirmButton: false,
-                    timer: 1500,
-                    background: '#fff',
-                    color: '#374151',
-                    customClass: {
-                        popup: 'rounded-2xl shadow-xl'
-                    }
-                }).then(() => {
-                    Swal.fire({
-                        title: 'Success!',
-                        text: 'Certificate downloaded successfully!',
-                        icon: 'success',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#ef4444',
-                        background: '#fff',
-                        color: '#374151',
-                        customClass: {
-                            popup: 'rounded-2xl shadow-xl',
-                            confirmButton: 'rounded-lg px-6 py-2 font-medium'
-                        }
-                    });
-                });
-            });
+
+        const d = res.data;
+
+        const firstName = d.first_name || '';
+        const lastName = d.last_name || '';
+        const initials = `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase();
+
+        // Update welcome message
+        const welcomeElement = document.querySelector("#dashboardContent h1.text-3xl");
+        if (welcomeElement) {
+            welcomeElement.textContent = `Welcome back, ${firstName || 'Donor'}!`;
+        }
+
+        // Update blood type badges
+        document.querySelectorAll("span.bg-red-100.text-red-800").forEach(el => {
+            el.innerHTML = `<i class="fas fa-tint mr-1"></i> ${d.blood_type || 'N/A'}`;
         });
-        
-        // Logout Functionality
-        const logoutBtn = document.getElementById('logoutBtn');
-        const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
-        
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: 'You will be logged out of your account.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'Yes, logout',
-                    background: '#fff',
-                    color: '#374151',
-                    customClass: {
-                        popup: 'rounded-2xl shadow-xl',
-                        confirmButton: 'rounded-lg px-6 py-2 font-medium',
-                        cancelButton: 'rounded-lg px-6 py-2 font-medium'
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Swal.fire({
-                            title: 'Logged out!',
-                            text: 'You have been successfully logged out.',
-                            icon: 'success',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#ef4444',
-                            background: '#fff',
-                            color: '#374151',
-                            customClass: {
-                                popup: 'rounded-2xl shadow-xl',
-                                confirmButton: 'rounded-lg px-6 py-2 font-medium'
-                            }
-                        }).then(() => {
-                            // Redirect to login page in a real application
-                            window.location.href = 'login-signup.html';
-                        });
-                    }
-                });
+
+        // Update profile initials
+        document.querySelectorAll(".rounded-full.text-white.font-bold").forEach(el => {
+            if (el.textContent === 'JD' || el.textContent === 'D') {
+                el.textContent = initials || 'D';
+            }
+        });
+
+        // Update profile name
+        const profileNameElements = document.querySelectorAll("h3.text-xl.font-bold.text-gray-900, h2.font-semibold.text-gray-900");
+        profileNameElements.forEach(el => {
+            if (el.textContent.includes('John') || el.textContent.includes('Doe')) {
+                el.textContent = `${firstName} ${lastName}`.trim() || 'Donor';
+            }
+        });
+
+        if (!d.is_approved) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Approval Pending',
+                text: 'Your donor profile is waiting for admin approval.',
+                confirmButtonColor: '#ef4444',
+                allowOutsideClick: false
             });
         }
-        
-        if (mobileLogoutBtn) {
-            mobileLogoutBtn.addEventListener('click', () => {
-                mobileSidebar.classList.add('hidden');
-                
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: 'You will be logged out of your account.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'Yes, logout',
-                    background: '#fff',
-                    color: '#374151',
-                    customClass: {
-                        popup: 'rounded-2xl shadow-xl',
-                        confirmButton: 'rounded-lg px-6 py-2 font-medium',
-                        cancelButton: 'rounded-lg px-6 py-2 font-medium'
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Swal.fire({
-                            title: 'Logged out!',
-                            text: 'You have been successfully logged out.',
-                            icon: 'success',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#ef4444',
-                            background: '#fff',
-                            color: '#374151',
-                            customClass: {
-                                popup: 'rounded-2xl shadow-xl',
-                                confirmButton: 'rounded-lg px-6 py-2 font-medium'
-                            }
-                        }).then(() => {
-                            // Redirect to login page in a real application
-                            window.location.href = 'login-signup.html';
-                        });
-                    }
-                });
-            });
-        }
-        
-        // Make mobile sidebar links close the sidebar when clicked
-        const mobileLinks = document.querySelectorAll('#mobileSidebar a');
-        mobileLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                mobileSidebar.classList.add('hidden');
-            });
+
+    } catch (err) {
+        console.error(err);
+        Swal.fire("Error", "Unable to load donor profile", "error");
+    }
+}
+
+
+
+/* ================================
+   FETCH DASHBOARD STATS
+================================ */
+async function loadDashboardStats() {
+    try {
+        const res = await axios.get(`${API_BASE}/dashboard/stats/`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("access_token")}`
+            }
         });
-        
-        // Animate elements on scroll
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate-fade-in');
-                }
-            });
-        }, observerOptions);
-        
-        // Observe all cards for animation
-        document.querySelectorAll('.card, .stat-card').forEach(card => {
-            observer.observe(card);
+
+        const s = res.data;
+
+        const cards = document.querySelectorAll('.stat-card');
+
+        cards[0].querySelector("p.text-2xl").textContent = s.total_donations;
+        cards[1].querySelector("p.text-2xl").textContent = s.verified_donations;
+        cards[2].querySelector("p.text-2xl").textContent = s.pending_donations;
+        cards[3].querySelector("p.text-2xl").innerHTML =
+            `${s.next_eligible_days}<span class="text-sm text-gray-500 ml-1">days</span>`;
+
+        const progress = Math.min(100, Math.round(((56 - s.next_eligible_days) / 56) * 100));
+        document.querySelectorAll('.progress-fill').forEach(p => {
+            p.style.width = `${progress}%`;
         });
-    </script>
+
+    } catch (err) {
+        console.error(err);
+        Swal.fire("Error", "Unable to load dashboard stats", "error");
+    }
+}
+
+
+/* ================================
+   CAMP REGISTER (UI ONLY)
+================================ */
+document.querySelectorAll('.register-camp').forEach(button => {
+    button.addEventListener('click', () => {
+        Swal.fire({
+            icon: 'success',
+            title: 'Registered',
+            text: 'Successfully registered for the camp',
+            confirmButtonColor: '#ef4444'
+        });
+
+        button.innerHTML = '<i class="fas fa-check mr-2"></i> Registered';
+        button.classList.remove('btn-primary');
+        button.classList.add('btn-secondary');
+        button.disabled = true;
+    });
+});
+
+/* ================================
+   CERTIFICATE DOWNLOAD (PLACEHOLDER)
+================================ */
+document.querySelectorAll('.download-certificate').forEach(btn => {
+    btn.addEventListener('click', () => {
+        Swal.fire({
+            icon: 'info',
+            title: 'Downloading...',
+            timer: 1200,
+            showConfirmButton: false
+        });
+    });
+});
+
+/* ================================
+   LOGOUT
+================================ */
+document.getElementById('logoutBtn')?.addEventListener('click', logout);
+document.getElementById('mobileLogoutBtn')?.addEventListener('click', logout);
+
+function logout() {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    window.location.href = "login-signup.html";
+}
+
+/* ================================
+   ANIMATIONS
+================================ */
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => e.isIntersecting && e.target.classList.add('animate-fade-in'));
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.card, .stat-card').forEach(card => observer.observe(card));
+
+/* ================================
+   INIT LOAD
+================================ */
+document.addEventListener('DOMContentLoaded', () => {
+    loadDonorProfile();
+    loadDashboardStats();
+    
+    // Initialize with dashboard tab
+    switchTab('dashboard');
+});
+</script>
+
 </body>
 </html>
