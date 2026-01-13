@@ -35,6 +35,8 @@ INSTALLED_APPS = [
     'blood_requests',
     'register_donor',
     'adminpanel',
+    'donor',
+
     
 ]
 
@@ -92,16 +94,15 @@ DATABASES = {
 # =====================
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-        'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
-        # "rest_framework_simplejwt.authentication.JWTAuthentication",
-    
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
+
 
 # =====================
 # AUTHENTICATION CONFIG

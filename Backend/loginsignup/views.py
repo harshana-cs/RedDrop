@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
+from django.contrib.auth import login
 
 
 
@@ -147,7 +148,11 @@ def google_login(request):
                     "last_name": fullname.split(" ", 1)[1] if len(fullname.split(" ", 1)) > 1 else "",
                 }
             )
-
+            user, _ = User.objects.get_or_create(
+                username=email,
+                defaults={"email": email}
+    )
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             profile_complete = donor.is_profile_completed
             redirect_url = "donor.html" if profile_complete else "donor_register.html"
 
