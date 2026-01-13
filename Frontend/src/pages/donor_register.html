@@ -18,12 +18,8 @@ border-right:1px solid #e5e7eb;z-index:1000}
 
 <body class="bg-hlb-bg text-gray-800">
 
-
 <!-- ================= Sidebar ================= -->
-<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/> -->
-
 <div class="sidebar-fixed flex flex-col bg-white border-r">
-    
     <!-- Logo -->
     <div class="flex items-center justify-center h-16 border-b border-gray-200">
         <div class="flex items-center space-x-2">
@@ -33,45 +29,6 @@ border-right:1px solid #e5e7eb;z-index:1000}
             <h1 class="font-bold text-gray-900 text-xl">RedDrop</h1>
         </div>
     </div>
-
-    <!-- Navigation -->
-    <!-- <div class="flex-1 p-4 overflow-y-auto">
-        <nav class="space-y-1">
-            <a href="donor.html" class="flex items-center px-4 py-3 text-red-600 bg-red-50 rounded-lg">
-                <i class="fas fa-home mr-3"></i>
-                <span>Dashboard</span>
-            </a>
-
-            <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
-                <i class="fas fa-history mr-3"></i>
-                <span>Donation History</span>
-            </a>
-
-            <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
-                <i class="fas fa-calendar-alt mr-3"></i>
-                <span>Donation Camps</span>
-            </a>
-
-            <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
-                <i class="fas fa-trophy mr-3"></i>
-                <span>Leaderboard</span>
-            </a>
-
-            <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg">
-                <i class="fas fa-user mr-3"></i>
-                <span>Profile</span>
-            </a>
-        </nav>
-    </div> -->
-
-    <!-- Logout -->
-    <!-- <div class="p-4 border-t border-gray-200">
-        <button id="logoutBtn"
-            class="w-full flex items-center justify-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors">
-            <i class="fas fa-sign-out-alt mr-2"></i>
-            <span>Logout</span>
-        </button>
-    </div> -->
 </div>
 
 <!-- Mobile Header -->
@@ -96,7 +53,6 @@ border-right:1px solid #e5e7eb;z-index:1000}
     </div>
 </div>
 
-
 <!-- =============== MAIN CONTENT =============== -->
 <div class="ml-64 p-6">
 
@@ -115,12 +71,10 @@ border-right:1px solid #e5e7eb;z-index:1000}
         </div>
     </div>
 
-
-
     <!-- FORM CARD -->
     <div class="mt-6 bg-white rounded-lg shadow-sm border p-6">
 
-<form id="donorForm">
+<div id="donorFormContainer">
 
 <!-- PERSONAL -->
 <h2 class="text-lg font-semibold mb-4 border-b pb-2">Personal Information</h2>
@@ -193,8 +147,6 @@ border-right:1px solid #e5e7eb;z-index:1000}
     </div>
 </div>
 
-
-
 <!-- EMERGENCY -->
 <h2 class="text-lg font-semibold mt-8 mb-4 border-b pb-2">Emergency Contact</h2>
 
@@ -210,8 +162,6 @@ border-right:1px solid #e5e7eb;z-index:1000}
     </div>
 </div>
 
-
-
 <!-- MEDICAL -->
 <h2 class="text-lg font-semibold mt-8 mb-4 border-b pb-2">Medical Information</h2>
 
@@ -221,7 +171,6 @@ border-right:1px solid #e5e7eb;z-index:1000}
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-
     <label class="flex items-center gap-2 border p-3 rounded">
         <input type="checkbox" name="has_diabetes">
         Diabetes
@@ -241,14 +190,10 @@ border-right:1px solid #e5e7eb;z-index:1000}
         <input type="checkbox" name="no_medical_conditions">
         No Medical Conditions
     </label>
-
 </div>
-
-
 
 <!-- FILE UPLOAD -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-
     <div>
         <label>Upload Citizenship *</label>
         <input type="file" name="citizenship_id" id="citizenship" required>
@@ -260,14 +205,10 @@ border-right:1px solid #e5e7eb;z-index:1000}
         <input type="file" name="photo" id="photo" required>
         <img id="photoPreview" class="preview-img hidden">
     </div>
-
 </div>
-
-
 
 <!-- CONSENT -->
 <div class="mt-6">
-
 <div class="mt-4 p-4 bg-red-100 rounded">
     <label class="flex items-center gap-2">
         <input type="checkbox" name="consent_notifications">
@@ -281,63 +222,59 @@ border-right:1px solid #e5e7eb;z-index:1000}
         I agree to terms & conditions *
     </label>
 </div>
-
 </div>
-
-
 
 <!-- BUTTONS -->
 <div class="mt-6 flex justify-end gap-4 border-t pt-4">
-    <button type="reset" class="px-6 py-2 border rounded">
+    <button type="button" onclick="return false;" class="px-6 py-2 border rounded">
         Cancel
     </button>
 
-    <button class="px-6 py-2 bg-red-600 text-white rounded">
+    <button type="button" id="registerBtn" onclick="return false;"
+        class="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700">
         Register
     </button>
 </div>
 
-</form>
+</div><!-- End donorFormContainer -->
 
 </div>
 </div>
 
-
-
-<!-- SUCCESS MODAL -->
-<div id="successModal" class="fixed inset-0 hidden bg-black/50 flex items-center justify-center modal-top">
-    <div class="bg-white p-6 rounded-xl text-center shadow-xl">
-        <div class="text-4xl mb-3">✅</div>
-        <h2 class="text-xl font-bold mb-2">Registration Successful!</h2>
-        <p class="mb-4">Thank you for registering.</p>
-        <button id="continueBtn"
-        class="px-6 py-2 bg-red-600 text-white rounded">
-    Continue
-</button>
-
-
-    </div>
+<!-- APPROVAL WAITING MODAL -->
+<div id="approvalWaiting" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-6 text-center w-80">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-red-600 mx-auto mb-4"></div>
+    <h2 class="text-lg font-semibold mb-2">Waiting for Approval</h2>
+    <p class="text-sm text-gray-600">
+      Please wait while an admin reviews your request.
+    </p>
+  </div>
 </div>
-
-
 
 <script>
-
-/******** IMAGE PREVIEW *********/
-function preview(input, img){
-  input.addEventListener("change",()=>{
-      const f=input.files[0];
-      if(!f) return img.classList.add("hidden");
-      const r=new FileReader();
-      r.onload=e=>{img.src=e.target.result;img.classList.remove("hidden")}
-      r.readAsDataURL(f);
-  })
+// <script>
+/* ================= IMAGE PREVIEW ================= */
+function preview(input, img) {
+    input.addEventListener("change", () => {
+        const f = input.files[0];
+        if (!f) {
+            img.classList.add("hidden");
+            return;
+        }
+        const r = new FileReader();
+        r.onload = e => {
+            img.src = e.target.result;
+            img.classList.remove("hidden");
+        };
+        r.readAsDataURL(f);
+    });
 }
-preview(citizenship,citizenshipPreview);
-preview(photo,photoPreview);
+preview(citizenship, citizenshipPreview);
+preview(photo, photoPreview);
 
 
-/******** PREFILL LOGGED IN USER *********/
+/* ================= PREFILL USER ================= */
 window.addEventListener("DOMContentLoaded", () => {
     const fullname = localStorage.getItem("fullname");
     const email = localStorage.getItem("emailaddress");
@@ -349,29 +286,60 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     if (email) {
-        document.querySelector("input[name='email']").value = email;
-        document.querySelector("input[name='email']").readOnly = true;
+        const emailInput = document.querySelector("input[name='email']");
+        emailInput.value = email;
+        emailInput.readOnly = true;
+    }
+
+    /* 🔁 RESTORE WAITING POPUP AFTER RELOAD */
+    if (sessionStorage.getItem("donor_waiting") === "true") {
+        showWaitingPopup();
+        startApprovalCheck();
     }
 });
 
 
-/******** SUBMIT *********/
-document.getElementById("donorForm").addEventListener("submit", async (e) => {
+/* ================= GLOBAL FLAGS ================= */
+let approvalInterval = null;
+let isSubmitting = false;
+
+
+/* ================= REGISTER BUTTON ================= */
+document.getElementById("registerBtn").addEventListener("click", async (e) => {
     e.preventDefault();
+    e.stopPropagation();
 
-    // validation
-    let age = new Date().getFullYear() - new Date(dob.value).getFullYear();
-    if(age < 18){
+    if (isSubmitting) return;
+    isSubmitting = true;
+
+    const dob = document.getElementById("dob").value;
+    const weight = document.getElementById("weight").value;
+
+    let age = new Date().getFullYear() - new Date(dob).getFullYear();
+    if (age < 18) {
         alert("Must be 18+ to donate");
+        isSubmitting = false;
         return;
     }
 
-    if(weight.value < 50){
+    if (parseInt(weight) < 50) {
         alert("Minimum 50kg required");
+        isSubmitting = false;
         return;
     }
 
-    const formData = new FormData(e.target);
+    const formData = new FormData();
+    document.querySelectorAll("#donorFormContainer input, #donorFormContainer select")
+        .forEach(el => {
+            if (!el.name) return;
+            if (el.type === "checkbox" && el.checked) {
+                formData.append(el.name, "on");
+            } else if (el.type === "file" && el.files[0]) {
+                formData.append(el.name, el.files[0]);
+            } else if (el.type !== "checkbox") {
+                formData.append(el.name, el.value);
+            }
+        });
 
     try {
         const res = await fetch("http://localhost:8000/donor/register/", {
@@ -380,39 +348,63 @@ document.getElementById("donorForm").addEventListener("submit", async (e) => {
             body: formData
         });
 
-        if(!res.ok){
-            alert("Server Error " + res.status);
-            return;
-        }
-
         const data = await res.json();
 
         if (data.success) {
-
-    // Update success modal text dynamically
-    document.querySelector("#successModal h2").innerText = "Registration Completed!";
-    document.querySelector("#successModal p").innerText =
-        "Please wait up to 5 minutes while the system approves your request. We will notify you via email once approval is completed.";
-
-    successModal.classList.remove("hidden");
-    e.target.reset();
-
-    document.getElementById("continueBtn").onclick = () => {
-    window.location.href = "donor.html";
-};
-
-}
- else {
-            alert(data.message || "Registration Failed");
+            sessionStorage.setItem("donor_waiting", "true");
+            showWaitingPopup();
+            startApprovalCheck();
+        } else {
+            alert(data.message || "Registration failed");
+            isSubmitting = false;
         }
-
     } catch (err) {
         console.error(err);
-        alert("Something went wrong");
+        alert("Server error");
+        isSubmitting = false;
     }
 });
-</script>
 
+
+/* ================= SHOW WAITING POPUP ================= */
+function showWaitingPopup() {
+    const modal = document.getElementById("approvalWaiting");
+    modal.classList.remove("hidden");
+    modal.style.display = "flex";
+}
+
+
+/* ================= APPROVAL POLLING ================= */
+function startApprovalCheck() {
+    if (approvalInterval) return;
+
+    const email = document.querySelector("input[name='email']").value;
+
+    approvalInterval = setInterval(async () => {
+        try {
+            const res = await fetch("http://localhost:8000/donor/check-approval/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email })
+            });
+
+            if (!res.ok) return;
+
+            const data = await res.json();
+
+            if (data.approved === true || data.already_approved === true) {
+                clearInterval(approvalInterval);
+                sessionStorage.removeItem("donor_waiting");
+                window.location.href = "donor.html";
+            }
+        } catch (err) {
+            console.error("Approval check failed", err);
+        }
+    }, 5000);
+}
+ </script>
+
+</script>
 
 </body>
 </html>

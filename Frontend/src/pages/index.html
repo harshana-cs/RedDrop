@@ -533,7 +533,7 @@ async function verifyAdminKey(){
  const key = document.getElementById("adminKey").value;
  const error = document.getElementById("adminError");
 
- const res = await fetch("http://localhost:8000/adminpanel/secret-login/", {
+ const res = await fetch("http://127.0.0.1:8000/api/admin/secret-login/", {
    method: "POST",
    headers: { "Content-Type": "application/json" },
    body: JSON.stringify({ secret_key: key })

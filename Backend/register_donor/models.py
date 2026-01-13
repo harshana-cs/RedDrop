@@ -36,6 +36,7 @@ class Donor(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     
     is_profile_completed = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
 
     # def set_password(self, raw_password):
     #     self.password = make_password(raw_password)
