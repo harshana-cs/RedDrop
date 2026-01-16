@@ -78,15 +78,20 @@ WSGI_APPLICATION = 'backend_project.wsgi.application'
 # DATABASE (PostgreSQL)
 # =====================
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'RedDrop',         # Your database name
-        'USER': 'postgres',        # Your PostgreSQL username
-        'PASSWORD': 'Harshana123', # Your PostgreSQL password
-        'HOST': 'localhost',       # Usually localhost for local DB
-        'PORT': '5432',            # Default PostgreSQL port
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "postgres",
+        "USER": "postgres.doxlbyqfjigwwdwwosto",
+        "PASSWORD": "Harshana.123",
+        "HOST": "aws-1-ap-northeast-2.pooler.supabase.com",
+        "PORT": "6543",
+        "OPTIONS": {
+            "sslmode": "require",
+        },
+        "CONN_MAX_AGE": 60,
     }
 }
+
 
 
 # =====================

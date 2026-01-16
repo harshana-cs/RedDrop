@@ -7,16 +7,20 @@ from datetime import datetime
 from .models import Donor
 from django.contrib.auth import login
 
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
-@authentication_classes([])
 def register_donor(request):
     try:
         data = request.data
         files = request.FILES
         email = data.get("email")
 
-        User = get_user_model()
+        if not email:
+            return Response({
+                "success": False,
+                "message": "Email is required"
+            }, status=400)
 
         dob = data.get("date_of_birth")
         if dob:
@@ -26,10 +30,8 @@ def register_donor(request):
         if weight:
             weight = int(weight)
 
-        # ✅ Get or create donor
-        donor, created = Donor.objects.get_or_create(email=email)
+        donor, _ = Donor.objects.get_or_create(email=email)
 
-        # ✅ ALWAYS update fields
         donor.first_name = data.get("first_name")
         donor.last_name = data.get("last_name")
         donor.phone_number = data.get("phone_number")
@@ -54,7 +56,6 @@ def register_donor(request):
         donor.accepted_terms = data.get("accepted_terms") == "on"
         donor.consent_notifications = data.get("consent_notifications") == "on"
 
-        # ✅ FILES (only overwrite if uploaded)
         if "citizenship_id" in files:
             donor.citizenship_id = files.get("citizenship_id")
 
@@ -62,15 +63,8 @@ def register_donor(request):
             donor.photo = files.get("photo")
 
         donor.is_profile_completed = True
-        donor.is_approved = False  # ✅ Set to False, waiting for admin approval
+        donor.is_approved = False
         donor.save()
-
-        # 🔐 Login user (session-based)
-        user, _ = User.objects.get_or_create(
-            email=email,
-            defaults={"username": email}
-        )
-        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
         return Response({
             "success": True,
@@ -78,9 +72,10 @@ def register_donor(request):
         }, status=201)
 
     except Exception as e:
+        print("REGISTER DONOR ERROR:", e)
         return Response({
             "success": False,
-            "message": str(e)
+            "message": "Server error"
         }, status=500)
 
 

@@ -552,57 +552,35 @@
 
                         <div class="p-6">
                             <!-- Dashboard Donation History -->
-                            <div id="dashboardHistory" class="subtab-content active">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <h3 class="text-xl font-bold text-gray-900">Your Donation History</h3>
-                                        <p class="text-gray-500 text-sm mt-1">Track all your blood donation activities and certificates</p>
-                                    </div>
-                                    <button class="btn-primary text-sm py-2 px-4 view-all-history">
-                                        <i class="fas fa-external-link-alt mr-2"></i> View All
-                                    </button>
-                                </div>
+<div id="dashboardHistory" class="subtab-content active">
+    <div class="flex items-center justify-between">
+        <div>
+            <h3 class="text-xl font-bold text-gray-900">Your Donation History</h3>
+            <p class="text-gray-500 text-sm mt-1">
+                Track all your blood donation activities and certificates
+            </p>
+        </div>
+        <button class="btn-primary text-sm py-2 px-4 view-all-history">
+            <i class="fas fa-external-link-alt mr-2"></i> View All
+        </button>
+    </div>
 
-                                <div class="overflow-x-auto rounded-xl border border-gray-200 mt-4">
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="bg-gray-50">
-                                            <tr>
-                                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Date</th>
-                                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Blood Group</th>
-                                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Hospital</th>
-                                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            <tr class="hover:bg-gray-50 transition-colors">
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm font-medium text-gray-900">2024-01-15</div>
-                                                    <div class="text-xs text-gray-500">3 months ago</div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="flex items-center">
-                                                        <div class="p-2 bg-red-50 rounded-lg mr-3">
-                                                            <i class="fas fa-tint text-red-500"></i>
-                                                        </div>
-                                                        <div>
-                                                            <span class="text-sm font-semibold text-gray-900">O+</span>
-                                                            <div class="text-xs text-gray-500">450ml</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm text-gray-900">Bir Hospital</div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                                        <i class="fas fa-check-circle mr-1"></i> Verified
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+    <div class="overflow-x-auto rounded-xl border border-gray-200 mt-4">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Blood Group</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Hospital</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+                </tr>
+            </thead>
+
+            <!-- 🔥 EMPTY BODY — JS WILL FILL THIS -->
+            <tbody id="donationHistoryList" class="bg-white divide-y divide-gray-200"></tbody>
+        </table>
+    </div>
+</div>
 
                             <!-- Dashboard Donation Camps -->
                             <div id="dashboardCamps" class="subtab-content hidden">
@@ -695,15 +673,18 @@
 
                 <!-- Donation History Tab -->
                 <div id="donationHistoryContent" class="tab-content">
-                    <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h1 class="text-3xl font-bold text-gray-900">Donation History</h1>
-                            <p class="text-gray-500 mt-2">Complete record of all your blood donations</p>
-                        </div>
-                        <button class="btn-primary">
-                            <i class="fas fa-download mr-2"></i> Export All
-                        </button>
-                    </div>
+
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Donation History</h1>
+            <p class="text-gray-500 mt-2">
+                Complete record of all your blood donations
+            </p>
+        </div>
+        <button class="btn-primary">
+            <i class="fas fa-download mr-2"></i> Export All
+        </button>
+    </div>
 
                     <!-- Stats Summary -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -714,7 +695,8 @@
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-600">Total Donations</p>
-                                    <p class="text-2xl font-bold text-gray-900">14</p>
+                                    <p id="stat-total-donations" class="text-2xl font-bold text-gray-900">0</p>
+
                                 </div>
                             </div>
                         </div>
@@ -725,7 +707,8 @@
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-600">Verified</p>
-                                    <p class="text-2xl font-bold text-gray-900">12</p>
+                                    <p id="stat-verified-donations" class="text-2xl font-bold text-gray-900">0</p>
+
                                 </div>
                             </div>
                         </div>
@@ -736,7 +719,8 @@
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-600">Lives Impacted</p>
-                                    <p class="text-2xl font-bold text-gray-900">42</p>
+                                   <p id="stat-lives-impacted" class="text-2xl font-bold text-gray-900">0</p>
+
                                 </div>
                             </div>
                         </div>
@@ -747,7 +731,8 @@
                                 </div>
                                 <div>
                                     <p class="text-sm text-gray-600">This Year</p>
-                                    <p class="text-2xl font-bold text-gray-900">5</p>
+                                    <p id="stat-this-year" class="text-2xl font-bold text-gray-900">0</p>
+
                                 </div>
                             </div>
                         </div>
@@ -780,7 +765,9 @@
                                             <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Certificate</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
+                                    <tbody id="donationHistoryBody" class="bg-white divide-y divide-gray-200">
+
+
                                         <tr class="hover:bg-gray-50 transition-colors">
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm font-medium text-gray-900">2024-03-15</div>
@@ -853,126 +840,12 @@
                     </div>
 
                     <!-- Camp Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- Camp Card 1 -->
-                        <div class="card hover:shadow-lg transition-all duration-300">
-                            <div class="p-6">
-                                <div class="flex items-start justify-between mb-4">
-                                    <div>
-                                        <h3 class="font-bold text-gray-900 text-lg">Emergency Blood Drive</h3>
-                                        <p class="text-sm text-gray-500 mt-1">Urgent requirement for O+ blood</p>
-                                    </div>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                                        <i class="fas fa-exclamation-circle mr-1"></i> Urgent
-                                    </span>
-                                </div>
-                                
-                                <div class="space-y-3 mb-6">
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <i class="fas fa-hospital text-red-500 mr-3 w-5"></i>
-                                        <span>City Medical Center</span>
-                                    </div>
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <i class="fas fa-calendar text-red-500 mr-3 w-5"></i>
-                                        <span>Apr 10, 2024 • 9 AM - 5 PM</span>
-                                    </div>
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <i class="fas fa-map-marker-alt text-red-500 mr-3 w-5"></i>
-                                        <span>2.5 km away</span>
-                                    </div>
-                                </div>
+                    <div id="campCards"
+     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                                <div class="flex items-center justify-between">
-                                    <div class="text-sm">
-                                        <span class="text-gray-600">Slots: </span>
-                                        <span class="font-semibold text-red-600">12/30 filled</span>
-                                    </div>
-                                    <button class="btn-primary px-4 py-2 text-sm">
-                                        <i class="fas fa-calendar-plus mr-2"></i>Register
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Camp Card 2 -->
-                        <div class="card hover:shadow-lg transition-all duration-300">
-                            <div class="p-6">
-                                <div class="flex items-start justify-between mb-4">
-                                    <div>
-                                        <h3 class="font-bold text-gray-900 text-lg">Community Camp</h3>
-                                        <p class="text-sm text-gray-500 mt-1">Monthly community donation drive</p>
-                                    </div>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                        <i class="fas fa-check-circle mr-1"></i> Registered
-                                    </span>
-                                </div>
-                                
-                                <div class="space-y-3 mb-6">
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <i class="fas fa-hospital text-green-500 mr-3 w-5"></i>
-                                        <span>Red Cross Society</span>
-                                    </div>
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <i class="fas fa-calendar text-green-500 mr-3 w-5"></i>
-                                        <span>Apr 15, 2024 • 8 AM - 4 PM</span>
-                                    </div>
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <i class="fas fa-map-marker-alt text-green-500 mr-3 w-5"></i>
-                                        <span>1.8 km away</span>
-                                    </div>
-                                </div>
 
-                                <div class="flex items-center justify-between">
-                                    <div class="text-sm">
-                                        <span class="text-gray-600">Your Slot: </span>
-                                        <span class="font-semibold text-green-600">10:30 AM</span>
-                                    </div>
-                                    <button class="btn-secondary px-4 py-2 text-sm" disabled>
-                                        <i class="fas fa-check mr-2"></i>Registered
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Camp Card 3 -->
-                        <div class="card hover:shadow-lg transition-all duration-300">
-                            <div class="p-6">
-                                <div class="flex items-start justify-between mb-4">
-                                    <div>
-                                        <h3 class="font-bold text-gray-900 text-lg">University Drive</h3>
-                                        <p class="text-sm text-gray-500 mt-1">Student-led blood donation camp</p>
-                                    </div>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-                                        <i class="fas fa-graduation-cap mr-1"></i> Campus
-                                    </span>
-                                </div>
-                                
-                                <div class="space-y-3 mb-6">
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <i class="fas fa-hospital text-blue-500 mr-3 w-5"></i>
-                                        <span>University Campus</span>
-                                    </div>
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <i class="fas fa-calendar text-blue-500 mr-3 w-5"></i>
-                                        <span>Apr 20, 2024 • 10 AM - 6 PM</span>
-                                    </div>
-                                    <div class="flex items-center text-sm text-gray-600">
-                                        <i class="fas fa-map-marker-alt text-blue-500 mr-3 w-5"></i>
-                                        <span>4.2 km away</span>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center justify-between">
-                                    <div class="text-sm">
-                                        <span class="text-gray-600">Slots: </span>
-                                        <span class="font-semibold text-blue-600">8/25 filled</span>
-                                    </div>
-                                    <button class="btn-primary px-4 py-2 text-sm">
-                                        <i class="fas fa-calendar-plus mr-2"></i>Register
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                       
                     </div>
                 </div>
 
@@ -1114,16 +987,19 @@
                             <div class="card p-6">
                                 <div class="flex flex-col items-center">
                                     <div class="relative mb-4">
-                                        <div class="h-32 w-32 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-lg">
-                                            JD
-                                        </div>
+                                        <div id="profile-avatar"
+     class="h-32 w-32 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-lg">
+    --
+</div>
+
                                         <div class="absolute bottom-2 right-2 bg-green-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center border-2 border-white">
                                             <i class="fas fa-check"></i>
                                         </div>
                                     </div>
                                     
-                                    <h3 class="text-xl font-bold text-gray-900">John Doe</h3>
-                                    <p class="text-gray-500 text-sm mt-1">Blood Donor since 2020</p>
+                                    <h3 class="text-xl font-bold text-gray-900 profile-name"></h3>
+
+                                    <!-- <p class="text-gray-500 text-sm mt-1">Blood Donor since 2020</p> -->
                                     
                                     <div class="mt-4">
                                         <span class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 rounded-full text-white font-medium">
@@ -1146,9 +1022,10 @@
                                         <span class="font-semibold text-gray-900">42</span>
                                     </div>
                                     <div class="flex items-center justify-between">
-                                        <span class="text-gray-600">Member Since</span>
-                                        <span class="font-semibold text-gray-900">2020</span>
-                                    </div>
+    <span class="text-gray-600">Member Since</span>
+    <span id="member-since" class="font-semibold text-gray-900">—</span>
+</div>
+
                                 </div>
                             </div>
                         </div>
@@ -1161,37 +1038,31 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                            John Doe
-                                        </div>
+                                        <h3 class="text-xl font-bold text-gray-900 profile-name"></h3>
                                     </div>
                                     
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                            john.doe@example.com
-                                        </div>
+                                        <div class="profile-email"></div>
+
                                     </div>
                                     
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                            +977 98XXXXXX
-                                        </div>
+                                        <div id="profile-phone" class="p-3 bg-gray-50 rounded-lg border border-gray-200"></div>
+
                                     </div>
                                     
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
-                                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                            1990-05-15
-                                        </div>
+                                        <div id="profile-dob" class="p-3 bg-gray-50 rounded-lg border border-gray-200"></div>
+
                                     </div>
                                     
                                     <div class="md:col-span-2">
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                            Kathmandu, Nepal
-                                        </div>
+                                        <div id="profile-address" class="p-3 bg-gray-50 rounded-lg border border-gray-200"></div>
+
                                     </div>
                                 </div>
 
@@ -1387,55 +1258,63 @@ closeMobileMenuBtn?.addEventListener('click', () => mobileSidebar.classList.add(
 ================================ */
 async function loadDonorProfile() {
     try {
-        console.log("JWT:", localStorage.getItem("access_token"));
-
-        const res = await axios.get(`${API_BASE}/dashboard/profile/`, {
+        const res = await axios.get(`${API_BASE}/profile/`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem("access_token")}`
             }
         });
 
         const d = res.data;
+        // Avatar initials (First letter of first + last name)
+const firstInitial = d.first_name ? d.first_name.charAt(0).toUpperCase() : "";
+const lastInitial  = d.last_name ? d.last_name.charAt(0).toUpperCase() : "";
 
-        const firstName = d.first_name || '';
-        const lastName = d.last_name || '';
-        const initials = `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase();
+document.getElementById("profile-avatar").textContent =
+    firstInitial + lastInitial || "—";
 
-        // Update welcome message
-        const welcomeElement = document.querySelector("#dashboardContent h1.text-3xl");
-        if (welcomeElement) {
-            welcomeElement.textContent = `Welcome back, ${firstName || 'Donor'}!`;
-        }
 
-        // Update blood type badges
-        document.querySelectorAll("span.bg-red-100.text-red-800").forEach(el => {
-            el.innerHTML = `<i class="fas fa-tint mr-1"></i> ${d.blood_type || 'N/A'}`;
+        // Profile name
+        document.querySelectorAll(".profile-name").forEach(el => {
+            el.textContent = `${d.first_name} ${d.last_name}`;
         });
 
-        // Update profile initials
-        document.querySelectorAll(".rounded-full.text-white.font-bold").forEach(el => {
-            if (el.textContent === 'JD' || el.textContent === 'D') {
-                el.textContent = initials || 'D';
-            }
+        // Email
+        document.querySelector(".profile-email").textContent = d.email;
+
+        // Phone
+        document.getElementById("profile-phone").textContent =
+    d.phone_number || "—";
+
+        // DOB
+        document.getElementById("profile-dob").textContent =
+    d.date_of_birth || "—";
+
+        // Address
+        document.getElementById("profile-address").textContent =
+    [d.address, d.city, d.state].filter(Boolean).join(", ") || "—";
+
+        // Blood type badge
+        document.querySelectorAll(".blood-type").forEach(el => {
+            el.textContent = d.blood_type || "N/A";
         });
 
-        // Update profile name
-        const profileNameElements = document.querySelectorAll("h3.text-xl.font-bold.text-gray-900, h2.font-semibold.text-gray-900");
-        profileNameElements.forEach(el => {
-            if (el.textContent.includes('John') || el.textContent.includes('Doe')) {
-                el.textContent = `${firstName} ${lastName}`.trim() || 'Donor';
-            }
-        });
-
+        // Approval alert
         if (!d.is_approved) {
             Swal.fire({
-                icon: 'info',
-                title: 'Approval Pending',
-                text: 'Your donor profile is waiting for admin approval.',
-                confirmButtonColor: '#ef4444',
-                allowOutsideClick: false
+                icon: "info",
+                title: "Approval Pending",
+                text: "Your donor profile is waiting for admin approval.",
+                confirmButtonColor: "#ef4444"
             });
         }
+        // Member Since (year only)
+if (d.created_on) {
+    const year = new Date(d.created_on).getFullYear();
+    document.getElementById("member-since").textContent = year;
+} else {
+    document.getElementById("member-since").textContent = "—";
+}
+
 
     } catch (err) {
         console.error(err);
@@ -1443,38 +1322,248 @@ async function loadDonorProfile() {
     }
 }
 
+/* ================================
+   DONATION HISTORY – FETCH ONCE
+================================ */
+async function fetchDonationHistory() {
+    const res = await axios.get(`${API_BASE}/donation-history/`, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`
+        }
+    });
+    return res.data || [];
+}
+
+/* ================================
+   DASHBOARD – LAST 5 DONATIONS
+================================ */
+async function loadDashboardDonationHistory() {
+    const history = await fetchDonationHistory();
+    const tbody = document.getElementById("donationHistoryList");
+
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    if (!history.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center py-6 text-gray-500">
+                    No donation history available.
+                </td>
+            </tr>`;
+        return;
+    }
+
+    history.slice(0, 5).forEach(record => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-gray-50 transition-colors";
+
+        tr.innerHTML = `
+            <!-- DATE -->
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">
+                    ${record.date}
+                </div>
+                <div class="text-xs text-gray-500">
+                    ${record.time || ""}
+                </div>
+            </td>
+
+            <!-- BLOOD GROUP -->
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    <div class="p-2 bg-red-50 rounded-lg mr-3">
+                        <i class="fas fa-tint text-red-500"></i>
+                    </div>
+                    <div>
+                        <span class="text-sm font-semibold text-gray-900">
+                            ${record.blood_group}
+                        </span>
+                        <div class="text-xs text-gray-500">
+                            ${record.volume || "450ml"}
+                        </div>
+                    </div>
+                </div>
+            </td>
+
+            <!-- HOSPITAL -->
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">
+                    ${record.location || "—"}
+                </div>
+            </td>
+
+            <!-- STATUS -->
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
+                    ${record.status?.toLowerCase() === "verified"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"}">
+                    <i class="fas ${
+                        record.status?.toLowerCase() === "verified"
+                            ? "fa-check-circle"
+                            : "fa-clock"
+                    } mr-1"></i>
+                    ${record.status}
+                </span>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+}
+
+
+/* ================================
+   FULL DONATION HISTORY TAB
+================================ */
+async function loadFullDonationHistory() {
+    const history = await fetchDonationHistory();
+    updateDonationStats(history); 
+    const tbody = document.getElementById("donationHistoryBody");
+
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    if (!history.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-6 text-gray-500">
+                    No donation history found.
+                </td>
+            </tr>`;
+        return;
+    }
+
+    history.forEach(record => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-gray-50";
+
+        tr.innerHTML = `
+            <td class="px-6 py-4">${record.date}</td>
+            <td class="px-6 py-4">${record.blood_group}</td>
+            <td class="px-6 py-4">${record.location}</td>
+            <td class="px-6 py-4">${record.volume || "450ml"}</td>
+            <td class="px-6 py-4">${record.status}</td>
+            <td class="px-6 py-4">
+                <button class="text-red-600 text-sm">Download</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+/* ================================
+   UPDATE FULL PAGE STATS
+================================ */
+function updateDonationStats(history) {
+    const total = history.length;
+
+    const verified = history.filter(
+        d => d.status?.toLowerCase() === "verified"
+    ).length;
+
+    const currentYear = new Date().getFullYear();
+    const thisYear = history.filter(d =>
+        new Date(d.date).getFullYear() === currentYear
+    ).length;
+
+    const livesImpacted = verified * 3;
+
+    // Update UI
+    document.getElementById("stat-total-donations").textContent = total;
+    document.getElementById("stat-verified-donations").textContent = verified;
+    document.getElementById("stat-lives-impacted").textContent = livesImpacted;
+    document.getElementById("stat-this-year").textContent = thisYear;
+}
 
 
 /* ================================
    FETCH DASHBOARD STATS
 ================================ */
-async function loadDashboardStats() {
-    try {
-        const res = await axios.get(`${API_BASE}/dashboard/stats/`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("access_token")}`
-            }
-        });
+async function loadDashboardStatsFromHistory() {
+    const history = await fetchDonationHistory();
 
-        const s = res.data;
+    const total = history.length;
+    const verified = history.filter(d => d.status?.toLowerCase() === "verified").length;
+    const pending = total - verified;
+    const lives = verified * 3;
 
-        const cards = document.querySelectorAll('.stat-card');
+    const nextEligible = 56; // or compute later
 
-        cards[0].querySelector("p.text-2xl").textContent = s.total_donations;
-        cards[1].querySelector("p.text-2xl").textContent = s.verified_donations;
-        cards[2].querySelector("p.text-2xl").textContent = s.pending_donations;
-        cards[3].querySelector("p.text-2xl").innerHTML =
-            `${s.next_eligible_days}<span class="text-sm text-gray-500 ml-1">days</span>`;
+    const cards = document.querySelectorAll('.stat-card');
 
-        const progress = Math.min(100, Math.round(((56 - s.next_eligible_days) / 56) * 100));
-        document.querySelectorAll('.progress-fill').forEach(p => {
-            p.style.width = `${progress}%`;
-        });
+    cards[0].querySelector("p.text-2xl").textContent = total;
+    cards[1].querySelector("p.text-2xl").textContent = verified;
+    cards[2].querySelector("p.text-2xl").textContent = pending;
+    cards[3].querySelector("p.text-2xl").innerHTML =
+        `${nextEligible}<span class="text-sm text-gray-500 ml-1">days</span>`;
+}
 
-    } catch (err) {
-        console.error(err);
-        Swal.fire("Error", "Unable to load dashboard stats", "error");
+async function fetchDonationCamps() {
+    const res = await axios.get(`${API_BASE}/donation-camps/`, {
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`
+        }
+    });
+    return res.data || [];
+}
+async function loadDonationCamps() {
+    const camps = await fetchDonationCamps();
+    const container = document.getElementById("campCards");
+
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (!camps.length) {
+        container.innerHTML = `
+            <div class="col-span-full text-center text-gray-500 py-10">
+                No donation camps available.
+            </div>
+        `;
+        return;
     }
+
+    camps.forEach(camp => {
+        const card = document.createElement("div");
+        card.className = "card hover:shadow-lg transition-all duration-300";
+
+        const badge = camp.is_urgent
+            ? `<span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-semibold">
+                    <i class="fas fa-exclamation-circle mr-1"></i> Urgent
+               </span>`
+            : "";
+
+        card.innerHTML = `
+            <div class="p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 class="font-bold text-gray-900 text-lg">${camp.title}</h3>
+                        <p class="text-sm text-gray-500 mt-1">${camp.description}</p>
+                    </div>
+                    ${badge}
+                </div>
+
+                <div class="space-y-3 mb-6 text-sm text-gray-600">
+                    <div><i class="fas fa-hospital mr-2"></i>${camp.hospital_name}</div>
+                    <div><i class="fas fa-calendar mr-2"></i>
+                        ${camp.date} • ${camp.start_time} - ${camp.end_time}
+                    </div>
+                    <div><i class="fas fa-map-marker-alt mr-2"></i>${camp.location}</div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">
+                        Slots: <span class="font-semibold">${camp.filled_slots}/${camp.total_slots}</span>
+                    </span>
+                    <button class="btn-primary px-4 py-2 text-sm">
+                        <i class="fas fa-calendar-plus mr-2"></i> Register
+                    </button>
+                </div>
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
 }
 
 
@@ -1535,12 +1624,14 @@ document.querySelectorAll('.card, .stat-card').forEach(card => observer.observe(
 /* ================================
    INIT LOAD
 ================================ */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
     loadDonorProfile();
-    loadDashboardStats();
-    
-    // Initialize with dashboard tab
-    switchTab('dashboard');
+    loadDashboardStatsFromHistory();
+
+    loadDashboardDonationHistory(); // dashboard preview
+    loadFullDonationHistory();      // full table
+    loadDonationCamps();           // donation camps
+    switchTab("dashboard");
 });
 </script>
 

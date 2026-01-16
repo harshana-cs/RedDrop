@@ -341,29 +341,22 @@ document.getElementById("registerBtn").addEventListener("click", async (e) => {
             }
         });
 
+    // ✅ SHOW WAITING POPUP IMMEDIATELY
+    sessionStorage.setItem("donor_waiting", "true");
+    showWaitingPopup();
+    startApprovalCheck();
+
+    // 🔁 SEND DATA (do NOT wait for response)
     try {
-        const res = await fetch("http://localhost:8000/donor/register/", {
+        await fetch("http://localhost:8000/donor/register/", {
             method: "POST",
-            credentials: "include",
             body: formData
         });
-
-        const data = await res.json();
-
-        if (data.success) {
-            sessionStorage.setItem("donor_waiting", "true");
-            showWaitingPopup();
-            startApprovalCheck();
-        } else {
-            alert(data.message || "Registration failed");
-            isSubmitting = false;
-        }
     } catch (err) {
-        console.error(err);
-        alert("Server error");
-        isSubmitting = false;
+        console.warn("Submission interrupted (safe to ignore)", err);
     }
 });
+
 
 
 /* ================= SHOW WAITING POPUP ================= */
@@ -404,7 +397,7 @@ function startApprovalCheck() {
 }
  </script>
 
-</script>
+
 
 </body>
 </html>

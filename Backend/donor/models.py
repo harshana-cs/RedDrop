@@ -1,5 +1,6 @@
 from django.db import models
 from register_donor.models import Donor
+from adminpanel.models import DonationCamp
 
 # Create your models here.
 class Donation(models.Model):
@@ -11,12 +12,8 @@ class Donation(models.Model):
         max_length=20,
         choices=[("pending", "Pending"), ("verified", "Verified")]
     )
-class DonationCamp(models.Model):
-    title = models.CharField(max_length=200)
-    hospital = models.CharField(max_length=200)
-    date = models.DateField()
-    location = models.CharField(max_length=200)
-    is_urgent = models.BooleanField(default=False)
+    next_donation_date = models.DateField(null=True, blank=True)
+
 class CampRegistration(models.Model):
     donor = models.ForeignKey(Donor, on_delete=models.CASCADE)
     camp = models.ForeignKey(DonationCamp, on_delete=models.CASCADE)

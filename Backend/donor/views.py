@@ -2,6 +2,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from register_donor.models import Donor
+from .serializers import DonorProfileSerializer, DonationSerializer, DonationCampSerializer
+from .models import Donation
+from adminpanel.models import DonationCamp
 
 
 @api_view(["GET"])
@@ -38,3 +41,36 @@ def api_donor_dashboard_stats(request):
         "next_eligible_days": 56,
         "is_approved": donor.is_approved,
     })
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def donor_profile(request):
+    email = request.user.email
+
+    try:
+        donor = Donor.objects.get(email=email)
+        serializer = DonorProfileSerializer(donor)
+        return Response(serializer.data)
+    except Donor.DoesNotExist:
+        return Response({"error": "Donor not found"}, status=404)
+
+# ===============================
+# DONATION HISTORY
+# ===============================
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def donation_history(request):
+    try:
+        donor = Donor.objects.get(email=request.user.email)
+        donations = Donation.objects.filter(donor=donor).order_by("-date")
+        serializer = DonationSerializer(donations, many=True)
+        return Response(serializer.data)
+    except Donor.DoesNotExist:
+        return Response({"error": "Donor not found"}, status=404)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def donation_camps(request):
+    camps = DonationCamp.objects.all().order_by("date")
+    serializer = DonationCampSerializer(camps, many=True)
+    return Response(serializer.data)
