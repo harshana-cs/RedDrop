@@ -1,8 +1,8 @@
 from django.db import models
+from blood_requests.models import BloodRequest
 from register_donor.models import Donor
-from adminpanel.models import DonationCamp
 
-# Create your models here.
+
 class Donation(models.Model):
     donor = models.ForeignKey(Donor, on_delete=models.CASCADE)
     hospital = models.CharField(max_length=200)
@@ -13,8 +13,13 @@ class Donation(models.Model):
         choices=[("pending", "Pending"), ("verified", "Verified")]
     )
     next_donation_date = models.DateField(null=True, blank=True)
-
-class CampRegistration(models.Model):
+class DonationConfirmation(models.Model):
     donor = models.ForeignKey(Donor, on_delete=models.CASCADE)
-    camp = models.ForeignKey(DonationCamp, on_delete=models.CASCADE)
-    registered_on = models.DateTimeField(auto_now_add=True)
+    request = models.ForeignKey(BloodRequest, on_delete=models.CASCADE)
+
+    patient_confirmed = models.BooleanField(default=False)
+    donor_confirmed = models.BooleanField(default=False)
+
+    donation_date = models.DateTimeField(null=True, blank=True)  # 🔥 ADD THIS
+    created_at = models.DateTimeField(auto_now_add=True)
+

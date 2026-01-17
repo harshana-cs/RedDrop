@@ -13,7 +13,7 @@
 <body class="bg-gray-50">
 <div class="min-h-screen flex">
 
-<!-- ================= SIDEBAR (UNCHANGED) ================= -->
+<!-- ================= SIDEBAR ================= -->
 <aside class="w-64 bg-white border-r border-gray-200 shadow-sm">
     <div class="p-6">
         <div class="flex items-center space-x-3">
@@ -63,21 +63,13 @@
     <th class="px-4 py-3 text-center">Action</th>
 </tr>
 </thead>
-<tbody id="bloodRequestsBody" class="divide-y divide-gray-200">
-<tr><td colspan="6" class="px-4 py-3 text-gray-500">Click tab to load data</td></tr>
-<td class="px-4 py-3 text-center space-x-2">
-    <button 
-        class="bg-green-500 text-white px-2 py-1 rounded approve-blood"
-        data-id="${r.id}">
-        Approve
-    </button>
-    <button 
-        class="bg-red-500 text-white px-2 py-1 rounded reject-blood"
-        data-id="${r.id}">
-        Reject
-    </button>
-</td>
 
+<tbody id="bloodRequestsBody" class="divide-y divide-gray-200">
+<tr>
+    <td colspan="7" class="px-4 py-3 text-gray-500 text-center">
+        Click tab to load data
+    </td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -94,18 +86,17 @@
     <th class="px-4 py-3 text-left">Contact</th>
     <th class="px-4 py-3 text-left">Documents</th>
     <th class="px-4 py-3 text-left">Date</th>
-
     <th class="px-4 py-3 text-center">Action</th>
 </tr>
 </thead>
-<tbody id="donorRequestsBody" class="divide-y divide-gray-200">
-    <tr>
-        <td colspan="5" class="px-4 py-3 text-gray-500 text-center">
-            Click tab to load data
-        </td>
-    </tr>
-</tbody>
 
+<tbody id="donorRequestsBody" class="divide-y divide-gray-200">
+<tr>
+    <td colspan="6" class="px-4 py-3 text-gray-500 text-center">
+        Click tab to load data
+    </td>
+</tr>
+</tbody>
 </table>
 </div>
 
@@ -126,7 +117,6 @@ const donor = document.getElementById('pendingDonorRequests');
 
 tabs.forEach(tab => {
     tab.addEventListener('click', () => {
-
         tabs.forEach(t => {
             t.classList.remove('border-purple-500','text-purple-600');
             t.classList.add('border-transparent','text-gray-500');
@@ -147,7 +137,7 @@ tabs.forEach(tab => {
 /* ---------- FETCH BLOOD REQUESTS ---------- */
 async function loadBloodRequests() {
     const body = document.getElementById('bloodRequestsBody');
-    body.innerHTML = "<tr><td colspan='6'>Loading...</td></tr>";
+    body.innerHTML = "<tr><td colspan='7'>Loading...</td></tr>";
 
     try {
         const res = await fetch('http://127.0.0.1:8000/api/admin/pending-blood-requests/');
@@ -161,97 +151,36 @@ async function loadBloodRequests() {
                 <td class="px-4 py-3">${r.blood_type}</td>
                 <td class="px-4 py-3">${r.hospital}</td>
                 <td class="px-4 py-3 text-red-600">${r.urgency}</td>
-                <td class="px-4 py-3 space-x-2">
+                <td class="px-4 py-3">
                     ${r.hospital_doc ? `<a href="${r.hospital_doc}" target="_blank" class="text-blue-600 underline">Hospital Doc</a>` : '-'}
-                    ${r.doctor_note ? `<a href="${r.doctor_note}" target="_blank" class="text-blue-600 underline">Doctor Note</a>` : ''}
+                    ${r.doctor_note ? `<a href="${r.doctor_note}" target="_blank" class="text-blue-600 underline ml-2">Doctor Note</a>` : ''}
                 </td>
                 <td class="px-4 py-3">${r.date || '-'}</td>
-<td class="px-4 py-3 text-center relative">
-    <button onclick="toggleMenu('blood-${r.id}')"
-        class="bg-gray-200 px-3 py-1 rounded">
-        Action ▾
-    </button>
-
-    <div id="blood-${r.id}"
-        class="hidden absolute right-0 mt-2 w-32 bg-white border rounded shadow z-10">
-        <button onclick="approveBloodRequest(${r.id})"
-            class="block w-full text-left px-4 py-2 hover:bg-green-100 text-green-600">
-            Approve
-        </button>
-        <button onclick="rejectBloodRequest(${r.id})"
-            class="block w-full text-left px-4 py-2 hover:bg-red-100 text-red-600">
-            Reject
-        </button>
-    </div>
-</td>
-
-            </tr>`;
-        });
-    } catch {
-        body.innerHTML = "<tr><td colspan='6' class='text-red-600'>Failed to load data</td></tr>";
-    }
-}
-
-/* ---------- FETCH DONORS ---------- */
-async function loadDonors() {
-    const body = document.getElementById('donorRequestsBody');
-    body.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
-
-    try {
-        const res = await fetch(
-  "http://127.0.0.1:8000/api/admin/pending-donor-registrations/",
-  { credentials: "include" }
-);
-
-        const json = await res.json();
-        body.innerHTML = "";
-
-        json.data.forEach(d => {
-            body.innerHTML += `
-            <tr>
-                <td class="px-4 py-3">${d.name}</td>
-                <td class="px-4 py-3">${d.blood_type || '-'}</td>
-                <td class="px-4 py-3">${d.phone || '-'}</td>
-                <td class="px-4 py-3 space-x-2">
-                    ${d.citizenship_id 
-                        ? `<a href="http://127.0.0.1:8000${d.citizenship_id}" target="_blank" class="text-blue-600 underline">ID</a>` 
-                        : 'No ID'}
-                    ${d.photo 
-                        ? `<a href="http://127.0.0.1:8000${d.photo}" target="_blank" class="text-blue-600 underline ml-2">Photo</a>` 
-                        : ''}
+                <td class="px-4 py-3 text-center relative">
+                    <button onclick="toggleMenu('blood-${r.id}')" class="bg-gray-200 px-3 py-1 rounded">
+                        Action ▾
+                    </button>
+                    <div id="blood-${r.id}" class="hidden absolute right-0 mt-2 w-32 bg-white border rounded shadow z-10">
+                        <button onclick="approveBloodRequest(${r.id})" class="block w-full px-4 py-2 hover:bg-green-100 text-green-600">Approve</button>
+                        <button onclick="rejectBloodRequest(${r.id})" class="block w-full px-4 py-2 hover:bg-red-100 text-red-600">Reject</button>
+                    </div>
                 </td>
-                <td class="px-4 py-3">${d.created_on || '-'}</td>
-<td class="px-4 py-3 text-center relative">
-    <button onclick="toggleMenu('donor-${d.id}')"
-        class="bg-gray-200 px-3 py-1 rounded">
-        Action ▾
-    </button>
-
-    <div id="donor-${d.id}"
-        class="hidden absolute right-0 mt-2 w-32 bg-white border rounded shadow z-10">
-        <button onclick="approveDonor(${d.id})"
-            class="block w-full text-left px-4 py-2 hover:bg-green-100 text-green-600">
-            Approve
-        </button>
-        <button onclick="rejectDonor(${d.id})"
-            class="block w-full text-left px-4 py-2 hover:bg-red-100 text-red-600">
-            Reject
-        </button>
-    </div>
-</td>
-
-
             </tr>`;
         });
     } catch {
-        body.innerHTML = "<tr><td colspan='5' class='text-red-600'>Failed to load data</td></tr>";
+        body.innerHTML = "<tr><td colspan='7' class='text-red-600'>Failed to load data</td></tr>";
     }
 }
+
+/* ---------- BLOOD ACTIONS ---------- */
 async function approveBloodRequest(id) {
-    if (!confirm("Approve this blood request?")) return;
+    const donorId = prompt("Enter Donor ID to assign:");
+    if (!donorId) return alert("Donor ID is required.");
 
     await fetch(`http://127.0.0.1:8000/api/admin/blood-request/${id}/approve/`, {
-        method: "POST"
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ donor_id: donorId })
     });
 
     loadBloodRequests();
@@ -266,33 +195,58 @@ async function rejectBloodRequest(id) {
 
     loadBloodRequests();
 }
+
+/* ---------- FETCH DONORS ---------- */
+async function loadDonors() {
+    const body = document.getElementById('donorRequestsBody');
+    body.innerHTML = "<tr><td colspan='6'>Loading...</td></tr>";
+
+    try {
+        const res = await fetch('http://127.0.0.1:8000/api/admin/pending-donor-registrations/');
+        const json = await res.json();
+        body.innerHTML = "";
+
+        json.data.forEach(d => {
+            body.innerHTML += `
+            <tr>
+                <td class="px-4 py-3">${d.name}</td>
+                <td class="px-4 py-3">${d.blood_type || '-'}</td>
+                <td class="px-4 py-3">${d.phone || '-'}</td>
+                <td class="px-4 py-3">${d.created_on || '-'}</td>
+                <td class="px-4 py-3 text-center relative">
+                    <button onclick="toggleMenu('donor-${d.id}')" class="bg-gray-200 px-3 py-1 rounded">Action ▾</button>
+                    <div id="donor-${d.id}" class="hidden absolute right-0 mt-2 w-32 bg-white border rounded shadow z-10">
+                        <button onclick="approveDonor(${d.id})" class="block w-full px-4 py-2 hover:bg-green-100 text-green-600">Approve</button>
+                        <button onclick="rejectDonor(${d.id})" class="block w-full px-4 py-2 hover:bg-red-100 text-red-600">Reject</button>
+                    </div>
+                </td>
+            </tr>`;
+        });
+    } catch {
+        body.innerHTML = "<tr><td colspan='6' class='text-red-600'>Failed to load data</td></tr>";
+    }
+}
+
+/* ---------- DONOR ACTIONS ---------- */
 async function approveDonor(id) {
     if (!confirm("Approve this donor?")) return;
-
-    await fetch(`http://127.0.0.1:8000/api/admin/donor/${id}/approve/`, {
-        method: "POST"
-    });
-
+    await fetch(`http://127.0.0.1:8000/api/admin/donor/${id}/approve/`, { method: "POST" });
     loadDonors();
 }
 
 async function rejectDonor(id) {
     if (!confirm("Reject this donor?")) return;
-
-    await fetch(`http://127.0.0.1:8000/api/admin/donor/${id}/reject/`, {
-        method: "POST"
-    });
-
+    await fetch(`http://127.0.0.1:8000/api/admin/donor/${id}/reject/`, { method: "POST" });
     loadDonors();
 }
+
+/* ---------- MENU TOGGLE ---------- */
 function toggleMenu(id) {
     document.querySelectorAll('[id^="blood-"], [id^="donor-"]').forEach(menu => {
         if (menu.id !== id) menu.classList.add("hidden");
     });
-
     document.getElementById(id).classList.toggle("hidden");
 }
-
 </script>
 
 </body>

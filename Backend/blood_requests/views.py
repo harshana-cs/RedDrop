@@ -1,193 +1,248 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import BloodRequestForm
-from .models import BloodRequest
-from loginsignup.models import Patient
+from django.db.models import Count
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from .forms import BloodRequestForm
+from .models import BloodRequest
 from .serializers import BloodRequestSerializer
-from django.shortcuts import get_object_or_404
-from django.db.models import Count
+
+from loginsignup.models import Patient
+from donor.models import DonationConfirmation
 
 
-# -----------------------------
-# Regular Django Views
-# -----------------------------
+# =========================================================
+# REGULAR DJANGO VIEWS
+# =========================================================
 
 @login_required
 def create_request(request):
-    """
-    Standard Django form submission view using BloodRequestForm.
-    Maps the logged-in Django User to a Patient.
-    """
     if request.method == "POST":
         form = BloodRequestForm(request.POST, request.FILES)
         if form.is_valid():
             blood_request = form.save(commit=False)
-            patient = Patient.objects.filter(email=request.user.email).first()
+
+            patient = Patient.objects.filter(
+                emailaddress=request.user.username
+            ).first()
+
             if not patient:
-                messages.error(request, "Patient profile not found. Cannot submit request.")
-                return redirect("blood_request_list")
+                messages.error(request, "Patient profile not found.")
+                return redirect("/")
+
             blood_request.patient = patient
             blood_request.save()
+
             messages.success(request, "Blood request submitted successfully!")
             return redirect("blood_request_list")
     else:
         form = BloodRequestForm()
+
     return render(request, "blood_requests/create_request.html", {"form": form})
+
 
 @login_required
 def request_list(request):
-    """
-    List all blood requests for the logged-in patient.
-    """
-    patient = Patient.objects.filter(emailaddress=request.user.email).first()
+    patient = Patient.objects.filter(
+        emailaddress=request.user.username
+    ).first()
+
     if not patient:
         messages.error(request, "Patient profile not found.")
         return redirect("/")
+
     requests_qs = BloodRequest.objects.filter(patient=patient)
-    return render(request, "blood_requests/request_list.html", {"requests": requests_qs})
+    return render(
+        request,
+        "blood_requests/request_list.html",
+        {"requests": requests_qs}
+    )
 
 
 def create_request_view(request):
-    """
-    Render the JS frontend page for fetch/SPA submissions.
-    """
     return render(request, "blood_requests/blood_request.html")
+
 
 @login_required
 def dashboard_view(request):
-    """
-    Render the JS frontend dashboard page for SPA-style interaction.
-    """
     return render(request, "blood_requests/blood_request.html")
 
 
-# -----------------------------
-# API-style View for JS Fetch
-# -----------------------------
+# =========================================================
+# API – PATIENT DASHBOARD & HISTORY
+# =========================================================
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def api_user_requests(request):
-    """
-    Returns full request history + dashboard statistics
-    for logged in patient.
-    """
-    # FIXED — always use emailaddress not email
-    patient = Patient.objects.filter(emailaddress=request.user.username).first()
+    patient = Patient.objects.filter(
+        emailaddress=request.user.username
+    ).first()
+
     if not patient:
-        return Response({"success": False, "message": "Patient not found"}, status=403)
+        return Response(
+            {"success": False, "message": "Patient not found"},
+            status=403
+        )
 
-    requests_qs = BloodRequest.objects.filter(patient=patient).order_by("-created_at")
-    serializer = BloodRequestSerializer(requests_qs, many=True)
+    qs = BloodRequest.objects.filter(
+        patient=patient
+    ).order_by("-created_at")
 
-    total_requests = requests_qs.count()
-    approved_requests = requests_qs.filter(status="approved").count()
-    pending_requests = requests_qs.filter(status="pending").count()
-    completed_requests = requests_qs.filter(status="completed").count()
+    serializer = BloodRequestSerializer(qs, many=True)
 
-    # ------- Most Requested Blood Group -------
-        # ------- Most Requested Blood Group -------
+    total = qs.count()
+    approved = qs.filter(status="approved").count()
+    pending = qs.filter(status="pending").count()
+    completed = qs.filter(status="completed").count()
+
     most_requested = (
-        requests_qs.values("blood_type")
+        qs.values("blood_type")
         .annotate(total=Count("blood_type"))
         .order_by("-total")
         .first()
     )
 
-    most_requested_group = most_requested["blood_type"] if most_requested else None
-    most_requested_count = most_requested["total"] if most_requested else 0
-
-
-    # ------- Success Rate -------
-    success_rate = 0
-    if total_requests > 0:
-        success_rate = round((completed_requests / total_requests) * 100)
-
-    # ------- Average Response Time -------
-    # We assume you have an "approved_at" or update timestamp,
-    # if not then this will just return None gracefully
-    avg_response_hours = None
-    try:
-        completed = requests_qs.filter(status="completed")
-        if completed.exists():
-            diffs = [
-                (req.updated_at - req.created_at).total_seconds() / 3600
-                for req in completed
-                if req.updated_at
-            ]
-            if diffs:
-                avg_response_hours = round(sum(diffs) / len(diffs))
-    except:
-        avg_response_hours = None
+    success_rate = round((completed / total) * 100) if total else 0
 
     return Response({
         "success": True,
         "patient_name": patient.fullname,
         "stats": {
-            "total": total_requests,
-            "approved": approved_requests,
-            "pending": pending_requests,
-            "completed": completed_requests,
-            "most_requested_group": most_requested_group,
-            "most_requested_count": most_requested_count,
-            "success_rate": success_rate,
-            "avg_response_hours": avg_response_hours
+            "total": total,
+            "approved": approved,
+            "pending": pending,
+            "completed": completed,
+            "most_requested_group": (
+                most_requested["blood_type"] if most_requested else None
+            ),
+            "most_requested_count": (
+                most_requested["total"] if most_requested else 0
+            ),
+            "success_rate": success_rate
         },
         "data": serializer.data
     })
 
 
+# =========================================================
+# API – CREATE BLOOD REQUEST
+# =========================================================
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def api_create_request(request):
-    """
-    API endpoint for creating blood requests using JWT authentication.
-    Accepts multipart/form-data including files.
-    """
-    try:
-        print("request.user:", request.user)
-        print("request.auth:", request.auth)
+    patient = Patient.objects.filter(
+        emailaddress=request.user.username
+    ).first()
 
-        # Map JWT user to Patient
-        patient = Patient.objects.filter(emailaddress=request.user.username).first()
-        if not patient:
-            return Response({"success": False, "message": "Patient not found"}, status=403)
-
-        # Use serializer with files
-        serializer = BloodRequestSerializer(
-            data=request.data, 
-            context={"request": request}
+    if not patient:
+        return Response(
+            {"success": False, "message": "Patient not found"},
+            status=403
         )
 
-        if serializer.is_valid():
-            serializer.save(patient=patient)
-            return Response({"success": True, "data": serializer.data}, status=201)
-        else:
-            return Response({"success": False, "errors": serializer.errors}, status=400)
+    serializer = BloodRequestSerializer(
+        data=request.data,
+        context={"request": request}
+    )
 
-    except Exception as e:
-        return Response({"success": False, "message": str(e)}, status=500)
+    if serializer.is_valid():
+        serializer.save(patient=patient)
+        return Response(
+            {"success": True, "data": serializer.data},
+            status=201
+        )
+
+    return Response(
+        {"success": False, "errors": serializer.errors},
+        status=400
+    )
+
+
+# =========================================================
+# API – PATIENT CONFIRM RECEIPT (ONLY CONFIRMATION)
+# =========================================================
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def api_confirm_receipt(request, request_id):
-    patient = Patient.objects.filter(emailaddress=request.user.username).first()
-    if not patient:
-        return Response({"success": False, "message": "Patient not found"}, status=403)
+def api_patient_confirm_receipt(request, request_id):
+    patient = Patient.objects.filter(
+        emailaddress=request.user.username
+    ).first()
 
-    blood_request = get_object_or_404(BloodRequest, id=request_id, patient=patient)
+    if not patient:
+        return Response({"message": "Patient not found"}, status=403)
+
+    blood_request = get_object_or_404(
+        BloodRequest,
+        id=request_id,
+        patient=patient
+    )
 
     if blood_request.status != "approved":
-        return Response({
-            "success": False,
-            "message": "Only approved requests can be confirmed."
-        }, status=400)
+        return Response(
+            {"message": "Only approved requests can be confirmed"},
+            status=400
+        )
+
+    # 🔒 Prevent double confirmation
+    if blood_request.donation_date:
+        return Response(
+            {"message": "Already confirmed"},
+            status=400
+        )
 
     blood_request.status = "completed"
     blood_request.fulfilled = True
+    blood_request.donation_date = timezone.now()
+    blood_request.otp = None
+    blood_request.otp_expires_at = None
+
     blood_request.save()
 
-    return Response({"success": True, "message": "Request marked as received!"})
+    DonationConfirmation.objects.update_or_create(
+        request=blood_request,
+        donor=blood_request.assigned_donor,
+        defaults={
+            "patient_confirmed": True
+        }
+    )
+
+    return Response({
+        "success": True,
+        "message": "Blood receipt confirmed successfully"
+    })
+
+
+# =========================================================
+# API – CHECK APPROVED REQUEST (FOR DONORS TAB)
+# =========================================================
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_patient_approved_request(request):
+    patient = Patient.objects.filter(
+        emailaddress=request.user.username
+    ).first()
+
+    if not patient:
+        return Response({"approved": False}, status=403)
+
+    approved_request = BloodRequest.objects.filter(
+        patient=patient,
+        status="approved"
+    ).order_by("-created_at").first()
+
+    if not approved_request:
+        return Response({"approved": False})
+
+    return Response({
+        "approved": True,
+        "request_id": approved_request.id,
+        "blood_type": approved_request.blood_type,
+        "district": approved_request.district
+    })

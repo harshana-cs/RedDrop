@@ -4,5 +4,14 @@ from .models import BloodRequest
 class BloodRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = BloodRequest
-        fields = "__all__"
-        read_only_fields = ["patient"]  # patient is set from request.user
+        fields = [
+            "id",
+            "blood_type",
+            "units_required",
+            "urgency",
+            "hospital",
+            "district",
+            "status",
+            "created_at",
+            "donation_date",   # ✅ THIS WAS MISSING IN RESPONSE
+        ]

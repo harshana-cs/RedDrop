@@ -1,11 +1,26 @@
 from django.urls import path
-from . import views
+from .views import (
+    api_donor_profile,
+    donor_profile,
+    donation_history,
+    donation_camps,
+    api_pending_confirmations,
+    api_donor_confirm,
+)
 
 urlpatterns = [
-    path("dashboard/profile/", views.api_donor_profile),
-    path("dashboard/stats/", views.api_donor_dashboard_stats),
-    path("profile/", views.donor_profile),
-    path("donation-history/", views.donation_history),
-    path("donation-camps/", views.donation_camps),
-    path("donation-camps/", views.donation_camps),
+    # Donor profile
+    path("profile/", donor_profile),
+
+    # Donation history
+    path("donation-history/", donation_history),
+
+    # Donation camps
+    path("donation-camps/", donation_camps),
+
+    # Pending confirmations (patient → donor)
+    path("pending-confirmations/", api_pending_confirmations),
+
+    # Donor confirms OTP
+    path("confirm/", api_donor_confirm),
 ]

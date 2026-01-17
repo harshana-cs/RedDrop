@@ -399,13 +399,20 @@
                         <div class="flex items-center justify-between relative z-10">
                             <div class="max-w-2xl">
                                 <div class="flex items-center space-x-3 mb-4">
-                                    <h1 class="text-3xl font-bold">Welcome back, John!</h1>
+                                    <h1 class="text-3xl font-bold">
+    Welcome back, <span id="welcomeName">—</span>!
+</h1>
+
                                     <div class="p-2 bg-white/20 rounded-full">
                                         <i class="fas fa-heart text-white/80"></i>
                                     </div>
                                 </div>
                                 <p class="text-white/90 text-lg leading-relaxed">
-                                    Thank you for being a life-saving hero. Your <span class="font-semibold">5 donations</span> have helped save up to <span class="font-semibold">15 lives</span>. Your next donation eligibility is in <span class="font-bold">45 days</span>.
+                                    Thank you for being a life-saving hero. Your <span class="font-semibold" id="welcomeDonations">0 donations</span> have helped save up to
+<span class="font-semibold" id="welcomeLives">0 lives</span>.
+Your next donation eligibility is in
+<span class="font-bold" id="welcomeDays">— days</span>.
+
                                 </p>
                                 <div class="flex items-center space-x-4 mt-6">
                                     <button class="bg-white text-red-600 font-semibold py-3 px-6 rounded-xl hover:bg-white/90 transition-colors shadow-lg">
@@ -669,6 +676,21 @@
                             </button>
                         </div>
                     </div>
+                    <!-- ================= PENDING DONATION ================= -->
+<div id="pendingDonationCard" class="card p-6 hidden">
+    <div class="flex items-center justify-between">
+        <div>
+            <h3 class="text-lg font-bold text-gray-900">Pending Donation Confirmation</h3>
+            <p class="text-gray-500 text-sm mt-1">
+                Please confirm donation by entering the OTP after blood donation.
+            </p>
+        </div>
+        <button onclick="openOtpModal()" class="btn-primary">
+            Enter OTP
+        </button>
+    </div>
+</div>
+
                 </div>
 
                 <!-- Donation History Tab -->
@@ -1377,7 +1399,7 @@ async function loadDashboardDonationHistory() {
                     </div>
                     <div>
                         <span class="text-sm font-semibold text-gray-900">
-                            ${record.blood_group}
+                            ${record.blood_type}
                         </span>
                         <div class="text-xs text-gray-500">
                             ${record.volume || "450ml"}
@@ -1386,10 +1408,10 @@ async function loadDashboardDonationHistory() {
                 </div>
             </td>
 
-            <!-- HOSPITAL -->
+            <!-- HOSPITAL -->   
             <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-900">
-                    ${record.location || "—"}
+                    ${record.hospital || "—"}
                 </div>
             </td>
 
@@ -1441,8 +1463,8 @@ async function loadFullDonationHistory() {
 
         tr.innerHTML = `
             <td class="px-6 py-4">${record.date}</td>
-            <td class="px-6 py-4">${record.blood_group}</td>
-            <td class="px-6 py-4">${record.location}</td>
+            <td class="px-6 py-4">${record.blood_type}</td>
+            <td class="px-6 py-4">${record.hospital}</td>
             <td class="px-6 py-4">${record.volume || "450ml"}</td>
             <td class="px-6 py-4">${record.status}</td>
             <td class="px-6 py-4">
@@ -1452,6 +1474,7 @@ async function loadFullDonationHistory() {
         tbody.appendChild(tr);
     });
 }
+
 /* ================================
    UPDATE FULL PAGE STATS
 ================================ */
@@ -1565,7 +1588,170 @@ async function loadDonationCamps() {
         container.appendChild(card);
     });
 }
+// async function loadDonorConfirmations() {
+//     const res = await fetch(
+//         "http://127.0.0.1:8000/api/donor/pending-confirmations/",
+//         {
+//             headers: {
+//                 Authorization: `Bearer ${localStorage.getItem("access_token")}`
+//             }
+//         }
+//     );
 
+//     const data = await res.json();
+
+//     data.forEach(c => {
+//         if (confirm("Did you save a life by donating blood? ❤️")) {
+//             confirmDonor(c.confirmation_id);
+//         }
+//     });
+// }
+
+// async function confirmDonor(id) {
+//     await fetch(
+//         `http://127.0.0.1:8000/api/donor/confirm/${id}/`,
+//         {
+//             method: "POST",
+//             headers: {
+//                 Authorization: `Bearer ${localStorage.getItem("access_token")}`
+//             }
+//         }
+//     );
+
+//     alert("Thank you for saving a life ❤️");
+// }
+// let currentConfirmationId = null;
+
+/* ================================
+   LOAD PENDING DONATION
+================================ */
+async function loadPendingDonation() {
+    const res = await fetch(
+        "http://127.0.0.1:8000/api/donor/pending-confirmations/",
+        {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("access_token")}`
+            }
+        }
+    );
+
+    const data = await res.json();
+
+    if (data.length > 0) {
+        const confirmation = data[0];
+
+        // ✅ USE request_id (BloodRequest ID)
+        currentConfirmationId = confirmation.request_id;
+
+        document
+            .getElementById("pendingDonationCard")
+            .classList.remove("hidden");
+
+        Swal.fire({
+            icon: "success",
+            title: "Donation Completed ❤️",
+            html: `
+                <p>The patient has confirmed receiving blood.</p>
+                <p class="font-semibold text-red-600 mt-2">
+                    Please enter the OTP to complete donation.
+                </p>
+            `,
+            confirmButtonText: "Enter OTP",
+            confirmButtonColor: "#e53e3e",
+            allowOutsideClick: false
+        }).then(openOtpModal);
+    }
+}
+
+
+/* ================================
+   OTP MODAL
+================================ */
+function openOtpModal() {
+    document.getElementById("otpModal").classList.remove("hidden");
+}
+
+function closeOtpModal() {
+    document.getElementById("otpModal").classList.add("hidden");
+}
+
+/* ================================
+   SUBMIT OTP
+================================ */
+async function submitOtp() {
+    const otp = document.getElementById("otpInput").value;
+
+    if (otp.length !== 6) {
+        Swal.fire("Invalid OTP", "Enter 6-digit OTP", "warning");
+        return;
+    }
+
+    const res = await fetch(
+        "http://127.0.0.1:8000/api/donor/confirm/",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("access_token")}`
+            },
+            body: JSON.stringify({
+                request_id: currentConfirmationId, // ✅ BloodRequest ID
+                otp: otp,
+                email: document.querySelector(".profile-email").textContent
+            })
+        }
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+        Swal.fire("Success ❤️", data.message, "success");
+        closeOtpModal();
+
+        // refresh UI
+        loadDashboardDonationHistory();
+        loadFullDonationHistory();
+        document.getElementById("pendingDonationCard").classList.add("hidden");
+    } else {
+        Swal.fire("Error", data.message || "OTP failed", "error");
+    }
+}
+
+async function loadWelcomeSection() {
+    // 1️⃣ Profile data
+    const profileRes = await axios.get(`${API_BASE}/profile/`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
+    });
+
+    const donor = profileRes.data;
+    document.getElementById("welcomeName").textContent = donor.first_name || "Donor";
+
+    // 2️⃣ Donation history
+    const history = await fetchDonationHistory();
+
+    const totalDonations = history.length;
+    const verified = history.filter(d => d.status?.toLowerCase() === "verified").length;
+    const livesSaved = verified * 3;
+
+    // 3️⃣ Cooldown logic (simple version)
+    let daysRemaining = "—";
+    if (verified > 0) {
+        const lastDonationDate = new Date(history[0].date);
+        const today = new Date();
+        const diffDays = Math.floor((today - lastDonationDate) / (1000 * 60 * 60 * 24));
+        daysRemaining = Math.max(56 - diffDays, 0);
+    }
+
+    // 4️⃣ Update UI
+    document.getElementById("welcomeDonations").textContent =
+        `${totalDonations} donations`;
+
+    document.getElementById("welcomeLives").textContent =
+        `${livesSaved} lives`;
+
+    document.getElementById("welcomeDays").textContent =
+        `${daysRemaining} days`;
+}
 
 /* ================================
    CAMP REGISTER (UI ONLY)
@@ -1630,10 +1816,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
     loadDashboardDonationHistory(); // dashboard preview
     loadFullDonationHistory();      // full table
-    loadDonationCamps();           // donation camps
+    loadDonationCamps(); 
+    loadPendingDonation();  
+    loadWelcomeSection();        // donation camps
     switchTab("dashboard");
 });
 </script>
+<!-- ================= OTP MODAL ================= -->
+<div id="otpModal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-lg">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Confirm Donation</h3>
+
+        <input
+            id="otpInput"
+            type="text"
+            maxlength="6"
+            placeholder="Enter 6-digit OTP"
+            class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-red-500"
+        />
+
+        <div class="flex justify-end space-x-3">
+            <button onclick="closeOtpModal()" class="btn-secondary">Cancel</button>
+            <button onclick="submitOtp()" class="btn-primary">Confirm</button>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

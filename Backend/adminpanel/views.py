@@ -106,6 +106,10 @@ def admin_pending_donor_registrations(request):
         "data": data
     })
 
+import random
+from django.utils import timezone
+from django.contrib.auth.models import User
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def admin_approve_blood_request(request, request_id):
@@ -117,13 +121,39 @@ def admin_approve_blood_request(request, request_id):
             status=404
         )
 
+    donor_id = request.data.get("donor_id")
+    if not donor_id:
+        return Response(
+            {"success": False, "message": "Donor ID is required"},
+            status=400
+        )
+
+    try:
+        donor = Donor.objects.get(id=donor_id, is_approved=True)
+    except Donor.DoesNotExist:
+        return Response(
+            {"success": False, "message": "Approved donor not found"},
+            status=404
+        )
+
+    otp = str(random.randint(100000, 999999))
+    expiry = timezone.now() + timezone.timedelta(minutes=30)
+
+    blood_request.assigned_donor = donor
+    blood_request.otp = otp
+    blood_request.otp_expires_at = expiry
     blood_request.status = "approved"
+    blood_request.patient_confirmed = False
     blood_request.save()
+
+    print("OTP sent to donor:", otp)
 
     return Response({
         "success": True,
-        "message": "Blood request approved successfully"
+        "message": "Blood request approved, donor assigned, OTP generated"
     })
+
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def admin_reject_blood_request(request, request_id):

@@ -284,10 +284,12 @@
                                 Recent Requests
                                 <span class="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-red-500 to-red-600"></span>
                             </button>
-                            <button onclick="showTab('donors')" class="tab-btn py-5 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 transition-colors relative group">
-                                Compatible Donors
-                                <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300 group-hover:w-full"></span>
-                            </button>
+                            <button id="donorsTabBtn"
+        onclick="showTab('donors', event)"
+        class="tab-btn hidden py-5 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500">
+    Compatible Donors
+</button>
+
                         </nav>
                     </div>
 
@@ -376,10 +378,11 @@
                                 <i class="fas fa-phone w-3 h-3 mr-1"></i>
                                 Contact Donor
                             </button>
-                            <button onclick="confirmReceipt()" class="text-green-600 hover:text-green-900 text-xs font-medium hover:underline flex items-center">
-                                <i class="fas fa-check-circle w-3 h-3 mr-1"></i>
-                                Confirm Receipt
-                            </button>
+                            <button disabled class="text-gray-400 text-xs">
+    Confirm Receipt
+</button>
+
+
                         </div>
                     </td>
                 </tr>
@@ -488,158 +491,20 @@
 
                         <!-- Compatible Donors Tab -->
                         <div id="donors-tab" class="tab-content hidden">
-                            <div class="flex items-center justify-between mb-8">
-                                <div>
-                                    <h3 class="text-xl font-bold text-gray-900">Compatible Donors Near You</h3>
-                                    <p class="text-gray-500 text-sm mt-1">Available donors matching your blood type</p>
-                                </div>
-                                <button onclick="showNotification('Finding more donors...')" 
-                                        class="px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-xl hover:shadow transition-all duration-200 text-sm font-medium hover:scale-105">
-                                    <i class="fas fa-sync-alt w-4 h-4 mr-2"></i>
-                                    Refresh List
-                                </button>
-                            </div>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div class="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <div class="flex items-center space-x-4">
-                                            <div class="relative">
-                                                <div class="w-14 h-14 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-md">
-                                                    <i class="fas fa-user text-white w-6 h-6"></i>
-                                                </div>
-                                                <div class="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                                                    <i class="fas fa-check text-white w-2 h-2"></i>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <h4 class="font-bold text-gray-900">Jane Smith</h4>
-                                                <div class="flex items-center space-x-2 mt-1">
-                                                    <span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">O+</span>
-                                                    <span class="text-xs text-gray-500">Verified Donor</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="space-y-4 mb-6">
-                                        <div class="flex items-center">
-                                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                                <i class="fas fa-map-pin w-4 h-4 text-blue-600"></i>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm font-medium text-gray-900">Kathmandu</p>
-                                                <p class="text-xs text-gray-500">2.5 km away</p>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="flex items-center">
-                                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                                                <i class="fas fa-calendar w-4 h-4 text-purple-600"></i>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm font-medium text-gray-900">Last Donation</p>
-                                                <p class="text-xs text-gray-500">2024-01-15</p>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="flex items-center">
-                                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
-                                                <i class="fas fa-heart w-4 h-4 text-red-600"></i>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm font-medium text-gray-900">5 total donations</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mt-6 flex space-x-3">
-                                        <button onclick="showNotification('Contacting Jane Smith')" 
-                                                class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-3 rounded-xl hover:shadow-lg transition-all duration-200 font-medium text-sm hover:scale-105">
-                                            <i class="fas fa-phone w-4 h-4 mr-2"></i>
-                                            Contact
-                                        </button>
-                                        <button class="w-12 h-12 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-xl hover:shadow transition-all duration-200 flex items-center justify-center hover:scale-105">
-                                            <i class="fas fa-ellipsis-h w-4 h-4"></i>
-                                        </button>
-                                    </div>
-                                </div>
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h3 class="text-xl font-bold text-gray-900">Compatible Donors Near You</h3>
+            <p class="text-gray-500 text-sm mt-1">Available donors matching your blood type</p>
+        </div>
+        <button onclick="loadCompatibleDonors()" 
+                class="px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-xl hover:shadow transition-all duration-200 text-sm font-medium hover:scale-105">
+            <i class="fas fa-sync-alt mr-2"></i> Refresh
+        </button>
+    </div>
 
-                                <div class="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                                    <div class="flex items-center justify-between mb-6">
-                                        <div class="flex items-center space-x-4">
-                                            <div class="relative">
-                                                <div class="w-14 h-14 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shadow-md">
-                                                    <i class="fas fa-user text-white w-6 h-6"></i>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <h4 class="font-bold text-gray-900">Mike Johnson</h4>
-                                                <div class="flex items-center space-x-2 mt-1">
-                                                    <span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">O+</span>
-                                                    <span class="text-xs text-gray-500">Available</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="space-y-4 mb-6">
-                                        <div class="flex items-center">
-                                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                                <i class="fas fa-map-pin w-4 h-4 text-blue-600"></i>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm font-medium text-gray-900">Lalitpur</p>
-                                                <p class="text-xs text-gray-500">5.1 km away</p>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="flex items-center">
-                                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                                                <i class="fas fa-calendar w-4 h-4 text-purple-600"></i>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm font-medium text-gray-900">Last Donation</p>
-                                                <p class="text-xs text-gray-500">2024-01-10</p>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="flex items-center">
-                                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
-                                                <i class="fas fa-heart w-4 h-4 text-red-600"></i>
-                                            </div>
-                                            <div>
-                                                <p class="text-sm font-medium text-gray-900">3 total donations</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mt-6 flex space-x-3">
-                                        <button onclick="showNotification('Contacting Mike Johnson')" 
-                                                class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-3 rounded-xl hover:shadow-lg transition-all duration-200 font-medium text-sm hover:scale-105">
-                                            <i class="fas fa-phone w-4 h-4 mr-2"></i>
-                                            Contact
-                                        </button>
-                                        <button class="w-12 h-12 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-xl hover:shadow transition-all duration-200 flex items-center justify-center hover:scale-105">
-                                            <i class="fas fa-ellipsis-h w-4 h-4"></i>
-                                        </button>
-                                    </div>
-                                </div>
+    <div id="donorGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</div>
 
-                                <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-center hover:border-red-400 transition-all duration-300 hover:-translate-y-1">
-                                    <div class="w-20 h-20 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full flex items-center justify-center mb-6">
-                                        <i class="fas fa-plus w-8 h-8 text-gray-400"></i>
-                                    </div>
-                                    <h4 class="font-bold text-gray-700 mb-2">Find More Donors</h4>
-                                    <p class="text-sm text-gray-500 mb-6">Search for additional compatible donors in your area</p>
-                                    <button onclick="showNotification('Searching for more donors...')" 
-                                            class="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 font-medium text-sm hover:scale-105">
-                                        <i class="fas fa-search w-4 h-4 mr-2"></i>
-                                        Search Now
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -761,7 +626,7 @@
                         </div>
 
                         <form id="bloodRequestForm" class="p-8 space-y-8">
-                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                            <!-- <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}"> -->
                             
                             <!-- Blood Group and Units -->
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -1499,10 +1364,7 @@
         setTimeout(() => notification.classList.add('hidden'), 3000);
     };
 
-    // CONFIRM RECEIPT
-    window.confirmReceipt = function() {
-        showNotification('Blood receipt confirmed! Thank you for the feedback.');
-    };
+   
 
     // FILE UPLOAD
     window.handleFileUpload = function(fieldId, input) {
@@ -1705,40 +1567,68 @@
         : "N/A";
 
     tbody.innerHTML += `
-        <tr>
-            <td class="px-6 py-4 whitespace-nowrap flex items-center">
-                <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
-                <span class="text-sm font-medium text-gray-900">${req.blood_type}</span>
-            </td>
+       <tr>
+    <td class="px-6 py-4 whitespace-nowrap flex items-center">
+        <i class="fas fa-tint w-4 h-4 text-red-500 mr-2"></i>
+        <span class="text-sm font-medium text-gray-900">${req.blood_type}</span>
+    </td>
 
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${req.units_required} units</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        ${req.units_required} units
+    </td>
 
-            <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${textClass} ${bgClass}">
-                    ${req.urgency}
-                </span>
-            </td>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${textClass} ${bgClass}">
+            ${req.urgency}
+        </span>
+    </td>
 
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${req.hospital}</td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        ${req.hospital}
+    </td>
 
-            <!-- NEW TIME COLUMN -->
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                <i class="fas fa-clock w-4 h-4 text-gray-500 mr-2"></i>
-                ${requestedTime}
-            </td>
+    <!-- ✅ REQUESTED + DONATION TIME -->
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        <div class="flex flex-col space-y-1">
+            <!-- Requested time -->
+            <span class="text-gray-600 text-xs">
+                <i class="fas fa-clock mr-1"></i>
+                Requested: ${requestedTime}
+            </span>
 
-            <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${textClass} ${bgClass}">
-                    ${req.status.charAt(0).toUpperCase() + req.status.slice(1)}
-                </span>
-            </td>
+            <!-- Donation time (only after completion) -->
+            ${
+                req.status === "completed" && req.donation_date
+                ? `<span class="text-green-600 text-xs font-medium">
+                       <i class="fas fa-heart mr-1"></i>
+                       Received: ${new Date(req.donation_date).toLocaleString()}
+                   </span>`
+                : ""
+            }
+        </div>
+    </td>
 
-            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                ${req.status === "pending"
-                    ? `<span class="text-yellow-600">Waiting for admin approval</span>`
-                    : `<button onclick="confirmReceipt(${req.id})" class="text-green-600 hover:text-green-900 text-xs block">Confirm Receipt</button>`}
-            </td>
-        </tr>
+    <td class="px-6 py-4 whitespace-nowrap">
+        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${textClass} ${bgClass}">
+            ${req.status.charAt(0).toUpperCase() + req.status.slice(1)}
+        </span>
+    </td>
+
+    <td class="px-6 py-4 whitespace-nowrap text-sm">
+        ${
+            req.status === "approved"
+            ? `<button 
+                   onclick="confirmReceipt(${req.id})" 
+                   class="text-green-600 hover:text-green-900 text-xs font-medium">
+                   Confirm Receipt
+               </button>`
+            : req.status === "completed"
+            ? `<span class="text-green-600 font-medium">✓ Received</span>`
+            : `<span class="text-yellow-600">Waiting for admin approval</span>`
+        }
+    </td>
+</tr>
+
     `;
 });
             }
@@ -1915,6 +1805,15 @@
         }
 
         console.log("Initialization complete");
+        // Auto-load donors when donors tab is clicked
+document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        if (btn.textContent.includes("Donors")) {
+            loadCompatibleDonors();
+        }
+    });
+});
+
     });
 
     // Handle window load as backup
@@ -2009,6 +1908,142 @@
         console.error("History load error:", error);
     }
 }
+async function loadCompatibleDonors() {
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+
+    try {
+        // 1️⃣ Check approved request
+        const approvedRes = await fetch(
+            "http://127.0.0.1:8000/blood_requests/api/patient/approved-request/",
+            {
+                headers: { "Authorization": `Bearer ${token}` }
+            }
+        );
+
+        const approvedData = await approvedRes.json();
+
+        if (!approvedData.approved) {
+            document.getElementById("donorGrid").innerHTML = `
+                <div class="col-span-full text-center text-gray-500">
+                    No approved request found. Donors will appear once your request is approved.
+                </div>
+            `;
+            return;
+        }
+
+        // 2️⃣ Fetch compatible donors
+        const donorsRes = await fetch(
+            `http://127.0.0.1:8000/api/donor/compatible-donors/${approvedData.blood_type}/`,
+            {
+                headers: { "Authorization": `Bearer ${token}` }
+            }
+        );
+
+        const donors = await donorsRes.json();
+        const grid = document.getElementById("donorGrid");
+        grid.innerHTML = "";
+
+        if (donors.length === 0) {
+            grid.innerHTML = `
+                <div class="col-span-full text-center text-gray-500">
+                    No compatible donors available right now.
+                </div>
+            `;
+            return;
+        }
+
+        // 3️⃣ Render donors
+        donors.forEach(d => {
+            grid.innerHTML += `
+                <div class="bg-white rounded-2xl p-6 shadow-lg border hover:shadow-xl transition-all">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="w-14 h-14 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                            ${d.name[0]}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-900">${d.name}</h4>
+                            <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
+                                ${d.blood_type}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <p><i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>${d.district}</p>
+                        <p><i class="fas fa-envelope mr-2 text-green-500"></i>${d.phone}</p>
+                        <p><i class="fas fa-heart mr-2 text-red-500"></i>${d.total_donations} donations</p>
+                        <p><i class="fas fa-calendar mr-2 text-purple-500"></i>
+                            Last: ${d.last_donation || "N/A"}
+                        </p>
+                    </div>
+
+                    <button onclick="showNotification('Calling ${d.phone}')"
+                        class="mt-4 w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-2 rounded-xl hover:shadow">
+                        <i class="fas fa-phone mr-2"></i> Contact
+                    </button>
+                </div>
+            `;
+        });
+
+    } catch (err) {
+        console.error("Donor load error:", err);
+        showNotification("Error loading compatible donors");
+    }
+}
+async function checkApprovedRequestAndToggleDonorsTab() {
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+
+    try {
+        const res = await fetch(
+            "http://127.0.0.1:8000/blood_requests/api/patient/approved-request/",
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+
+        const data = await res.json();
+        const donorsTabBtn = document.getElementById("donorsTabBtn");
+
+        if (!donorsTabBtn) return;
+
+        if (data.approved) {
+            donorsTabBtn.classList.remove("hidden");
+        } else {
+            donorsTabBtn.classList.add("hidden");
+
+            // If user is already on donors tab, switch back
+            const donorsTab = document.getElementById("donors-tab");
+            if (donorsTab && !donorsTab.classList.contains("hidden")) {
+                showTab("requests");
+            }
+        }
+    } catch (err) {
+        console.error("Approved request check failed", err);
+    }
+}
+async function confirmReceipt(requestId) {
+    if (!confirm("Have you received the blood?")) return;
+
+    const res = await fetch(
+        `http://127.0.0.1:8000/blood_requests/api/confirm-receipt/${requestId}/`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("access_token")}`
+            }
+        }
+    );
+
+    const data = await res.json();
+   showNotification(data.message);
+loadDashboard();
+loadHistory();
+
+        
+
+}
 
 function statusBadge(status) {
     const text = status.charAt(0).toUpperCase() + status.slice(1);
@@ -2028,6 +2063,7 @@ function statusBadge(status) {
             </span>`;
 }
 loadHistory();
+checkApprovedRequestAndToggleDonorsTab();
 </script>
 
 </body>

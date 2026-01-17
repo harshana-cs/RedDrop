@@ -1,15 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 from loginsignup.models import Patient
-
-BLOOD_TYPES = [
-    ('A+', 'A+'), ('A-', 'A-'), ('B+', 'B+'), ('B-', 'B-'),
-    ('AB+', 'AB+'), ('AB-', 'AB-'), ('O+', 'O+'), ('O-', 'O-'),
-]
-
-URGENCY_LEVELS = [
-    ('Critical', 'Critical'), ('High', 'High'), ('Medium', 'Medium'), ('Low', 'Low')
-]
+from register_donor.models import Donor
 
 class BloodRequest(models.Model):
     STATUS_CHOICES = [
@@ -18,10 +11,11 @@ class BloodRequest(models.Model):
         ('rejected', 'Rejected'),
         ('completed', 'Completed'),
     ]
+
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    blood_type = models.CharField(max_length=3, choices=BLOOD_TYPES)
+    blood_type = models.CharField(max_length=3)
     units_required = models.PositiveIntegerField()
-    urgency = models.CharField(max_length=10, choices=URGENCY_LEVELS)
+    urgency = models.CharField(max_length=10)
     district = models.CharField(max_length=50)
     hospital = models.CharField(max_length=100)
     required_date = models.DateField()
@@ -31,9 +25,20 @@ class BloodRequest(models.Model):
     hospital_doc = models.FileField(upload_to='hospital_docs/')
     doctor_note = models.FileField(upload_to='doctor_notes/')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     fulfilled = models.BooleanField(default=False)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')  # new field
+
+    assigned_donor = models.ForeignKey(
+    Donor, on_delete=models.SET_NULL, null=True, blank=True
+)
+    otp = models.CharField(max_length=6, null=True, blank=True)
+    otp_expires_at = models.DateTimeField(null=True, blank=True)
+
+    # ✅ NEW FIELD (VERY IMPORTANT)
+    patient_confirmed = models.BooleanField(default=False)
+    donation_date = models.DateTimeField(null=True, blank=True)
 
 
     def __str__(self):
-        return f"{self.patient.username} - {self.blood_type} ({self.units_required} units)"
+        return f"{self.patient.username} - {self.blood_type}"
