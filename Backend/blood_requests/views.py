@@ -13,6 +13,7 @@ from .serializers import BloodRequestSerializer
 
 from loginsignup.models import Patient
 from donor.models import DonationConfirmation
+from django.utils import timezone
 
 
 # =========================================================
@@ -196,12 +197,9 @@ def api_patient_confirm_receipt(request, request_id):
             status=400
         )
 
-    blood_request.status = "completed"
+    blood_request.patient_confirmed = True   # 🔥 THIS WAS MISSING
     blood_request.fulfilled = True
     blood_request.donation_date = timezone.now()
-    blood_request.otp = None
-    blood_request.otp_expires_at = None
-
     blood_request.save()
 
     DonationConfirmation.objects.update_or_create(

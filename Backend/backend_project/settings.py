@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'register_donor',
     'adminpanel',
     'donor',
+    'hospital',
+    'blood_stock',
 
     
 ]

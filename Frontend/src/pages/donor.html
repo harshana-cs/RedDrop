@@ -517,29 +517,48 @@ Your next donation eligibility is in
                     </div>
 
                     <!-- Eligibility Status -->
-                    <div class="rounded-2xl p-6 bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 shadow-sm">
-                        <div class="flex items-center">
-                            <div class="p-3 rounded-xl bg-yellow-100 shadow-sm">
-                                <i class="fas fa-clock text-yellow-600 text-xl"></i>
-                            </div>
-                            <div class="ml-4 flex-1">
-                                <h3 class="text-lg font-semibold text-yellow-900">Donation Cooldown Period</h3>
-                                <p class="text-sm text-yellow-700">
-                                    You can donate again on <span class="font-bold">2024-04-15</span> (45 days remaining)
-                                </p>
-                                <div class="mt-3 flex items-center space-x-4">
-                                    <div class="flex items-center space-x-2">
-                                        <div class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-                                        <span class="text-xs text-yellow-600">Cooldown Active</span>
-                                    </div>
-                                    <div class="text-xs text-yellow-600">Minimum gap between donations: 56 days</div>
-                                </div>
-                            </div>
-                            <button class="btn-secondary px-6">
-                                <i class="fas fa-calendar-plus mr-2"></i> Add to Calendar
-                            </button>
-                        </div>
-                    </div>
+<div id="eligibilityCard"
+     class="rounded-2xl p-6 bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 shadow-sm">
+
+    <div class="flex items-center">
+        <div class="p-3 rounded-xl bg-yellow-100 shadow-sm">
+            <i id="eligibilityIcon" class="fas fa-clock text-yellow-600 text-xl"></i>
+        </div>
+
+        <div class="ml-4 flex-1">
+            <h3 id="eligibilityTitle"
+                class="text-lg font-semibold text-yellow-900">
+                Donation Cooldown Period
+            </h3>
+
+            <p id="eligibilityText"
+               class="text-sm text-yellow-700">
+                Loading eligibility…
+            </p>
+
+            <div class="mt-3 flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <div id="eligibilityDot"
+                         class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                    <span id="eligibilityStatus"
+                          class="text-xs text-yellow-600">
+                        Checking…
+                    </span>
+                </div>
+
+                <div id="minGapText"
+                     class="text-xs text-yellow-600">
+                    Minimum gap between donations: 56 days
+                </div>
+            </div>
+        </div>
+
+        <button id="addToCalendarBtn" class="btn-secondary px-6 hidden">
+            <i class="fas fa-calendar-plus mr-2"></i> Add to Calendar
+        </button>
+    </div>
+</div>
+
 
                     <!-- Tabs Section -->
                     <div class="card">
@@ -1687,20 +1706,20 @@ async function submitOtp() {
     }
 
     const res = await fetch(
-        "http://127.0.0.1:8000/api/donor/confirm/",
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("access_token")}`
-            },
-            body: JSON.stringify({
-                request_id: currentConfirmationId, // ✅ BloodRequest ID
-                otp: otp,
-                email: document.querySelector(".profile-email").textContent
-            })
-        }
-    );
+    `${API_BASE}/confirm/`,
+    {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`
+        },
+        body: JSON.stringify({
+            request_id: currentConfirmationId,
+            otp: otp
+        })
+    }
+);
+
 
     const data = await res.json();
 
@@ -1751,6 +1770,62 @@ async function loadWelcomeSection() {
 
     document.getElementById("welcomeDays").textContent =
         `${daysRemaining} days`;
+}
+async function loadDonationEligibility() {
+    try {
+        const res = await fetch("http://127.0.0.1:8000/api/donor/eligibility/", {
+            credentials: "include"
+        });
+
+        if (!res.ok) throw new Error("Failed to load eligibility");
+
+        const data = await res.json();
+
+        const text = document.getElementById("eligibilityText");
+        const status = document.getElementById("eligibilityStatus");
+        const title = document.getElementById("eligibilityTitle");
+        const dot = document.getElementById("eligibilityDot");
+        const btn = document.getElementById("addToCalendarBtn");
+        const minGap = document.getElementById("minGapText");
+
+        minGap.textContent =
+            `Minimum gap between donations: ${data.minimum_gap_days} days`;
+
+        if (data.cooldown_active) {
+            // 🔴 Cooldown active
+            title.textContent = "Donation Cooldown Period";
+            text.innerHTML =
+                `You can donate again on <span class="font-bold">
+                    ${data.next_eligible_date}
+                 </span> (${data.days_remaining} days remaining)`;
+
+            status.textContent = "Cooldown Active";
+
+            dot.classList.remove("bg-green-500");
+            dot.classList.add("bg-yellow-500");
+
+            btn.classList.remove("hidden");
+        } else {
+            // 🟢 Eligible
+            title.textContent = "You Are Eligible to Donate 🎉";
+            text.innerHTML =
+                `<span class="font-bold text-green-700">
+                    You can donate today.
+                 </span>`;
+
+            status.textContent = "Eligible";
+
+            dot.classList.remove("bg-yellow-500");
+            dot.classList.add("bg-green-500");
+
+            btn.classList.add("hidden");
+        }
+
+    } catch (err) {
+        document.getElementById("eligibilityText").textContent =
+            "Unable to load eligibility status.";
+        console.error(err);
+    }
 }
 
 /* ================================
@@ -1818,7 +1893,8 @@ document.addEventListener("DOMContentLoaded", () => {
     loadFullDonationHistory();      // full table
     loadDonationCamps(); 
     loadPendingDonation();  
-    loadWelcomeSection();        // donation camps
+    loadWelcomeSection(); 
+    loadDonationEligibility();       // donation camps
     switchTab("dashboard");
 });
 </script>
@@ -1843,4 +1919,4 @@ document.addEventListener("DOMContentLoaded", () => {
 </div>
 
 </body>
-</html>
+</html> 

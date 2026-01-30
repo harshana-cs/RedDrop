@@ -1,0 +1,2266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RedDrop Dashboard</title>
+
+<link href="../../dist/output.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<style>
+.section { display:none; }
+.section.active { display:block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+
+<div class="min-h-screen flex">
+
+<!-- ================= SIDEBAR ================= -->
+<aside class="w-64 bg-white shadow-lg fixed inset-y-0 left-0 z-10">
+  <div class="h-20 flex items-center justify-center border-b">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
+        <i class="fas fa-tint text-white"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-xl">RedDrop</h1>
+        <p class="text-xs text-gray-500">Blood Bank</p>
+      </div>
+    </div>
+  </div>
+
+  <nav class="px-4 py-6 space-y-2">
+    <button onclick="showSection('home')" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-red-50 transition-colors duration-200">
+      <i class="fas fa-home text-red-600"></i> Dashboard
+    </button>
+
+    <a href="blood_request.html" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-red-50 transition-colors duration-200">
+      <i class="fas fa-plus-circle text-red-600"></i> Request Blood
+    </a>
+
+    <button id="donorNav" onclick="showSection('donor')" class="hidden w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-red-50 transition-colors duration-200">
+      <i class="fas fa-heart text-red-600"></i> Donate Blood
+    </button>
+
+    <button onclick="showSection('history')" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-red-50 transition-colors duration-200">
+      <i class="fas fa-history text-red-600"></i> History
+    </button>
+
+    <button onclick="showSection('profile')" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-red-50 transition-colors duration-200">
+      <i class="fas fa-user text-red-600"></i> Profile
+    </button>
+    <button id="openRequestsNav"
+        onclick="showSection('openRequests')"
+        class="hidden w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-red-50">
+  <i class="fas fa-list-alt text-red-600"></i>
+  Open Blood Requests
+</button>
+  </nav>
+
+  <div class="px-4 py-6 border-t">
+    <div class="mb-4">
+     <button id="registerDonorBtn"
+        onclick="window.location.href='donor_register.html'"
+        class="w-full bg-red-600 text-white py-2 rounded-xl hover:bg-red-700">
+  Register as Donor
+</button>
+
+    </div>
+    <button onclick="logout()" class="w-full bg-gray-900 text-white py-2 rounded-xl hover:bg-gray-800 transition-colors duration-200">
+      Logout
+    </button>
+  </div>
+</aside>
+
+<!-- ================= MAIN ================= -->
+<main class="ml-64 p-8 w-full">
+
+<!-- ===== HOME SECTION ===== -->
+<section id="home" class="section active">
+  <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-2xl p-8 text-white mb-8">
+    <h2 class="text-3xl font-bold mb-2">Welcome back, <span id="userGreeting">User</span> 👋</h2>
+    <p class="text-red-100">Overview of your activities and statistics</p>
+  </div>
+
+  <div class="mb-8">
+    <h3 class="text-xl font-bold mb-4">Quick Actions</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <a href="blood_request.html" class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition-shadow duration-300 border-l-4 border-red-500">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="font-bold text-lg">Request Blood</h4>
+            <p class="text-gray-600">Submit a new blood request</p>
+          </div>
+          <i class="fas fa-chevron-right text-red-500"></i>
+        </div>
+      </a>
+      <button id="quickDonateBtn" onclick="showSection('donor')" class="hidden bg-white p-6 rounded-2xl shadow hover:shadow-lg transition-shadow duration-300 border-l-4 border-red-500 text-left">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="font-bold text-lg">Donate Blood</h4>
+            <p class="text-gray-600">View donor options</p>
+          </div>
+          <i class="fas fa-chevron-right text-red-500"></i>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-2xl shadow">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+          <i class="fas fa-hand-paper text-red-600 text-xl"></i>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Total Requests</p>
+          <h3 id="statRequests" class="text-2xl font-bold text-gray-800">—</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+          <i class="fas fa-check-circle text-green-600 text-xl"></i>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Completed</p>
+          <h3 id="statCompleted" class="text-2xl font-bold text-gray-800">—</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+          <i class="fas fa-user-tag text-blue-600 text-xl"></i>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Account Type</p>
+          <h3 id="userStatus" class="text-xl font-bold text-gray-800">Patient</h3>
+        </div>
+      </div>
+    </div>
+
+    <div id="donorStatsCard" class="hidden bg-white p-6 rounded-2xl shadow">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+          <i class="fas fa-heart text-purple-600 text-xl"></i>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Total Donations</p>
+          <h3 id="statDonations" class="text-2xl font-bold text-gray-800">—</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DONOR SECTION ===== -->
+<section id="donor" class="section">
+  <div class="bg-white p-8 rounded-2xl shadow mb-6">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold">Donor Dashboard</h2>
+      <div id="donorBadge" class="bg-green-100 text-green-800 px-4 py-2 rounded-full font-medium hidden">
+        <i class="fas fa-check-circle mr-2"></i>Approved Donor
+      </div>
+    </div>
+    
+    <div id="notDonorMsg" class="bg-yellow-50 border-l-4 border-yellow-500 p-6 mb-6 hidden">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+          <i class="fas fa-info-circle text-yellow-600 text-xl"></i>
+        </div>
+        <div>
+          <h4 class="font-bold text-lg mb-1">Not Registered as Donor</h4>
+          <p class="text-gray-600 mb-4">Register now to become a blood donor and save lives!</p>
+          <a href="donor_register.html" class="bg-red-600 text-white px-6 py-3 rounded-xl hover:bg-red-700 transition-colors duration-200 inline-flex items-center gap-2">
+            <i class="fas fa-user-plus"></i> Register as Donor
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div id="donorContent" class="hidden">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-red-50 p-6 rounded-xl">
+          <h4 class="font-bold mb-2">Available for Donation</h4>
+          <p class="text-3xl font-bold text-red-600" id="donorAvailable">—</p>
+          <p class="text-sm text-gray-600">Eligible to donate</p>
+        </div>
+        
+        <div class="bg-blue-50 p-6 rounded-xl">
+          <h4 class="font-bold mb-2">Last Donation</h4>
+          <p class="text-3xl font-bold text-blue-600" id="lastDonation">—</p>
+          <p class="text-sm text-gray-600">Days ago</p>
+        </div>
+        
+        <div class="bg-green-50 p-6 rounded-xl">
+          <h4 class="font-bold mb-2">Donor Score</h4>
+          <p class="text-3xl font-bold text-green-600" id="donorScore">—</p>
+          <p class="text-sm text-gray-600">Based on donations</p>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <h4 class="font-bold mb-4">Upcoming Donation Opportunities</h4>
+        <div class="space-y-4">
+          <div class="bg-gray-50 p-4 rounded-xl border">
+            <div class="flex justify-between items-center">
+              <div>
+                <h5 class="font-bold">Central Blood Bank</h5>
+                <p class="text-gray-600">Available on: Tomorrow, 10 AM - 4 PM</p>
+              </div>
+              <button class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200">
+                Schedule
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-4">
+        <a href="donor_register.html" class="bg-red-600 text-white px-6 py-3 rounded-xl hover:bg-red-700 transition-colors duration-200">
+          <i class="fas fa-edit mr-2"></i> Update Donor Profile
+        </a>
+        <button onclick="showSection('donorHistory')" class="bg-gray-200 text-gray-800 px-6 py-3 rounded-xl hover:bg-gray-300 transition-colors duration-200">
+          <i class="fas fa-history mr-2"></i> View Donation History
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ===== OPEN BLOOD REQUESTS SECTION ===== -->
+<section id="openRequests" class="section">
+  <div class="bg-white p-8 rounded-2xl shadow">
+    <h2 class="text-2xl font-bold mb-2">Open Blood Requests</h2>
+    <p class="text-gray-600 mb-6">
+      Approved blood requests you can help with
+    </p>
+
+    <div class="overflow-hidden rounded-xl border border-gray-200">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Blood Group</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Units</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Hospital</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Urgency</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Location</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Request ID</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold uppercase">Action</th>
+          </tr>
+        </thead>
+        <tbody id="openRequestsBody" class="bg-white divide-y divide-gray-100">
+          <!-- dynamic -->
+        </tbody>
+      </table>
+
+      <div id="noOpenRequests" class="text-center py-12 text-gray-500 hidden">
+        <i class="fas fa-heart text-4xl mb-4"></i>
+        <p>No open blood requests right now</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HISTORY SECTION ===== -->
+<section id="history" class="section">
+  <div class="flex gap-2 mb-6">
+    <button id="tabRequests" onclick="switchHistoryTab('requests')" class="px-6 py-3 rounded-xl bg-red-600 text-white font-medium">
+      Request History
+    </button>
+    <button id="tabDonations" onclick="switchHistoryTab('donations')" class="px-6 py-3 rounded-xl bg-gray-200 text-gray-800 font-medium hover:bg-gray-300 transition-colors duration-200">
+      Donation History
+    </button>
+  </div>
+
+  <!-- REQUEST HISTORY TAB -->
+  <div id="requestHistorySection" class="bg-white rounded-2xl shadow">
+    <!-- Tab navigation for active/history -->
+    <div class="border-b border-gray-200">
+      <nav class="flex space-x-8 px-8 pt-6">
+        <button id="activeTabBtn" onclick="showRequestTab('active')" class="pb-4 px-1 text-sm font-medium border-b-2 border-red-500 text-red-600">
+          Active Requests
+        </button>
+        <button id="historyTabBtn" onclick="showRequestTab('history')" class="pb-4 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+          All History
+        </button>
+        <button id="donorsTabBtn" onclick="showRequestTab('donors')" class="pb-4 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hidden">
+          Available Donors
+        </button>
+      </nav>
+    </div>
+
+    <!-- ACTIVE REQUESTS TAB CONTENT -->
+    <div id="active-requests-tab" class="tab-content p-8">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h3 class="text-xl font-bold text-gray-900">Your Blood Requests</h3>
+          <p class="text-gray-500 text-sm mt-1">Track and manage your active requests</p>
+        </div>
+        <a href="blood_request.html" class="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-200 flex items-center space-x-3 hover:scale-105">
+          <div class="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
+            <i class="fas fa-plus text-white text-sm"></i>
+          </div>
+          <span class="font-semibold">New Request</span>
+        </a>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-xl">
+          <p class="text-sm opacity-90">Total Requests</p>
+          <h3 id="total-requests" class="text-2xl font-bold mt-1">0</h3>
+        </div>
+        <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white p-4 rounded-xl">
+          <p class="text-sm opacity-90">Pending</p>
+          <h3 id="pending-requests" class="text-2xl font-bold mt-1">0</h3>
+        </div>
+        <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-xl">
+          <p class="text-sm opacity-90">Approved</p>
+          <h3 id="approved-requests" class="text-2xl font-bold mt-1">0</h3>
+        </div>
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-xl">
+          <p class="text-sm opacity-90">Received</p>
+          <h3 id="received-requests" class="text-2xl font-bold mt-1">0</h3>
+        </div>
+      </div>
+
+      <!-- Active Requests Table -->
+      <div class="overflow-hidden rounded-xl border border-gray-200">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+            <tr>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Blood Group</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Units</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Urgency</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Hospital</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Requested At</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="activeRequestsBody" class="bg-white divide-y divide-gray-100">
+            <!-- Dynamic content will be loaded here -->
+          </tbody>
+        </table>
+        <div id="noActiveRequests" class="text-center py-12 text-gray-500 hidden">
+          <i class="fas fa-inbox text-4xl mb-4 opacity-50"></i>
+          <p class="text-lg">No active requests</p>
+          <p class="text-sm mt-2">Submit a new blood request to get started</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALL HISTORY TAB CONTENT -->
+    <div id="history-tab" class="tab-content p-8 hidden">
+      <div class="mb-8">
+        <h3 class="text-xl font-bold text-gray-900 mb-2">All Request History</h3>
+        <p class="text-gray-500 text-sm">Complete history of all your blood requests</p>
+      </div>
+
+      <div class="overflow-hidden rounded-xl border border-gray-200">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+            <tr>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date & Time</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Blood Group</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Units</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Hospital</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Details</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody" class="bg-white divide-y divide-gray-100">
+            <!-- Dynamic content will be loaded here -->
+          </tbody>
+        </table>
+        <div id="noHistory" class="text-center py-12 text-gray-500 hidden">
+          <i class="fas fa-history text-4xl mb-4 opacity-50"></i>
+          <p class="text-lg">No history available</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- DONORS TAB CONTENT -->
+    <div id="donors-tab" class="tab-content p-8 hidden">
+      <div class="mb-8">
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Available Donors for Your Request</h3>
+        <p class="text-gray-500 text-sm">Contact these donors for your approved blood request</p>
+      </div>
+
+      <div class="overflow-hidden rounded-xl border border-gray-200">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+            <tr>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Donor</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Blood Type</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Contact</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Location</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Last Donation</th>
+              <th class="px-8 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Action</th>
+            </tr>
+          </thead>
+          <tbody id="donorsBody" class="bg-white divide-y divide-gray-100">
+            <!-- Dynamic content will be loaded here -->
+          </tbody>
+        </table>
+        <div id="noDonors" class="text-center py-12 text-gray-500 hidden">
+          <i class="fas fa-users text-4xl mb-4 opacity-50"></i>
+          <p class="text-lg">No donors available at the moment</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DONATION HISTORY TAB (for donors) -->
+  <div id="donationHistorySection" class="hidden bg-white rounded-2xl shadow">
+    <!-- ===== DONATION HISTORY SECTION ===== -->
+    <div class="border-b border-gray-200 mb-6">
+      <nav class="flex space-x-8 px-8 pt-6">
+        <button id="donationStatsTab" onclick="showDonationTab('stats')" class="pb-4 px-1 text-sm font-medium border-b-2 border-red-500 text-red-600">
+          <i class="fas fa-chart-bar mr-2"></i> Statistics
+        </button>
+        <button id="donationHistoryTab" onclick="showDonationTab('history')" class="pb-4 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+          <i class="fas fa-history mr-2"></i> Donation History
+        </button>
+        <button id="pendingDonationTab" onclick="showDonationTab('pending')" class="pb-4 px-1 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+          <i class="fas fa-clock mr-2"></i> Pending Confirmation
+        </button>
+      </nav>
+    </div>
+
+    <!-- ================= STATISTICS TAB ================= -->
+    <div id="donationStatsContent" class="tab-content p-8">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-900">Donation Dashboard</h2>
+          <p class="text-gray-500 mt-2">Overview of your blood donation activities</p>
+        </div>
+        <button onclick="exportDonationHistory()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-colors duration-200">
+          <i class="fas fa-download"></i> Export History
+        </button>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-2xl shadow-lg">
+          <div class="flex items-center">
+            <div class="p-3 bg-white/20 rounded-xl mr-4">
+              <i class="fas fa-heart text-xl"></i>
+            </div>
+            <div>
+              <p class="text-sm opacity-90">Total Donations</p>
+              <h3 id="stat-total-donations" class="text-2xl font-bold mt-1">0</h3>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-2xl shadow-lg">
+          <div class="flex items-center">
+            <div class="p-3 bg-white/20 rounded-xl mr-4">
+              <i class="fas fa-check-circle text-xl"></i>
+            </div>
+            <div>
+              <p class="text-sm opacity-90">Verified</p>
+              <h3 id="stat-verified-donations" class="text-2xl font-bold mt-1">0</h3>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-lg">
+          <div class="flex items-center">
+            <div class="p-3 bg-white/20 rounded-xl mr-4">
+              <i class="fas fa-users text-xl"></i>
+            </div>
+            <div>
+              <p class="text-sm opacity-90">Lives Impacted</p>
+              <h3 id="stat-lives-impacted" class="text-2xl font-bold mt-1">0</h3>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg">
+          <div class="flex items-center">
+            <div class="p-3 bg-white/20 rounded-xl mr-4">
+              <i class="fas fa-chart-line text-xl"></i>
+            </div>
+            <div>
+              <p class="text-sm opacity-90">This Year</p>
+              <h3 id="stat-this-year" class="text-2xl font-bold mt-1">0</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Donation History -->
+      <div id="dashboardHistory" class="subtab-content active">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h3 class="text-xl font-bold text-gray-900">Recent Donations</h3>
+            <p class="text-gray-500 text-sm mt-1">
+              Track all your blood donation activities and certificates
+            </p>
+          </div>
+          <button onclick="showDonationTab('history')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm flex items-center gap-2 transition-colors duration-200">
+            <i class="fas fa-external-link-alt"></i> View All History
+          </button>
+        </div>
+
+        <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Blood Group</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Hospital</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="donationHistoryList" class="bg-white divide-y divide-gray-200">
+              <!-- Dynamic content will be loaded here -->
+            </tbody>
+          </table>
+          <div id="noRecentDonations" class="text-center py-12 text-gray-500 hidden">
+            <i class="fas fa-inbox text-4xl mb-4 opacity-50"></i>
+            <p class="text-lg">No recent donations found</p>
+            <p class="text-sm mt-2">Start your donation journey today!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= DONATION HISTORY TAB ================= -->
+    <div id="donationHistoryContent" class="tab-content hidden p-8">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Donation History</h1>
+          <p class="text-gray-500 mt-2">
+            Complete record of all your blood donations
+          </p>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="exportDonationHistory()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-colors duration-200">
+            <i class="fas fa-download"></i> Export All
+          </button>
+          <button onclick="showDonationTab('stats')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2.5 rounded-xl flex items-center gap-2 transition-colors duration-200">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Controls -->
+      <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Status</label>
+              <select id="donationStatusFilter" onchange="filterDonationHistory()" class="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                <option value="all">All Status</option>
+                <option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+                <option value="verified">Verified</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Time Period</label>
+              <select id="donationTimeFilter" onchange="filterDonationHistory()" class="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                <option value="all">All Time</option>
+                <option value="this_year">This Year</option>
+                <option value="last_3_months">Last 3 Months</option>
+                <option value="last_month">Last Month</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="resetDonationFilters()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+              <i class="fas fa-redo mr-2"></i> Reset Filters
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detailed History Table -->
+      <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-900">All Donations</h3>
+            <div class="text-sm text-gray-500">
+              Showing <span id="donationCount">0</span> donations
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date & Time</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Blood Group</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Volume</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Certificate</th>
+                </tr>
+              </thead>
+              <tbody id="donationHistoryBody" class="bg-white divide-y divide-gray-200">
+                <!-- Dynamic content will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div id="noDonationHistory" class="text-center py-12 text-gray-500 hidden">
+          <i class="fas fa-history text-4xl mb-4 opacity-50"></i>
+          <p class="text-lg">No donation history found</p>
+          <p class="text-sm mt-2">Your donation history will appear here after your first donation</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= PENDING DONATION TAB ================= -->
+    <div id="pendingDonationContent" class="tab-content hidden p-8">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Pending Confirmation</h1>
+          <p class="text-gray-500 mt-2">
+            Confirm your recent donations by entering OTP
+          </p>
+        </div>
+        <button onclick="showDonationTab('stats')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2.5 rounded-xl flex items-center gap-2 transition-colors duration-200">
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </button>
+      </div>
+
+      <!-- Pending Donation Card -->
+      <div id="pendingDonationCard" class="bg-white rounded-xl shadow p-6 mb-6 hidden">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-clock text-yellow-600 text-xl"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-gray-900">Pending Donation Confirmation</h3>
+                <p class="text-gray-500 text-sm">
+                  Please confirm donation by entering the OTP after blood donation.
+                </p>
+              </div>
+            </div>
+            
+            <!-- Pending Donation Details -->
+            <div id="pendingDonationDetails" class="mt-4 space-y-2">
+              <!-- Details will be loaded here -->
+            </div>
+          </div>
+          <button onclick="openOtpModal()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors duration-200 whitespace-nowrap">
+            <i class="fas fa-key"></i> Enter OTP
+          </button>
+        </div>
+      </div>
+
+      <div id="noPendingDonations" class="bg-white rounded-xl shadow p-12 text-center hidden">
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-check-circle text-green-600 text-3xl"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">No Pending Confirmations</h3>
+        <p class="text-gray-500 mb-6">All your donations have been confirmed!</p>
+        <button onclick="showDonationTab('history')" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-medium transition-colors duration-200">
+          View Donation History
+        </button>
+      </div>
+
+      <!-- Recently Confirmed -->
+      <div id="recentConfirmedSection" class="mt-8 hidden">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Recently Confirmed</h3>
+        <div id="recentConfirmedList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Recently confirmed donations will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROFILE SECTION ===== -->
+<section id="profile" class="section">
+  <div class="bg-white p-8 rounded-2xl shadow mb-6">
+    <div class="flex justify-between items-start mb-6">
+      <div>
+        <h2 class="text-2xl font-bold">Profile Overview</h2>
+        <p class="text-gray-600">Manage your account information</p>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="window.location.href='blood_request.html'" class="bg-red-600 text-white px-5 py-2 rounded-xl hover:bg-red-700 transition-colors duration-200">
+          <i class="fas fa-plus mr-2"></i> Request Blood
+        </button>
+        <button id="profileRegisterDonorBtn"
+        onclick="window.location.href='donor_register.html'"
+        class="bg-gray-200 text-gray-800 px-5 py-2 rounded-xl">
+  <i class="fas fa-user-plus mr-2"></i> Register as Donor
+</button>
+
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div>
+        <h3 class="text-lg font-bold mb-4 text-red-600">Personal Information</h3>
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+              <i class="fas fa-user text-gray-600"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Full Name</p>
+              <p id="profileName" class="font-medium">—</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+              <i class="fas fa-envelope text-gray-600"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Email Address</p>
+              <p id="profileEmail" class="font-medium">—</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+              <i class="fas fa-tag text-gray-600"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Account Role</p>
+              <p id="profileRole" class="font-medium">Patient</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-bold mb-4 text-red-600">Blood & Health</h3>
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+              <i class="fas fa-tint text-red-600"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Blood Type</p>
+              <p id="profileBloodType" class="font-medium">—</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <i class="fas fa-id-card text-blue-600"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Patient ID</p>
+              <p id="profilePatientId" class="font-medium">—</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+              <i class="fas fa-calendar-check text-green-600"></i>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">Member Since</p>
+              <p id="profileMemberSince" class="font-medium">—</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-white p-6 rounded-2xl shadow">
+      <h3 class="text-xl font-bold mb-4">Patient Summary</h3>
+      <div class="space-y-4">
+        <div class="flex justify-between items-center p-4 bg-red-50 rounded-xl">
+          <span>Total Requests</span>
+          <strong id="profileTotalRequests" class="text-xl">—</strong>
+        </div>
+        <div class="flex justify-between items-center p-4 bg-green-50 rounded-xl">
+          <span>Completed Requests</span>
+          <strong id="profileCompletedRequests" class="text-xl">—</strong>
+        </div>
+        <div class="flex justify-between items-center p-4 bg-blue-50 rounded-xl">
+          <span>Pending Requests</span>
+          <strong id="profilePendingRequests" class="text-xl">—</strong>
+        </div>
+      </div>
+    </div>
+
+    <div id="donorProfile" class="hidden bg-white p-6 rounded-2xl shadow">
+      <h3 class="text-xl font-bold mb-4">Donor Summary</h3>
+      <div class="space-y-4">
+        <div class="flex justify-between items-center p-4 bg-purple-50 rounded-xl">
+          <span>Total Donations</span>
+          <strong id="profileDonations" class="text-xl">—</strong>
+        </div>
+        <div class="flex justify-between items-center p-4 bg-yellow-50 rounded-xl">
+          <span>Last Donation</span>
+          <strong id="profileLastDonation" class="text-xl">—</strong>
+        </div>
+        <div class="flex justify-between items-center p-4 bg-indigo-50 rounded-xl">
+          <span>Donor Status</span>
+          <strong id="profileDonorStatus" class="text-xl">—</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<!-- OTP Modal -->
+<div id="otpModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h3 class="text-xl font-bold text-gray-900">Confirm Donation</h3>
+        <p class="text-gray-500 text-sm mt-1">Enter OTP received at donation center</p>
+      </div>
+      <button onclick="closeOtpModal()" class="text-gray-400 hover:text-gray-600">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+
+    <form id="otpForm" onsubmit="submitOtp(event)" class="space-y-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">OTP Code</label>
+        <input type="text" id="otpCode" 
+               class="w-full border border-gray-300 rounded-xl px-4 py-3 text-center text-2xl font-bold tracking-widest focus:ring-2 focus:ring-red-500 focus:border-red-500"
+               maxlength="6"
+               placeholder="000000"
+               required>
+        <p class="text-xs text-gray-500 mt-2">Enter the 6-digit OTP provided at the donation center</p>
+      </div>
+
+      <div id="donationDetails" class="bg-gray-50 p-4 rounded-xl">
+        <!-- Donation details will be loaded here -->
+      </div>
+
+      <div class="flex gap-3 pt-4">
+        <button type="button" onclick="closeOtpModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-xl font-medium transition-colors duration-200">
+          Cancel
+        </button>
+        <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-medium transition-colors duration-200">
+          Confirm Donation
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= SCRIPT ================= -->
+<script>
+// Global variables
+let currentHistoryTab = 'requests';
+let currentRequestTab = 'active';
+let currentDonationTab = 'stats';
+let allDonations = [];
+let filteredDonations = [];
+const token = localStorage.getItem("access_token");
+
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+
+  if (id === 'history') {
+    loadDashboard();
+    loadHistory();
+    checkApprovedRequestAndToggleDonorsTab();
+    showDonationTab('stats');
+  }
+
+  if (id === 'home' || id === 'profile') {
+    loadUserCapabilities();
+  }
+
+  if (id === 'openRequests') {
+    loadOpenBloodRequests();
+  }
+}
+
+
+function logout(){
+  localStorage.clear();
+  window.location.href = "login-signup.html";
+}
+
+// ===== HISTORY TAB FUNCTIONS =====
+function switchHistoryTab(tab) {
+  currentHistoryTab = tab;
+  
+  // Update button styles
+  const requestsBtn = document.getElementById('tabRequests');
+  const donationsBtn = document.getElementById('tabDonations');
+  
+  if (requestsBtn) {
+    requestsBtn.className = `px-6 py-3 rounded-xl font-medium transition-colors duration-200 ${tab === 'requests' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`;
+  }
+  
+  if (donationsBtn) {
+    donationsBtn.className = `px-6 py-3 rounded-xl font-medium transition-colors duration-200 ${tab === 'donations' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`;
+  }
+  
+  // Show/hide sections
+  const requestSection = document.getElementById('requestHistorySection');
+  const donationSection = document.getElementById('donationHistorySection');
+  
+  if (requestSection) {
+    requestSection.classList.toggle('hidden', tab !== 'requests');
+  }
+  
+  if (donationSection) {
+    donationSection.classList.toggle('hidden', tab !== 'donations');
+  }
+
+
+  
+  // Load data if needed
+  if (tab === 'donations') {
+    loadDonationStats();
+  }
+}
+
+// ===== REQUEST HISTORY FUNCTIONS =====
+function showRequestTab(tab) {
+  currentRequestTab = tab;
+  
+  // Update tab button styles
+  const tabs = ['active', 'history', 'donors'];
+  tabs.forEach(t => {
+    const btn = document.getElementById(`${t}TabBtn`);
+    if (btn) {
+      btn.className = `pb-4 px-1 text-sm font-medium border-b-2 ${tab === t ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`;
+    }
+  });
+  
+  // Show/hide tab content
+  const tabContents = {
+    'active': 'active-requests-tab',
+    'history': 'history-tab',
+    'donors': 'donors-tab'
+  };
+  
+  Object.entries(tabContents).forEach(([key, id]) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.classList.toggle('hidden', tab !== key);
+    }
+  });
+  
+  // Load data for the selected tab
+  if (tab === 'active') {
+    loadDashboard();
+  } else if (tab === 'history') {
+    loadHistory();
+  } else if (tab === 'donors') {
+    loadAvailableDonors();
+  }
+}
+
+// ===== DASHBOARD STATS & TABLE =====
+async function loadDashboard() {
+  if (!token) return;
+  try {
+    const res = await fetch("http://127.0.0.1:8000/blood_requests/api/user_requests/", {
+      method: "GET",
+      headers: { 
+        "Authorization": `Bearer ${token}`, 
+        "Content-Type": "application/json" 
+      }
+    });
+    
+    if (res.status === 401) { 
+      showNotification("Unauthorized. Please login again.");
+      setTimeout(() => logout(), 2000);
+      return; 
+    }
+
+    const data = await res.json();
+    if (!data.success) {
+      console.error("API Error:", data.message);
+      return;
+    }
+    
+    // Update welcome name if available
+    if (data.patient_name) {
+      const welcomeName = document.getElementById("userGreeting");
+      if (welcomeName) welcomeName.textContent = data.name;
+    }
+
+    const requests = data.data;
+
+    // Update stats cards from API stats
+    if (data.stats) {
+      const { total, pending, approved, completed } = data.stats;
+
+      const totalEl = document.getElementById("total-requests");
+      const pendingEl = document.getElementById("pending-requests");
+      const approvedEl = document.getElementById("approved-requests");
+      const receivedEl = document.getElementById("received-requests");
+
+      if (totalEl) totalEl.textContent = total ?? 0;
+      if (pendingEl) pendingEl.textContent = pending ?? 0;
+      if (approvedEl) approvedEl.textContent = approved ?? 0;
+      if (receivedEl) receivedEl.textContent = completed ?? 0;
+    }
+
+    // Populate active requests table
+    const tbody = document.getElementById("activeRequestsBody");
+    const noActiveEl = document.getElementById("noActiveRequests");
+    
+    if (tbody && requests) {
+      tbody.innerHTML = "";
+      
+      // Filter for active requests (pending, approved)
+      const activeRequests = requests.filter(req => 
+        req.status === 'pending' || req.status === 'approved'
+      );
+      
+      if (activeRequests.length === 0) {
+        if (noActiveEl) noActiveEl.classList.remove("hidden");
+      } else {
+        if (noActiveEl) noActiveEl.classList.add("hidden");
+        
+        activeRequests.forEach(req => {
+          const statusColors = {
+            pending: {
+              text: "text-yellow-700",
+              bg: "bg-gradient-to-r from-yellow-100 to-yellow-50",
+              icon: "fa-clock",
+              label: "Pending"
+            },
+            approved: {
+              text: "text-green-700",
+              bg: "bg-gradient-to-r from-green-100 to-green-50",
+              icon: "fa-check-circle",
+              label: "Approved"
+            },
+            rejected: {
+              text: "text-red-700",
+              bg: "bg-gradient-to-r from-red-100 to-red-50",
+              icon: "fa-times-circle",
+              label: "Rejected"
+            },
+            completed: {
+              text: "text-blue-700",
+              bg: "bg-gradient-to-r from-blue-100 to-blue-50",
+              icon: "fa-check-double",
+              label: "Completed"
+            }
+          };
+          
+          const status = statusColors[req.status] || statusColors.pending;
+          
+          const urgencyColors = {
+            critical: {
+              text: "text-red-700",
+              bg: "bg-gradient-to-r from-red-100 to-red-50",
+              icon: "fa-exclamation-circle"
+            },
+            high: {
+              text: "text-orange-700",
+              bg: "bg-gradient-to-r from-orange-100 to-orange-50",
+              icon: "fa-exclamation-circle"
+            },
+            medium: {
+              text: "text-blue-700",
+              bg: "bg-gradient-to-r from-blue-100 to-blue-50",
+              icon: "fa-exclamation-circle"
+            },
+            low: {
+              text: "text-green-700",
+              bg: "bg-gradient-to-r from-green-100 to-green-50",
+              icon: "fa-info-circle"
+            }
+          };
+          
+          const urgency = urgencyColors[req.urgency?.toLowerCase()] || urgencyColors.medium;
+          
+          const requestedTime = req.created_at
+            ? new Date(req.created_at).toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            : "N/A";
+
+          tbody.innerHTML += `
+            <tr class="hover:bg-red-50/50 transition-colors duration-200">
+              <td class="px-8 py-5 whitespace-nowrap">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-tint w-5 h-5 text-red-600"></i>
+                  </div>
+                  <div>
+                    <span class="text-sm font-semibold text-gray-900">${req.blood_type}</span>
+                    <p class="text-xs text-gray-500">Blood Type</p>
+                  </div>
+                </div>
+              </td>
+
+              <td class="px-8 py-5 whitespace-nowrap">
+                <span class="text-sm font-semibold text-gray-900">${req.units_required} units</span>
+              </td>
+
+              <td class="px-8 py-5 whitespace-nowrap">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${urgency.bg} ${urgency.text}">
+                  <i class="fas ${urgency.icon} w-3 h-3 mr-1"></i>
+                  ${req.urgency?.charAt(0).toUpperCase() + req.urgency?.slice(1) || 'Medium'}
+                </span>
+              </td>
+
+              <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">${req.hospital || 'N/A'}</td>
+
+              <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">
+                <div class="flex items-center">
+                  <i class="fas fa-clock w-4 h-4 text-gray-500 mr-2"></i>
+                  <span>${requestedTime}</span>
+                </div>
+              </td>
+
+              <td class="px-8 py-5 whitespace-nowrap">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${status.bg} ${status.text}">
+                  <i class="fas ${status.icon} w-3 h-3 mr-1"></i>
+                  ${status.label}
+                </span>
+              </td>
+
+              <td class="px-8 py-5 whitespace-nowrap text-sm">
+                <div class="flex flex-col space-y-2">
+                  ${req.status === "approved" 
+                    ? `<button 
+                         onclick="confirmReceipt(${req.id})" 
+                         class="text-green-600 hover:text-green-900 text-xs font-medium hover:underline flex items-center">
+                         <i class="fas fa-check-circle w-3 h-3 mr-1"></i>
+                         Confirm Receipt
+                       </button>`
+                    : req.status === "completed"
+                    ? `<span class="text-green-600 text-xs font-medium flex items-center">
+                         <i class="fas fa-check w-3 h-3 mr-1"></i>
+                         ✓ Received
+                       </span>`
+                    : `<span class="text-yellow-600 text-xs flex items-center">
+                         <i class="fas fa-hourglass-half w-3 h-3 mr-1"></i>
+                         Waiting for approval
+                       </span>`
+                  }
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Error loading dashboard:", err);
+    showNotification("Error loading dashboard data", "error");
+  }
+}
+
+// ===== LOAD HISTORY =====
+async function loadHistory() {
+  try {
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+
+    const res = await fetch("http://127.0.0.1:8000/blood_requests/api/user_requests/", {
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Accept": "application/json"
+      }
+    });
+
+    if (!res.ok) {
+      console.error("HTTP Error:", res.status);
+      return;
+    }
+
+    const data = await res.json();
+    const tbody = document.getElementById("historyBody");
+    const noHistoryEl = document.getElementById("noHistory");
+    
+    if (tbody) {
+      tbody.innerHTML = "";
+      
+      if (!data.data || data.data.length === 0) {
+        if (noHistoryEl) noHistoryEl.classList.remove("hidden");
+        return;
+      }
+      
+      if (noHistoryEl) noHistoryEl.classList.add("hidden");
+      
+      data.data.forEach(item => {
+        const created = item.created_at
+          ? new Date(item.created_at)
+          : null;
+
+        const date = created
+          ? created.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+            })
+          : "N/A";
+
+        const time = created
+          ? created.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+          : "N/A";
+
+        const status = getStatusBadge(item.status);
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-red-50/50 transition-colors duration-200">
+            <td class="px-8 py-5 whitespace-nowrap">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-calendar w-5 h-5 text-blue-600"></i>
+                </div>
+                <div>
+                  <span class="text-sm font-semibold text-gray-900">${date}</span>
+                  <p class="text-xs text-gray-500">${time}</p>
+                </div>
+              </div>
+            </td>
+
+            <td class="px-8 py-5 whitespace-nowrap">
+              <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-tint w-4 h-4 text-red-600"></i>
+                </div>
+                <span class="text-sm font-semibold">${item.blood_type}</span>
+              </div>
+            </td>
+
+            <td class="px-8 py-5 whitespace-nowrap">
+              <span class="text-sm font-semibold text-gray-900">${item.units_required} units</span>
+            </td>
+
+            <td class="px-8 py-5 whitespace-nowrap">
+              <span class="text-sm text-gray-900">${item.hospital || 'N/A'}</span>
+            </td>
+
+            <td class="px-8 py-5 whitespace-nowrap">
+              ${status}
+            </td>
+
+            <td class="px-8 py-5 whitespace-nowrap">
+              <button onclick="viewRequestDetails(${item.id})" class="text-blue-600 hover:text-blue-900 font-medium text-sm flex items-center hover:underline">
+                <i class="fas fa-eye w-4 h-4 mr-1"></i>
+                View Details
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+  } catch (error) {
+    console.error("History load error:", error);
+    showNotification("Error loading history", "error");
+  }
+}
+
+// ===== CHECK APPROVED REQUEST AND TOGGLE DONORS TAB =====
+async function checkApprovedRequestAndToggleDonorsTab() {
+  if (!token) return;
+
+  try {
+    const res = await fetch(
+      "http://127.0.0.1:8000/blood_requests/api/patient/approved-request/",
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+
+    const data = await res.json();
+    const donorsTabBtn = document.getElementById("donorsTabBtn");
+
+    if (!donorsTabBtn) return;
+
+    if (data.approved) {
+      donorsTabBtn.classList.remove("hidden");
+    } else {
+      donorsTabBtn.classList.add("hidden");
+
+      // If user is already on donors tab, switch back
+      const donorsTab = document.getElementById("donors-tab");
+      if (donorsTab && !donorsTab.classList.contains("hidden")) {
+        showRequestTab("requests");
+      }
+    }
+  } catch (err) {
+    console.error("Approved request check failed", err);
+  }
+}
+
+// ===== LOAD AVAILABLE DONORS =====
+async function loadAvailableDonors() {
+  try {
+    const res = await fetch(
+      "http://127.0.0.1:8000/blood_requests/api/compatible-donors/",
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+
+    const data = await res.json();
+    const donorsBody = document.getElementById("donorsBody");
+    const noDonorsEl = document.getElementById("noDonors");
+    
+    if (donorsBody) {
+      donorsBody.innerHTML = "";
+      
+      if (!data.donors || data.donors.length === 0) {
+        if (noDonorsEl) noDonorsEl.classList.remove("hidden");
+        return;
+      }
+      
+      if (noDonorsEl) noDonorsEl.classList.add("hidden");
+      
+      data.donors.forEach(donor => {
+        const lastDonation = donor.last_donation_date
+          ? new Date(donor.last_donation_date).toLocaleDateString()
+          : "Never";
+        
+        donorsBody.innerHTML += `
+          <tr class="hover:bg-green-50/50 transition-colors duration-200">
+            <td class="px-8 py-5 whitespace-nowrap">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <i class="fas fa-user w-5 h-5 text-green-600"></i>
+                </div>
+                <div>
+                  <span class="text-sm font-semibold text-gray-900">${donor.name}</span>
+                  <p class="text-xs text-gray-500">Donor</p>
+                </div>
+              </div>
+            </td>
+            
+            <td class="px-8 py-5 whitespace-nowrap">
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+                <i class="fas fa-tint w-3 h-3 mr-1"></i>
+                ${donor.blood_type}
+              </span>
+            </td>
+            
+            <td class="px-8 py-5 whitespace-nowrap">
+              <div class="space-y-1">
+                <span class="text-sm text-gray-900">${donor.phone || 'N/A'}</span>
+                <p class="text-xs text-gray-500">${donor.email || ''}</p>
+              </div>
+            </td>
+            
+            <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">
+              ${donor.location || 'N/A'}
+            </td>
+            
+            <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">
+              ${lastDonation}
+            </td>
+            
+            <td class="px-8 py-5 whitespace-nowrap">
+              <button onclick="contactDonor('${donor.name}', '${donor.phone || ''}')" 
+                      class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+                <i class="fas fa-phone mr-2"></i> Contact
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+  } catch (err) {
+    console.error("Error loading donors:", err);
+    showNotification("Error loading donors", "error");
+  }
+}
+
+// ===== CONFIRM RECEIPT =====
+async function confirmReceipt(requestId) {
+  if (!confirm("Have you received the blood?")) return;
+
+  try {
+    const res = await fetch(
+      `http://127.0.0.1:8000/blood_requests/api/confirm-receipt/${requestId}/`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await res.json();
+    showNotification(data.message || "Receipt confirmed successfully!");
+    
+    // Refresh data
+    loadDashboard();
+    loadHistory();
+    checkApprovedRequestAndToggleDonorsTab();
+    
+  } catch (err) {
+    console.error("Error confirming receipt:", err);
+    showNotification("Error confirming receipt", "error");
+  }
+}
+
+// ===== USER CAPABILITIES =====
+async function loadUserCapabilities(){
+  if(!token) return logout();
+
+  try {
+    const res = await fetch("http://127.0.0.1:8000/loginsignup/user-capabilities/", {
+      headers:{ Authorization:`Bearer ${token}` }
+    });
+
+    if(!res.ok) throw new Error('Failed to fetch user data');
+    
+    const data = await res.json();
+
+    // Update user greeting
+    const userGreeting = document.getElementById("userGreeting");
+    if (userGreeting) userGreeting.textContent = data.name.split(' ')[0];
+    
+    // Update profile info
+    const profileName = document.getElementById("profileName");
+    const profileEmail = document.getElementById("profileEmail");
+    const profileBloodType = document.getElementById("profileBloodType");
+    const profilePatientId = document.getElementById("profilePatientId");
+    const profileMemberSince = document.getElementById("profileMemberSince");
+    
+    if (profileName) profileName.textContent = data.name;
+    if (profileEmail) profileEmail.textContent = data.email;
+    if (profileBloodType) profileBloodType.textContent = data.blood_type || "Not specified";
+    if (profilePatientId) profilePatientId.textContent = data.patient_id || "N/A";
+    if (profileMemberSince) profileMemberSince.textContent = data.member_since || "N/A";
+    
+    // Update statistics
+    const statRequests = document.getElementById("statRequests");
+    const statCompleted = document.getElementById("statCompleted");
+    const profileTotalRequests = document.getElementById("profileTotalRequests");
+    const profileCompletedRequests = document.getElementById("profileCompletedRequests");
+    const profilePendingRequests = document.getElementById("profilePendingRequests");
+    
+    if (statRequests) statRequests.textContent = data.requests?.total || 0;
+    if (statCompleted) statCompleted.textContent = data.requests?.completed || 0;
+    if (profileTotalRequests) profileTotalRequests.textContent = data.requests?.total || 0;
+    if (profileCompletedRequests) profileCompletedRequests.textContent = data.requests?.completed || 0;
+    if (profilePendingRequests) profilePendingRequests.textContent = data.requests?.pending || 0;
+
+    // Handle donor-specific features
+    if(data.is_donor){
+      // Show donor elements
+      const donorNav = document.getElementById("donorNav");
+      const quickDonateBtn = document.getElementById("quickDonateBtn");
+      const donorStatsCard = document.getElementById("donorStatsCard");
+      const donorProfile = document.getElementById("donorProfile");
+      const donorContent = document.getElementById("donorContent");
+      const notDonorMsg = document.getElementById("notDonorMsg");
+      const donorBadge = document.getElementById("donorBadge");
+      
+      if (donorNav) donorNav.classList.remove("hidden");
+      if (quickDonateBtn) quickDonateBtn.classList.remove("hidden");
+      if (donorStatsCard) donorStatsCard.classList.remove("hidden");
+      if (donorProfile) donorProfile.classList.remove("hidden");
+      if (donorContent) donorContent.classList.remove("hidden");
+      if (notDonorMsg) notDonorMsg.classList.add("hidden");
+      
+      // Update role
+      const profileRole = document.getElementById("profileRole");
+      const userStatus = document.getElementById("userStatus");
+      if (profileRole) profileRole.textContent = "Patient & Donor";
+      if (userStatus) userStatus.textContent = "Patient & Donor";
+      
+      // Update donor stats
+      const statDonations = document.getElementById("statDonations");
+      const profileDonations = document.getElementById("profileDonations");
+      const profileLastDonation = document.getElementById("profileLastDonation");
+      const profileDonorStatus = document.getElementById("profileDonorStatus");
+      const donorAvailable = document.getElementById("donorAvailable");
+      const lastDonation = document.getElementById("lastDonation");
+      const donorScore = document.getElementById("donorScore");
+      
+      if (statDonations) statDonations.textContent = data.donations?.total || 0;
+      if (profileDonations) profileDonations.textContent = data.donations?.total || 0;
+      if (profileLastDonation) profileLastDonation.textContent = data.donations?.last_date || "Never";
+      if (profileDonorStatus) profileDonorStatus.textContent = data.donor_approved ? "Approved" : "Pending";
+      if (donorAvailable) donorAvailable.textContent = data.donor_available ? "Yes" : "No";
+      if (lastDonation) lastDonation.textContent = data.donations?.days_since_last || "Never";
+      if (donorScore) donorScore.textContent = data.donor_score || "0";
+      
+      if (data.donor_approved && donorBadge) {
+        donorBadge.classList.remove("hidden");
+      }
+      // ===== OPEN BLOOD REQUESTS MENU =====
+const openRequestsNav = document.getElementById("openRequestsNav");
+
+if (data.donor_approved) {
+  if (openRequestsNav) openRequestsNav.classList.remove("hidden");
+} else {
+  if (openRequestsNav) openRequestsNav.classList.add("hidden");
+}
+
+    } else {
+      // Hide donor elements
+      const donorContent = document.getElementById("donorContent");
+      const notDonorMsg = document.getElementById("notDonorMsg");
+      if (donorContent) donorContent.classList.add("hidden");
+      if (notDonorMsg) notDonorMsg.classList.remove("hidden");
+    }
+       // ================= REGISTER AS DONOR BUTTON =================
+const registerDonorBtn = document.getElementById("registerDonorBtn");
+const profileRegisterDonorBtn = document.getElementById("profileRegisterDonorBtn");
+if (data.is_donor) {
+    if (registerDonorBtn) registerDonorBtn.classList.add("hidden");
+    if (profileRegisterDonorBtn) profileRegisterDonorBtn.classList.add("hidden");
+} else {
+    if (registerDonorBtn) registerDonorBtn.classList.remove("hidden");
+    if (profileRegisterDonorBtn) profileRegisterDonorBtn.classList.remove("hidden");
+}
+
+
+  } catch (error) {
+    console.error('Error loading user data:', error);
+    showNotification('Failed to load user data. Please try again.', 'error');
+  }
+}
+
+
+// ===== DONATION HISTORY FUNCTIONS =====
+function showDonationTab(tab) {
+  currentDonationTab = tab;
+  
+  // Update tab button styles
+  ['stats', 'history', 'pending'].forEach(t => {
+    const btn = document.getElementById(`donation${t.charAt(0).toUpperCase() + t.slice(1)}Tab`);
+    if (btn) {
+      btn.className = `pb-4 px-1 text-sm font-medium border-b-2 ${tab === t ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`;
+    }
+  });
+  
+  // Show/hide tab content
+  ['Stats', 'History', 'Pending'].forEach(t => {
+    const content = document.getElementById(`donation${t}Content`);
+    if (content) {
+      content.classList.toggle('hidden', tab !== t.toLowerCase());
+    }
+  });
+  
+  // Load data for the selected tab
+  if (tab === 'stats') {
+    loadDonationStats();
+  } else if (tab === 'history') {
+    loadDonationHistory();
+  } else if (tab === 'pending') {
+    loadPendingDonations();
+  }
+}
+
+// ===== LOAD DONATION STATISTICS =====
+async function loadDonationStats() {
+  try {
+    if (!token) return;
+
+    // Load stats
+    const statsRes = await fetch("http://127.0.0.1:8000/donations/api/donation-stats/", {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (statsRes.ok) {
+      const statsData = await statsRes.json();
+      updateDonationStats(statsData);
+    }
+
+    // Load recent donations
+    const historyRes = await fetch("http://127.0.0.1:8000/donations/api/user-donations/?limit=5", {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (historyRes.ok) {
+      const historyData = await historyRes.json();
+      updateRecentDonations(historyData.donations || []);
+    }
+
+    // Check for pending donations
+    await loadPendingDonations();
+    
+  } catch (err) {
+    console.error("Error loading donation stats:", err);
+    showNotification("Error loading donation statistics", "error");
+  }
+}
+
+function updateDonationStats(stats) {
+  const statTotalDonations = document.getElementById("stat-total-donations");
+  const statVerifiedDonations = document.getElementById("stat-verified-donations");
+  const statLivesImpacted = document.getElementById("stat-lives-impacted");
+  const statThisYear = document.getElementById("stat-this-year");
+  
+  if (statTotalDonations) statTotalDonations.textContent = stats.total_donations || 0;
+  if (statVerifiedDonations) statVerifiedDonations.textContent = stats.verified_donations || 0;
+  if (statLivesImpacted) statLivesImpacted.textContent = stats.lives_impacted || 0;
+  if (statThisYear) statThisYear.textContent = stats.this_year || 0;
+}
+
+function updateRecentDonations(donations) {
+  const container = document.getElementById("donationHistoryList");
+  const noDataEl = document.getElementById("noRecentDonations");
+  
+  if (!container) return;
+  
+  if (!donations || donations.length === 0) {
+    container.innerHTML = "";
+    if (noDataEl) noDataEl.classList.remove("hidden");
+    return;
+  }
+  
+  if (noDataEl) noDataEl.classList.add("hidden");
+  
+  container.innerHTML = donations.map(donation => {
+    const date = new Date(donation.donation_date);
+    const formattedDate = date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+    
+    const statusBadge = getDonationStatusBadge(donation.status);
+    
+    return `
+      <tr class="hover:bg-gray-50 transition-colors">
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm font-medium text-gray-900">${formattedDate}</div>
+          <div class="text-xs text-gray-500">
+            ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+            <i class="fas fa-tint mr-1"></i> ${donation.blood_type}
+          </span>
+        </td>
+        <td class="px-6 py-4">
+          <div class="text-sm text-gray-900">${donation.hospital_name || 'Donation Center'}</div>
+          <div class="text-xs text-gray-500">${donation.location || ''}</div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">${statusBadge}</td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          ${donation.status === 'completed' 
+            ? `<button onclick="downloadCertificate('${donation.id}')" class="text-red-600 hover:text-red-800 text-sm font-medium">
+                <i class="fas fa-download mr-1"></i> Certificate
+              </button>`
+            : `<span class="text-gray-400 text-sm">N/A</span>`
+          }
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ===== LOAD DONATION HISTORY =====
+async function loadDonationHistory() {
+  try {
+    if (!token) return;
+
+    const res = await fetch("http://127.0.0.1:8000/donations/api/donations-history/", {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (!res.ok) {
+      console.error("Failed to load donation history");
+      return;
+    }
+
+    const data = await res.json();
+    allDonations = data.donations || [];
+    filterDonationHistory();
+    
+  } catch (err) {
+    console.error("Error loading donation history:", err);
+    showNotification("Error loading donation history", "error");
+  }
+}
+
+function filterDonationHistory() {
+  const statusFilter = document.getElementById("donationStatusFilter");
+  const timeFilter = document.getElementById("donationTimeFilter");
+  
+  if (!statusFilter || !timeFilter) return;
+  
+  const statusValue = statusFilter.value;
+  const timeValue = timeFilter.value;
+  
+  filteredDonations = allDonations.filter(donation => {
+    // Status filter
+    if (statusValue !== 'all' && donation.status !== statusValue) {
+      return false;
+    }
+    
+    // Time filter
+    if (timeValue !== 'all') {
+      const donationDate = new Date(donation.donation_date);
+      const now = new Date();
+      
+      switch (timeValue) {
+        case 'this_year':
+          return donationDate.getFullYear() === now.getFullYear();
+        case 'last_3_months':
+          const threeMonthsAgo = new Date();
+          threeMonthsAgo.setMonth(now.getMonth() - 3);
+          return donationDate >= threeMonthsAgo;
+        case 'last_month':
+          const oneMonthAgo = new Date();
+          oneMonthAgo.setMonth(now.getMonth() - 1);
+          return donationDate >= oneMonthAgo;
+        default:
+          return true;
+      }
+    }
+    
+    return true;
+  });
+  
+  updateDonationHistoryTable();
+}
+
+function resetDonationFilters() {
+  const statusFilter = document.getElementById("donationStatusFilter");
+  const timeFilter = document.getElementById("donationTimeFilter");
+  
+  if (statusFilter) statusFilter.value = 'all';
+  if (timeFilter) timeFilter.value = 'all';
+  filterDonationHistory();
+}
+
+function updateDonationHistoryTable() {
+  const container = document.getElementById("donationHistoryBody");
+  const noDataEl = document.getElementById("noDonationHistory");
+  const countEl = document.getElementById("donationCount");
+  
+  if (!container) return;
+  
+  // Update count
+  if (countEl) {
+    countEl.textContent = filteredDonations.length;
+  }
+  
+  if (filteredDonations.length === 0) {
+    container.innerHTML = "";
+    if (noDataEl) noDataEl.classList.remove("hidden");
+    return;
+  }
+  
+  if (noDataEl) noDataEl.classList.add("hidden");
+  
+  container.innerHTML = filteredDonations.map(donation => {
+    const date = new Date(donation.donation_date);
+    const formattedDate = date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+    const formattedTime = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    
+    const statusBadge = getDonationStatusBadge(donation.status);
+    
+    return `
+      <tr class="hover:bg-gray-50 transition-colors">
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm font-medium text-gray-900">${formattedDate}</div>
+          <div class="text-xs text-gray-500">${formattedTime}</div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+            <i class="fas fa-tint mr-1"></i> ${donation.blood_type}
+          </span>
+        </td>
+        <td class="px-6 py-4">
+          <div class="text-sm text-gray-900">${donation.hospital_name || 'Donation Center'}</div>
+          <div class="text-xs text-gray-500">${donation.location || ''}</div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div class="text-sm text-gray-900">${donation.volume || '450'}ml</div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">${statusBadge}</td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          ${donation.status === 'verified' || donation.status === 'completed'
+            ? `<button onclick="downloadCertificate('${donation.id}')" class="text-red-600 hover:text-red-800 text-sm font-medium">
+                <i class="fas fa-download mr-1"></i> Download
+              </button>`
+            : `<span class="text-gray-400 text-sm">Not Available</span>`
+          }
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ===== LOAD PENDING DONATIONS =====
+async function loadPendingDonations() {
+  try {
+    if (!token) return;
+
+    const res = await fetch("http://127.0.0.1:8000/donations/api/pending-confirmations/", {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (!res.ok) {
+      console.error("Failed to load pending donations");
+      return;
+    }
+
+    const data = await res.json();
+    updatePendingDonationsUI(data.pending_donations || []);
+    
+  } catch (err) {
+    console.error("Error loading pending donations:", err);
+  }
+}
+
+function updatePendingDonationsUI(pendingDonations) {
+  const pendingCard = document.getElementById("pendingDonationCard");
+  const noPendingEl = document.getElementById("noPendingDonations");
+  const recentConfirmedSection = document.getElementById("recentConfirmedSection");
+  
+  if (!pendingCard || !noPendingEl) return;
+  
+  if (pendingDonations.length > 0) {
+    pendingCard.classList.remove("hidden");
+    noPendingEl.classList.add("hidden");
+    
+    const detailsEl = document.getElementById("pendingDonationDetails");
+    if (detailsEl) {
+      detailsEl.innerHTML = pendingDonations.map(donation => `
+        <div class="bg-yellow-50 p-4 rounded-xl">
+          <div class="flex justify-between items-start">
+            <div>
+              <h4 class="font-medium text-gray-900">${donation.hospital_name}</h4>
+              <p class="text-sm text-gray-600">Scheduled: ${new Date(donation.scheduled_date).toLocaleDateString()}</p>
+              <p class="text-sm text-gray-600">Blood Type: ${donation.blood_type}</p>
+            </div>
+            <button onclick="openOtpModal('${donation.id}')" class="text-yellow-600 hover:text-yellow-800">
+              <i class="fas fa-key"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Store current pending donation ID for OTP modal
+    if (pendingDonations[0]) {
+      pendingCard.dataset.donationId = pendingDonations[0].id;
+    }
+  } else {
+    pendingCard.classList.add("hidden");
+    noPendingEl.classList.remove("hidden");
+  }
+}
+
+// ===== OTP MODAL FUNCTIONS =====
+let currentPendingDonationId = null;
+
+function openOtpModal(donationId = null) {
+  currentPendingDonationId = donationId || document.getElementById("pendingDonationCard")?.dataset.donationId;
+  
+  // Load donation details for modal
+  if (currentPendingDonationId) {
+    loadDonationDetailsForModal(currentPendingDonationId);
+  }
+  
+  const modal = document.getElementById("otpModal");
+  if (modal) modal.classList.remove("hidden");
+  
+  const otpCode = document.getElementById("otpCode");
+  if (otpCode) otpCode.focus();
+}
+
+function closeOtpModal() {
+  const modal = document.getElementById("otpModal");
+  if (modal) modal.classList.add("hidden");
+  
+  const form = document.getElementById("otpForm");
+  if (form) form.reset();
+  
+  currentPendingDonationId = null;
+}
+
+async function loadDonationDetailsForModal(donationId) {
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/donations/api/donation-details/${donationId}/`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const detailsEl = document.getElementById("donationDetails");
+      if (detailsEl && data.donation) {
+        const donation = data.donation;
+        detailsEl.innerHTML = `
+          <h4 class="font-medium text-gray-900 mb-2">Donation Details</h4>
+          <div class="space-y-1 text-sm">
+            <p><span class="text-gray-600">Hospital:</span> ${donation.hospital_name}</p>
+            <p><span class="text-gray-600">Date:</span> ${new Date(donation.donation_date).toLocaleDateString()}</p>
+            <p><span class="text-gray-600">Blood Type:</span> ${donation.blood_type}</p>
+            <p><span class="text-gray-600">Volume:</span> ${donation.volume || '450'}ml</p>
+          </div>
+        `;
+      }
+    }
+  } catch (err) {
+    console.error("Error loading donation details:", err);
+  }
+}
+
+async function submitOtp(event) {
+  event.preventDefault();
+  
+  const otpCode = document.getElementById("otpCode");
+  if (!otpCode || !currentPendingDonationId) {
+    showNotification("Invalid OTP or donation ID", "error");
+    return;
+  }
+  
+  const otpValue = otpCode.value;
+  if (!otpValue) {
+    showNotification("Please enter OTP code", "error");
+    return;
+  }
+  
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/donations/api/confirm-donation/${currentPendingDonationId}/`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ otp: otpValue })
+    });
+
+    const data = await res.json();
+    
+    if (res.ok) {
+      showNotification(data.message || "Donation confirmed successfully!", "success");
+      closeOtpModal();
+      
+      // Refresh all donation data
+      loadDonationStats();
+      loadDonationHistory();
+      loadPendingDonations();
+    } else {
+      showNotification(data.error || "Invalid OTP", "error");
+    }
+  } catch (err) {
+    console.error("Error confirming donation:", err);
+    showNotification("Error confirming donation", "error");
+  }
+}
+
+// ===== HELPER FUNCTIONS =====
+function getStatusBadge(status) {
+  const statusConfig = {
+    pending: {
+      text: "text-yellow-700",
+      bg: "bg-gradient-to-r from-yellow-100 to-yellow-50",
+      icon: "fa-clock",
+      label: "Pending"
+    },
+    approved: {
+      text: "text-green-700",
+      bg: "bg-gradient-to-r from-green-100 to-green-50",
+      icon: "fa-check-circle",
+      label: "Approved"
+    },
+    rejected: {
+      text: "text-red-700",
+      bg: "bg-gradient-to-r from-red-100 to-red-50",
+      icon: "fa-times-circle",
+      label: "Rejected"
+    },
+    completed: {
+      text: "text-blue-700",
+      bg: "bg-gradient-to-r from-blue-100 to-blue-50",
+      icon: "fa-check-double",
+      label: "Completed"
+    }
+  };
+  
+  const config = statusConfig[status] || statusConfig.pending;
+  
+  return `
+    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text}">
+      <i class="fas ${config.icon} w-3 h-3 mr-1"></i>
+      ${config.label}
+    </span>
+  `;
+}
+
+function getDonationStatusBadge(status) {
+  const statusConfig = {
+    pending: {
+      text: "text-yellow-700",
+      bg: "bg-yellow-100",
+      icon: "fa-clock",
+      label: "Pending"
+    },
+    confirmed: {
+      text: "text-blue-700",
+      bg: "bg-blue-100",
+      icon: "fa-check",
+      label: "Confirmed"
+    },
+    verified: {
+      text: "text-green-700",
+      bg: "bg-green-100",
+      icon: "fa-check-circle",
+      label: "Verified"
+    },
+    completed: {
+      text: "text-green-700",
+      bg: "bg-green-100",
+      icon: "fa-check-double",
+      label: "Completed"
+    },
+    cancelled: {
+      text: "text-red-700",
+      bg: "bg-red-100",
+      icon: "fa-times-circle",
+      label: "Cancelled"
+    }
+  };
+  
+  const config = statusConfig[status] || statusConfig.pending;
+  
+  return `
+    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text}">
+      <i class="fas ${config.icon} mr-1"></i>
+      ${config.label}
+    </span>
+  `;
+}
+
+function viewRequestDetails(requestId) {
+  showNotification(`Viewing details for request #${requestId}`);
+}
+
+function contactDonor(name, phone) {
+  if (phone) {
+    showNotification(`Contacting ${name} at ${phone}`);
+  } else {
+    showNotification(`No contact number available for ${name}`, "warning");
+  }
+}
+
+async function downloadCertificate(donationId) {
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/donations/api/certificate/${donationId}/`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (res.ok) {
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `donation-certificate-${donationId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      showNotification("Certificate downloaded successfully!", "success");
+    } else {
+      showNotification("Certificate not available", "warning");
+    }
+  } catch (err) {
+    console.error("Error downloading certificate:", err);
+    showNotification("Error downloading certificate", "error");
+  }
+}
+
+async function exportDonationHistory() {
+  try {
+    const res = await fetch("http://127.0.0.1:8000/donations/api/export-donations/", {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (res.ok) {
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `donation-history-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      showNotification("Donation history exported successfully!", "success");
+    } else {
+      showNotification("Failed to export donation history", "error");
+    }
+  } catch (err) {
+    console.error("Error exporting donation history:", err);
+    showNotification("Error exporting donation history", "error");
+  }
+}
+
+function showNotification(message, type = "success") {
+  // Create notification element
+  const notification = document.createElement("div");
+  notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-medium z-50 transform transition-transform duration-300 ${
+    type === "success" ? "bg-green-600" : 
+    type === "error" ? "bg-red-600" : 
+    type === "warning" ? "bg-yellow-600" : "bg-blue-600"
+  }`;
+  notification.textContent = message;
+  notification.style.transform = "translateX(100%)";
+  
+  document.body.appendChild(notification);
+  
+  // Animate in
+  setTimeout(() => {
+    notification.style.transform = "translateX(0)";
+  }, 10);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.style.transform = "translateX(100%)";
+    setTimeout(() => {
+      if (document.body.contains(notification)) {
+        document.body.removeChild(notification);
+      }
+    }, 300);
+  }, 3000);
+}
+
+// ===== INITIALIZATION =====
+document.addEventListener("DOMContentLoaded", function() {
+  // Check if token exists
+  if (!token) {
+    logout();
+    return;
+  }
+  
+  // Load user capabilities on page load
+  loadUserCapabilities();
+  
+  // Close modal on ESC key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeOtpModal();
+    }
+  });
+  
+  // Close modal on background click
+  const otpModal = document.getElementById("otpModal");
+  if (otpModal) {
+    otpModal.addEventListener('click', (e) => {
+      if (e.target.id === "otpModal") {
+        closeOtpModal();
+      }
+    });
+  }
+  
+  // Update sidebar donor button
+  const donorNavButton = document.getElementById("donorNav");
+  if (donorNavButton) {
+    donorNavButton.setAttribute("onclick", "showSection('donor')");
+  }
+});
+async function loadOpenBloodRequests() {
+  if (!token) return;
+
+  try {
+    const res = await fetch(
+      "http://127.0.0.1:8000/blood_requests/api/open-requests/",
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+
+    const data = await res.json();
+    const tbody = document.getElementById("openRequestsBody");
+    const noData = document.getElementById("noOpenRequests");
+
+    tbody.innerHTML = "";
+
+    if (!data.requests || data.requests.length === 0) {
+      noData.classList.remove("hidden");
+      return;
+    }
+
+    noData.classList.add("hidden");
+
+    data.requests.forEach(req => {
+      tbody.innerHTML += `
+        <tr class="hover:bg-red-50">
+          <td class="px-6 py-4 font-semibold">${req.blood_type}</td>
+          <td class="px-6 py-4">${req.units_required}</td>
+          <td class="px-6 py-4">${req.hospital}</td>
+          <td class="px-6 py-4">
+            <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+              ${req.urgency}
+            </span>
+          </td>
+          <td class="px-6 py-4">${req.location}</td>
+          <td class="px-6 py-4 font-mono text-sm">#${req.request_id}</td>
+          <td class="px-6 py-4">
+            <button
+              onclick="markInterest(${req.request_id})"
+              class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm">
+              I’m Willing to Donate
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+  } catch (err) {
+    console.error("Failed to load open requests", err);
+    showNotification("Failed to load open requests", "error");
+  }
+}
+async function markInterest(requestId) {
+  if (!confirm(`Confirm interest for Request ID #${requestId}?`)) return;
+
+  try {
+    const res = await fetch(
+      `http://127.0.0.1:8000/blood_requests/api/mark-interest/${requestId}/`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+
+    const data = await res.json();
+    showNotification(data.message || "Interest recorded");
+
+  } catch (err) {
+    showNotification("Failed to mark interest", "error");
+  }
+}
+
+</script>
+
+</body>
+</html>

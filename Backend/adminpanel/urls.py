@@ -9,6 +9,10 @@ from .views import (
     admin_pending_donor_registrations,
     admin_approve_donor_registration,
     admin_reject_donor_registration,
+    admin_reset_hospital_password,
+    admin_list_hospitals,
+    admin_toggle_hospital
+    , admin_create_hospital,
 )
 
 urlpatterns = [
@@ -21,4 +25,10 @@ urlpatterns = [
     path("pending-donor-registrations/", admin_pending_donor_registrations),
     path("donor/<int:donor_id>/approve/", admin_approve_donor_registration),
     path("donor/<int:donor_id>/reject/", admin_reject_donor_registration),
+     # ✅ HOSPITAL ADMIN MANAGEMENT
+    path("hospital/create/", admin_create_hospital),
+    path("hospitals/list/", admin_list_hospitals),
+    path("hospital/<int:hospital_id>/reset-password/", admin_reset_hospital_password),
+    path("hospital/<int:hospital_id>/toggle/", admin_toggle_hospital),
+
 ]

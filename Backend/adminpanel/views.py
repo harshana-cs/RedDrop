@@ -2,10 +2,13 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.conf import settings
-
+from hospital.models import Hospital, HospitalProfile
 from blood_requests.models import BloodRequest
 from register_donor.models import Donor
 from loginsignup.models import Patient
+from hospital.models import Hospital
+from django.core.mail import send_mail
+
 
 
 # ================= ADMIN SECRET LOGIN =================
@@ -205,6 +208,8 @@ def admin_reject_donor_registration(request, donor_id):
         "message": "Donor rejected successfully"
     })
 
+from django.core.mail import send_mail
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def admin_approve_donor_registration(request, donor_id):
@@ -216,10 +221,151 @@ def admin_approve_donor_registration(request, donor_id):
             status=404
         )
 
+    # Prevent duplicate approval
+    if donor.is_approved:
+        return Response({
+            "success": True,
+            "message": "Donor already approved"
+        })
+
     donor.is_approved = True
     donor.save()
 
+    # ✅ SEND APPROVAL EMAIL (USE Donor.email)
+    if donor.email:
+        send_mail(
+            subject="🎉 You are now an approved blood donor!",
+            message=(
+                f"Hello {donor.first_name},\n\n"
+                "Great news! Your donor registration on RedDrop has been approved.\n\n"
+                "You can now receive blood donation requests and help save lives.\n\n"
+                "Thank you for being a hero ❤️\n"
+                "— RedDrop Team"
+            ),
+            from_email="noreply@reddrop.com",
+            recipient_list=[donor.email],
+            fail_silently=True
+        )
+
     return Response({
         "success": True,
-        "message": "Donor approved successfully"
+        "message": "Donor approved successfully and email sent"
+    })
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def admin_list_hospitals(request):
+    hospitals = Hospital.objects.select_related("profile")
+
+    data = []
+    for h in hospitals:
+        profile = getattr(h, "profile", None)
+
+        data.append({
+            "id": h.id,
+            "name": h.name,
+            "username": h.username,
+            "active": h.is_active,
+            "created_at": h.created_at.strftime("%Y-%m-%d"),
+
+            "district": profile.district if profile else None,
+            "contact_number": profile.contact_number if profile else None,
+            "registration_number": profile.registration_number if profile else None,
+            "email": profile.email if profile else None,
+        })
+
+    return Response({
+        "success": True,
+        "data": data
+    })
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def admin_reset_hospital_password(request, hospital_id):
+    password = request.data.get("password")
+
+    if not password:
+        return Response(
+            {"success": False, "message": "Password required"},
+            status=400
+        )
+
+    try:
+        hospital = Hospital.objects.get(id=hospital_id)
+    except Hospital.DoesNotExist:
+        return Response(
+            {"success": False, "message": "Hospital not found"},
+            status=404
+        )
+
+    hospital.set_password(password)
+    hospital.save()
+
+    return Response({
+        "success": True,
+        "message": "Password reset successfully"
+    })
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def admin_toggle_hospital(request, hospital_id):
+    try:
+        hospital = Hospital.objects.get(id=hospital_id)
+    except Hospital.DoesNotExist:
+        return Response(
+            {"success": False, "message": "Hospital not found"},
+            status=404
+        )
+
+    hospital.is_active = not hospital.is_active
+    hospital.save()
+
+    return Response({
+        "success": True,
+        "active": hospital.is_active
+    })
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def admin_create_hospital(request):
+    name = request.data.get("name")
+    username = request.data.get("username")
+    password = request.data.get("password")
+
+    district = request.data.get("district")
+    contact_number = request.data.get("contact_number")
+    registration_number = request.data.get("registration_number")
+    email = request.data.get("email")
+
+    if not all([name, username, password, district, contact_number, registration_number]):
+        return Response(
+            {"success": False, "message": "All required fields must be provided"},
+            status=400
+        )
+
+    if Hospital.objects.filter(username=username).exists():
+        return Response(
+            {"success": False, "message": "Username already exists"},
+            status=400
+        )
+
+    # 1️⃣ Create Hospital (login)
+    hospital = Hospital(
+        name=name,
+        username=username
+    )
+    hospital.set_password(password)
+    hospital.save()
+
+    # 2️⃣ Create Hospital Profile
+    HospitalProfile.objects.create(
+        hospital=hospital,
+        district=district,
+        contact_number=contact_number,
+        registration_number=registration_number,
+        email=email
+    )
+
+    return Response({
+        "success": True,
+        "message": "Hospital created successfully"
     })

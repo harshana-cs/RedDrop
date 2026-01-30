@@ -31,7 +31,7 @@
 
   <style>
     .input { @apply w-full border px-3 py-2 rounded-md focus:ring-red-500 focus:border-red-500; }
-    .signupRole input:checked + span { @apply text-red-600 font-semibold; }
+    /* .signupRole input:checked + span { @apply text-red-600 font-semibold; } */
   </style>
 </head>
 
@@ -99,21 +99,10 @@
     <div id="signupSection" class="hidden space-y-8">
       <h2 class="text-3xl font-semibold text-gray-900">Create Account</h2>
 
-      <!-- ROLE SELECTION -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Select Role</label>
-        <div class="grid grid-cols-2 gap-3">
-          <label class="signupRole flex items-center space-x-2 p-3 border rounded-xl cursor-pointer">
-            <input type="radio" name="role" value="patient" checked>
-            <span>Patient/User</span>
-          </label>
+     <p class="text-sm text-gray-600">
+  One account lets you <strong>request blood</strong> and <strong>donate blood</strong> anytime.
+</p>
 
-          <label class="signupRole flex items-center space-x-2 p-3 border rounded-xl cursor-pointer">
-            <input type="radio" name="role" value="donor">
-            <span>Blood Donor</span>
-          </label>
-        </div>
-      </div>
 
       <!-- SIGNUP FORM -->
       <form id="signupForm" class="space-y-5">
@@ -171,225 +160,139 @@
 
 <!-- JAVASCRIPT -->
 <script>
+// <script>
+/* ---------------- TOGGLE LOGIN / SIGNUP ---------------- */
 function toggleForm(form) {
   document.getElementById("loginSection").classList.toggle("hidden", form === "signup");
   document.getElementById("signupSection").classList.toggle("hidden", form === "login");
 }
 
-function getSelectedRoleSignup() {
-  return document.querySelector("input[name='role']:checked")?.value || "patient";
-}
+/* ---------------- GOOGLE LOGIN / SIGNUP ---------------- */
+window.handleGoogleLogin = async (response) => {
+  const isLogin = !document.getElementById("loginSection").classList.contains("hidden");
 
-async function refreshToken() {
-    const refresh = localStorage.getItem("refresh");
-    if (!refresh) return;
-
-    const res = await fetch("http://127.0.0.1:8000/api/token/refresh/", {
+  try {
+    if (isLogin) {
+      /* -------- GOOGLE LOGIN -------- */
+      const res = await fetch("http://localhost:8000/loginsignup/google_login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh })
-    });
+        body: JSON.stringify({ credential: response.credential })
+      });
 
-    const data = await res.json();
-    if (data.access) {
-        localStorage.setItem("access", data.access);
+      const data = await res.json();
+      if (!data.success) {
+        alert(data.message || "Login failed");
+        return;
+      }
+
+      localStorage.setItem("emailaddress", data.email);
+      localStorage.setItem("fullname", data.fullname);
+      localStorage.setItem("access_token", data.tokens.access);
+      localStorage.setItem("refresh_token", data.tokens.refresh);
+
+      localStorage.setItem("is_donor", data.is_donor || false);
+
+      window.location.href = "dashboard.html";
+
     } else {
-        alert("Session expired, please login again.");
-        window.location.href = "/";
-    }
-}
+      /* -------- GOOGLE SIGNUP -------- */
+      const res = await fetch("http://localhost:8000/loginsignup/google_signup/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: response.credential })
+      });
 
-/* GOOGLE LOGIN HANDLER */
-window.handleGoogleLogin = async (response) => {
-    console.log("Google credential:", response.credential);
+      const data = await res.json();
+      if (!data.success) return alert(data.message);
 
-    const isLogin = !document.getElementById("loginSection").classList.contains("hidden");
-    const signup_role = getSelectedRoleSignup();
+      const code = prompt("Enter verification code sent to your email:");
+      if (!code) return;
 
-    try {
-        if (isLogin) {
-            // LOGIN
-            const res = await fetch("http://localhost:8000/loginsignup/google_login/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ credential: response.credential })
-            });
+      const verifyRes = await fetch("http://localhost:8000/loginsignup/verify-code/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: data.email, code })
+      });
 
-            const data = await res.json();
-            console.log("Login:", data);
-
-            if (data.success) {
-                localStorage.setItem("user_type", data.user_type);
-                localStorage.setItem("emailaddress", data.email || data.emailaddress);
-                localStorage.setItem("access_token", data.tokens.access);
-                localStorage.setItem("refresh_token", data.tokens.refresh);
-                localStorage.setItem("fullname", data.fullname);
-
-                if (data.user_type === "donor") {
-
-    if (!data.profile_complete) {
-        window.location.href = "donor_register.html";
-    } else {
-        window.location.href = "donor.html";
+      const verifyData = await verifyRes.json();
+      if (verifyData.success) {
+        alert("Verification successful! Please login.");
+        toggleForm("login");
+      } else {
+        alert("Invalid verification code.");
+      }
     }
 
-} else {
-    alert(`Welcome ${data.fullname}!`);
-    showPriorityModal();
-}
-
-            } else {
-                alert(data.message || "Login failed");
-            }
-
-        } else {
-            // SIGNUP
-            const res = await fetch("http://localhost:8000/loginsignup/google_signup/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    credential: response.credential,
-                    user_type: signup_role
-                })
-            });
-
-            const data = await res.json();
-            console.log("Signup:", data);
-
-            if (!data.success) return alert(data.message);
-
-            const code = prompt("Enter verification code sent to email:");
-            if (!code) return;
-
-            const verifyRes = await fetch("http://localhost:8000/loginsignup/verify-code/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: data.email, code })
-            });
-
-            const verifyData = await verifyRes.json();
-            if (verifyData.success) {
-                alert("Verification successful! Please login.");
-                toggleForm("login");
-            } else {
-                alert("Invalid verification code.");
-            }
-        }
-
-    } catch (err) {
-        console.error(err);
-        alert("Unexpected error occurred.");
-    }
+  } catch (err) {
+    console.error(err);
+    alert("Unexpected error occurred.");
+  }
 };
 
-// MANUAL SIGNUP
-document.getElementById("signupForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
+/* ---------------- MANUAL SIGNUP ---------------- */
+document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    const signup_role = getSelectedRoleSignup();
+  const payload = {
+    fullname: document.getElementById("fullname").value,
+    emailaddress: document.getElementById("emailaddress").value,
+    password: document.getElementById("password").value,
+    confirmpassword: document.getElementById("confirmpassword").value
+  };
 
-    const payload = {
-        fullname: document.getElementById("fullname").value,
-        emailaddress: document.getElementById("emailaddress").value,
-        phonenumber: document.getElementById("phonenumber").value,
-        password: document.getElementById("password").value,
-        confirmpassword: document.getElementById("confirmpassword").value,
-        role: signup_role
-    };
+  const res = await fetch("http://localhost:8000/loginsignup/signup/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
 
-    const res = await fetch("http://localhost:8000/patient/signup/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+  const data = await res.json();
+  alert(data.message);
+
+  if (data.success) {
+    localStorage.setItem("emailaddress", payload.emailaddress);
+    localStorage.setItem("fullname", payload.fullname);
+    localStorage.setItem("is_donor", false);
+
+    window.location.href = "dashboard.html";
+  }
+});
+
+/* ---------------- MANUAL LOGIN ---------------- */
+document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const emailaddress = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+
+  try {
+    const res = await fetch("http://localhost:8000/loginsignup/login/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ emailaddress, password })
     });
 
     const data = await res.json();
-    alert(data.message);
-
-   if (data.success) {
+    if (!data.success) {
+      alert(data.message);
+      return;
+    }
 
     localStorage.setItem("emailaddress", data.emailaddress);
-    localStorage.setItem("user_type", data.user_type);
     localStorage.setItem("fullname", data.fullname);
+    localStorage.setItem("is_donor", data.is_donor || false);
 
-    if (data.user_type === "donor") {
+    window.location.href = "dashboard.html";
 
-        if (!data.profile_complete) {
-            // donor exists but registration not completed
-            window.location.href = "donor_register.html";
-
-        } else {
-            // donor fully registered
-            window.location.href = "donor.html";
-        }
-
-    } else {
-        // patient
-        alert(`Welcome ${data.fullname}!`);
-        showPriorityModal();
-    }
-
-} else {
-    alert(data.message);
-}
-
-});
-
-function showPriorityModal() {
-    console.log("Showing priority modal");
-    const modal = document.getElementById("priorityModal");
-    
-    // Remove hidden and add flex to make it visible
-    modal.classList.remove("hidden");
-    modal.classList.add("flex");
-
-    document.getElementById("urgentBtn").onclick = () => {
-        const role = localStorage.getItem("user_type");
-        if (role === "patient") {
-            localStorage.setItem("showRequestSection", "true");
-            window.location.href = "blood_request.html#requestBlood";
-        } else {
-            alert("Only patients can request blood.");
-        }
-    };
-
-    document.getElementById("skipBtn").onclick = () => {
-        window.location.href = "blood_request.html";
-    };
-}
-
-/* ---- MANUAL LOGIN ---- */
-const loginForm = document.getElementById("loginForm");
-loginForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const emailaddress = document.getElementById("loginEmail").value;
-    const password = document.getElementById("loginPassword").value;
-
-    try {
-        const res = await fetch("http://localhost:8000/loginsignup/patient/login/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ emailaddress, password })
-        });
-
-        const data = await res.json();
-        if (data.success) {
-            localStorage.setItem("emailaddress", data.emailaddress);
-            localStorage.setItem("user_type", "patient");
-            localStorage.setItem("fullname", data.fullname);
-            
-            alert(`Welcome ${data.fullname}!`);
-            showPriorityModal();
-        } else {
-            alert(data.message);
-        }
-    } catch (err) {
-        console.error("Login error:", err);
-        alert("Login failed: " + err.message);
-    }
+  } catch (err) {
+    console.error(err);
+    alert("Login failed.");
+  }
 });
 </script>
+
+
 
 </body>
 </html>

@@ -242,18 +242,27 @@ border-right:1px solid #e5e7eb;z-index:1000}
 </div>
 
 <!-- APPROVAL WAITING MODAL -->
-<div id="approvalWaiting" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+<!-- APPROVAL WAITING MODAL -->
+<div id="approvalWaiting"
+     class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+
   <div class="bg-white rounded-lg p-6 text-center w-80">
     <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-red-600 mx-auto mb-4"></div>
+
     <h2 class="text-lg font-semibold mb-2">Waiting for Approval</h2>
-    <p class="text-sm text-gray-600">
+    <p class="text-sm text-gray-600 mb-4">
       Please wait while an admin reviews your request.
     </p>
+
+    <button id="cancelWaitingBtn"
+            class="mt-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 text-sm">
+      Cancel
+    </button>
   </div>
 </div>
 
+
 <script>
-// <script>
 /* ================= IMAGE PREVIEW ================= */
 function preview(input, img) {
     input.addEventListener("change", () => {
@@ -270,8 +279,15 @@ function preview(input, img) {
         r.readAsDataURL(f);
     });
 }
+
 preview(citizenship, citizenshipPreview);
 preview(photo, photoPreview);
+
+
+/* ================= GLOBAL STATE ================= */
+let approvalInterval = null;
+let redirectTimeout = null;
+let isSubmitting = false;
 
 
 /* ================= PREFILL USER ================= */
@@ -291,7 +307,6 @@ window.addEventListener("DOMContentLoaded", () => {
         emailInput.readOnly = true;
     }
 
-    /* 🔁 RESTORE WAITING POPUP AFTER RELOAD */
     if (sessionStorage.getItem("donor_waiting") === "true") {
         showWaitingPopup();
         startApprovalCheck();
@@ -299,23 +314,16 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 
-/* ================= GLOBAL FLAGS ================= */
-let approvalInterval = null;
-let isSubmitting = false;
-
-
-/* ================= REGISTER BUTTON ================= */
+/* ================= REGISTER ================= */
 document.getElementById("registerBtn").addEventListener("click", async (e) => {
     e.preventDefault();
-    e.stopPropagation();
-
     if (isSubmitting) return;
     isSubmitting = true;
 
     const dob = document.getElementById("dob").value;
     const weight = document.getElementById("weight").value;
 
-    let age = new Date().getFullYear() - new Date(dob).getFullYear();
+    const age = new Date().getFullYear() - new Date(dob).getFullYear();
     if (age < 18) {
         alert("Must be 18+ to donate");
         isSubmitting = false;
@@ -341,29 +349,43 @@ document.getElementById("registerBtn").addEventListener("click", async (e) => {
             }
         });
 
-    // ✅ SHOW WAITING POPUP IMMEDIATELY
     sessionStorage.setItem("donor_waiting", "true");
     showWaitingPopup();
     startApprovalCheck();
 
-    // 🔁 SEND DATA (do NOT wait for response)
     try {
         await fetch("http://localhost:8000/donor/register/", {
             method: "POST",
             body: formData
         });
     } catch (err) {
-        console.warn("Submission interrupted (safe to ignore)", err);
+        console.warn("Submission interrupted", err);
     }
 });
 
 
-
-/* ================= SHOW WAITING POPUP ================= */
+/* ================= POPUP ================= */
 function showWaitingPopup() {
     const modal = document.getElementById("approvalWaiting");
     modal.classList.remove("hidden");
     modal.style.display = "flex";
+
+    redirectTimeout = setTimeout(goToDashboard, 5000);
+}
+
+
+/* ================= CANCEL ================= */
+document.getElementById("cancelWaitingBtn").addEventListener("click", () => {
+    clearTimeout(redirectTimeout);
+    sessionStorage.removeItem("donor_waiting");
+    goToDashboard();
+});
+
+
+/* ================= DASHBOARD ================= */
+function goToDashboard() {
+    clearInterval(approvalInterval);
+    window.location.href = "dashboard.html"; // adjust if needed
 }
 
 
@@ -382,11 +404,11 @@ function startApprovalCheck() {
             });
 
             if (!res.ok) return;
-
             const data = await res.json();
 
-            if (data.approved === true || data.already_approved === true) {
+            if (data.approved || data.already_approved) {
                 clearInterval(approvalInterval);
+                clearTimeout(redirectTimeout);
                 sessionStorage.removeItem("donor_waiting");
                 window.location.href = "donor.html";
             }
@@ -395,9 +417,6 @@ function startApprovalCheck() {
         }
     }, 5000);
 }
- </script>
-
-
-
+</script>
 </body>
 </html>
