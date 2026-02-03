@@ -1,13 +1,14 @@
 from django.urls import path
 from .views import (
-    api_compatible_donors,
-    api_donor_profile,
+    # api_compatible_donors,
+    # api_donor_profile,
     donor_profile,
     donation_history,
     donation_camps,
     api_pending_confirmations,
     api_donor_confirm,
     api_donor_eligibility,
+    api_donor_dashboard_stats,
 )
 
 urlpatterns = [
@@ -26,5 +27,5 @@ urlpatterns = [
     # Donor confirms OTP
     path("confirm/", api_donor_confirm),
     path("donor-eligibility/", api_donor_eligibility),
-    path("compatible-donors/<str:blood_type>/", api_compatible_donors),
+    path("dashboard-stats/", api_donor_dashboard_stats),
 ]

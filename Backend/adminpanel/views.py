@@ -124,36 +124,21 @@ def admin_approve_blood_request(request, request_id):
             status=404
         )
 
-    donor_id = request.data.get("donor_id")
-    if not donor_id:
+    if blood_request.status.lower() != "pending":
         return Response(
-            {"success": False, "message": "Donor ID is required"},
+            {"success": False, "message": "Request already processed"},
             status=400
         )
 
-    try:
-        donor = Donor.objects.get(id=donor_id, is_approved=True)
-    except Donor.DoesNotExist:
-        return Response(
-            {"success": False, "message": "Approved donor not found"},
-            status=404
-        )
-
-    otp = str(random.randint(100000, 999999))
-    expiry = timezone.now() + timezone.timedelta(minutes=30)
-
-    blood_request.assigned_donor = donor
-    blood_request.otp = otp
-    blood_request.otp_expires_at = expiry
+    # ✅ ONLY approve — no donor, no OTP
     blood_request.status = "approved"
     blood_request.patient_confirmed = False
+    blood_request.fulfilled = False
     blood_request.save()
-
-    print("OTP sent to donor:", otp)
 
     return Response({
         "success": True,
-        "message": "Blood request approved, donor assigned, OTP generated"
+        "message": "Blood request approved successfully"
     })
 
 
@@ -256,7 +241,8 @@ def admin_approve_donor_registration(request, donor_id):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def admin_list_hospitals(request):
-    hospitals = Hospital.objects.select_related("profile")
+    hospitals = Hospital.objects.all()
+
 
     data = []
     for h in hospitals:
@@ -368,4 +354,64 @@ def admin_create_hospital(request):
     return Response({
         "success": True,
         "message": "Hospital created successfully"
+    })
+
+# ================= PROCESSED BLOOD REQUESTS =================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def admin_processed_blood_requests(request):
+    requests = (
+        BloodRequest.objects
+        .filter(status__in=["approved", "rejected"])
+        .select_related("patient")
+        .order_by("-created_at")
+    )
+
+    data = []
+
+    for r in requests:
+        patient = r.patient
+
+        data.append({
+            "id": r.id,
+            "patient_name": patient.fullname if patient else "Unknown",
+            "blood_type": r.blood_type,
+            "hospital": r.hospital,
+            "urgency": r.urgency,
+            "status": r.status,
+            "processed_on": (
+                r.donation_date.strftime("%Y-%m-%d %H:%M")
+                if r.donation_date
+                else r.created_at.strftime("%Y-%m-%d %H:%M")
+            )
+        })
+
+    return Response({
+        "success": True,
+        "count": len(data),
+        "data": data
+    })
+# ================= PROCESSED DONOR REGISTRATIONS =================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def admin_processed_donor_registrations(request):
+    donors = Donor.objects.filter(
+        is_approved=True
+    ).order_by("-created_on")
+
+    data = []
+
+    for d in donors:
+        data.append({
+            "id": d.id,
+            "name": f"{d.first_name or ''} {d.last_name or ''}".strip(),
+            "blood_type": d.blood_type,
+            "status": "approved",
+            "processed_on": d.created_on.strftime("%Y-%m-%d %H:%M")
+        })
+
+    return Response({
+        "success": True,
+        "count": len(data),
+        "data": data
     })

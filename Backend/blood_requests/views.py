@@ -2,19 +2,29 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count
-
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from .forms import BloodRequestForm
 from .models import BloodRequest
 from .serializers import BloodRequestSerializer
-
+import random
 from loginsignup.models import Patient
 from donor.models import DonationConfirmation
 from django.utils import timezone
+from register_donor.models import Donor
+from datetime import timedelta
 
+BLOOD_COMPATIBILITY = {
+    "O-": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
+    "O+": ["O+", "A+", "B+", "AB+"],
+    "A-": ["A-", "A+", "AB-", "AB+"],
+    "A+": ["A+", "AB+"],
+    "B-": ["B-", "B+", "AB-", "AB+"],
+    "B+": ["B+", "AB+"],
+    "AB-": ["AB-", "AB+"],
+    "AB+": ["AB+"],
+}
 
 # =========================================================
 # REGULAR DJANGO VIEWS
@@ -181,38 +191,38 @@ def api_patient_confirm_receipt(request, request_id):
     blood_request = get_object_or_404(
         BloodRequest,
         id=request_id,
-        patient=patient
+        patient=patient,
+        status="approved"
     )
 
-    if blood_request.status != "approved":
-        return Response(
-            {"message": "Only approved requests can be confirmed"},
-            status=400
-        )
-
-    # 🔒 Prevent double confirmation
-    if blood_request.donation_date:
+    if blood_request.patient_confirmed:
         return Response(
             {"message": "Already confirmed"},
             status=400
         )
 
-    blood_request.patient_confirmed = True   # 🔥 THIS WAS MISSING
-    blood_request.fulfilled = True
-    blood_request.donation_date = timezone.now()
+    # 🔐 Generate OTP
+    otp = str(random.randint(1000, 9999))
+
+    # ✅ Update BloodRequest (OTP lives here)
+    blood_request.patient_confirmed = True
+    blood_request.fulfilled = False           # ❗ NOT fulfilled yet
+    blood_request.otp = otp
+    blood_request.otp_expires_at = timezone.now() + timedelta(minutes=10)
     blood_request.save()
 
+    # ✅ Create / update confirmation (NO donor here)
     DonationConfirmation.objects.update_or_create(
         request=blood_request,
-        donor=blood_request.assigned_donor,
         defaults={
-            "patient_confirmed": True
+            "patient_confirmed": True,
+            "donor_confirmed": False
         }
     )
 
     return Response({
         "success": True,
-        "message": "Blood receipt confirmed successfully"
+        "confirmation_code": otp
     })
 
 
@@ -243,4 +253,80 @@ def api_patient_approved_request(request):
         "request_id": approved_request.id,
         "blood_type": approved_request.blood_type,
         "district": approved_request.district
+    })
+def normalize_district(text):
+    if not text:
+        return ""
+
+    text = text.lower()
+
+    remove_words = [
+        "district", "municipality", "metro", "metropolitan",
+        "sub-metropolitan", "rural", "city"
+    ]
+
+    for word in remove_words:
+        text = text.replace(word, "")
+
+    return text.strip()
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_compatible_donors_for_patient(request):
+    patient = Patient.objects.filter(
+        emailaddress=request.user.username
+    ).first()
+
+    if not patient:
+        return Response({"success": False}, status=403)
+
+    # Latest approved request
+    blood_request = BloodRequest.objects.filter(
+        patient=patient,
+        status="approved"
+    ).order_by("-created_at").first()
+
+    if not blood_request:
+        return Response({"success": True, "donors": []})
+
+    required_blood = blood_request.blood_type
+    request_district = normalize_district(blood_request.district)
+
+    # Blood compatibility
+    compatible_donor_bloods = [
+        donor_blood
+        for donor_blood, receivers in BLOOD_COMPATIBILITY.items()
+        if required_blood in receivers
+    ]
+
+    # Approved donors with compatible blood
+    donors_qs = Donor.objects.filter(
+        is_approved=True,
+        blood_type__in=compatible_donor_bloods
+    )
+
+    # 🔑 District smart-match
+    donors = []
+    for donor in donors_qs:
+        donor_district = normalize_district(donor.city)
+
+        if donor_district == request_district:
+            donors.append(donor)
+
+    data = [{
+        "id": d.id,
+        "name": f"{d.first_name} {d.last_name}".strip(),
+        "blood_type": d.blood_type,
+        "district": d.city,
+        "phone": d.phone_number,
+        "email": d.email,
+    } for d in donors]
+
+    return Response({
+        "success": True,
+        "request": {
+            "id": blood_request.id,
+            "blood_type": required_blood,
+            "district": blood_request.district
+        },
+        "donors": data
     })

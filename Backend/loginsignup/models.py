@@ -37,18 +37,3 @@ class Patient(models.Model):
     def __str__(self):
         return self.emailaddress
 
-
-# -------------------------------------------------
-# DONOR = OPTIONAL FEATURE (LINKED TO PATIENT)
-# -------------------------------------------------
-class Donor(models.Model):
-    patient = models.OneToOneField(
-        Patient,
-        on_delete=models.CASCADE,
-        related_name="donor_profile"
-    )
-
-    created_on = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.patient.emailaddress

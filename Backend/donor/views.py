@@ -1,4 +1,5 @@
 from django.utils import timezone
+# from  import donor
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -8,8 +9,9 @@ from register_donor.models import Donor
 from blood_requests.models import BloodRequest
 from adminpanel.models import DonationCamp
 
+
 MIN_GAP_DAYS = 56
-from .models import Donation, DonationConfirmation
+from donor.models import Donation, DonationConfirmation
 from .serializers import (
     DonorProfileSerializer,
     DonationSerializer,
@@ -97,23 +99,6 @@ def donation_camps(request):
     return Response(serializer.data)
 
 
-# ===============================
-# COMPATIBLE DONORS (PATIENT SIDE)
-# ===============================
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def api_compatible_donors(request, blood_type):
-    donors = Donor.objects.filter(blood_type=blood_type, is_approved=True)
-
-    data = [{
-        "name": f"{d.first_name} {d.last_name}",
-        "blood_type": d.blood_type,
-        "district": d.city,
-        "phone": d.phone_number,
-    } for d in donors]
-
-    return Response(data)
-
 
 # ===============================
 # DONOR PENDING CONFIRMATIONS
@@ -154,76 +139,54 @@ def api_donor_confirm(request):
         is_approved=True
     )
 
-    request_id = request.data.get("request_id")
     otp = request.data.get("otp")
+    if not otp:
+        return Response({"message": "OTP is required"}, status=400)
 
-    if not request_id or not otp:
+    # 🔎 Find latest patient-confirmed request (NO donor filter)
+    confirmation = (
+        DonationConfirmation.objects
+        .filter(
+            patient_confirmed=True,
+            donor_confirmed=False
+        )
+        .select_related("request")
+        .order_by("-created_at")
+        .first()
+    )
+
+    if not confirmation:
         return Response(
-            {"message": "Request ID and OTP required"},
+            {"message": "No pending donation found"},
             status=400
         )
 
-    # 🔒 Fetch the exact blood request assigned to this donor
-    blood_request = get_object_or_404(
-        BloodRequest,
-        id=request_id,
-        assigned_donor=donor
-    )
+    blood_request = confirmation.request
 
-    # 🔑 SINGLE SOURCE OF TRUTH
-    confirmation, _ = DonationConfirmation.objects.get_or_create(
-        request=blood_request,
-        donor=donor,
-        defaults={"patient_confirmed": False}
-    )
-
-    # 🚫 Patient must confirm first
-    if not confirmation.patient_confirmed:
-        return Response(
-            {"message": "Patient has not confirmed receipt yet"},
-            status=400
-        )
-
-    # 🔐 OTP validation (safe string comparison)
+    # 🔐 OTP check
     if str(blood_request.otp) != str(otp):
-        return Response(
-            {"message": "Invalid OTP"},
-            status=400
-        )
+        return Response({"message": "Invalid OTP"}, status=400)
 
-    # ⏱ OTP expiry check
-    if not blood_request.otp_expires_at or blood_request.otp_expires_at < timezone.now():
-        return Response(
-            {"message": "OTP expired"},
-            status=400
-        )
+    # ⏱ OTP expiry
+    if blood_request.otp_expires_at < timezone.now():
+        return Response({"message": "OTP expired"}, status=400)
 
-    # 🔁 Prevent double confirmation
-    if confirmation.donor_confirmed:
-        return Response(
-            {"message": "Donation already confirmed"},
-            status=400
-        )
-
-    # ✅ Mark donor confirmation
+    # ✅ ATTACH DONOR HERE (THIS IS THE KEY CHANGE)
+    confirmation.donor = donor
     confirmation.donor_confirmed = True
     confirmation.donation_date = timezone.now()
     confirmation.save()
-
-    # ✅ Create donation record
+# ✅ CREATE DONATION HISTORY RECORD (🔥 THIS WAS MISSING)
     Donation.objects.create(
-        donor=donor,
-        hospital=blood_request.hospital,
-        blood_type=blood_request.blood_type,
-        date=timezone.now().date(),
-        status="verified",
-        next_donation_date=timezone.now().date() + timezone.timedelta(days=56)
-    )
-
+    donor=donor,
+    blood_type=blood_request.blood_type,
+    date=timezone.now().date(),
+    status="verified"
+)
+    print("DONATION CREATED:", Donation.objects.last().id)
     # ✅ Finalize blood request
     blood_request.status = "completed"
     blood_request.fulfilled = True
-    blood_request.patient_confirmed = True   # keep in sync (optional)
     blood_request.otp = None
     blood_request.otp_expires_at = None
     blood_request.save()
@@ -232,6 +195,7 @@ def api_donor_confirm(request):
         "success": True,
         "message": "Blood donation verified successfully ❤️"
     })
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

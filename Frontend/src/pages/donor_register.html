@@ -132,8 +132,8 @@ border-right:1px solid #e5e7eb;z-index:1000}
     </div>
 
     <div>
-        <label>City *</label>
-        <input name="city" required class="w-full border rounded px-3 py-2">
+        <label>District *</label>
+        <input name="district" required class="w-full border rounded px-3 py-2">
     </div>
 
     <div>
@@ -241,7 +241,6 @@ border-right:1px solid #e5e7eb;z-index:1000}
 </div>
 </div>
 
-<!-- APPROVAL WAITING MODAL -->
 <!-- APPROVAL WAITING MODAL -->
 <div id="approvalWaiting"
      class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -355,9 +354,13 @@ document.getElementById("registerBtn").addEventListener("click", async (e) => {
 
     try {
         await fetch("http://localhost:8000/donor/register/", {
-            method: "POST",
-            body: formData
-        });
+    method: "POST",
+    headers: {
+        "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+    },
+    body: formData
+});
+
     } catch (err) {
         console.warn("Submission interrupted", err);
     }
@@ -385,7 +388,7 @@ document.getElementById("cancelWaitingBtn").addEventListener("click", () => {
 /* ================= DASHBOARD ================= */
 function goToDashboard() {
     clearInterval(approvalInterval);
-    window.location.href = "dashboard.html"; // adjust if needed
+    window.location.href = "index.html"; 
 }
 
 
@@ -410,7 +413,7 @@ function startApprovalCheck() {
                 clearInterval(approvalInterval);
                 clearTimeout(redirectTimeout);
                 sessionStorage.removeItem("donor_waiting");
-                window.location.href = "donor.html";
+                window.location.href = "index.html";
             }
         } catch (err) {
             console.error("Approval check failed", err);

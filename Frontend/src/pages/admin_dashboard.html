@@ -293,7 +293,46 @@
                             </table>
                         </div>
                     </div>
-                </div>
+                
+                <!-- ================= PROCESSED BLOOD REQUESTS ================= -->
+<div class="mt-10">
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <h3 class="text-xl font-bold text-gray-900">Processed Blood Requests</h3>
+            <p class="text-gray-600">Approved and rejected blood requests</p>
+        </div>
+        <select id="bloodStatusFilter"
+                class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <option value="all">All</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+        </select>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Blood</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Processed On</th>
+                    </tr>
+                </thead>
+                <tbody id="processedBloodRequestsBody" class="divide-y divide-gray-200">
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                            Processed requests will appear here
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
 
                 <!-- ================= DONOR REQUESTS ================= -->
                 <div id="pendingDonorRequests" class="hidden">
@@ -344,8 +383,34 @@
                             </table>
                         </div>
                     </div>
-                </div>
+                
+<!-- ================= PROCESSED DONOR REGISTRATIONS ================= -->
+<div class="mt-10">
+    <h3 class="text-xl font-bold text-gray-900 mb-4">Processed Donor Registrations</h3>
 
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Donor</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Blood Type</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Processed On</th>
+                    </tr>
+                </thead>
+                <tbody id="processedDonorsBody" class="divide-y divide-gray-200">
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center text-gray-500">
+                            Processed donors will appear here
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
                 <!-- ================= HOSPITAL MANAGEMENT ================= -->
                 <div id="hospitalSection" class="hidden space-y-6">
                     <div class="flex items-center justify-between">
@@ -581,8 +646,15 @@
                 sections[tabName].classList.remove('hidden');
                 
                 // Load data for the section
-                if (tabName === 'blood') loadBloodRequests();
-                if (tabName === 'donor') loadDonors();
+                if (tabName === 'blood') {
+    loadBloodRequests();
+    loadProcessedBloodRequests();
+}
+
+                if (tabName === 'donor') {
+    loadDonors();
+    loadProcessedDonors();
+}
                 if (tabName === 'hospital') loadHospitals();
                 if (tabName === 'overview') initializeCharts();
             });
@@ -797,31 +869,45 @@
 
         /* ---------- BLOOD REQUEST ACTIONS ---------- */
         async function approveBloodRequest(id) {
-            const donorId = prompt("Enter Donor ID to assign:");
-            if (!donorId) {
-                showToast('warning', 'Action Required', 'Please enter a donor ID to assign.');
-                return;
-            }
-
+    showConfirmModal(
+        'success',
+        'Approve Blood Request',
+        'Are you sure you want to approve this blood request?',
+        'Approve',
+        async () => {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/api/admin/blood-request/${id}/approve/`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ donor_id: donorId })
-                });
+                const response = await fetch(
+                    `http://127.0.0.1:8000/api/admin/blood-request/${id}/approve/`,
+                    { method: "POST" }
+                );
 
                 const data = await response.json();
-                
+
                 if (response.ok) {
-                    showToast('success', 'Request Approved', 'Blood request has been approved successfully.');
+                    showToast(
+                        'success',
+                        'Request Approved',
+                        'Blood request approved successfully.'
+                    );
                     loadBloodRequests();
                 } else {
-                    showToast('error', 'Approval Failed', data.message || 'Failed to approve request.');
+                    showToast(
+                        'error',
+                        'Approval Failed',
+                        data.message || 'Failed to approve request.'
+                    );
                 }
             } catch (error) {
-                showToast('error', 'Network Error', 'Failed to connect to server.');
+                showToast(
+                    'error',
+                    'Network Error',
+                    'Failed to connect to server.'
+                );
             }
         }
+    );
+}
+
 
         function showRejectBloodRequest(id) {
             showConfirmModal(
@@ -1287,6 +1373,78 @@
                 });
             }
         });
+        async function loadProcessedBloodRequests() {
+    const body = document.getElementById("processedBloodRequestsBody");
+    body.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center">Loading...</td></tr>`;
+
+    try {
+        const res = await fetch("http://127.0.0.1:8000/api/admin/blood-requests/processed/");
+        const json = await res.json();
+
+        if (json.data?.length) {
+            body.innerHTML = "";
+            json.data.forEach(r => {
+                const statusClass = r.status === "approved"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700";
+
+                body.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium">${r.patient_name}</td>
+                        <td class="px-6 py-4">${r.blood_type}</td>
+                        <td class="px-6 py-4">${r.hospital}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
+                                ${r.status.toUpperCase()}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">${r.processed_on}</td>
+                    </tr>
+                `;
+            });
+        } else {
+            body.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-gray-500">No records</td></tr>`;
+        }
+    } catch {
+        body.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-red-600">Failed to load</td></tr>`;
+    }
+}
+async function loadProcessedDonors() {
+    const body = document.getElementById("processedDonorsBody");
+    body.innerHTML = `<tr><td colspan="4" class="px-6 py-6 text-center">Loading...</td></tr>`;
+
+    try {
+        const res = await fetch("http://127.0.0.1:8000/api/admin/donors/processed/");
+        const json = await res.json();
+
+        if (json.data?.length) {
+            body.innerHTML = "";
+            json.data.forEach(d => {
+                const statusClass = d.status === "approved"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700";
+
+                body.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium">${d.name}</td>
+                        <td class="px-6 py-4">${d.blood_type}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
+                                ${d.status.toUpperCase()}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500">${d.processed_on}</td>
+                    </tr>
+                `;
+            });
+        } else {
+            body.innerHTML = `<tr><td colspan="4" class="px-6 py-6 text-center text-gray-500">No records</td></tr>`;
+        }
+    } catch {
+        body.innerHTML = `<tr><td colspan="4" class="px-6 py-6 text-center text-red-600">Failed to load</td></tr>`;
+    }
+}
+
     </script>
 </body>
 </html>

@@ -14,12 +14,18 @@ class Donation(models.Model):
     )
     next_donation_date = models.DateField(null=True, blank=True)
 class DonationConfirmation(models.Model):
-    donor = models.ForeignKey(Donor, on_delete=models.CASCADE)
+    donor = models.ForeignKey(
+        Donor,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
     request = models.ForeignKey(BloodRequest, on_delete=models.CASCADE)
 
+    confirmation_code = models.CharField(max_length=4, null=True, blank=True)
     patient_confirmed = models.BooleanField(default=False)
     donor_confirmed = models.BooleanField(default=False)
 
-    donation_date = models.DateTimeField(null=True, blank=True)  # 🔥 ADD THIS
+    donation_date = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

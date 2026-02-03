@@ -47,4 +47,9 @@ urlpatterns = [
         views.api_patient_approved_request,
         name="api_patient_approved_request"
     ),
+    path(
+    "api/compatible-donors/",
+    views.api_compatible_donors_for_patient,
+    name="api_compatible_donors_for_patient"
+)
 ]

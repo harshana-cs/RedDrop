@@ -29,9 +29,9 @@ class BloodRequest(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     fulfilled = models.BooleanField(default=False)
 
-    assigned_donor = models.ForeignKey(
-    Donor, on_delete=models.SET_NULL, null=True, blank=True
-)
+#     assigned_donor = models.ForeignKey(
+#     Donor, on_delete=models.SET_NULL, null=True, blank=True
+# )
     otp = models.CharField(max_length=6, null=True, blank=True)
     otp_expires_at = models.DateTimeField(null=True, blank=True)
 

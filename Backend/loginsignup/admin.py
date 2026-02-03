@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import GoogleSignup, Patient, Donor
+from .models import GoogleSignup, Patient
 
 
 @admin.register(GoogleSignup)
@@ -15,6 +15,6 @@ class PatientAdmin(admin.ModelAdmin):
     search_fields = ("emailaddress", "fullname")
 
 
-@admin.register(Donor)
-class DonorAdmin(admin.ModelAdmin):
-    list_display = ("patient", "created_on")
+# @admin.register(Donor)
+# class DonorAdmin(admin.ModelAdmin):
+#     list_display = ("patient", "created_on")

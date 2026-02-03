@@ -6,69 +6,82 @@ from django.contrib.auth import get_user_model, login
 from datetime import datetime
 from .models import Donor
 from django.contrib.auth import login
-
-
+from blood_requests.models import Patient
 @api_view(["POST"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def register_donor(request):
     try:
+        user = request.user
         data = request.data
         files = request.FILES
-        email = data.get("email")
 
-        if not email:
+        email = user.email or user.username
+
+        # ✅ Ensure patient exists
+        patient = Patient.objects.filter(emailaddress=email).first()
+        if not patient:
             return Response({
                 "success": False,
-                "message": "Email is required"
+                "message": "Patient profile not found"
+            }, status=404)
+
+        # 🚫 Prevent re-registration
+        existing = Donor.objects.filter(email=email).first()
+        if existing and existing.is_profile_completed:
+            return Response({
+                "success": False,
+                "message": "You have already registered as a donor"
             }, status=400)
-
-        dob = data.get("date_of_birth")
-        if dob:
-            dob = datetime.strptime(dob, "%Y-%m-%d").date()
-
-        weight = data.get("weight")
-        if weight:
-            weight = int(weight)
 
         donor, _ = Donor.objects.get_or_create(email=email)
 
+        # ================= BASIC DETAILS =================
         donor.first_name = data.get("first_name")
         donor.last_name = data.get("last_name")
         donor.phone_number = data.get("phone_number")
-        donor.date_of_birth = dob
         donor.gender = data.get("gender")
         donor.blood_type = data.get("blood_type")
+        donor.weight = int(data.get("weight")) if data.get("weight") else None
 
+        dob = data.get("date_of_birth")
+        if dob:
+            donor.date_of_birth = datetime.strptime(dob, "%Y-%m-%d").date()
+
+        # ================= ADDRESS =================
         donor.address = data.get("address")
         donor.city = data.get("city")
         donor.state = data.get("state")
         donor.zip_code = data.get("zip_code")
 
+        # ================= EMERGENCY CONTACT =================
         donor.emergency_contact_name = data.get("emergency_contact_name")
         donor.emergency_contact_phone = data.get("emergency_contact_phone")
 
-        donor.weight = weight
-        donor.has_diabetes = data.get("has_diabetes") == "on"
-        donor.has_hypertension = data.get("has_hypertension") == "on"
-        donor.has_heart_disease = data.get("has_heart_disease") == "on"
-        donor.no_medical_conditions = data.get("no_medical_conditions") == "on"
+        # ================= MEDICAL =================
+        donor.has_diabetes = data.get("has_diabetes") == "true"
+        donor.has_hypertension = data.get("has_hypertension") == "true"
+        donor.has_heart_disease = data.get("has_heart_disease") == "true"
+        donor.no_medical_conditions = data.get("no_medical_conditions") == "true"
 
-        donor.accepted_terms = data.get("accepted_terms") == "on"
-        donor.consent_notifications = data.get("consent_notifications") == "on"
+        # ================= CONSENT =================
+        donor.accepted_terms = data.get("accepted_terms") == "true"
+        donor.consent_notifications = data.get("consent_notifications") == "true"
 
+        # ================= FILES =================
         if "citizenship_id" in files:
-            donor.citizenship_id = files.get("citizenship_id")
+            donor.citizenship_id = files["citizenship_id"]
 
         if "photo" in files:
-            donor.photo = files.get("photo")
+            donor.photo = files["photo"]
 
+        # ================= FINAL =================
         donor.is_profile_completed = True
         donor.is_approved = False
         donor.save()
 
         return Response({
             "success": True,
-            "message": "Donor registered successfully"
+            "message": "Donor registered successfully. Await admin approval."
         }, status=201)
 
     except Exception as e:
@@ -77,8 +90,6 @@ def register_donor(request):
             "success": False,
             "message": "Server error"
         }, status=500)
-
-
 # ✅ UPDATED: Changed to POST and AllowAny
 @api_view(["POST"])
 @permission_classes([AllowAny])

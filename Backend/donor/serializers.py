@@ -29,17 +29,23 @@ class DonorProfileSerializer(serializers.ModelSerializer):
             
         ]
 class DonationSerializer(serializers.ModelSerializer):
+    donation_date = serializers.DateField(source="date", read_only=True)
+    hospital = serializers.SerializerMethodField()
+
     class Meta:
         model = Donation
         fields = [
-            "hospital",
+            "id",
             "blood_type",
-            "date",
+            "donation_date",
+            "hospital",
             "status",
-            "next_donation_date",
         ]
 
-
+    def get_hospital(self, obj):
+        if obj.blood_request:
+            return obj.blood_request.hospital
+        return None
 class DonationCampSerializer(serializers.ModelSerializer):
     class Meta:
         model = DonationCamp

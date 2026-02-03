@@ -6,7 +6,9 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from .models import GoogleSignup, Patient, Donor
+from .models import GoogleSignup
+from blood_requests.models import Patient
+from register_donor.models import Donor
 from django.core.mail import send_mail
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.models import User
@@ -211,48 +213,89 @@ def patient_login(request):
 
     except Patient.DoesNotExist:
         return JsonResponse({"success": False, "message": "Account not found"})
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def api_user_capabilities(request):
     email = request.user.email or request.user.username
 
+    # ---------------- USER OBJECTS ----------------
     patient = Patient.objects.filter(emailaddress=email).first()
-    donor = Donor.objects.filter(patient__emailaddress=email).first()
+    donor = Donor.objects.filter(email=email).first()
 
+    # ---------------- REQUESTS ----------------
+    requests_qs = (
+        BloodRequest.objects.filter(patient=patient)
+        if patient else BloodRequest.objects.none()
+    )
 
-    # Patient stats
-    requests_qs = BloodRequest.objects.filter(patient=patient) if patient else BloodRequest.objects.none()
+    # ---------------- DONATIONS ----------------
+    donations_qs = (
+        Donation.objects.filter(donor=donor)
+        if donor else Donation.objects.none()
+    )
 
-    # Donor stats
-    donations_qs = Donation.objects.filter(donor=donor) if donor else Donation.objects.none()
     last_donation = donations_qs.order_by("-date").first()
 
+    # ---------------- DAYS SINCE LAST DONATION ----------------
+    days_since_last = None
+    if last_donation and last_donation.date:
+        days_since_last = (
+            timezone.now().date() - last_donation.date
+        ).days
+
+    # ---------------- BLOOD TYPE (CORRECT LOGIC) ----------------
+    blood_type = ""
+
+    # 1️⃣ Prefer donor blood type
+    if donor and donor.blood_type:
+        blood_type = donor.blood_type
+
+    # 2️⃣ Fallback to latest blood request
+    elif patient:
+        latest_request = (
+            BloodRequest.objects
+            .filter(patient=patient)
+            .order_by("-created_at")
+            .first()
+        )
+        if latest_request:
+            blood_type = latest_request.blood_type
+
+    # ---------------- MEMBER SINCE ----------------
+    member_since = None
+    if patient and hasattr(patient, "created_at"):
+        member_since = patient.created_at
+
+    # ---------------- RESPONSE ----------------
     return Response({
+        # ===== PROFILE INFO =====
         "name": patient.fullname if patient else "",
         "email": email,
-        "blood_type": patient.blood_type if hasattr(patient, "blood_type") else None,
+        "blood_type": blood_type,                # ✅ FIXED
         "patient_id": patient.id if patient else None,
-        "member_since": patient.created_at.date() if hasattr(patient, "created_at") else None,
+        "member_since": member_since,
 
+        # ===== ROLES =====
         "is_patient": bool(patient),
         "is_donor": bool(donor),
 
+        # ===== REQUEST STATS =====
         "requests": {
             "total": requests_qs.count(),
             "completed": requests_qs.filter(status="completed").count(),
             "pending": requests_qs.filter(status="pending").count(),
         },
 
+        # ===== DONATION STATS =====
         "donations": {
             "total": donations_qs.count(),
             "last_date": last_donation.date if last_donation else None,
-            "days_since_last": (
-                (timezone.now().date() - last_donation.date).days
-                if last_donation else None
-            )
+            "days_since_last": days_since_last,
         },
 
+        # ===== DONOR STATUS =====
         "donor_approved": donor.is_approved if donor else False,
         "donor_available": donor.is_approved if donor else False,
-        "donor_score": donations_qs.count() * 10 if donor else 0
+        "donor_score": donations_qs.count() * 10 if donor else 0,
     })

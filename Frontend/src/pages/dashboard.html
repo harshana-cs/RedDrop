@@ -86,9 +86,82 @@
     <p class="text-red-100">Overview of your activities and statistics</p>
   </div>
 
+  <!-- Donation Status Alert -->
+  <div id="donationStatusAlert" class="hidden bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 text-white mb-8 shadow-lg">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+          <i class="fas fa-hourglass-half text-2xl"></i>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold mb-1">Next Donation In</h3>
+          <p class="text-blue-100">
+            <span id="daysLeft" class="font-bold text-2xl">45</span> days
+            <span class="text-sm opacity-90 ml-2">(Last donation: 45 days ago)</span>
+          </p>
+          <div class="w-full bg-white/30 rounded-full h-2 mt-2">
+            <div id="donationProgress" class="bg-white h-2 rounded-full" style="width: 50%"></div>
+          </div>
+          <p class="text-xs text-blue-100 mt-2">50% complete - Eligible again in 45 days</p>
+        </div>
+      </div>
+      <button onclick="showSection('donor')" class="bg-white text-blue-600 px-6 py-2 rounded-xl font-bold hover:bg-gray-100 transition-colors">
+        <i class="fas fa-heart mr-2"></i> Donor Dashboard
+      </button>
+    </div>
+  </div>
+
+  <!-- First Time Donor Alert -->
+  <div id="firstDonorAlert" class="hidden bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 text-white mb-8 shadow-lg">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+          <i class="fas fa-heart text-2xl"></i>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold mb-1">Ready to Save Lives! 🎉</h3>
+          <p class="text-green-100">You haven't donated yet. Become a hero today!</p>
+          <p class="text-sm text-green-100 opacity-90">Your blood type is <span class="font-bold">O+</span></p>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="showSection('donationSchedule')" class="bg-white text-green-700 px-6 py-2 rounded-xl font-bold hover:bg-gray-100 transition-colors">
+          <i class="fas fa-calendar-plus mr-2"></i> Schedule First Donation
+        </button>
+        <button onclick="showSection('donor')" class="bg-green-700 hover:bg-green-800 text-white px-6 py-2 rounded-xl font-bold transition-colors">
+          <i class="fas fa-info-circle mr-2"></i> Learn More
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Eligible Now Alert -->
+  <div id="eligibleNowAlert" class="hidden bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 text-white mb-8 shadow-lg">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+          <i class="fas fa-check-circle text-2xl"></i>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold mb-1">Eligible to Donate! 🎉</h3>
+          <p class="text-green-100">You can donate blood now. Last donation was over 90 days ago.</p>
+          <p class="text-sm text-green-100 opacity-90">Your next donation window is open</p>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="showSection('openRequests')" class="bg-white text-green-700 px-6 py-2 rounded-xl font-bold hover:bg-gray-100 transition-colors">
+          <i class="fas fa-heartbeat mr-2"></i> Help Someone Now
+        </button>
+        <button onclick="showSection('donationSchedule')" class="bg-green-700 hover:bg-green-800 text-white px-6 py-2 rounded-xl font-bold transition-colors">
+          <i class="fas fa-calendar-alt mr-2"></i> Schedule Donation
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="mb-8">
     <h3 class="text-xl font-bold mb-4">Quick Actions</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <a href="blood_request.html" class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition-shadow duration-300 border-l-4 border-red-500">
         <div class="flex items-center justify-between">
           <div>
@@ -98,6 +171,7 @@
           <i class="fas fa-chevron-right text-red-500"></i>
         </div>
       </a>
+      
       <button id="quickDonateBtn" onclick="showSection('donor')" class="hidden bg-white p-6 rounded-2xl shadow hover:shadow-lg transition-shadow duration-300 border-l-4 border-red-500 text-left">
         <div class="flex items-center justify-between">
           <div>
@@ -107,10 +181,30 @@
           <i class="fas fa-chevron-right text-red-500"></i>
         </div>
       </button>
+
+      <button id="quickScheduleBtn" onclick="showSection('donationSchedule')" class="hidden bg-white p-6 rounded-2xl shadow hover:shadow-lg transition-shadow duration-300 border-l-4 border-blue-500 text-left">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="font-bold text-lg">Schedule Donation</h4>
+            <p class="text-gray-600">Book appointment</p>
+          </div>
+          <i class="fas fa-chevron-right text-blue-500"></i>
+        </div>
+      </button>
+
+      <button id="quickCompatibleBtn" onclick="showSection('compatibleDonors')" class="hidden bg-white p-6 rounded-2xl shadow hover:shadow-lg transition-shadow duration-300 border-l-4 border-purple-500 text-left">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="font-bold text-lg">Find Donors</h4>
+            <p class="text-gray-600">Compatible blood donors</p>
+          </div>
+          <i class="fas fa-chevron-right text-purple-500"></i>
+        </div>
+      </button>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     <div class="bg-white p-6 rounded-2xl shadow">
       <div class="flex items-center gap-4">
         <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
@@ -158,6 +252,226 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Donation Progress Section -->
+  <div id="donationProgressSection" class="hidden bg-white rounded-2xl shadow p-8 mb-8">
+    <h3 class="text-xl font-bold mb-6">Your Donation Journey</h3>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-2">
+        <div class="flex items-center justify-between mb-4">
+          <h4 class="font-bold">Next Donation Eligibility</h4>
+          <span class="text-red-600 font-bold" id="progressPercentage">50%</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-6 mb-2">
+          <div id="eligibilityProgressBar" class="bg-gradient-to-r from-red-500 to-orange-500 h-6 rounded-full" style="width: 50%"></div>
+        </div>
+        <div class="flex justify-between text-sm text-gray-600">
+          <span>Last Donation</span>
+          <span id="daysCompleted">45 days</span>
+          <span id="daysRemaining">45 days left</span>
+          <span>Next Eligible</span>
+        </div>
+        
+        <div class="mt-8">
+          <h4 class="font-bold mb-4">Donation Timeline</h4>
+          <div class="flex items-center justify-between">
+            <div class="text-center">
+              <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <i class="fas fa-check text-green-600"></i>
+              </div>
+              <p class="text-sm font-bold">Last Donation</p>
+              <p class="text-xs text-gray-600">45 days ago</p>
+            </div>
+            <div class="flex-1 h-1 bg-gray-300 mx-4"></div>
+            <div class="text-center">
+              <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <i class="fas fa-clock text-yellow-600"></i>
+              </div>
+              <p class="text-sm font-bold">Current</p>
+              <p class="text-xs text-gray-600">Day 45</p>
+            </div>
+            <div class="flex-1 h-1 bg-gray-300 mx-4"></div>
+            <div class="text-center">
+              <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <i class="fas fa-heart text-red-600"></i>
+              </div>
+              <p class="text-sm font-bold">Next Eligible</p>
+              <p class="text-xs text-gray-600">Day 90</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="space-y-4">
+        <div class="bg-red-50 p-4 rounded-xl">
+          <h5 class="font-bold mb-2">Donation Facts</h5>
+          <ul class="space-y-2 text-sm">
+            <li class="flex items-center">
+              <i class="fas fa-check text-green-500 mr-2"></i>
+              <span>You can donate every 90 days</span>
+            </li>
+            <li class="flex items-center">
+              <i class="fas fa-check text-green-500 mr-2"></i>
+              <span>Each donation saves up to 3 lives</span>
+            </li>
+            <li class="flex items-center">
+              <i class="fas fa-check text-green-500 mr-2"></i>
+              <span>Healthy for your heart</span>
+            </li>
+            <li class="flex items-center">
+              <i class="fas fa-check text-green-500 mr-2"></i>
+              <span>Free health checkup</span>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="bg-blue-50 p-4 rounded-xl">
+          <h5 class="font-bold mb-2">Quick Stats</h5>
+          <div class="space-y-2">
+            <div class="flex justify-between">
+              <span class="text-sm">Total Donations</span>
+              <span class="font-bold">3</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm">Lives Impacted</span>
+              <span class="font-bold">9</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-sm">Next Milestone</span>
+              <span class="font-bold">5 donations</span>
+            </div>
+          </div>
+        </div>
+        
+        <button onclick="showSection('donor')" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-colors">
+          View Full Stats
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compatible Donors Preview -->
+  <div id="compatibleDonorsPreview" class="hidden bg-white rounded-2xl shadow p-8">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h3 class="text-xl font-bold">Compatible Donors Near You</h3>
+        <p class="text-gray-600">People with matching blood types who can help</p>
+      </div>
+      <button onclick="showSection('compatibleDonors')" class="text-red-600 hover:text-red-800 font-medium">
+        View All <i class="fas fa-arrow-right ml-1"></i>
+      </button>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Donor Card 1 -->
+      <div class="bg-gray-50 p-4 rounded-xl border">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+            <i class="fas fa-user text-red-600"></i>
+          </div>
+          <div>
+            <h5 class="font-bold">John Doe</h5>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold">O+</span>
+              <span class="text-xs text-gray-600">2.5 km away</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-600">Last donation:</span>
+          <span class="font-medium">30 days ago</span>
+        </div>
+        <button onclick="contactDonor('John Doe')" class="w-full mt-3 bg-red-600 text-white py-2 rounded-lg text-sm hover:bg-red-700">
+          <i class="fas fa-phone mr-2"></i> Contact
+        </button>
+      </div>
+      
+      <!-- Donor Card 2 -->
+      <div class="bg-gray-50 p-4 rounded-xl border">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+            <i class="fas fa-user text-red-600"></i>
+          </div>
+          <div>
+            <h5 class="font-bold">Sarah Smith</h5>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold">O+</span>
+              <span class="text-xs text-gray-600">4.1 km away</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-600">Last donation:</span>
+          <span class="font-medium">15 days ago</span>
+        </div>
+        <button onclick="contactDonor('Sarah Smith')" class="w-full mt-3 bg-red-600 text-white py-2 rounded-lg text-sm hover:bg-red-700">
+          <i class="fas fa-phone mr-2"></i> Contact
+        </button>
+      </div>
+      
+      <!-- Donor Card 3 -->
+      <div class="bg-gray-50 p-4 rounded-xl border">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+            <i class="fas fa-user text-red-600"></i>
+          </div>
+          <div>
+            <h5 class="font-bold">Mike Johnson</h5>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-bold">O-</span>
+              <span class="text-xs text-gray-600">3.2 km away</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-600">Last donation:</span>
+          <span class="font-medium">60 days ago</span>
+        </div>
+        <button onclick="contactDonor('Mike Johnson')" class="w-full mt-3 bg-red-600 text-white py-2 rounded-lg text-sm hover:bg-red-700">
+          <i class="fas fa-phone mr-2"></i> Contact
+        </button>
+      </div>
+    </div>
+    
+    <div class="mt-6 text-center">
+      <button onclick="showSection('compatibleDonors')" class="bg-gray-100 text-gray-800 px-6 py-2 rounded-xl hover:bg-gray-200 transition-colors">
+        <i class="fas fa-users mr-2"></i> View All 12 Compatible Donors
+      </button>
+    </div>
+  </div>
+
+  <!-- Blood Compatibility Chart -->
+  <div id="compatibilityChart" class="hidden bg-white rounded-2xl shadow p-8 mt-8">
+    <h3 class="text-xl font-bold mb-6">Blood Type Compatibility</h3>
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white rounded-lg overflow-hidden">
+        <thead class="bg-red-600 text-white">
+          <tr>
+            <th class="px-6 py-3 text-left">Your Blood Type</th>
+            <th class="px-6 py-3 text-left">Can Donate To</th>
+            <th class="px-6 py-3 text-left">Can Receive From</th>
+            <th class="px-6 py-3 text-left">Universal Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b hover:bg-gray-50">
+            <td class="px-6 py-4 font-bold">O+</td>
+            <td class="px-6 py-4">A+, B+, AB+, O+</td>
+            <td class="px-6 py-4">O+, O-</td>
+            <td class="px-6 py-4">
+              <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">
+                Universal Donor (Plasma)
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="text-sm text-gray-600 mt-4">
+      <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+      O+ blood can donate to all positive blood types. You can receive from O+ and O- donors.
+    </p>
   </div>
 </section>
 
@@ -625,65 +939,28 @@
     </div>
 
     <!-- ================= PENDING DONATION TAB ================= -->
-    <div id="pendingDonationContent" class="tab-content hidden p-8">
-      <div class="flex items-center justify-between mb-8">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900">Pending Confirmation</h1>
-          <p class="text-gray-500 mt-2">
-            Confirm your recent donations by entering OTP
-          </p>
-        </div>
-        <button onclick="showDonationTab('stats')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2.5 rounded-xl flex items-center gap-2 transition-colors duration-200">
-          <i class="fas fa-arrow-left"></i> Back to Dashboard
-        </button>
-      </div>
+   <div id="pendingDonationContent" class="tab-content p-8">
 
-      <!-- Pending Donation Card -->
-      <div id="pendingDonationCard" class="bg-white rounded-xl shadow p-6 mb-6 hidden">
-        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div class="flex-1">
-            <div class="flex items-center gap-3 mb-2">
-              <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
-                <i class="fas fa-clock text-yellow-600 text-xl"></i>
-              </div>
-              <div>
-                <h3 class="text-lg font-bold text-gray-900">Pending Donation Confirmation</h3>
-                <p class="text-gray-500 text-sm">
-                  Please confirm donation by entering the OTP after blood donation.
-                </p>
-              </div>
-            </div>
-            
-            <!-- Pending Donation Details -->
-            <div id="pendingDonationDetails" class="mt-4 space-y-2">
-              <!-- Details will be loaded here -->
-            </div>
-          </div>
-          <button onclick="openOtpModal()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2 transition-colors duration-200 whitespace-nowrap">
-            <i class="fas fa-key"></i> Enter OTP
-          </button>
-        </div>
-      </div>
+      <!-- OTP DIRECT CONFIRMATION -->
+<div class="bg-white rounded-xl shadow p-6 mt-6">
+  <h3 class="text-lg font-bold mb-3">Enter Donation OTP</h3>
 
-      <div id="noPendingDonations" class="bg-white rounded-xl shadow p-12 text-center hidden">
-        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-check-circle text-green-600 text-3xl"></i>
-        </div>
-        <h3 class="text-xl font-bold text-gray-900 mb-2">No Pending Confirmations</h3>
-        <p class="text-gray-500 mb-6">All your donations have been confirmed!</p>
-        <button onclick="showDonationTab('history')" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-medium transition-colors duration-200">
-          View Donation History
-        </button>
-      </div>
+  <input
+    id="otpCode"
+    type="text"
+    maxlength="4"
+    placeholder="Enter OTP"
+    class="w-full border rounded-lg px-4 py-3 text-center text-xl font-bold tracking-widest"
+  />
 
-      <!-- Recently Confirmed -->
-      <div id="recentConfirmedSection" class="mt-8 hidden">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Recently Confirmed</h3>
-        <div id="recentConfirmedList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Recently confirmed donations will be loaded here -->
-        </div>
-      </div>
-    </div>
+  <button
+    onclick="submitOtpDirect()"
+    class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl">
+    Confirm Donation
+  </button>
+</div>
+
+
   </div>
 </section>
 
@@ -841,10 +1118,10 @@
         <label class="block text-sm font-medium text-gray-700 mb-2">OTP Code</label>
         <input type="text" id="otpCode" 
                class="w-full border border-gray-300 rounded-xl px-4 py-3 text-center text-2xl font-bold tracking-widest focus:ring-2 focus:ring-red-500 focus:border-red-500"
-               maxlength="6"
-               placeholder="000000"
+               maxlength="4"
+               placeholder="0000"
                required>
-        <p class="text-xs text-gray-500 mt-2">Enter the 6-digit OTP provided at the donation center</p>
+        <p class="text-xs text-gray-500 mt-2">Enter the 4-digit OTP provided at the donation center</p>
       </div>
 
       <div id="donationDetails" class="bg-gray-50 p-4 rounded-xl">
@@ -866,6 +1143,7 @@
 <!-- ================= SCRIPT ================= -->
 <script>
 // Global variables
+const MIN_GAP_DAYS = 56;
 let currentHistoryTab = 'requests';
 let currentRequestTab = 'active';
 let currentDonationTab = 'stats';
@@ -873,23 +1151,52 @@ let allDonations = [];
 let filteredDonations = [];
 const token = localStorage.getItem("access_token");
 
-function showSection(id){
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+function showSection(id) {
+  // 1️⃣ Hide all sections safely
+  document.querySelectorAll('.section').forEach(section => {
+    section.classList.remove('active');
+  });
 
-  if (id === 'history') {
-    loadDashboard();
-    loadHistory();
-    checkApprovedRequestAndToggleDonorsTab();
-    showDonationTab('stats');
+  // 2️⃣ Find target section
+  const target = document.getElementById(id);
+
+  if (!target) {
+    console.error("showSection(): section not found ->", id);
+    return;
   }
 
-  if (id === 'home' || id === 'profile') {
-    loadUserCapabilities();
-  }
+  // 3️⃣ Show requested section
+  target.classList.add('active');
 
-  if (id === 'openRequests') {
-    loadOpenBloodRequests();
+  // 4️⃣ Load section-specific data
+  switch (id) {
+    case 'home':
+      loadUserCapabilities();
+      break;
+
+    case 'profile':
+      loadUserCapabilities();   // profile data
+      break;
+
+    case 'history':
+      loadDashboard();
+      loadHistory();
+      checkApprovedRequestAndToggleDonorsTab();
+      showDonationTab('stats');
+      break;
+
+    case 'openRequests':
+      loadOpenBloodRequests();
+      break;
+
+    case 'donor':
+      loadUserCapabilities();
+      showDonationTab('stats');
+      break;
+
+    default:
+      // no extra loading required
+      break;
   }
 }
 
@@ -926,7 +1233,6 @@ function switchHistoryTab(tab) {
   if (donationSection) {
     donationSection.classList.toggle('hidden', tab !== 'donations');
   }
-
 
   
   // Load data if needed
@@ -1209,9 +1515,14 @@ async function loadHistory() {
       if (noHistoryEl) noHistoryEl.classList.add("hidden");
       
       data.data.forEach(item => {
-        const created = item.created_at
-          ? new Date(item.created_at)
-          : null;
+       const dateSource =
+  item.status === "completed" && item.donation_date
+    ? item.donation_date     // ✅ RECEIVED DATE
+    : item.created_at;       // ⏳ REQUEST DATE
+
+const created = dateSource
+  ? new Date(dateSource)
+  : null;
 
         const date = created
           ? created.toLocaleDateString('en-US', {
@@ -1238,8 +1549,15 @@ async function loadHistory() {
                   <i class="fas fa-calendar w-5 h-5 text-blue-600"></i>
                 </div>
                 <div>
-                  <span class="text-sm font-semibold text-gray-900">${date}</span>
-                  <p class="text-xs text-gray-500">${time}</p>
+              <span class="text-sm font-semibold text-gray-900">${date}</span>
+<p class="text-xs text-gray-500">${time}</p>
+
+${
+  item.status === "completed"
+    ? `<span class="text-xs text-green-600 font-medium">Received</span>`
+    : `<span class="text-xs text-gray-400">Requested</span>`
+}
+
                 </div>
               </div>
             </td>
@@ -1372,7 +1690,7 @@ async function loadAvailableDonors() {
             </td>
             
             <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">
-              ${donor.location || 'N/A'}
+              ${donor.district || 'N/A'}
             </td>
             
             <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">
@@ -1396,6 +1714,7 @@ async function loadAvailableDonors() {
 }
 
 // ===== CONFIRM RECEIPT =====
+// ===== CONFIRM RECEIPT (PATIENT) =====
 async function confirmReceipt(requestId) {
   if (!confirm("Have you received the blood?")) return;
 
@@ -1405,146 +1724,295 @@ async function confirmReceipt(requestId) {
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`
+          "Authorization": `Bearer ${token}`
         }
       }
     );
 
     const data = await res.json();
-    showNotification(data.message || "Receipt confirmed successfully!");
-    
-    // Refresh data
+
+    if (!res.ok) {
+      showNotification(data.message || "Failed", "error");
+      return;
+    }
+
+    // ✅ SHOW OTP TO PATIENT
+    document.getElementById("patientOtpCode").textContent =
+      data.confirmation_code;
+
+    document.getElementById("patientOtpModal")
+      .classList.remove("hidden");
+
+    // Refresh tables
     loadDashboard();
     loadHistory();
-    checkApprovedRequestAndToggleDonorsTab();
-    
+
   } catch (err) {
-    console.error("Error confirming receipt:", err);
+    console.error(err);
     showNotification("Error confirming receipt", "error");
   }
 }
 
-// ===== USER CAPABILITIES =====
-async function loadUserCapabilities(){
-  if(!token) return logout();
+function closePatientOtpModal() {
+  document.getElementById("patientOtpModal")
+    .classList.add("hidden");
+}
+
+
+// ===== USER CAPABILITIES (FINAL & SAFE) =====
+async function loadUserCapabilities() {
+  if (!token) return logout();
 
   try {
-    const res = await fetch("http://127.0.0.1:8000/loginsignup/user-capabilities/", {
-      headers:{ Authorization:`Bearer ${token}` }
-    });
-
-    if(!res.ok) throw new Error('Failed to fetch user data');
-    
-    const data = await res.json();
-
-    // Update user greeting
-    const userGreeting = document.getElementById("userGreeting");
-    if (userGreeting) userGreeting.textContent = data.name.split(' ')[0];
-    
-    // Update profile info
-    const profileName = document.getElementById("profileName");
-    const profileEmail = document.getElementById("profileEmail");
-    const profileBloodType = document.getElementById("profileBloodType");
-    const profilePatientId = document.getElementById("profilePatientId");
-    const profileMemberSince = document.getElementById("profileMemberSince");
-    
-    if (profileName) profileName.textContent = data.name;
-    if (profileEmail) profileEmail.textContent = data.email;
-    if (profileBloodType) profileBloodType.textContent = data.blood_type || "Not specified";
-    if (profilePatientId) profilePatientId.textContent = data.patient_id || "N/A";
-    if (profileMemberSince) profileMemberSince.textContent = data.member_since || "N/A";
-    
-    // Update statistics
-    const statRequests = document.getElementById("statRequests");
-    const statCompleted = document.getElementById("statCompleted");
-    const profileTotalRequests = document.getElementById("profileTotalRequests");
-    const profileCompletedRequests = document.getElementById("profileCompletedRequests");
-    const profilePendingRequests = document.getElementById("profilePendingRequests");
-    
-    if (statRequests) statRequests.textContent = data.requests?.total || 0;
-    if (statCompleted) statCompleted.textContent = data.requests?.completed || 0;
-    if (profileTotalRequests) profileTotalRequests.textContent = data.requests?.total || 0;
-    if (profileCompletedRequests) profileCompletedRequests.textContent = data.requests?.completed || 0;
-    if (profilePendingRequests) profilePendingRequests.textContent = data.requests?.pending || 0;
-
-    // Handle donor-specific features
-    if(data.is_donor){
-      // Show donor elements
-      const donorNav = document.getElementById("donorNav");
-      const quickDonateBtn = document.getElementById("quickDonateBtn");
-      const donorStatsCard = document.getElementById("donorStatsCard");
-      const donorProfile = document.getElementById("donorProfile");
-      const donorContent = document.getElementById("donorContent");
-      const notDonorMsg = document.getElementById("notDonorMsg");
-      const donorBadge = document.getElementById("donorBadge");
-      
-      if (donorNav) donorNav.classList.remove("hidden");
-      if (quickDonateBtn) quickDonateBtn.classList.remove("hidden");
-      if (donorStatsCard) donorStatsCard.classList.remove("hidden");
-      if (donorProfile) donorProfile.classList.remove("hidden");
-      if (donorContent) donorContent.classList.remove("hidden");
-      if (notDonorMsg) notDonorMsg.classList.add("hidden");
-      
-      // Update role
-      const profileRole = document.getElementById("profileRole");
-      const userStatus = document.getElementById("userStatus");
-      if (profileRole) profileRole.textContent = "Patient & Donor";
-      if (userStatus) userStatus.textContent = "Patient & Donor";
-      
-      // Update donor stats
-      const statDonations = document.getElementById("statDonations");
-      const profileDonations = document.getElementById("profileDonations");
-      const profileLastDonation = document.getElementById("profileLastDonation");
-      const profileDonorStatus = document.getElementById("profileDonorStatus");
-      const donorAvailable = document.getElementById("donorAvailable");
-      const lastDonation = document.getElementById("lastDonation");
-      const donorScore = document.getElementById("donorScore");
-      
-      if (statDonations) statDonations.textContent = data.donations?.total || 0;
-      if (profileDonations) profileDonations.textContent = data.donations?.total || 0;
-      if (profileLastDonation) profileLastDonation.textContent = data.donations?.last_date || "Never";
-      if (profileDonorStatus) profileDonorStatus.textContent = data.donor_approved ? "Approved" : "Pending";
-      if (donorAvailable) donorAvailable.textContent = data.donor_available ? "Yes" : "No";
-      if (lastDonation) lastDonation.textContent = data.donations?.days_since_last || "Never";
-      if (donorScore) donorScore.textContent = data.donor_score || "0";
-      
-      if (data.donor_approved && donorBadge) {
-        donorBadge.classList.remove("hidden");
+    const res = await fetch(
+      "http://127.0.0.1:8000/loginsignup/user-capabilities/",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
-      // ===== OPEN BLOOD REQUESTS MENU =====
-const openRequestsNav = document.getElementById("openRequestsNav");
+    );
 
-if (data.donor_approved) {
-  if (openRequestsNav) openRequestsNav.classList.remove("hidden");
-} else {
-  if (openRequestsNav) openRequestsNav.classList.add("hidden");
-}
+    if (!res.ok) throw new Error("Unauthorized");
 
-    } else {
-      // Hide donor elements
-      const donorContent = document.getElementById("donorContent");
-      const notDonorMsg = document.getElementById("notDonorMsg");
-      if (donorContent) donorContent.classList.add("hidden");
-      if (notDonorMsg) notDonorMsg.classList.remove("hidden");
+    const data = await res.json();
+    /* ================= PROFILE INFO (MISSING) ================= */
+document.getElementById("profileName").textContent =
+  data.name || "—";
+
+document.getElementById("profileEmail").textContent =
+  data.email || "—";
+
+document.getElementById("profileBloodType").textContent =
+  data.blood_type || "—";
+
+document.getElementById("profilePatientId").textContent =
+  data.patient_id || "—";
+
+document.getElementById("profileMemberSince").textContent =
+  data.member_since
+    ? new Date(data.member_since).toLocaleDateString()
+    : "—";
+
+
+    /* ================= GREETING ================= */
+    const userGreeting = document.getElementById("userGreeting");
+    if (userGreeting) {
+      userGreeting.textContent = data?.name
+        ? data.name.split(" ")[0]
+        : "User";
     }
-       // ================= REGISTER AS DONOR BUTTON =================
-const registerDonorBtn = document.getElementById("registerDonorBtn");
-const profileRegisterDonorBtn = document.getElementById("profileRegisterDonorBtn");
-if (data.is_donor) {
-    if (registerDonorBtn) registerDonorBtn.classList.add("hidden");
-    if (profileRegisterDonorBtn) profileRegisterDonorBtn.classList.add("hidden");
-} else {
-    if (registerDonorBtn) registerDonorBtn.classList.remove("hidden");
-    if (profileRegisterDonorBtn) profileRegisterDonorBtn.classList.remove("hidden");
+
+    /* ================= PATIENT STATS ================= */
+    const requests = data.requests || {};
+
+    document.getElementById("statRequests").textContent =
+      requests.total ?? 0;
+
+    document.getElementById("statCompleted").textContent =
+      requests.completed ?? 0;
+
+    document.getElementById("profileTotalRequests").textContent =
+      requests.total ?? 0;
+
+    document.getElementById("profileCompletedRequests").textContent =
+      requests.completed ?? 0;
+
+    document.getElementById("profilePendingRequests").textContent =
+      requests.pending ?? 0;
+
+    /* ================= REGISTER AS DONOR BUTTON ================= */
+    const registerBtn = document.getElementById("registerDonorBtn");
+    const profileRegisterBtn =
+      document.getElementById("profileRegisterDonorBtn");
+
+    if (!data.is_donor) {
+      registerBtn?.classList.remove("hidden");
+      profileRegisterBtn?.classList.remove("hidden");
+    } else {
+      registerBtn?.classList.add("hidden");
+      profileRegisterBtn?.classList.add("hidden");
+    }
+
+    /* ================= DONOR SECTION ================= */
+   if (!data.is_donor) {
+  document.getElementById("profileRole").textContent = "Patient";
+  document.getElementById("userStatus").textContent = "Patient";
+  return; // stop ONLY donor logic
 }
 
 
-  } catch (error) {
-    console.error('Error loading user data:', error);
-    showNotification('Failed to load user data. Please try again.', 'error');
+    document.getElementById("donorNav")?.classList.remove("hidden");
+    document.getElementById("donorStatsCard")?.classList.remove("hidden");
+    document.getElementById("donorProfile")?.classList.remove("hidden");
+    document.getElementById("donorContent")?.classList.remove("hidden");
+
+    document.getElementById("profileRole").textContent = "Patient & Donor";
+    document.getElementById("userStatus").textContent = "Patient & Donor";
+
+    /* ================= DONOR STATS ================= */
+    const donations = data.donations || {};
+
+    document.getElementById("statDonations").textContent =
+      donations.total ?? 0;
+
+    document.getElementById("profileDonations").textContent =
+      donations.total ?? 0;
+
+    document.getElementById("donorScore").textContent =
+      data.donor_score ?? 0;
+
+    document.getElementById("profileDonorStatus").textContent =
+      data.donor_approved ? "Approved" : "Pending";
+
+    document.getElementById("donorAvailable").textContent =
+      data.donor_approved ? "Yes" : "No";
+
+    /* ================= LAST DONATION & COOLDOWN ================= */
+    const lastDonationEl = document.getElementById("lastDonation");
+    const profileLastDonationEl =
+      document.getElementById("profileLastDonation");
+
+    if (donations.days_since_last !== null &&
+        donations.days_since_last !== undefined) {
+      lastDonationEl.textContent =
+        `${donations.days_since_last} days ago`;
+
+      profileLastDonationEl.textContent =
+        `${donations.days_since_last} days ago`;
+    } else {
+      lastDonationEl.textContent = "Never";
+      profileLastDonationEl.textContent = "Never";
+    }
+
+    /* ================= DONOR BADGE & OPEN REQUESTS ================= */
+    if (data.donor_approved) {
+      document.getElementById("donorBadge")?.classList.remove("hidden");
+      document.getElementById("openRequestsNav")?.classList.remove("hidden");
+    } else {
+      document.getElementById("openRequestsNav")?.classList.add("hidden");
+    }
+
+    /* ================= OTP / PENDING CONFIRMATIONS ================= */
+    if (data.is_donor) {
+      showDonationTab("pending");
+      loadPendingDonations();
+    }
+
+  } catch (err) {
+    console.error("User capability error:", err);
+    showNotification(
+      "Session expired. Please login again.",
+      "error"
+    );
+    logout();
   }
 }
 
+
+
+// ===== DONATION STATUS UPDATE FUNCTION =====
+function updateDonationStatus(userData) {
+  const donationStatusAlert = document.getElementById('donationStatusAlert');
+  const firstDonorAlert = document.getElementById('firstDonorAlert');
+  const eligibleNowAlert = document.getElementById('eligibleNowAlert');
+  const donationProgressSection = document.getElementById('donationProgressSection');
+  const compatibleDonorsPreview = document.getElementById('compatibleDonorsPreview');
+  const compatibilityChart = document.getElementById('compatibilityChart');
+  const quickScheduleBtn = document.getElementById('quickScheduleBtn');
+  const quickCompatibleBtn = document.getElementById('quickCompatibleBtn');
+
+  if (userData.is_donor && userData.donor_approved) {
+    // Show donor-related elements
+    donationStatusAlert.classList.remove('hidden');
+    donationProgressSection.classList.remove('hidden');
+    compatibleDonorsPreview.classList.remove('hidden');
+    compatibilityChart.classList.remove('hidden');
+    
+    if (quickScheduleBtn) quickScheduleBtn.classList.remove('hidden');
+    if (quickCompatibleBtn) quickCompatibleBtn.classList.remove('hidden');
+    
+    // Hide other alerts
+    firstDonorAlert.classList.add('hidden');
+    
+    // Calculate days since last donation - use dummy data if API data not available
+    const lastDonationRaw = userData.donations?.last_date;
+
+if (!lastDonationRaw) {
+  // First-time donor
+  donationStatusAlert.classList.add("hidden");
+  firstDonorAlert.classList.remove("hidden");
+  eligibleNowAlert.classList.add("hidden");
+  return;
+}
+
+const lastDonation = new Date(lastDonationRaw);
+
+    const today = new Date();
+    const daysSinceLast = Math.floor((today - lastDonation) / (1000 * 60 * 60 * 24));
+    const daysLeft = Math.max(0, MIN_GAP_DAYS - daysSinceLast);
+const progressPercentage = Math.min(
+  100,
+  Math.floor((daysSinceLast / MIN_GAP_DAYS) * 100)
+);
+
+    // Update UI
+    if (document.getElementById('daysLeft')) {
+      document.getElementById('daysLeft').textContent = daysLeft;
+    }
+    if (document.getElementById('donationProgress')) {
+      document.getElementById('donationProgress').style.width = `${progressPercentage}%`;
+    }
+    if (document.getElementById('progressPercentage')) {
+      document.getElementById('progressPercentage').textContent = `${progressPercentage}%`;
+    }
+    if (document.getElementById('eligibilityProgressBar')) {
+      document.getElementById('eligibilityProgressBar').style.width = `${progressPercentage}%`;
+    }
+    if (document.getElementById('daysCompleted')) {
+      document.getElementById('daysCompleted').textContent = `${daysSinceLast} days`;
+    }
+    if (document.getElementById('daysRemaining')) {
+      document.getElementById('daysRemaining').textContent = `${daysLeft} days left`;
+    }
+    
+    // Show eligible now alert if applicable
+    if (daysLeft === 0) {
+      if (eligibleNowAlert) {
+        eligibleNowAlert.classList.remove('hidden');
+      }
+      if (donationStatusAlert) {
+        donationStatusAlert.classList.add('hidden');
+      }
+    } else {
+      if (eligibleNowAlert) {
+        eligibleNowAlert.classList.add('hidden');
+      }
+    }
+    
+  } else if (userData.is_donor && !userData.donor_approved) {
+    // Show first donor alert
+    if (firstDonorAlert) {
+      firstDonorAlert.classList.remove('hidden');
+    }
+    
+    // Hide other elements
+    if (donationStatusAlert) donationStatusAlert.classList.add('hidden');
+    if (eligibleNowAlert) eligibleNowAlert.classList.add('hidden');
+    if (donationProgressSection) donationProgressSection.classList.add('hidden');
+    if (compatibleDonorsPreview) compatibleDonorsPreview.classList.add('hidden');
+    if (compatibilityChart) compatibilityChart.classList.add('hidden');
+    
+  } else {
+    // Not a donor
+    if (donationStatusAlert) donationStatusAlert.classList.add('hidden');
+    if (firstDonorAlert) firstDonorAlert.classList.add('hidden');
+    if (eligibleNowAlert) eligibleNowAlert.classList.add('hidden');
+    if (donationProgressSection) donationProgressSection.classList.add('hidden');
+    if (compatibleDonorsPreview) compatibleDonorsPreview.classList.add('hidden');
+    if (compatibilityChart) compatibilityChart.classList.add('hidden');
+  }
+}
 
 // ===== DONATION HISTORY FUNCTIONS =====
 function showDonationTab(tab) {
@@ -1576,39 +2044,21 @@ function showDonationTab(tab) {
   }
 }
 
-// ===== LOAD DONATION STATISTICS =====
 async function loadDonationStats() {
-  try {
-    if (!token) return;
+  const res = await fetch(
+    "http://127.0.0.1:8000/api/donor/dashboard-stats/",
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
 
-    // Load stats
-    const statsRes = await fetch("http://127.0.0.1:8000/donations/api/donation-stats/", {
-      headers: { "Authorization": `Bearer ${token}` }
-    });
+  if (!res.ok) return;
 
-    if (statsRes.ok) {
-      const statsData = await statsRes.json();
-      updateDonationStats(statsData);
-    }
+  const data = await res.json();
 
-    // Load recent donations
-    const historyRes = await fetch("http://127.0.0.1:8000/donations/api/user-donations/?limit=5", {
-      headers: { "Authorization": `Bearer ${token}` }
-    });
-
-    if (historyRes.ok) {
-      const historyData = await historyRes.json();
-      updateRecentDonations(historyData.donations || []);
-    }
-
-    // Check for pending donations
-    await loadPendingDonations();
-    
-  } catch (err) {
-    console.error("Error loading donation stats:", err);
-    showNotification("Error loading donation statistics", "error");
-  }
+  document.getElementById("stat-total-donations").textContent = data.total_donations;
+  document.getElementById("stat-verified-donations").textContent = data.verified_donations;
+  document.getElementById("stat-pending-donations").textContent = data.pending_donations;
 }
+
 
 function updateDonationStats(stats) {
   const statTotalDonations = document.getElementById("stat-total-donations");
@@ -1677,29 +2127,19 @@ function updateRecentDonations(donations) {
   }).join('');
 }
 
-// ===== LOAD DONATION HISTORY =====
 async function loadDonationHistory() {
-  try {
-    if (!token) return;
+  const res = await fetch(
+    "http://127.0.0.1:8000/api/donor/donation-history/",
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
 
-    const res = await fetch("http://127.0.0.1:8000/donations/api/donations-history/", {
-      headers: { "Authorization": `Bearer ${token}` }
-    });
+  if (!res.ok) return;
 
-    if (!res.ok) {
-      console.error("Failed to load donation history");
-      return;
-    }
-
-    const data = await res.json();
-    allDonations = data.donations || [];
-    filterDonationHistory();
-    
-  } catch (err) {
-    console.error("Error loading donation history:", err);
-    showNotification("Error loading donation history", "error");
-  }
+  const data = await res.json();
+  allDonations = data.donations || [];
+  filterDonationHistory();
 }
+
 
 function filterDonationHistory() {
   const statusFilter = document.getElementById("donationStatusFilter");
@@ -1795,7 +2235,7 @@ function updateDonationHistoryTable() {
           </span>
         </td>
         <td class="px-6 py-4">
-          <div class="text-sm text-gray-900">${donation.hospital_name || 'Donation Center'}</div>
+          <div class="text-sm text-gray-900">${donation.hospital || 'Donation Center'}</div>
           <div class="text-xs text-gray-500">${donation.location || ''}</div>
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
@@ -1815,84 +2255,111 @@ function updateDonationHistoryTable() {
   }).join('');
 }
 
-// ===== LOAD PENDING DONATIONS =====
 async function loadPendingDonations() {
-  try {
-    if (!token) return;
+  const res = await fetch(
+    "http://127.0.0.1:8000/api/donor/pending-confirmations/",
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
 
-    const res = await fetch("http://127.0.0.1:8000/donations/api/pending-confirmations/", {
-      headers: { "Authorization": `Bearer ${token}` }
-    });
+  const data = await res.json();
 
-    if (!res.ok) {
-      console.error("Failed to load pending donations");
-      return;
-    }
+  const card = document.getElementById("pendingDonationCard");
+  const details = document.getElementById("pendingDonationDetails");
+  const noPending = document.getElementById("noPendingDonations");
 
-    const data = await res.json();
-    updatePendingDonationsUI(data.pending_donations || []);
-    
-  } catch (err) {
-    console.error("Error loading pending donations:", err);
+  // ✅ ALWAYS show OTP card
+  card.classList.remove("hidden");
+  noPending.classList.add("hidden");
+
+  // ❌ No pending donation yet
+  if (!data || data.length === 0) {
+    details.innerHTML = `
+      <div class="bg-blue-50 p-4 rounded-xl">
+        <p class="font-medium text-gray-800">
+          Have you donated blood?
+        </p>
+        <p class="text-sm text-gray-600 mt-1">
+          Enter the OTP provided by the patient to confirm donation.
+        </p>
+      </div>
+    `;
+    currentPendingDonationId = null;
+    return;
   }
+
+  // ✅ Pending donation exists
+  const donation = data[0];
+  currentPendingDonationId = donation.request_id;
+
+  details.innerHTML = `
+    <div class="bg-yellow-50 p-4 rounded-xl space-y-1">
+      <p><strong>Hospital:</strong> ${donation.hospital}</p>
+      <p><strong>Blood Type:</strong> ${donation.blood_type}</p>
+      <p><strong>District:</strong> ${donation.district}</p>
+      <p class="text-green-700 font-medium mt-2">
+        Ready for OTP confirmation
+      </p>
+    </div>
+  `;
 }
+
+
+
 
 function updatePendingDonationsUI(pendingDonations) {
-  const pendingCard = document.getElementById("pendingDonationCard");
-  const noPendingEl = document.getElementById("noPendingDonations");
-  const recentConfirmedSection = document.getElementById("recentConfirmedSection");
-  
-  if (!pendingCard || !noPendingEl) return;
-  
-  if (pendingDonations.length > 0) {
-    pendingCard.classList.remove("hidden");
-    noPendingEl.classList.add("hidden");
-    
-    const detailsEl = document.getElementById("pendingDonationDetails");
-    if (detailsEl) {
-      detailsEl.innerHTML = pendingDonations.map(donation => `
-        <div class="bg-yellow-50 p-4 rounded-xl">
-          <div class="flex justify-between items-start">
-            <div>
-              <h4 class="font-medium text-gray-900">${donation.hospital_name}</h4>
-              <p class="text-sm text-gray-600">Scheduled: ${new Date(donation.scheduled_date).toLocaleDateString()}</p>
-              <p class="text-sm text-gray-600">Blood Type: ${donation.blood_type}</p>
-            </div>
-            <button onclick="openOtpModal('${donation.id}')" class="text-yellow-600 hover:text-yellow-800">
-              <i class="fas fa-key"></i>
-            </button>
-          </div>
-        </div>
-      `).join('');
-    }
-    
-    // Store current pending donation ID for OTP modal
-    if (pendingDonations[0]) {
-      pendingCard.dataset.donationId = pendingDonations[0].id;
-    }
-  } else {
-    pendingCard.classList.add("hidden");
-    noPendingEl.classList.remove("hidden");
+  const card = document.getElementById("pendingDonationCard");
+  const details = document.getElementById("pendingDonationDetails");
+
+  card.classList.remove("hidden");
+
+  // ❌ No patient confirmation yet
+  if (!pendingDonations || pendingDonations.length === 0) {
+    details.innerHTML = `
+      <div class="bg-blue-50 p-4 rounded-xl">
+        <p class="text-sm text-gray-700">
+          Have you already donated blood?
+          <br>
+          If yes, please enter the OTP shared by the patient.
+        </p>
+        <p class="text-xs text-gray-500 mt-2">
+          OTP will become active once patient confirms receipt.
+        </p>
+      </div>
+    `;
+    return;
   }
+
+  // ✅ Patient has confirmed
+  const c = pendingDonations[0];
+
+  // card.dataset.requestId = c.request_id;
+
+  details.innerHTML = `
+    <div class="bg-yellow-50 p-4 rounded-xl space-y-1">
+      <p><strong>Hospital:</strong> ${c.hospital}</p>
+      <p><strong>Blood Type:</strong> ${c.blood_type}</p>
+      <p><strong>District:</strong> ${c.district}</p>
+      <p class="text-green-700 text-sm font-medium mt-2">
+        OTP ready for verification
+      </p>
+    </div>
+  `;
 }
+
 
 // ===== OTP MODAL FUNCTIONS =====
 let currentPendingDonationId = null;
 
-function openOtpModal(donationId = null) {
-  currentPendingDonationId = donationId || document.getElementById("pendingDonationCard")?.dataset.donationId;
-  
-  // Load donation details for modal
-  if (currentPendingDonationId) {
-    loadDonationDetailsForModal(currentPendingDonationId);
+function openOtpModal(requestId) {
+  if (!requestId) {
+    showNotification("OTP not available yet", "warning");
+    return;
   }
-  
-  const modal = document.getElementById("otpModal");
-  if (modal) modal.classList.remove("hidden");
-  
-  const otpCode = document.getElementById("otpCode");
-  if (otpCode) otpCode.focus();
+
+  currentPendingDonationId = requestId;
+  document.getElementById("otpModal").classList.remove("hidden");
 }
+
 
 function closeOtpModal() {
   const modal = document.getElementById("otpModal");
@@ -1933,47 +2400,36 @@ async function loadDonationDetailsForModal(donationId) {
 
 async function submitOtp(event) {
   event.preventDefault();
-  
-  const otpCode = document.getElementById("otpCode");
-  if (!otpCode || !currentPendingDonationId) {
-    showNotification("Invalid OTP or donation ID", "error");
-    return;
-  }
-  
-  const otpValue = otpCode.value;
-  if (!otpValue) {
-    showNotification("Please enter OTP code", "error");
-    return;
-  }
-  
-  try {
-    const res = await fetch(`http://127.0.0.1:8000/donations/api/confirm-donation/${currentPendingDonationId}/`, {
+
+  const otp = document.getElementById("otpCode").value;
+
+  const res = await fetch(
+    "http://127.0.0.1:8000/api/donor/confirm/",
+    {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ otp: otpValue })
-    });
-
-    const data = await res.json();
-    
-    if (res.ok) {
-      showNotification(data.message || "Donation confirmed successfully!", "success");
-      closeOtpModal();
-      
-      // Refresh all donation data
-      loadDonationStats();
-      loadDonationHistory();
-      loadPendingDonations();
-    } else {
-      showNotification(data.error || "Invalid OTP", "error");
+      body: JSON.stringify({
+        request_id: currentPendingDonationId,
+        otp: otp
+      })
     }
-  } catch (err) {
-    console.error("Error confirming donation:", err);
-    showNotification("Error confirming donation", "error");
+  );
+
+  const data = await res.json();
+
+  if (res.ok) {
+    showNotification(data.message, "success");
+    closeOtpModal();
+    loadPendingDonations();
+    loadDonationStats();
+  } else {
+    showNotification(data.message || "Invalid OTP", "error");
   }
 }
+
 
 // ===== HELPER FUNCTIONS =====
 function getStatusBadge(status) {
@@ -2153,40 +2609,7 @@ function showNotification(message, type = "success") {
   }, 3000);
 }
 
-// ===== INITIALIZATION =====
-document.addEventListener("DOMContentLoaded", function() {
-  // Check if token exists
-  if (!token) {
-    logout();
-    return;
-  }
-  
-  // Load user capabilities on page load
-  loadUserCapabilities();
-  
-  // Close modal on ESC key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      closeOtpModal();
-    }
-  });
-  
-  // Close modal on background click
-  const otpModal = document.getElementById("otpModal");
-  if (otpModal) {
-    otpModal.addEventListener('click', (e) => {
-      if (e.target.id === "otpModal") {
-        closeOtpModal();
-      }
-    });
-  }
-  
-  // Update sidebar donor button
-  const donorNavButton = document.getElementById("donorNav");
-  if (donorNavButton) {
-    donorNavButton.setAttribute("onclick", "showSection('donor')");
-  }
-});
+// ===== OPEN BLOOD REQUESTS FUNCTIONS =====
 async function loadOpenBloodRequests() {
   if (!token) return;
 
@@ -2228,7 +2651,7 @@ async function loadOpenBloodRequests() {
             <button
               onclick="markInterest(${req.request_id})"
               class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm">
-              I’m Willing to Donate
+              I'm Willing to Donate
             </button>
           </td>
         </tr>
@@ -2240,6 +2663,7 @@ async function loadOpenBloodRequests() {
     showNotification("Failed to load open requests", "error");
   }
 }
+
 async function markInterest(requestId) {
   if (!confirm(`Confirm interest for Request ID #${requestId}?`)) return;
 
@@ -2260,7 +2684,128 @@ async function markInterest(requestId) {
   }
 }
 
+// ===== DONOR SIDEBAR UPDATE FUNCTION =====
+function updateDonorSidebar(data) {
+  const compatibleDonorsNav = document.getElementById('compatibleDonorsNav');
+  const donationScheduleNav = document.getElementById('donationScheduleNav');
+  const openRequestsNav = document.getElementById('openRequestsNav');
+  const quickScheduleBtn = document.getElementById('quickScheduleBtn');
+  const quickCompatibleBtn = document.getElementById('quickCompatibleBtn');
+  
+  if (data.is_donor && data.donor_approved) {
+    if (compatibleDonorsNav) compatibleDonorsNav.classList.remove('hidden');
+    if (donationScheduleNav) donationScheduleNav.classList.remove('hidden');
+    if (openRequestsNav) openRequestsNav.classList.remove('hidden');
+    if (quickScheduleBtn) quickScheduleBtn.classList.remove('hidden');
+    if (quickCompatibleBtn) quickCompatibleBtn.classList.remove('hidden');
+  } else {
+    if (compatibleDonorsNav) compatibleDonorsNav.classList.add('hidden');
+    if (donationScheduleNav) donationScheduleNav.classList.add('hidden');
+    if (openRequestsNav) openRequestsNav.classList.add('hidden');
+    if (quickScheduleBtn) quickScheduleBtn.classList.add('hidden');
+    if (quickCompatibleBtn) quickCompatibleBtn.classList.add('hidden');
+  }
+}
+
+
+
+// ===== INITIALIZATION =====
+document.addEventListener("DOMContentLoaded", function() {
+  // Check if token exists
+  if (!token) {
+    logout();
+    return;
+  }
+  
+  // Load user capabilities on page load
+  loadUserCapabilities();
+  
+  // Close modal on ESC key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeOtpModal();
+    }
+  });
+  
+  // Close modal on background click
+  const otpModal = document.getElementById("otpModal");
+  if (otpModal) {
+    otpModal.addEventListener('click', (e) => {
+      if (e.target.id === "otpModal") {
+        closeOtpModal();
+      }
+    });
+  }
+  
+  // Update sidebar donor button
+  const donorNavButton = document.getElementById("donorNav");
+  if (donorNavButton) {
+    donorNavButton.setAttribute("onclick", "showSection('donor')");
+  }
+});
+async function submitOtpDirect() {
+  const otp = document.getElementById("otpCode").value;
+
+  if (!otp) {
+    showNotification("Enter OTP", "warning");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://127.0.0.1:8000/api/donor/confirm/", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ otp })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      showNotification(data.message || "Invalid OTP", "error");
+      return;
+    }
+
+    showNotification("Donation verified successfully ❤️", "success");
+
+    closeOtpModal();
+    loadPendingDonations();
+    loadDonationHistory();
+    loadDonationStats();
+
+  } catch (err) {
+    console.error(err);
+    showNotification("OTP verification failed", "error");
+  }
+}
+
 </script>
+<!-- PATIENT OTP VIEW MODAL -->
+<div id="patientOtpModal"
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+
+  <div class="bg-white rounded-2xl p-8 max-w-sm w-full text-center">
+    <h3 class="text-xl font-bold text-gray-900 mb-2">
+      Share this OTP with Donor
+    </h3>
+
+    <p class="text-sm text-gray-500 mb-4">
+      The donor must enter this code to verify donation
+    </p>
+
+    <div id="patientOtpCode"
+         class="text-4xl font-bold tracking-widest text-red-600 mb-6">
+      ----
+    </div>
+
+    <button onclick="closePatientOtpModal()"
+            class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl">
+      OK
+    </button>
+  </div>
+</div>
 
 </body>
 </html>

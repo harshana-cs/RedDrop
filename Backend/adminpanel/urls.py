@@ -13,6 +13,8 @@ from .views import (
     admin_list_hospitals,
     admin_toggle_hospital
     , admin_create_hospital,
+    admin_processed_blood_requests,
+    admin_processed_donor_registrations,
 )
 
 urlpatterns = [
@@ -30,5 +32,8 @@ urlpatterns = [
     path("hospitals/list/", admin_list_hospitals),
     path("hospital/<int:hospital_id>/reset-password/", admin_reset_hospital_password),
     path("hospital/<int:hospital_id>/toggle/", admin_toggle_hospital),
+    path("blood-requests/processed/", admin_processed_blood_requests),
+    path("donors/processed/", admin_processed_donor_registrations),
+
 
 ]
