@@ -18,6 +18,8 @@ urlpatterns = [
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/donor/", include("donor.urls")),
     path("api/hospital/", include("hospital.urls")),
+    path("api/", include("blood_stock.urls")),
+
 
     # Root redirect
     path('', lambda request: redirect('home')),

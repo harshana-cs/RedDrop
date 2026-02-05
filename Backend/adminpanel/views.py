@@ -8,6 +8,14 @@ from register_donor.models import Donor
 from loginsignup.models import Patient
 from hospital.models import Hospital
 from django.core.mail import send_mail
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAdminUser
+from rest_framework.response import Response
+from rest_framework import status
+from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
+from hospital.models import HospitalApplication, Hospital
 
 
 
@@ -414,4 +422,140 @@ def admin_processed_donor_registrations(request):
         "success": True,
         "count": len(data),
         "data": data
+    })
+@api_view(["GET"])
+@permission_classes([AllowAny])  
+def admin_hospital_requests(request):
+    status_param = request.GET.get("status")  
+
+    qs = HospitalApplication.objects.all().order_by("-created_at")
+
+    if status_param:
+        qs = qs.filter(status=status_param)
+
+    data = []
+    for r in qs:
+        data.append({
+            "id": r.id,
+            "hospital_name": r.hospital_name,
+            "registration_number": r.registration_number,
+            "hospital_type": r.hospital_type,
+            "email": r.email,
+            "phone": r.phone,
+            "status": r.status,
+            # "approved_at": r.approved_at,
+            # "rejected_at": r.rejected_at,
+        })
+
+    return Response(data, status=status.HTTP_200_OK)
+
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])  # you can later change to IsAdminUser
+def approve_hospital_request(request, pk):
+    try:
+        app = HospitalApplication.objects.get(id=pk, status="pending")
+    except HospitalApplication.DoesNotExist:
+        return Response(
+            {"success": False, "message": "Hospital request not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    username = request.data.get("username")
+    password = request.data.get("password")
+
+    if not username or not password:
+        return Response(
+            {"success": False, "message": "Username and password are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if Hospital.objects.filter(username=username).exists():
+        return Response(
+            {"success": False, "message": "Username already exists"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # 1️⃣ CREATE HOSPITAL (AUTH / LOGIN TABLE)
+    hospital = Hospital.objects.create(
+        name=app.hospital_name,
+        username=username,
+        is_active=True
+    )
+    hospital.set_password(password)
+    hospital.save()
+
+    # 2️⃣ CREATE HOSPITAL PROFILE (DETAIL TABLE)
+    HospitalProfile.objects.create(
+        hospital=hospital,
+        district=app.address,
+        contact_number=app.phone,
+        registration_number=app.registration_number,
+        email=app.email
+    )
+
+    # 3️⃣ UPDATE APPLICATION STATUS
+    app.status = "approved"
+    app.approved_at = timezone.now()
+    app.save()
+
+    # 4️⃣ SEND EMAIL
+    send_mail(
+        subject="🏥 Hospital Registration Approved – RedDrop",
+        message=(
+            f"Dear {app.hospital_name},\n\n"
+            "Your hospital registration request has been approved.\n\n"
+            f"Login Credentials:\n"
+            f"Username: {username}\n"
+            f"Password: {password}\n\n"
+            "You can now log in and manage blood requests on RedDrop.\n\n"
+            "— RedDrop Team"
+        ),
+        from_email=settings.EMAIL_HOST_USER,
+        recipient_list=[app.email],
+        fail_silently=True,
+    )
+
+    return Response(
+        {"success": True, "message": "Hospital approved successfully"},
+        status=status.HTTP_200_OK
+    )
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def reject_hospital_request(request, pk):
+    try:
+        application = HospitalApplication.objects.get(id=pk, status="pending")
+    except HospitalApplication.DoesNotExist:
+        return Response(
+            {"error": "Hospital request not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    application.status = "rejected"
+    application.rejected_at = timezone.now()
+    application.save()
+
+    return Response(
+        {
+            "success": True,
+            "message": "Hospital request rejected"
+        },
+        status=status.HTTP_200_OK
+    )
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def hospital_request_detail(request, pk):
+    h = HospitalApplication.objects.get(id=pk)
+
+    return Response({
+        "hospital_name": h.hospital_name,
+        "hospital_type": h.hospital_type,
+        "email": h.email,
+        "phone": h.phone,
+        "address": h.address,
+        "bed_capacity": h.bed_capacity,
+        "registration_certificate": h.registration_certificate.url,
+        "medical_license": h.medical_license.url,
+        "id_proof": h.id_proof.url,
     })

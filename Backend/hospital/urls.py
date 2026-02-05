@@ -3,8 +3,12 @@ from . import views
 
 urlpatterns = [
     path("login/", views.hospital_login),
-    # path("create/", views.admin_create_hospital),
-#     # path("list/", views.admin_list_hospitals),
-#     path("<int:hospital_id>/reset-password/", views.admin_reset_hospital_password),
-#     path("<int:hospital_id>/toggle/", views.admin_toggle_hospital),
- ]
+    path("register/", views.hospital_register),
+
+    path("profile/", views.hospital_profile),
+    path("dashboard/", views.hospital_dashboard),
+    path("blood-requests/", views.hospital_blood_requests),
+    path("blood-stock/", views.hospital_blood_stock),
+    path("donors/", views.hospital_donors),
+    path("stock-history/", views.hospital_stock_history),
+]

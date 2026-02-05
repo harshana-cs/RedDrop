@@ -544,7 +544,14 @@
   let hospitalData = {};
   let stockData = [];
   let requestsData = [];
-  
+  function authHeaders() {
+  const token = localStorage.getItem("hospitalToken");
+  return {
+    "Authorization": `Bearer ${token}`,
+    "Content-Type": "application/json"
+  };
+}
+
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', function() {
     updateCurrentDate();
@@ -610,9 +617,9 @@
   async function loadHospitalData() {
     try {
       const response = await fetch("http://127.0.0.1:8000/api/hospital/profile/", {
-        headers: {
-          "Authorization": "Bearer " + token
-        }
+        headers: authHeaders()
+
+
       });
       const data = await response.json();
       hospitalData = data;
@@ -627,9 +634,8 @@
     try {
       // Load dashboard statistics
       const response = await fetch("http://127.0.0.1:8000/api/hospital/dashboard/", {
-        headers: {
-          "Authorization": "Bearer " + token
-        }
+        headers: authHeaders()
+
       });
       const data = await response.json();
       
@@ -657,9 +663,9 @@
   async function loadStockData() {
     try {
       const response = await fetch("http://127.0.0.1:8000/api/hospital/blood-stock/", {
-        headers: {
-          "Authorization": "Bearer " + token
-        }
+       headers: authHeaders()
+
+
       });
       const data = await response.json();
       stockData = data;
@@ -881,10 +887,7 @@
     try {
       const response = await fetch("http://127.0.0.1:8000/api/hospital/blood-request/create/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
           patient_name: patientName,
           blood_type: bloodType,
@@ -923,9 +926,7 @@
       }
       
       const response = await fetch(url, {
-        headers: {
-          "Authorization": "Bearer " + token
-        }
+        headers: authHeaders()
       });
       const data = await response.json();
       requestsData = data;
@@ -994,9 +995,7 @@
   async function loadDonors() {
     try {
       const response = await fetch("http://127.0.0.1:8000/api/hospital/donors/", {
-        headers: {
-          "Authorization": "Bearer " + token
-        }
+        headers: authHeaders()
       });
       const data = await response.json();
       updateDonorsList(data);
@@ -1071,9 +1070,7 @@
       }
       
       const response = await fetch(url, {
-        headers: {
-          "Authorization": "Bearer " + token
-        }
+        headers: authHeaders()
       });
       const data = await response.json();
       updateStockHistoryTable(data);
@@ -1145,10 +1142,7 @@
     try {
       const response = await fetch("http://127.0.0.1:8000/api/hospital/stock/add/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
           blood_type: bloodType,
           units: parseInt(units),
@@ -1194,10 +1188,7 @@
     try {
       const response = await fetch("http://127.0.0.1:8000/api/hospital/stock/remove/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + token
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
           blood_type: bloodType,
           units: parseInt(units),
