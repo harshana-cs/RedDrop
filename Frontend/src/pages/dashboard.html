@@ -7,30 +7,122 @@
 
 <link href="../../dist/output.css" rel="stylesheet" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+ <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
 .section { display:none; }
 .section.active { display:block; animation: fadeIn 0.3s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-</style>
+
+    html { scroll-behavior: smooth; }
+    
+    /* Define animations */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-25px); }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+    
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Animation classes */
+    .animate-bounce {
+      animation: bounce 1s infinite;
+    }
+    
+    .animate-pulse-slow {
+      animation: pulse 3s ease-in-out infinite;
+    }
+    
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .animate-fade-in {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+    
+    /* Custom styles */
+    .gradient-text {
+      background: linear-gradient(90deg, #B91C1C, #991B1B);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(185, 28, 28, 0.15);
+    }
+    
+   .blood-drop {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .blood-drop::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: -10px;
+      width: 8px;
+      height: 8px;
+      background-color: #B91C1C;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    :root {
+    --brand-red: #B91C1C;
+    --brand-red-dark: #991B1B;
+    --brand-red-light: #FEE2E2;
+  }
+  </style>
 </head>
 
 <body class="bg-gray-100 text-gray-800">
+ <header class="bg-[#B91C1C] text-white fixed top-0 left-0 w-full z-50 shadow-lg backdrop-blur-md bg-opacity-95">
+  <nav class="container mx-auto flex items-center py-4 px-6">
+    
+    <div class="flex items-center space-x-2">
+      <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+        <i class="fas fa-tint text-[#e03636] text-xl"></i>
+      </div>
 
-<div class="min-h-screen flex">
+      <a href="index.html" class="ml-2">
+        <h1 class="text-3xl font-bold tracking-wide">
+          Red<span class="font-extrabold">Drop</span>
+        </h1>
+      </a>
+    </div>
+
+  </nav>
+</header>
+
+
+
+<div class="min-h-screen flex pt-16">
+
 
 <!-- ================= SIDEBAR ================= -->
-<aside class="w-64 bg-white shadow-lg fixed inset-y-0 left-0 z-10">
+<aside class="w-60 bg-white shadow-lg fixed inset-y-0 left-0 z-10">
   <div class="h-20 flex items-center justify-center border-b">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
-        <i class="fas fa-tint text-white"></i>
-      </div>
-      <div>
-        <h1 class="font-bold text-xl">RedDrop</h1>
-        <p class="text-xs text-gray-500">Blood Bank</p>
-      </div>
-    </div>
+    
   </div>
 
   <nav class="px-4 py-6 space-y-2">
@@ -42,9 +134,9 @@
       <i class="fas fa-plus-circle text-red-600"></i> Request Blood
     </a>
 
-    <button id="donorNav" onclick="showSection('donor')" class="hidden w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-red-50 transition-colors duration-200">
+    <!-- <button id="donorNav" onclick="showSection('donor')" class="hidden w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-red-50 transition-colors duration-200">
       <i class="fas fa-heart text-red-600"></i> Donate Blood
-    </button>
+    </button> -->
 
     <button onclick="showSection('history')" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-red-50 transition-colors duration-200">
       <i class="fas fa-history text-red-600"></i> History
@@ -65,7 +157,8 @@
     <div class="mb-4">
      <button id="registerDonorBtn"
         onclick="window.location.href='donor_register.html'"
-        class="w-full bg-red-600 text-white py-2 rounded-xl hover:bg-red-700">
+        class="w-full bg-[var(--brand-red)]
+ text-white py-2 rounded-xl hover:bg-red-700">
   Register as Donor
 </button>
 
@@ -211,9 +304,15 @@
           <i class="fas fa-hand-paper text-red-600 text-xl"></i>
         </div>
         <div>
-          <p class="text-sm text-gray-500">Total Requests</p>
-          <h3 id="statRequests" class="text-2xl font-bold text-gray-800">—</h3>
-        </div>
+  <button
+    onclick="showSection('history')"
+    class="w-full text-left px-4 py-3 rounded-xl hover:bg-red-50 transition-colors duration-200"
+  >
+    <p class="text-sm text-gray-500">Total Requests</p>
+    <h3 id="statRequests" class="text-2xl font-bold text-gray-800">—</h3>
+  </button>
+</div>
+
       </div>
     </div>
 
@@ -344,7 +443,8 @@
           </div>
         </div>
         
-        <button onclick="showSection('donor')" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-colors">
+        <button onclick="showSection('donor')" class="w-full bg-[var(--brand-red)]
+ text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-colors">
           View Full Stats
         </button>
       </div>
@@ -382,7 +482,8 @@
           <span class="text-gray-600">Last donation:</span>
           <span class="font-medium">30 days ago</span>
         </div>
-        <button onclick="contactDonor('John Doe')" class="w-full mt-3 bg-red-600 text-white py-2 rounded-lg text-sm hover:bg-red-700">
+        <button onclick="contactDonor('John Doe')" class="w-full mt-3 bg-[var(--brand-red)]
+ text-white py-2 rounded-lg text-sm hover:bg-red-700">
           <i class="fas fa-phone mr-2"></i> Contact
         </button>
       </div>
@@ -405,7 +506,8 @@
           <span class="text-gray-600">Last donation:</span>
           <span class="font-medium">15 days ago</span>
         </div>
-        <button onclick="contactDonor('Sarah Smith')" class="w-full mt-3 bg-red-600 text-white py-2 rounded-lg text-sm hover:bg-red-700">
+        <button onclick="contactDonor('Sarah Smith')" class="w-full mt-3 bg-[var(--brand-red)]
+ text-white py-2 rounded-lg text-sm hover:bg-red-700">
           <i class="fas fa-phone mr-2"></i> Contact
         </button>
       </div>
@@ -428,7 +530,8 @@
           <span class="text-gray-600">Last donation:</span>
           <span class="font-medium">60 days ago</span>
         </div>
-        <button onclick="contactDonor('Mike Johnson')" class="w-full mt-3 bg-red-600 text-white py-2 rounded-lg text-sm hover:bg-red-700">
+        <button onclick="contactDonor('Mike Johnson')" class="w-full mt-3 bg-[var(--brand-red)]
+ text-white py-2 rounded-lg text-sm hover:bg-red-700">
           <i class="fas fa-phone mr-2"></i> Contact
         </button>
       </div>
@@ -446,7 +549,8 @@
     <h3 class="text-xl font-bold mb-6">Blood Type Compatibility</h3>
     <div class="overflow-x-auto">
       <table class="min-w-full bg-white rounded-lg overflow-hidden">
-        <thead class="bg-red-600 text-white">
+        <thead class="bg-[var(--brand-red)]
+ text-white">
           <tr>
             <th class="px-6 py-3 text-left">Your Blood Type</th>
             <th class="px-6 py-3 text-left">Can Donate To</th>
@@ -493,7 +597,8 @@
         <div>
           <h4 class="font-bold text-lg mb-1">Not Registered as Donor</h4>
           <p class="text-gray-600 mb-4">Register now to become a blood donor and save lives!</p>
-          <a href="donor_register.html" class="bg-red-600 text-white px-6 py-3 rounded-xl hover:bg-red-700 transition-colors duration-200 inline-flex items-center gap-2">
+          <a href="donor_register.html" class="bg-[var(--brand-red)]
+ text-white px-6 py-3 rounded-xl hover:bg-red-700 transition-colors duration-200 inline-flex items-center gap-2">
             <i class="fas fa-user-plus"></i> Register as Donor
           </a>
         </div>
@@ -530,7 +635,8 @@
                 <h5 class="font-bold">Central Blood Bank</h5>
                 <p class="text-gray-600">Available on: Tomorrow, 10 AM - 4 PM</p>
               </div>
-              <button class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200">
+              <button class="bg-[var(--brand-red)]
+ text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200">
                 Schedule
               </button>
             </div>
@@ -539,7 +645,8 @@
       </div>
 
       <div class="flex gap-4">
-        <a href="donor_register.html" class="bg-red-600 text-white px-6 py-3 rounded-xl hover:bg-red-700 transition-colors duration-200">
+        <a href="donor_register.html" class="bg-[var(--brand-red)]
+ text-white px-6 py-3 rounded-xl hover:bg-red-700 transition-colors duration-200">
           <i class="fas fa-edit mr-2"></i> Update Donor Profile
         </a>
         <button onclick="showSection('donorHistory')" class="bg-gray-200 text-gray-800 px-6 py-3 rounded-xl hover:bg-gray-300 transition-colors duration-200">
@@ -586,7 +693,8 @@
 <!-- ===== HISTORY SECTION ===== -->
 <section id="history" class="section">
   <div class="flex gap-2 mb-6">
-    <button id="tabRequests" onclick="switchHistoryTab('requests')" class="px-6 py-3 rounded-xl bg-red-600 text-white font-medium">
+    <button id="tabRequests" onclick="switchHistoryTab('requests')" class="px-6 py-3 rounded-xl bg-[var(--brand-red)]
+ text-white font-medium">
       Request History
     </button>
     <button id="tabDonations" onclick="switchHistoryTab('donations')" class="px-6 py-3 rounded-xl bg-gray-200 text-gray-800 font-medium hover:bg-gray-300 transition-colors duration-200">
@@ -757,7 +865,8 @@
           <h2 class="text-2xl font-bold text-gray-900">Donation Dashboard</h2>
           <p class="text-gray-500 mt-2">Overview of your blood donation activities</p>
         </div>
-        <button onclick="exportDonationHistory()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-colors duration-200">
+        <button onclick="exportDonationHistory()" class="bg-[var(--brand-red)]
+ hover:bg-red-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-colors duration-200">
           <i class="fas fa-download"></i> Export History
         </button>
       </div>
@@ -822,7 +931,8 @@
               Track all your blood donation activities and certificates
             </p>
           </div>
-          <button onclick="showDonationTab('history')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm flex items-center gap-2 transition-colors duration-200">
+          <button onclick="showDonationTab('history')" class="bg-[var(--brand-red)]
+ hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm flex items-center gap-2 transition-colors duration-200">
             <i class="fas fa-external-link-alt"></i> View All History
           </button>
         </div>
@@ -861,7 +971,8 @@
           </p>
         </div>
         <div class="flex gap-3">
-          <button onclick="exportDonationHistory()" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-colors duration-200">
+          <button onclick="exportDonationHistory()" class="bg-[var(--brand-red)]
+ hover:bg-red-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-colors duration-200">
             <i class="fas fa-download"></i> Export All
           </button>
           <button onclick="showDonationTab('stats')" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-2.5 rounded-xl flex items-center gap-2 transition-colors duration-200">
@@ -937,7 +1048,7 @@
         </div>
       </div>
     </div>
-
+   
     <!-- ================= PENDING DONATION TAB ================= -->
    <div id="pendingDonationContent" class="tab-content p-8">
 
@@ -955,12 +1066,14 @@
 
   <button
     onclick="submitOtpDirect()"
-    class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl">
+    class="mt-4 w-full bg-[var(--brand-red)]
+ hover:bg-red-700 text-white py-3 rounded-xl">
     Confirm Donation
   </button>
 </div>
 
 
+  </div>
   </div>
 </section>
 
@@ -973,7 +1086,8 @@
         <p class="text-gray-600">Manage your account information</p>
       </div>
       <div class="flex gap-3">
-        <button onclick="window.location.href='blood_request.html'" class="bg-red-600 text-white px-5 py-2 rounded-xl hover:bg-red-700 transition-colors duration-200">
+        <button onclick="window.location.href='blood_request.html'" class="bg-[var(--brand-red)]
+ text-white px-5 py-2 rounded-xl hover:bg-red-700 transition-colors duration-200">
           <i class="fas fa-plus mr-2"></i> Request Blood
         </button>
         <button id="profileRegisterDonorBtn"
@@ -1132,7 +1246,8 @@
         <button type="button" onclick="closeOtpModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-3 rounded-xl font-medium transition-colors duration-200">
           Cancel
         </button>
-        <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-medium transition-colors duration-200">
+        <button type="submit" class="flex-1 bg-[var(--brand-red)]
+ hover:bg-red-700 text-white py-3 rounded-xl font-medium transition-colors duration-200">
           Confirm Donation
         </button>
       </div>
@@ -1215,11 +1330,11 @@ function switchHistoryTab(tab) {
   const donationsBtn = document.getElementById('tabDonations');
   
   if (requestsBtn) {
-    requestsBtn.className = `px-6 py-3 rounded-xl font-medium transition-colors duration-200 ${tab === 'requests' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`;
+    requestsBtn.className = `px-6 py-3 rounded-xl font-medium transition-colors duration-200 ${tab === 'requests' ? 'bg-[var(--brand-red)] text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`;
   }
   
   if (donationsBtn) {
-    donationsBtn.className = `px-6 py-3 rounded-xl font-medium transition-colors duration-200 ${tab === 'donations' ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`;
+    donationsBtn.className = `px-6 py-3 rounded-xl font-medium transition-colors duration-200 ${tab === 'donations' ? 'bg-[var(--brand-red)] text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`;
   }
   
   // Show/hide sections
@@ -1869,21 +1984,30 @@ document.getElementById("profileMemberSince").textContent =
       data.donor_approved ? "Yes" : "No";
 
     /* ================= LAST DONATION & COOLDOWN ================= */
-    const lastDonationEl = document.getElementById("lastDonation");
-    const profileLastDonationEl =
-      document.getElementById("profileLastDonation");
+    /* ================= LAST DONATION & COOLDOWN ================= */
+const lastDonationEl = document.getElementById("lastDonation");
+const profileLastDonationEl =
+  document.getElementById("profileLastDonation");
 
-    if (donations.days_since_last !== null &&
-        donations.days_since_last !== undefined) {
-      lastDonationEl.textContent =
-        `${donations.days_since_last} days ago`;
+if (donations.last_date) {
+  const donationDate = new Date(donations.last_date);
 
-      profileLastDonationEl.textContent =
-        `${donations.days_since_last} days ago`;
-    } else {
-      lastDonationEl.textContent = "Never";
-      profileLastDonationEl.textContent = "Never";
-    }
+  const formattedDate = donationDate.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
+  // Dashboard (Donor section)
+  lastDonationEl.textContent = formattedDate;
+
+  // Profile section
+  profileLastDonationEl.textContent = formattedDate;
+} else {
+  lastDonationEl.textContent = "Never";
+  profileLastDonationEl.textContent = "Never";
+}
+
 
     /* ================= DONOR BADGE & OPEN REQUESTS ================= */
     if (data.donor_approved) {
@@ -2585,7 +2709,7 @@ function showNotification(message, type = "success") {
   const notification = document.createElement("div");
   notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-medium z-50 transform transition-transform duration-300 ${
     type === "success" ? "bg-green-600" : 
-    type === "error" ? "bg-red-600" : 
+    type === "error" ? "bg-[var(--brand-red)]" : 
     type === "warning" ? "bg-yellow-600" : "bg-blue-600"
   }`;
   notification.textContent = message;
@@ -2650,7 +2774,7 @@ async function loadOpenBloodRequests() {
           <td class="px-6 py-4">
             <button
               onclick="markInterest(${req.request_id})"
-              class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm">
+              class="bg-[var(--brand-red)] hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm">
               I'm Willing to Donate
             </button>
           </td>
@@ -2801,7 +2925,7 @@ async function submitOtpDirect() {
     </div>
 
     <button onclick="closePatientOtpModal()"
-            class="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl">
+            class="w-full bg-[var(--brand-red)] hover:bg-red-700 text-white py-3 rounded-xl">
       OK
     </button>
   </div>

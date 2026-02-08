@@ -1,18 +1,23 @@
+from hospital.models import Hospital
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import BloodStock, BloodStockHistory
 from hospital.auth import get_hospital_from_token
 from django.db import transaction
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import AllowAny
 
 
 
 @api_view(["GET"])
+@authentication_classes([])          # 🔥 ADD
+@permission_classes([AllowAny])
 def hospital_blood_stock(request):
     hospital = get_hospital_from_token(request)
-    unauthorized = require_hospital(hospital)
-    if unauthorized:
-        return unauthorized
+    if not hospital:
+        return Response({"detail": "Unauthorized"}, status=401)
+
 
     BLOOD_TYPES = ["A+","A-","B+","B-","AB+","AB-","O+","O-"]
 
@@ -36,11 +41,13 @@ def hospital_blood_stock(request):
 
 # ================= ADD STOCK =================
 @api_view(["POST"])
+@authentication_classes([])          # 🔥 ADD
+@permission_classes([AllowAny])
 def add_blood_stock(request):
     hospital = get_hospital_from_token(request)
-    unauthorized = require_hospital(hospital)
-    if unauthorized:
-        return unauthorized
+    if not hospital:
+        return Response({"detail": "Unauthorized"}, status=401)
+
 
     blood_type = request.data.get("blood_type")
     units = int(request.data.get("units", 0))
@@ -74,11 +81,12 @@ def add_blood_stock(request):
 
 
 @api_view(["POST"])
+@authentication_classes([])          # 🔥 ADD
+@permission_classes([AllowAny])
 def remove_blood_stock(request):
     hospital = get_hospital_from_token(request)
-    unauthorized = require_hospital(hospital)
-    if unauthorized:
-        return unauthorized
+    if not hospital:
+        return Response({"detail": "Unauthorized"}, status=401)
 
     blood_type = request.data.get("blood_type")
     units = int(request.data.get("units", 0))
@@ -114,6 +122,8 @@ def remove_blood_stock(request):
 
 # ================= STOCK HISTORY =================
 @api_view(["GET"])
+@authentication_classes([])          # 🔥 ADD
+@permission_classes([AllowAny])
 def stock_history(request):
     hospital = get_hospital_from_token(request)
 

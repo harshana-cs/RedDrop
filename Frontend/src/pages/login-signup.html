@@ -157,10 +157,39 @@
     </div>
   </div>
 </div>
+<!-- VERIFICATION MODAL -->
+<div id="verifyModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+  <div class="bg-white w-11/12 max-w-md rounded-xl p-6 shadow-xl">
+    
+    <h2 class="text-2xl font-semibold text-gray-900 text-center">
+      Email Verification
+    </h2>
+
+    <p class="text-gray-600 text-sm text-center mt-2">
+      Enter the 6-digit code sent to your email
+    </p>
+
+    <input
+      id="verificationCode"
+      type="text"
+      maxlength="6"
+      placeholder="••••••"
+      class="mt-6 w-full text-center text-xl tracking-widest border rounded-lg py-3 focus:ring-red-500 focus:border-red-500"
+    />
+
+    <button
+      id="verifyCodeBtn"
+      class="mt-6 w-full bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700"
+    >
+      Verify Code
+    </button>
+
+    <p id="verifyError" class="text-red-600 text-sm text-center mt-3 hidden"></p>
+  </div>
+</div>
 
 <!-- JAVASCRIPT -->
 <script>
-// <script>
 /* ---------------- TOGGLE LOGIN / SIGNUP ---------------- */
 function toggleForm(form) {
   document.getElementById("loginSection").classList.toggle("hidden", form === "signup");
@@ -191,8 +220,6 @@ window.handleGoogleLogin = async (response) => {
       localStorage.setItem("access_token", data.tokens.access);
       localStorage.setItem("refresh_token", data.tokens.refresh);
 
-      localStorage.setItem("is_donor", data.is_donor || false);
-
       window.location.href = "dashboard.html";
 
     } else {
@@ -204,24 +231,18 @@ window.handleGoogleLogin = async (response) => {
       });
 
       const data = await res.json();
-      if (!data.success) return alert(data.message);
-
-      const code = prompt("Enter verification code sent to your email:");
-      if (!code) return;
-
-      const verifyRes = await fetch("http://localhost:8000/loginsignup/verify-code/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: data.email, code })
-      });
-
-      const verifyData = await verifyRes.json();
-      if (verifyData.success) {
-        alert("Verification successful! Please login.");
-        toggleForm("login");
-      } else {
-        alert("Invalid verification code.");
+      if (!data.success) {
+        alert(data.message);
+        return;
       }
+
+      // ✅ Store email temporarily for verification
+      window.__verifyEmail = data.email;
+
+      // ✅ Show verification modal
+      const modal = document.getElementById("verifyModal");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
     }
 
   } catch (err) {
@@ -229,6 +250,59 @@ window.handleGoogleLogin = async (response) => {
     alert("Unexpected error occurred.");
   }
 };
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("verifyCodeBtn").addEventListener("click", async () => {
+    const codeInput = document.getElementById("verificationCode");
+    const errorText = document.getElementById("verifyError");
+
+    const code = codeInput.value.trim();
+
+    if (code.length !== 6) {
+      errorText.textContent = "Please enter a valid 6-digit code.";
+      errorText.classList.remove("hidden");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:8000/loginsignup/verify-code/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: window.__verifyEmail,
+          code: code
+        })
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        errorText.textContent = data.message || "Invalid verification code.";
+        errorText.classList.remove("hidden");
+        return;
+      }
+
+      // 🔐 AUTO LOGIN AFTER VERIFICATION
+      localStorage.setItem("emailaddress", data.email);
+      localStorage.setItem("fullname", data.fullname);
+      localStorage.setItem("access_token", data.tokens.access);
+      localStorage.setItem("refresh_token", data.tokens.refresh);
+
+      const modal = document.getElementById("verifyModal");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+
+      window.location.href = "dashboard.html";
+
+    } catch (err) {
+      errorText.textContent = "Verification failed. Try again.";
+      errorText.classList.remove("hidden");
+    }
+  });
+});
+
+
+
 
 /* ---------------- MANUAL SIGNUP ---------------- */
 document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
@@ -291,6 +365,7 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
   }
 });
 </script>
+
 
 
 

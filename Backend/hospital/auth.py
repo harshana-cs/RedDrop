@@ -1,23 +1,42 @@
 import jwt
 from django.conf import settings
-from hospital.models import Hospital
+from .models import Hospital
 
 def get_hospital_from_token(request):
-    auth_header = request.headers.get("Authorization")
+    # 🔥 MOST IMPORTANT LINE
+    auth_header = request.META.get("HTTP_AUTHORIZATION")
 
-    if not auth_header or not auth_header.startswith("Bearer "):
+    if not auth_header:
+        print("❌ No Authorization header found")
         return None
 
-    token = auth_header.split(" ")[1]
-
     try:
+        prefix, token = auth_header.split(" ")
+
+        if prefix.lower() != "bearer":
+            print("❌ Invalid auth prefix:", prefix)
+            return None
+
         payload = jwt.decode(
             token,
             settings.SECRET_KEY,
             algorithms=["HS256"]
         )
+
         hospital_id = payload.get("hospital_id")
-        return Hospital.objects.get(id=hospital_id, is_active=True)
+        print("✅ JWT decoded, hospital_id =", hospital_id)
+
+        return Hospital.objects.filter(
+            id=hospital_id,
+            is_active=True
+        ).first()
+
+    except jwt.ExpiredSignatureError:
+        print("❌ Token expired")
+        return None
+    except jwt.InvalidTokenError as e:
+        print("❌ Invalid token:", str(e))
+        return None
     except Exception as e:
-        print("JWT ERROR:", e)
+        print("❌ Unexpected error:", str(e))
         return None

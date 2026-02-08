@@ -597,6 +597,8 @@
 
     <!-- ================= JS ================= -->
     <script>
+        const API_BASE = "http://127.0.0.1:8000";
+
         lucide.createIcons();
         let currentHospitalRequest = null;
 
@@ -855,24 +857,25 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="flex space-x-2">
-                                        ${r.hospital_doc ? 
-                                            `<a href="${r.hospital_doc}" target="_blank" 
-                                               class="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800">
-                                                <i class="ri-file-text-line"></i>
-                                                <span>Doc</span>
-                                            </a>` : 
-                                            '<span class="text-gray-400">-</span>'
-                                        }
-                                        ${r.doctor_note ? 
-                                            `<a href="${r.doctor_note}" target="_blank" 
-                                               class="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800">
-                                                <i class="ri-stethoscope-line"></i>
-                                                <span>Note</span>
-                                            </a>` : ''
-                                        }
-                                    </div>
-                                </td>
+    <div class="flex space-x-2">
+        ${r.hospital_doc ? 
+            `<a href="${API_BASE}${r.hospital_doc}" target="_blank"
+               class="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800">
+                <i class="ri-file-text-line"></i>
+                <span>Doc</span>
+            </a>` : 
+            '<span class="text-gray-400">-</span>'
+        }
+        ${r.doctor_note ? 
+            `<a href="${API_BASE}${r.doctor_note}" target="_blank"
+               class="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800">
+                <i class="ri-stethoscope-line"></i>
+                <span>Note</span>
+            </a>` : ''
+        }
+    </div>
+</td>
+
                                 <td class="px-6 py-4">
                                     <p class="text-gray-900">${r.date || '-'}</p>
                                     <p class="text-sm text-gray-500">${r.time || ''}</p>
@@ -1052,7 +1055,7 @@
                                 <td class="px-6 py-4">
                                     <div class="flex space-x-2">
                                         ${d.citizenship_id ? 
-                                            `<a href="${d.citizenship_id}" target="_blank" 
+                                            `<a href="${API_BASE}${d.citizenship_id}" target="_blank" 
                                                class="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800">
                                                 <i class="ri-id-card-line"></i>
                                                 <span>Citizenship</span>
@@ -1060,7 +1063,7 @@
                                             '<span class="text-gray-400">-</span>'
                                         }
                                         ${d.photo ? 
-                                            `<a href="${d.photo}" target="_blank" 
+                                            `<a href="${API_BASE}${d.photo}" target="_blank" 
                                                class="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800">
                                                 <i class="ri-image-line"></i>
                                                 <span>Photo</span>

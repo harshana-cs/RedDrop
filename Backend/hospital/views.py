@@ -1,3 +1,4 @@
+
 from django.db import transaction
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
@@ -12,6 +13,7 @@ from .models import Hospital, HospitalApplication
 from blood_requests.models import BloodRequest
 from blood_stock.models import BloodStock, BloodStockHistory
 from hospital.auth import get_hospital_from_token
+import time
 
 
 # ======================================================
@@ -102,13 +104,12 @@ def hospital_login(request):
         return Response({"error": "Invalid credentials"}, status=401)
 
     payload = {
-        "hospital_id": hospital.id,
-        "exp": timezone.now() + timezone.timedelta(hours=12),
-        "iat": timezone.now(),
-    }
+    "hospital_id": hospital.id,
+    "iat": int(time.time()),
+    "exp": int(time.time()) + (60 * 60 * 12),  # 12 hours
+}
 
     token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
-
     return Response({
         "success": True,
         "token": token
@@ -119,6 +120,7 @@ def hospital_login(request):
 # HOSPITAL PROFILE (JWT PROTECTED)
 # ======================================================
 @api_view(["GET"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def hospital_profile(request):
     hospital = get_hospital_from_token(request)
@@ -144,6 +146,7 @@ def hospital_profile(request):
 # HOSPITAL DASHBOARD (JWT PROTECTED)
 # ======================================================
 @api_view(["GET"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def hospital_dashboard(request):
     hospital = get_hospital_from_token(request)
@@ -189,6 +192,7 @@ def hospital_dashboard(request):
 # BLOOD REQUESTS (JWT PROTECTED)
 # ======================================================
 @api_view(["GET"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def hospital_blood_requests(request):
     hospital = get_hospital_from_token(request)
@@ -219,6 +223,7 @@ def hospital_blood_requests(request):
 # BLOOD STOCK (JWT PROTECTED)
 # ======================================================
 @api_view(["GET"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def hospital_blood_stock(request):
     hospital = get_hospital_from_token(request)
@@ -247,6 +252,7 @@ def hospital_blood_stock(request):
 # DONORS (JWT PROTECTED)
 # ======================================================
 @api_view(["GET"])
+@authentication_classes([])
 def hospital_donors(request):
     hospital = get_hospital_from_token(request)
     if not hospital:
@@ -259,6 +265,7 @@ def hospital_donors(request):
 # STOCK HISTORY (JWT PROTECTED)
 # ======================================================
 @api_view(["GET"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def hospital_stock_history(request):
     hospital = get_hospital_from_token(request)

@@ -204,14 +204,14 @@ def api_patient_confirm_receipt(request, request_id):
     # 🔐 Generate OTP
     otp = str(random.randint(1000, 9999))
 
-    # ✅ Update BloodRequest (OTP lives here)
+    # ✅ Store OTP (NO TIME EXPIRY)
     blood_request.patient_confirmed = True
-    blood_request.fulfilled = False           # ❗ NOT fulfilled yet
+    blood_request.fulfilled = False
     blood_request.otp = otp
-    blood_request.otp_expires_at = timezone.now() + timedelta(minutes=10)
+    blood_request.otp_expires_at = None   # 🔥 IMPORTANT
     blood_request.save()
 
-    # ✅ Create / update confirmation (NO donor here)
+    # ✅ Create / update confirmation
     DonationConfirmation.objects.update_or_create(
         request=blood_request,
         defaults={
@@ -224,6 +224,7 @@ def api_patient_confirm_receipt(request, request_id):
         "success": True,
         "confirmation_code": otp
     })
+
 
 
 # =========================================================

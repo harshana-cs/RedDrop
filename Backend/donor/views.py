@@ -141,53 +141,58 @@ def api_donor_confirm(request):
 
     otp = request.data.get("otp")
     if not otp:
-        return Response({"message": "OTP is required"}, status=400)
+        return Response(
+            {"success": False, "message": "OTP is required"},
+            status=400
+        )
 
-    # 🔎 Find latest patient-confirmed request (NO donor filter)
+    # 🔎 Find confirmation strictly by OTP
     confirmation = (
         DonationConfirmation.objects
+        .select_related("request")
         .filter(
             patient_confirmed=True,
-            donor_confirmed=False
+            donor_confirmed=False,
+            request__otp=otp
         )
-        .select_related("request")
-        .order_by("-created_at")
         .first()
     )
 
     if not confirmation:
         return Response(
-            {"message": "No pending donation found"},
+            {"success": False, "message": "Invalid or already used OTP"},
             status=400
         )
 
     blood_request = confirmation.request
 
-    # 🔐 OTP check
-    if str(blood_request.otp) != str(otp):
-        return Response({"message": "Invalid OTP"}, status=400)
+    # 🔒 Prevent OTP reuse
+    if blood_request.otp is None:
+        return Response(
+            {"success": False, "message": "OTP already used"},
+            status=400
+        )
 
-    # ⏱ OTP expiry
-    if blood_request.otp_expires_at < timezone.now():
-        return Response({"message": "OTP expired"}, status=400)
-
-    # ✅ ATTACH DONOR HERE (THIS IS THE KEY CHANGE)
+    # ✅ CONFIRM DONATION
     confirmation.donor = donor
     confirmation.donor_confirmed = True
     confirmation.donation_date = timezone.now()
     confirmation.save()
-# ✅ CREATE DONATION HISTORY RECORD (🔥 THIS WAS MISSING)
+
+    # ✅ CREATE DONATION HISTORY
     Donation.objects.create(
-    donor=donor,
-    blood_type=blood_request.blood_type,
-    date=timezone.now().date(),
-    status="verified"
-)
-    print("DONATION CREATED:", Donation.objects.last().id)
-    # ✅ Finalize blood request
+        donor=donor,
+        hospital=blood_request.hospital,
+        blood_type=blood_request.blood_type,
+        date=timezone.now().date(),
+        status="verified",
+        next_donation_date=timezone.now().date() + timedelta(days=MIN_GAP_DAYS)
+    )
+
+    # 🔥 EXPIRE OTP **ONLY NOW**
     blood_request.status = "completed"
     blood_request.fulfilled = True
-    blood_request.otp = None
+    blood_request.otp = None           # ← OTP invalidated here
     blood_request.otp_expires_at = None
     blood_request.save()
 
@@ -195,7 +200,6 @@ def api_donor_confirm(request):
         "success": True,
         "message": "Blood donation verified successfully ❤️"
     })
-
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

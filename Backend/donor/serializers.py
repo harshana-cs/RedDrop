@@ -30,7 +30,6 @@ class DonorProfileSerializer(serializers.ModelSerializer):
         ]
 class DonationSerializer(serializers.ModelSerializer):
     donation_date = serializers.DateField(source="date", read_only=True)
-    hospital = serializers.SerializerMethodField()
 
     class Meta:
         model = Donation
@@ -42,10 +41,6 @@ class DonationSerializer(serializers.ModelSerializer):
             "status",
         ]
 
-    def get_hospital(self, obj):
-        if obj.blood_request:
-            return obj.blood_request.hospital
-        return None
 class DonationCampSerializer(serializers.ModelSerializer):
     class Meta:
         model = DonationCamp

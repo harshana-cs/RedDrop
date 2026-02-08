@@ -1,7 +1,7 @@
 import json
 import random
 import string
-from time import timezone
+from django.utils import timezone 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from google.oauth2 import id_token
@@ -84,17 +84,35 @@ def verify_code(request):
     google_user.is_verified = True
     google_user.save()
 
-    Patient.objects.get_or_create(
+    # -------- ENSURE PATIENT --------
+    patient, _ = Patient.objects.get_or_create(
         emailaddress=email,
         defaults={"fullname": google_user.fullname}
     )
 
-    user, _ = User.objects.get_or_create(username=email, defaults={"email": email})
+    # -------- ENSURE DJANGO USER --------
+    user, _ = User.objects.get_or_create(
+        username=email,
+        defaults={"email": email}
+    )
+
     if not user.has_usable_password():
         user.set_password(get_random_string(12))
         user.save()
 
-    return JsonResponse({"success": True})
+    # -------- AUTO LOGIN (JWT) --------
+    refresh = RefreshToken.for_user(user)
+
+    return JsonResponse({
+        "success": True,
+        "fullname": patient.fullname,
+        "email": patient.emailaddress,
+        "tokens": {
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+        }
+    })
+
 @csrf_exempt
 def google_login(request):
     if request.method != "POST":
