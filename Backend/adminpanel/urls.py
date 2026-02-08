@@ -19,6 +19,8 @@ from .views import (
     admin_processed_donor_registrations,
 
     admin_hospital_requests,
+    api_blood_type_distribution,
+    api_request_status_overview,
     hospital_request_detail,        # ✅ ADD THIS
     approve_hospital_request,
     reject_hospital_request,
@@ -48,8 +50,12 @@ urlpatterns = [
     path("donors/processed/", admin_processed_donor_registrations),
 
     # Hospital applications (IMPORTANT)
-    path("hospital-requests/", admin_hospital_requests),                 # list
-    path("hospital-request/<int:pk>/", hospital_request_detail),         # ✅ FIX
+    path("hospital-requests/", admin_hospital_requests),                 
+    path("hospital-request/<int:pk>/", hospital_request_detail),        
     path("hospital-request/<int:pk>/approve/", approve_hospital_request),
     path("hospital-request/<int:pk>/reject/", reject_hospital_request),
+    # adminpanel/urls.py
+path("analytics/blood-types/", api_blood_type_distribution),
+path("analytics/request-status/", api_request_status_overview),
+
 ]

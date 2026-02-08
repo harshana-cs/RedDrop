@@ -732,75 +732,11 @@
         });
 
         /* ---------- INITIALIZE CHARTS ---------- */
-        function initializeCharts() {
-            // Blood Type Distribution Chart
-            const bloodTypeCtx = document.getElementById('bloodTypeChart').getContext('2d');
-            if (bloodTypeChart) bloodTypeChart.destroy();
-            
-            bloodTypeChart = new Chart(bloodTypeCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['A+', 'B+', 'O+', 'AB+', 'A-', 'B-', 'O-', 'AB-'],
-                    datasets: [{
-                        data: [12, 9, 15, 4, 3, 2, 8, 1],
-                        backgroundColor: [
-                            '#DC2626', '#EA580C', '#16A34A', '#9333EA',
-                            '#F87171', '#FB923C', '#4ADE80', '#A855F7'
-                        ],
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
+       async function initializeCharts() {
+    await loadBloodTypeChart();
+    await loadRequestStatusChart();
+}
 
-            // Request Status Chart
-            const statusCtx = document.getElementById('requestStatusChart').getContext('2d');
-            if (requestStatusChart) requestStatusChart.destroy();
-            
-            requestStatusChart = new Chart(statusCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [
-                        {
-                            label: 'Pending',
-                            data: [12, 19, 8, 15, 10, 13],
-                            backgroundColor: '#F87171'
-                        },
-                        {
-                            label: 'Approved',
-                            data: [8, 12, 6, 10, 7, 9],
-                            backgroundColor: '#4ADE80'
-                        },
-                        {
-                            label: 'Rejected',
-                            data: [2, 3, 1, 2, 1, 2],
-                            backgroundColor: '#9CA3AF'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 5
-                            }
-                        }
-                    }
-                }
-            });
-        }
 
         /* ---------- FETCH BLOOD REQUESTS ---------- */
         async function loadBloodRequests() {
@@ -1364,32 +1300,42 @@
                         </div>
                     </div>
                     
-                    <div class="mt-6 pt-6 border-t">
-                        <h5 class="font-medium text-gray-700 mb-3">Documents:</h5>
-                        <div class="flex flex-wrap gap-3">
-                            ${data.registration_certificate ? 
-                                `<a href="${data.registration_certificate}" target="_blank" 
-                                   class="inline-flex items-center space-x-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100">
-                                    <i class="ri-file-text-line"></i>
-                                    <span>Registration Certificate</span>
-                                </a>` : ''
-                            }
-                            ${data.medical_license ? 
-                                `<a href="${data.medical_license}" target="_blank" 
-                                   class="inline-flex items-center space-x-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100">
-                                    <i class="ri-stethoscope-line"></i>
-                                    <span>Medical License</span>
-                                </a>` : ''
-                            }
-                            ${data.id_proof ? 
-                                `<a href="${data.id_proof}" target="_blank" 
-                                   class="inline-flex items-center space-x-2 px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100">
-                                    <i class="ri-id-card-line"></i>
-                                    <span>ID Proof</span>
-                                </a>` : ''
-                            }
-                        </div>
-                    </div>
+                   <div class="mt-6 pt-6 border-t">
+  <h5 class="font-medium text-gray-700 mb-3">Documents:</h5>
+
+  <div class="flex flex-wrap gap-3">
+    ${
+      data.registration_certificate
+        ? `<a href="${API_BASE}${data.registration_certificate}" target="_blank"
+             class="inline-flex items-center space-x-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100">
+              <i class="ri-file-text-line"></i>
+              <span>Registration Certificate</span>
+           </a>`
+        : ''
+    }
+
+    ${
+      data.medical_license
+        ? `<a href="${API_BASE}${data.medical_license}" target="_blank"
+             class="inline-flex items-center space-x-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100">
+              <i class="ri-stethoscope-line"></i>
+              <span>Medical License</span>
+           </a>`
+        : ''
+    }
+
+    ${
+      data.id_proof
+        ? `<a href="${API_BASE}${data.id_proof}" target="_blank"
+             class="inline-flex items-center space-x-2 px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100">
+              <i class="ri-id-card-line"></i>
+              <span>ID Proof</span>
+           </a>`
+        : ''
+    }
+  </div>
+</div>
+
                     
                     <div class="mt-6 pt-6 border-t">
                         <p class="text-sm text-gray-500">Application Date: ${data.created_at || 'Not available'}</p>
@@ -1681,6 +1627,7 @@ async function loadProcessedDonors() {
 /* ---------- LOAD ACTIVE HOSPITALS ---------- */
 async function loadHospitals() {
     const table = document.getElementById("hospitalTable");
+    const totalHospitalsEl = document.getElementById("totalHospitals");
 
     table.innerHTML = `
         <tr>
@@ -1702,10 +1649,15 @@ async function loadHospitals() {
                     </td>
                 </tr>
             `;
+            totalHospitalsEl.textContent = "0"; // ✅ FIX
             return;
         }
 
         table.innerHTML = "";
+
+        // ✅ COUNT ACTIVE HOSPITALS
+        const activeCount = json.data.filter(h => h.active).length;
+        totalHospitalsEl.textContent = activeCount;
 
         json.data.forEach(h => {
             const statusBadge = h.active
@@ -1718,16 +1670,12 @@ async function loadHospitals() {
                         <p class="font-medium">${h.name}</p>
                         <p class="text-sm text-gray-500">${h.username}</p>
                     </td>
-                    <td class="px-6 py-4">
-                        ${h.district || "-"}
-                    </td>
+                    <td class="px-6 py-4">${h.district || "-"}</td>
                     <td class="px-6 py-4">
                         ${h.contact_number || "-"}<br>
                         <span class="text-sm text-gray-500">${h.email || ""}</span>
                     </td>
-                    <td class="px-6 py-4">
-                        ${statusBadge}
-                    </td>
+                    <td class="px-6 py-4">${statusBadge}</td>
                     <td class="px-6 py-4 space-x-2">
                         <button onclick="toggleHospital(${h.id})"
                             class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200">
@@ -1751,8 +1699,10 @@ async function loadHospitals() {
                 </td>
             </tr>
         `;
+        totalHospitalsEl.textContent = "0";
     }
 }
+
 async function toggleHospital(id) {
     await fetch(`http://127.0.0.1:8000/api/admin/hospital/${id}/toggle/`, {
         method: "POST"
@@ -1815,6 +1765,72 @@ async function loadRejectedHospitalRequests() {
         </td>
       </tr>`;
   }
+}
+async function loadBloodTypeChart() {
+    const res = await fetch(`${API_BASE}/api/admin/analytics/blood-types/`);
+    const data = await res.json();
+
+    const ctx = document.getElementById('bloodTypeChart').getContext('2d');
+    if (bloodTypeChart) bloodTypeChart.destroy();
+
+    bloodTypeChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                data: data.values,
+                backgroundColor: [
+                    '#DC2626', '#EA580C', '#16A34A', '#9333EA',
+                    '#F87171', '#FB923C', '#4ADE80', '#A855F7'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+}
+async function loadRequestStatusChart() {
+    const res = await fetch(`${API_BASE}/api/admin/analytics/request-status/`);
+    const data = await res.json();
+
+    const ctx = document.getElementById('requestStatusChart').getContext('2d');
+    if (requestStatusChart) requestStatusChart.destroy();
+
+    requestStatusChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.labels,
+            datasets: [
+                {
+                    label: 'Pending',
+                    data: data.pending,
+                    backgroundColor: '#F87171'
+                },
+                {
+                    label: 'Approved',
+                    data: data.approved,
+                    backgroundColor: '#4ADE80'
+                },
+                {
+                    label: 'Rejected',
+                    data: data.rejected,
+                    backgroundColor: '#9CA3AF'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
 }
 
 

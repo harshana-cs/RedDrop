@@ -770,9 +770,8 @@ document.getElementById("hospitalForm").addEventListener("submit", async functio
     alert(data.error || "Submission failed");
 
   } catch (err) {
-    // 🔥 IMPORTANT: data may already be saved
     if (!responseReceived) {
-      alert("Application submitted successfully! Redirecting to home page…");
+      alert("Application submitted successfully!");
 
       setTimeout(() => {
         window.location.href = "index.html";

@@ -1,21 +1,20 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
+from datetime import timedelta
+
 from django.conf import settings
-from hospital.models import Hospital, HospitalProfile
+from django.core.mail import send_mail
+from django.db.models import Count
+from django.utils import timezone
+from django.utils.timezone import now
+
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.response import Response
+
 from blood_requests.models import BloodRequest
+from hospital.models import Hospital, HospitalProfile, HospitalApplication
 from register_donor.models import Donor
 from loginsignup.models import Patient
-from hospital.models import Hospital
-from django.core.mail import send_mail
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAdminUser
-from rest_framework.response import Response
-from rest_framework import status
-from django.utils import timezone
-from django.core.mail import send_mail
-from django.conf import settings
-from hospital.models import HospitalApplication, Hospital
 
 
 
@@ -558,4 +557,66 @@ def hospital_request_detail(request, pk):
         "registration_certificate": h.registration_certificate.url,
         "medical_license": h.medical_license.url,
         "id_proof": h.id_proof.url,
+    })
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def api_blood_type_distribution(request):
+    data = (
+        BloodRequest.objects
+        .values("blood_type")
+        .annotate(count=Count("id"))
+    )
+
+    return Response({
+        "labels": [d["blood_type"] for d in data],
+        "values": [d["count"] for d in data]
+    })
+
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def api_request_status_overview(request):
+    now_dt = timezone.now()
+
+    labels = []
+    pending = []
+    approved = []
+    rejected = []
+
+    for i in range(5, -1, -1):
+        month_start = (now_dt.replace(day=1) - relativedelta(months=i))
+        month_end = month_start + relativedelta(months=1)
+
+        labels.append(month_start.strftime("%b"))
+
+        pending.append(
+            BloodRequest.objects.filter(
+                status="pending",
+                created_at__gte=month_start,
+                created_at__lt=month_end
+            ).count()
+        )
+        approved.append(
+            BloodRequest.objects.filter(
+                status="approved",
+                created_at__gte=month_start,
+                created_at__lt=month_end
+            ).count()
+        )
+        rejected.append(
+            BloodRequest.objects.filter(
+                status="rejected",
+                created_at__gte=month_start,
+                created_at__lt=month_end
+            ).count()
+        )
+
+    return Response({
+        "labels": labels,
+        "pending": pending,
+        "approved": approved,
+        "rejected": rejected
     })
