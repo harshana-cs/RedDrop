@@ -451,7 +451,7 @@ def admin_hospital_requests(request):
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])  # you can later change to IsAdminUser
+@permission_classes([AllowAny])  
 def approve_hospital_request(request, pk):
     try:
         app = HospitalApplication.objects.get(id=pk, status="pending")
