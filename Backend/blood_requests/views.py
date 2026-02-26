@@ -14,6 +14,18 @@ from donor.models import DonationConfirmation
 from django.utils import timezone
 from register_donor.models import Donor
 from datetime import timedelta
+from math import radians, sin, cos, sqrt, atan2
+
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371  # Earth radius in KM
+
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+
+    a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    return R * c
 
 BLOOD_COMPATIBILITY = {
     "O-": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
@@ -280,7 +292,6 @@ def api_compatible_donors_for_patient(request):
     if not patient:
         return Response({"success": False}, status=403)
 
-    # Latest approved request
     blood_request = BloodRequest.objects.filter(
         patient=patient,
         status="approved"
@@ -289,45 +300,76 @@ def api_compatible_donors_for_patient(request):
     if not blood_request:
         return Response({"success": True, "donors": []})
 
-    required_blood = blood_request.blood_type
-    request_district = normalize_district(blood_request.district)
+    hospital = blood_request.hospital
 
-    # Blood compatibility
+    if not hospital.latitude or not hospital.longitude:
+        return Response({
+            "success": False,
+            "message": "Hospital location not available"
+        })
+
+    request_lat = hospital.latitude
+    request_lon = hospital.longitude
+
+    required_blood = blood_request.blood_type
+
     compatible_donor_bloods = [
         donor_blood
         for donor_blood, receivers in BLOOD_COMPATIBILITY.items()
         if required_blood in receivers
     ]
 
-    # Approved donors with compatible blood
     donors_qs = Donor.objects.filter(
         is_approved=True,
         blood_type__in=compatible_donor_bloods
     )
 
-    # 🔑 District smart-match
-    donors = []
+    matched_donors = []
+
     for donor in donors_qs:
-        donor_district = normalize_district(donor.city)
 
-        if donor_district == request_district:
-            donors.append(donor)
+        if not donor.latitude or not donor.longitude:
+            continue
 
-    data = [{
-        "id": d.id,
-        "name": f"{d.first_name} {d.last_name}".strip(),
-        "blood_type": d.blood_type,
-        "district": d.city,
-        "phone": d.phone_number,
-        "email": d.email,
-    } for d in donors]
+        if not is_donor_eligible(donor):
+            continue
+
+        distance = haversine(
+            request_lat,
+            request_lon,
+            donor.latitude,
+            donor.longitude
+        )
+
+        if distance <= 15:  # 15 km radius
+            matched_donors.append({
+                "id": donor.id,
+                "name": f"{donor.first_name} {donor.last_name}".strip(),
+                "blood_type": donor.blood_type,
+                "distance_km": round(distance, 2),
+                "phone": donor.phone_number,
+                "email": donor.email,
+            })
+
+    matched_donors.sort(key=lambda x: x["distance_km"])
 
     return Response({
         "success": True,
         "request": {
             "id": blood_request.id,
             "blood_type": required_blood,
-            "district": blood_request.district
+            "hospital": hospital.name,
         },
-        "donors": data
+        "donors": matched_donors[:5]
     })
+
+def is_donor_eligible(donor):
+    last_donation = donor.donation_set.filter(
+        status="verified"
+    ).order_by("-date").first()
+
+    if not last_donation:
+        return True
+
+    days_since = (timezone.now().date() - last_donation.date).days
+    return days_since >= 90

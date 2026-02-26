@@ -3,6 +3,20 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from loginsignup.models import Patient
 from register_donor.models import Donor
+class HospitalLocation(models.Model):
+    name = models.CharField(max_length=255)
+    district = models.CharField(max_length=100)
+
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('name', 'district')
+
+    def __str__(self):
+        return f"{self.name} - {self.district}"
 
 class BloodRequest(models.Model):
     STATUS_CHOICES = [
@@ -17,7 +31,11 @@ class BloodRequest(models.Model):
     units_required = models.PositiveIntegerField()
     urgency = models.CharField(max_length=10)
     district = models.CharField(max_length=50)
-    hospital = models.CharField(max_length=100)
+    hospital = models.ForeignKey(
+    HospitalLocation,
+    on_delete=models.CASCADE
+)
+
     required_date = models.DateField()
     reason = models.TextField()
     contact_name = models.CharField(max_length=100)
@@ -42,3 +60,5 @@ class BloodRequest(models.Model):
 
     def __str__(self):
         return f"{self.patient.username} - {self.blood_type}"
+
+

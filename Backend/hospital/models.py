@@ -126,3 +126,5 @@ class HospitalApplication(models.Model):
 
     def __str__(self):
         return f"{self.hospital_name} ({self.status})"
+
+

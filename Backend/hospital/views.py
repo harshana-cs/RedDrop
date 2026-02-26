@@ -153,9 +153,9 @@ def hospital_dashboard(request):
     if not hospital:
         return Response({"detail": "Unauthorized"}, status=401)
 
-    total_requests = BloodRequest.objects.filter(hospital=hospital).count()
-    approved_requests = BloodRequest.objects.filter(hospital=hospital, status="approved").count()
-    pending_requests = BloodRequest.objects.filter(hospital=hospital, status="pending").count()
+    # total_requests = BloodRequest.objects.filter(hospital=hospital).count()
+    # approved_requests = BloodRequest.objects.filter(hospital=hospital, status="approved").count()
+    # pending_requests = BloodRequest.objects.filter(hospital=hospital, status="pending").count()
 
     stock_qs = BloodStock.objects.filter(hospital=hospital)
 
@@ -178,9 +178,9 @@ def hospital_dashboard(request):
     ]
 
     return Response({
-        "total_requests": total_requests,
-        "approved_requests": approved_requests,
-        "pending_requests": pending_requests,
+        # "total_requests": total_requests,
+        # "approved_requests": approved_requests,
+        # "pending_requests": pending_requests,
         "total_stock": total_stock,
         "critical_stock": critical_stock,
         "stock_by_type": stock_by_type,
@@ -191,32 +191,32 @@ def hospital_dashboard(request):
 # ======================================================
 # BLOOD REQUESTS (JWT PROTECTED)
 # ======================================================
-@api_view(["GET"])
-@authentication_classes([])
-@permission_classes([AllowAny])
-def hospital_blood_requests(request):
-    hospital = get_hospital_from_token(request)
-    if not hospital:
-        return Response({"detail": "Unauthorized"}, status=401)
+# @api_view(["GET"])
+# @authentication_classes([])
+# @permission_classes([AllowAny])
+# def hospital_blood_requests(request):
+#     hospital = get_hospital_from_token(request)
+#     if not hospital:
+#         return Response({"detail": "Unauthorized"}, status=401)
 
-    status_filter = request.GET.get("status")
+#     status_filter = request.GET.get("status")
 
-    qs = BloodRequest.objects.filter(hospital=hospital)
-    if status_filter:
-        qs = qs.filter(status=status_filter)
+#     qs = BloodRequest.objects.filter(hospital=hospital)
+#     if status_filter:
+#         qs = qs.filter(status=status_filter)
 
-    return Response([
-        {
-            "id": r.id,
-            "patient_name": r.patient.fullname if r.patient else "Unknown",
-            "blood_type": r.blood_type,
-            "units": r.units_required,
-            "urgency": r.urgency,
-            "status": r.status,
-            "created_at": r.created_at,
-        }
-        for r in qs.order_by("-created_at")
-    ])
+#     return Response([
+#         {
+#             "id": r.id,
+#             "patient_name": r.patient.fullname if r.patient else "Unknown",
+#             "blood_type": r.blood_type,
+#             "units": r.units_required,
+#             "urgency": r.urgency,
+#             "status": r.status,
+#             "created_at": r.created_at,
+#         }
+#         for r in qs.order_by("-created_at")
+#     ])
 
 
 # ======================================================
