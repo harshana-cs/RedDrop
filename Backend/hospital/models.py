@@ -5,7 +5,13 @@ class Hospital(models.Model):
     name = models.CharField(max_length=255)
     username = models.CharField(max_length=50, unique=True)
     password = models.CharField(max_length=255)
-
+    # ✅ ADD THIS FIELD
+    location = models.OneToOneField(
+        "blood_requests.HospitalLocation",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

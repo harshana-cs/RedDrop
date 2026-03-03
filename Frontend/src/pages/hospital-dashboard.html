@@ -42,20 +42,17 @@
         <i class="fas fa-chart-line mr-2"></i> Dashboard
       </button>
 
-      <!-- <button data-tab="request"
+      <button data-tab="request"
         class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50">
         <i class="fas fa-tint mr-2"></i> Blood Requests
-      </button> -->
+      </button>
 
       <button data-tab="stock"
         class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50">
         <i class="fas fa-boxes mr-2"></i> Blood Stock
       </button>
 
-      <!-- <button data-tab="donors"
-        class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50">
-        <i class="fas fa-user-heart mr-2"></i> Assigned Donors
-      </button> -->
+     
 
       <button data-tab="inventory"
         class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50">
@@ -243,6 +240,20 @@
             <textarea id="requestNotes" placeholder="Any additional information..."
               class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500" rows="2"></textarea>
           </div>
+          <div class="mb-4">
+  <label class="block text-sm font-medium mb-1">
+    Hospital Verification Document
+  </label>
+  <input 
+    type="file" 
+    id="hospitalDoc"
+    accept=".pdf,.jpg,.jpeg,.png"
+    class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500"
+  />
+  <p class="text-xs text-gray-500 mt-1">
+    Upload signed letter or medical verification document
+  </p>
+</div>
 
           <div class="flex justify-between">
             <div class="text-sm text-gray-600">
@@ -552,17 +563,22 @@
   };
 }
 
-  // Initialize on page load
-  document.addEventListener('DOMContentLoaded', function() {
-    updateCurrentDate();
-    loadHospitalData();
-    loadOverviewData();
-    loadStockData();
-    loadRequests();
-    
-    // Set up auto-refresh every 5 minutes
-    setInterval(loadOverviewData, 300000);
-  });
+ // Initialize on page load
+document.addEventListener('DOMContentLoaded', async function() {
+  updateCurrentDate();
+
+  try {
+    await loadHospitalData();
+    await loadOverviewData();
+    await loadStockData();
+    await loadRequests();
+  } catch (err) {
+    console.error("Initialization error:", err);
+  }
+
+  // Auto refresh every 5 minutes
+  setInterval(loadOverviewData, 300000);
+});
 
   // Tab Management
   const tabs = document.querySelectorAll(".tab-btn");
@@ -872,51 +888,48 @@
     });
   }
 
-  async function createBloodRequest() {
-    const patientName = document.getElementById('patientName').value;
-    const bloodType = document.getElementById('bloodType').value;
-    const units = document.getElementById('units').value;
-    const urgency = document.getElementById('urgency').value;
-    const notes = document.getElementById('requestNotes').value;
-    
-    if (!patientName || !bloodType || !units) {
-      alert('Please fill in all required fields');
-      return;
-    }
-    
-    try {
-      const response = await fetch("http://127.0.0.1:8000/api/hospital/blood-request/create/", {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({
-          patient_name: patientName,
-          blood_type: bloodType,
-          units: parseInt(units),
-          urgency: urgency,
-          notes: notes
-        })
-      });
-      
-      if (response.ok) {
-        alert("Blood request submitted successfully!");
-        // Clear form
-        document.getElementById('patientName').value = '';
-        document.getElementById('bloodType').value = '';
-        document.getElementById('units').value = '';
-        document.getElementById('requestNotes').value = '';
-        // Reload requests
-        loadRequests();
-        loadOverviewData();
-      } else {
-        const error = await response.json();
-        alert("Error: " + (error.detail || "Failed to submit request"));
-      }
-    } catch (error) {
-      console.error('Error creating request:', error);
-      alert("Network error. Please try again.");
-    }
+ async function createBloodRequest() {
+  const patientName = document.getElementById('patientName').value;
+  const bloodType = document.getElementById('bloodType').value;
+  const units = document.getElementById('units').value;
+  const urgency = document.getElementById('urgency').value;
+  const notes = document.getElementById('requestNotes').value;
+  const hospitalDoc = document.getElementById('hospitalDoc').files[0];
+
+  const formData = new FormData();
+  formData.append("patient_name", patientName);
+  formData.append("blood_type", bloodType);
+  formData.append("units", units);
+  formData.append("urgency", urgency);
+  formData.append("notes", notes);
+
+  if (hospitalDoc) {
+    formData.append("hospital_doc", hospitalDoc);
   }
 
+  try {
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/hospital/blood-request/create/",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("hospitalToken")}`
+        },
+        body: formData
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Server responded with error");
+    }
+
+    alert("Blood request submitted successfully!");
+
+  } catch (err) {
+    console.error("Fetch error:", err);
+    alert("Network issue detected, but request may have succeeded.");
+  }
+}
   async function loadRequests() {
     try {
       const filter = document.getElementById('requestFilter').value;

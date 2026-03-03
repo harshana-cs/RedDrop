@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count
+# from Backend import hospital
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -15,6 +16,7 @@ from django.utils import timezone
 from register_donor.models import Donor
 from datetime import timedelta
 from math import radians, sin, cos, sqrt, atan2
+from .models import HospitalLocation
 
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371  # Earth radius in KM
@@ -300,9 +302,9 @@ def api_compatible_donors_for_patient(request):
     if not blood_request:
         return Response({"success": True, "donors": []})
 
-    hospital = blood_request.hospital
+    hospital = blood_request.hospital_location
 
-    if not hospital.latitude or not hospital.longitude:
+    if not hospital or not hospital.latitude or not hospital.longitude:
         return Response({
             "success": False,
             "message": "Hospital location not available"
@@ -341,7 +343,7 @@ def api_compatible_donors_for_patient(request):
             donor.longitude
         )
 
-        if distance <= 15:  # 15 km radius
+        if distance <= 15:
             matched_donors.append({
                 "id": donor.id,
                 "name": f"{donor.first_name} {donor.last_name}".strip(),
@@ -362,14 +364,3 @@ def api_compatible_donors_for_patient(request):
         },
         "donors": matched_donors[:5]
     })
-
-def is_donor_eligible(donor):
-    last_donation = donor.donation_set.filter(
-        status="verified"
-    ).order_by("-date").first()
-
-    if not last_donation:
-        return True
-
-    days_since = (timezone.now().date() - last_donation.date).days
-    return days_since >= 90
