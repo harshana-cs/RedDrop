@@ -7,7 +7,10 @@ class BloodRequestSerializer(serializers.ModelSerializer):
     hospital_doc = serializers.FileField(required=True)
     doctor_note = serializers.FileField(required=True)
 
-    # ✅ NEW FIELDS
+    # 🔥 MAKE THESE READ ONLY
+    hospital_location = serializers.PrimaryKeyRelatedField(read_only=True)
+    created_by_hospital = serializers.PrimaryKeyRelatedField(read_only=True)
+
     patient_confirmed_at = serializers.SerializerMethodField()
     donor_confirmed_at = serializers.SerializerMethodField()
     donated_at = serializers.SerializerMethodField()
@@ -20,29 +23,24 @@ class BloodRequestSerializer(serializers.ModelSerializer):
             "units_required",
             "urgency",
             "district",
-            "hospital",
-            "required_date",
 
-            # patient info
+            # 🔥 now read-only
+            "created_by_hospital",
+            "hospital_location",
+
+            "required_date",
             "reason",
             "contact_name",
             "contact_phone",
-
-            # files
             "hospital_doc",
             "doctor_note",
-
-            # system
             "status",
             "created_at",
             "donation_date",
-
-            # ✅ NEW
             "patient_confirmed_at",
             "donor_confirmed_at",
             "donated_at",
         ]
-
     def get_patient_confirmed_at(self, obj):
         confirmation = DonationConfirmation.objects.filter(
             request=obj,

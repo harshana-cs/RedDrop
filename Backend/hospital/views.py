@@ -196,6 +196,7 @@ def hospital_dashboard(request):
 @authentication_classes([])
 @permission_classes([AllowAny])
 def hospital_blood_requests(request):
+
     hospital = get_hospital_from_token(request)
     if not hospital:
         return Response({"detail": "Unauthorized"}, status=401)
@@ -203,21 +204,28 @@ def hospital_blood_requests(request):
     status_filter = request.GET.get("status")
 
     qs = BloodRequest.objects.filter(created_by_hospital=hospital)
-    if status_filter:
+
+    if status_filter and status_filter != "all":
         qs = qs.filter(status=status_filter)
 
-    return Response([
-        {
+    qs = qs.select_related("patient", "created_by_hospital").order_by("-created_at")
+
+    data = []
+
+    for r in qs:
+        data.append({
             "id": r.id,
-            "patient_name": r.patient.fullname if r.patient else "Unknown",
+           "patient_name": r.patient.fullname if r.patient else r.patient_name,
+"hospital_name": r.created_by_hospital.name if r.created_by_hospital else None,
+
             "blood_type": r.blood_type,
             "units": r.units_required,
             "urgency": r.urgency,
             "status": r.status,
             "created_at": r.created_at,
-        }
-        for r in qs.order_by("-created_at")
-    ])
+        })
+
+    return Response(data)
 
 
 # ======================================================
@@ -299,13 +307,10 @@ def hospital_stock_history(request):
 @permission_classes([AllowAny])
 def hospital_create_blood_request(request):
 
-    hospital = get_hospital_from_token(request)  # MUST be first
+    hospital = get_hospital_from_token(request)
 
     if not hospital:
         return Response({"detail": "Unauthorized"}, status=401)
-
-    print("Hospital:", hospital)  # AFTER assignment
-    print("Hospital location:", hospital.location)
 
     try:
         blood_type = request.data.get("blood_type")
@@ -317,29 +322,37 @@ def hospital_create_blood_request(request):
                 status=400
             )
 
-        new_request = BloodRequest.objects.create(
-            patient=None,
-            created_by_hospital=hospital,
-            blood_type=blood_type,
-            units_required=int(units),
-            urgency=request.data.get("urgency") or "Normal",
-            hospital_location=hospital.location,
-            district=hospital.location.district,
-            required_date=timezone.now().date(),
-            reason=request.data.get("notes") or "Hospital Request",
-            contact_name=hospital.name,
-            contact_phone=hospital.profile.contact_number,
-            hospital_doc=request.FILES.get("hospital_doc"),
-        )
+        if not hospital.location:
+            return Response(
+                {"error": "Hospital location not configured"},
+                status=400
+            )
 
-        return Response({"success": True, "id": new_request.id})
+        new_request = BloodRequest.objects.create(
+    patient=None,
+    patient_name=request.data.get("patient_name"),
+    
+    created_by_hospital=hospital,
+    blood_type=blood_type,
+    units_required=int(units),
+    urgency=request.data.get("urgency") or "Normal",
+    hospital_location=hospital.location,
+    district=hospital.location.district,
+    required_date=timezone.now().date(),
+    reason=request.data.get("notes") or "Hospital Request",
+    contact_name=hospital.name,
+    contact_phone=hospital.profile.contact_number,
+    hospital_doc=request.FILES.get("hospital_doc"),
+    doctor_note=request.FILES.get("doctor_note"),
+)
+        return Response({
+            "success": True,
+            "id": new_request.id
+        })
 
     except Exception as e:
         traceback.print_exc()
         return Response(
-            {
-            "success": False,
-            "error": str(e)
-        },
-        status=400
-    )
+            {"success": False, "error": str(e)},
+            status=400
+        )

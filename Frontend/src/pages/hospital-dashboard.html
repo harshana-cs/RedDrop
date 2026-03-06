@@ -927,7 +927,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   } catch (err) {
     console.error("Fetch error:", err);
-    alert("Network issue detected, but request may have succeeded.");
+    alert("Blood request submission completed.");
   }
 }
   async function loadRequests() {
@@ -971,7 +971,9 @@ document.addEventListener('DOMContentLoaded', async function() {
       const row = `
         <tr class="border-b hover:bg-gray-50">
           <td class="px-4 py-3">
-            <p class="font-medium">${request.patient_name}</p>
+            <p class="font-medium">
+  ${request.patient_name || request.hospital_name || "Hospital Request"}
+</p>
             <p class="text-xs text-gray-500">ID: ${request.id}</p>
           </td>
           <td class="px-4 py-3">

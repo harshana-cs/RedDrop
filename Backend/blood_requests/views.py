@@ -158,9 +158,12 @@ def api_user_requests(request):
 # API – CREATE BLOOD REQUEST
 # =========================================================
 
+from .models import HospitalLocation
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def api_create_request(request):
+
     patient = Patient.objects.filter(
         emailaddress=request.user.username
     ).first()
@@ -171,23 +174,32 @@ def api_create_request(request):
             status=403
         )
 
-    serializer = BloodRequestSerializer(
-        data=request.data,
-        context={"request": request}
-    )
+    hospital_name = request.data.get("hospital")
+    district = request.data.get("district")
 
-    if serializer.is_valid():
-        serializer.save(patient=patient)
+    if not hospital_name or not district:
         return Response(
-            {"success": True, "data": serializer.data},
-            status=201
+            {"message": "Hospital and district are required"},
+            status=400
         )
 
-    return Response(
-        {"success": False, "errors": serializer.errors},
-        status=400
+    # 🔥 Create or get hospital location
+    hospital_location, _ = HospitalLocation.objects.get_or_create(
+        name=hospital_name,
+        district=district
     )
 
+    serializer = BloodRequestSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save(
+            patient=patient,
+            hospital_location=hospital_location,
+            district=district
+        )
+        return Response(serializer.data, status=201)
+
+    return Response(serializer.errors, status=400)
 
 # =========================================================
 # API – PATIENT CONFIRM RECEIPT (ONLY CONFIRMATION)

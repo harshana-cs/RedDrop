@@ -67,7 +67,7 @@ def admin_pending_blood_requests(request):
             ),
 
             "blood_type": r.blood_type,
-            "hospital": r.hospital,
+            "hospital": r.hospital_location.name if r.hospital_location else None,
             "urgency": r.urgency,
             "units": r.units_required,
             "district": r.district,
@@ -383,7 +383,7 @@ def admin_processed_blood_requests(request):
             "id": r.id,
             "patient_name": patient.fullname if patient else "Unknown",
             "blood_type": r.blood_type,
-            "hospital": r.hospital,
+            "hospital": r.hospital_location.name if r.hospital_location else None,
             "urgency": r.urgency,
             "status": r.status,
             "processed_on": (

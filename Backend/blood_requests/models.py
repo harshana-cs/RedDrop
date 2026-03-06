@@ -34,7 +34,11 @@ class BloodRequest(models.Model):
         null=True,
         blank=True
     )
-
+    patient_name = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True
+    )
     created_by_hospital = models.ForeignKey(
         "hospital.Hospital",
         on_delete=models.SET_NULL,
