@@ -24,6 +24,8 @@ from .views import (
     hospital_request_detail,        # ✅ ADD THIS
     approve_hospital_request,
     reject_hospital_request,
+    get_notifications,
+    admin_hospital_audit_logs,
 )
 
 urlpatterns = [
@@ -57,5 +59,7 @@ urlpatterns = [
     # adminpanel/urls.py
 path("analytics/blood-types/", api_blood_type_distribution),
 path("analytics/request-status/", api_request_status_overview),
+path("notifications/", get_notifications),
+path("hospital-audit-logs/", admin_hospital_audit_logs),
 
 ]

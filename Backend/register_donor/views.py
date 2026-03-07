@@ -7,6 +7,7 @@ from datetime import datetime
 from .models import Donor
 from django.contrib.auth import login
 from blood_requests.models import Patient
+from adminpanel.models import Notification
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def register_donor(request):
@@ -78,6 +79,13 @@ def register_donor(request):
         donor.is_profile_completed = True
         donor.is_approved = False
         donor.save()
+
+        # Create notification for admin
+        Notification.objects.create(
+            title="New Donor Registration",
+            message=f"A new donor has registered: {donor.first_name} {donor.last_name}",
+            is_read=False
+        )
 
         return Response({
             "success": True,

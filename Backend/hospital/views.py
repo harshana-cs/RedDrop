@@ -15,6 +15,8 @@ from blood_requests.models import BloodRequest
 from blood_stock.models import BloodStock, BloodStockHistory
 from hospital.auth import get_hospital_from_token
 import time
+from adminpanel.models import Notification
+from adminpanel.models import HospitalAuditLog
 
 
 # ======================================================
@@ -76,7 +78,20 @@ def hospital_register(request):
             id_proof=files.get("id_proof"),
             authority_letter=files.get("authority_letter"),
         )
-
+        HospitalAuditLog.objects.create(
+    hospital=None,
+    action="hospital_application",
+    description=f"{application.hospital_name} submitted hospital registration",
+    metadata={
+        "registration_number": application.registration_number,
+        "email": application.email
+    }
+)
+        Notification.objects.create(
+    title="New Hospital Application",
+    message=f"{application.hospital_name} submitted a registration request",
+    type="hospital"
+)
     return Response(
         {"success": True, "application_id": application.id},
         status=status.HTTP_201_CREATED
@@ -111,6 +126,14 @@ def hospital_login(request):
 }
 
     token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+    HospitalAuditLog.objects.create(
+    hospital=hospital,
+    action="login",
+    description=f"{hospital.name} logged into hospital dashboard",
+    metadata={
+        "username": hospital.username
+    }
+)
     return Response({
         "success": True,
         "token": token
@@ -127,7 +150,11 @@ def hospital_profile(request):
     hospital = get_hospital_from_token(request)
     if not hospital:
         return Response({"detail": "Unauthorized"}, status=401)
-
+    HospitalAuditLog.objects.create(
+    hospital=hospital,
+    action="profile_view",
+    description=f"{hospital.name} viewed hospital profile"
+)
     profile = hospital.profile
 
     return Response({
@@ -153,6 +180,11 @@ def hospital_dashboard(request):
     hospital = get_hospital_from_token(request)
     if not hospital:
         return Response({"detail": "Unauthorized"}, status=401)
+    HospitalAuditLog.objects.create(
+    hospital=hospital,
+    action="dashboard_view",
+    description=f"{hospital.name} opened hospital dashboard"
+)
 
     # total_requests = BloodRequest.objects.filter(hospital=hospital).count()
     # approved_requests = BloodRequest.objects.filter(hospital=hospital, status="approved").count()
@@ -328,23 +360,42 @@ def hospital_create_blood_request(request):
                 status=400
             )
 
+        # Create blood request
         new_request = BloodRequest.objects.create(
-    patient=None,
-    patient_name=request.data.get("patient_name"),
-    
-    created_by_hospital=hospital,
-    blood_type=blood_type,
-    units_required=int(units),
-    urgency=request.data.get("urgency") or "Normal",
-    hospital_location=hospital.location,
-    district=hospital.location.district,
-    required_date=timezone.now().date(),
-    reason=request.data.get("notes") or "Hospital Request",
-    contact_name=hospital.name,
-    contact_phone=hospital.profile.contact_number,
-    hospital_doc=request.FILES.get("hospital_doc"),
-    doctor_note=request.FILES.get("doctor_note"),
+            patient=None,
+            patient_name=request.data.get("patient_name"),
+
+            created_by_hospital=hospital,
+            blood_type=blood_type,
+            units_required=int(units),
+            urgency=request.data.get("urgency") or "Normal",
+            hospital_location=hospital.location,
+            district=hospital.location.district,
+            required_date=timezone.now().date(),
+            reason=request.data.get("notes") or "Hospital Request",
+            contact_name=hospital.name,
+            contact_phone=hospital.profile.contact_number,
+            hospital_doc=request.FILES.get("hospital_doc"),
+            doctor_note=request.FILES.get("doctor_note"),
+        )
+        HospitalAuditLog.objects.create(
+    hospital=hospital,
+    action="blood_request_create",
+    description=f"{hospital.name} created blood request for {units} units of {blood_type}",
+    metadata={
+        "blood_type": blood_type,
+        "units": units,
+        "urgency": request.data.get("urgency"),
+        "request_id": new_request.id
+    }
 )
+        # 🔔 CREATE ADMIN NOTIFICATION
+        Notification.objects.create(
+            title="New Hospital Blood Request",
+            message=f"{hospital.name} requested {units} units of {blood_type}",
+            type="blood"
+        )
+
         return Response({
             "success": True,
             "id": new_request.id

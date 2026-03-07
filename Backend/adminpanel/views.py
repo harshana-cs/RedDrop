@@ -620,3 +620,52 @@ def api_request_status_overview(request):
         "approved": approved,
         "rejected": rejected
     })
+from django.http import JsonResponse
+from .models import Notification
+
+def get_notifications(request):
+    notifications = Notification.objects.order_by("-created_at")[:10]
+
+    data = [
+        {
+            "id": n.id,
+            "title": n.title,
+            "message": n.message,
+            "type": n.type,
+            "created_at": n.created_at.strftime("%Y-%m-%d %H:%M"),
+            "is_read": n.is_read
+        }
+        for n in notifications
+    ]
+
+    unread = Notification.objects.filter(is_read=False).count()
+
+    return JsonResponse({
+        "notifications": data,
+        "unread": unread
+    })
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import HospitalAuditLog
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def admin_hospital_audit_logs(request):
+
+    logs = HospitalAuditLog.objects.select_related("hospital")\
+        .order_by("-created_at")[:200]
+
+    data = []
+
+    for log in logs:
+        data.append({
+            "hospital": log.hospital.name if log.hospital else "Application",
+            "action": log.action,
+            "description": log.description,
+            "metadata": log.metadata,
+            "time": log.created_at
+        })
+
+    return Response({"logs": data})

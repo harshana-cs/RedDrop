@@ -134,3 +134,4 @@ class HospitalApplication(models.Model):
         return f"{self.hospital_name} ({self.status})"
 
 
+

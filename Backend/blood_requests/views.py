@@ -17,6 +17,7 @@ from register_donor.models import Donor
 from datetime import timedelta
 from math import radians, sin, cos, sqrt, atan2
 from .models import HospitalLocation
+from adminpanel.models import Notification
 
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371  # Earth radius in KM
@@ -192,12 +193,20 @@ def api_create_request(request):
     serializer = BloodRequestSerializer(data=request.data)
 
     if serializer.is_valid():
-        serializer.save(
-            patient=patient,
-            hospital_location=hospital_location,
-            district=district
-        )
-        return Response(serializer.data, status=201)
+        blood_request = serializer.save(
+        patient=patient,
+        hospital_location=hospital_location,
+        district=district
+    )
+
+    # 🔔 CREATE NOTIFICATION FOR ADMIN
+    Notification.objects.create(
+        title="New Blood Request",
+        message=f"{patient.fullname} requested {blood_request.blood_type} blood at {hospital_name}",
+        type="blood_request"
+    )
+
+    return Response(serializer.data, status=201)
 
     return Response(serializer.errors, status=400)
 
