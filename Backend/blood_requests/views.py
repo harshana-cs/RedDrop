@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.db.models import Count
 # from Backend import hospital
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from .forms import BloodRequestForm
 from .models import BloodRequest
@@ -18,6 +18,7 @@ from datetime import timedelta
 from math import radians, sin, cos, sqrt, atan2
 from .models import HospitalLocation
 from adminpanel.models import Notification
+from .utils import get_coordinates_from_osm
 
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371  # Earth radius in KM
@@ -184,10 +185,20 @@ def api_create_request(request):
             status=400
         )
 
-    # 🔥 Create or get hospital location
-    hospital_location, _ = HospitalLocation.objects.get_or_create(
+    hospital_location = HospitalLocation.objects.filter(
+    name=hospital_name,
+    district=district
+).first()
+
+    if not hospital_location:
+
+        lat, lon = get_coordinates_from_osm(hospital_name, district)
+
+        hospital_location = HospitalLocation.objects.create(
         name=hospital_name,
-        district=district
+        district=district,
+        latitude=lat,
+        longitude=lon
     )
 
     serializer = BloodRequestSerializer(data=request.data)
@@ -385,3 +396,53 @@ def api_compatible_donors_for_patient(request):
         },
         "donors": matched_donors[:5]
     })
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def public_blood_requests(request):
+
+    requests = (
+        BloodRequest.objects
+        .filter(status="pending")
+        .select_related("patient")   # optimize query
+    )
+
+    data = []
+
+    for r in requests:
+        patient = r.patient
+
+        data.append({
+            "patient_name": (
+                f"{patient.fullname}"
+                if patient else "By Hospital"
+            ),
+            "blood_type": r.blood_type,
+            "units": r.units_required,
+            "hospital_name": r.hospital_location.name if r.hospital_location else None,
+            "urgency": r.urgency,
+        })
+
+    return Response(data)
+
+from donor.models import Donation
+from datetime import timedelta
+from django.utils import timezone
+
+MIN_GAP_DAYS = 56
+
+def is_donor_eligible(donor):
+
+    last_donation = (
+        Donation.objects
+        .filter(donor=donor, status="verified")
+        .order_by("-date")
+        .first()
+    )
+
+    if not last_donation:
+        return True
+
+    next_allowed = last_donation.date + timedelta(days=MIN_GAP_DAYS)
+
+    return timezone.now().date() >= next_allowed

@@ -8,9 +8,254 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Fixed sidebar - never moves */
+    .fixed-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 260px;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-x: hidden;
+      overflow-y: auto;
+      z-index: 50;
+      background: white;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+    }
+    
+    .fixed-sidebar.collapsed {
+      width: 80px;
+    }
+    
+    /* Main content with margin to accommodate fixed sidebar */
+    .main-content {
+      margin-left: 260px;
+      width: calc(100% - 260px);
+      min-height: 100vh;
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .main-content.sidebar-collapsed {
+      margin-left: 80px;
+      width: calc(100% - 80px);
+    }
+    
+    /* Fixed header inside main content */
+    .fixed-header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      backdrop-filter: blur(8px);
+      background-color: rgba(255, 255, 255, 0.95);
+    }
+    
+    /* Sidebar collapsed styles */
+    .fixed-sidebar.collapsed .nav-text,
+    .fixed-sidebar.collapsed .hospital-name,
+    .fixed-sidebar.collapsed .hospital-id-text,
+    .fixed-sidebar.collapsed .logout-text {
+      display: none;
+    }
+    
+    .fixed-sidebar.collapsed .nav-icon {
+      margin-right: 0;
+      font-size: 1.25rem;
+    }
+    
+    .fixed-sidebar.collapsed .tab-btn {
+      justify-content: center;
+      padding: 0.75rem;
+    }
+    
+    .fixed-sidebar.collapsed .hospital-info {
+      display: none;
+    }
+    
+    .fixed-sidebar.collapsed .hospital-logo {
+      margin-right: 0;
+    }
+    
+    /* Toggle button animation */
+    .toggle-btn {
+      transition: all 0.3s ease;
+    }
+    
+    .toggle-btn:hover {
+      transform: scale(1.1);
+    }
+    
+    .toggle-btn.collapsed i {
+      transform: rotate(180deg);
+    }
+    
+    /* Button hover animations */
+    .tab-btn {
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .tab-btn:hover {
+      transform: translateX(6px);
+      background-color: #fee2e2;
+    }
+    
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, rgba(239,68,68,0.2) 0%, rgba(239,68,68,0) 100%);
+      transition: width 0.3s ease;
+      z-index: 0;
+    }
+    
+    .tab-btn:hover::after {
+      width: 100%;
+    }
+    
+    .tab-btn i, .tab-btn span {
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Ripple effect on click */
+    .tab-btn:active::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.3);
+      transform: translate(-50%, -50%);
+      animation: ripple 0.4s ease-out;
+      z-index: 0;
+    }
+    
+    @keyframes ripple {
+      0% {
+        width: 0;
+        height: 0;
+        opacity: 0.5;
+      }
+      100% {
+        width: 200px;
+        height: 200px;
+        opacity: 0;
+      }
+    }
+    
+    /* Card animations */
+    .stat-card {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    }
+    
+    /* Profile avatar pulse */
+    @keyframes softPulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
+      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    
+    .profile-avatar {
+      animation: softPulse 3s infinite;
+      transition: transform 0.4s ease;
+    }
+    
+    .profile-avatar:hover {
+      transform: scale(1.05);
+    }
+    
+    /* Fade in animation for sections */
+    .tab-section {
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Tooltip for collapsed sidebar */
+    .fixed-sidebar.collapsed .tab-btn {
+      position: relative;
+    }
+    
+    .fixed-sidebar.collapsed .tab-btn:hover::before {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #1f2937;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      white-space: nowrap;
+      z-index: 100;
+      margin-left: 1rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      pointer-events: none;
+    }
+    
+    .fixed-sidebar.collapsed .tab-btn:hover::after {
+      content: '';
+      position: absolute;
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: transparent #1f2937 transparent transparent;
+      margin-left: 0.5rem;
+      pointer-events: none;
+    }
+    
+    /* Custom scrollbar for sidebar */
+    .fixed-sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    .fixed-sidebar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    
+    .fixed-sidebar::-webkit-scrollbar-thumb {
+      background: #cbd5e0;
+      border-radius: 4px;
+    }
+    
+    .fixed-sidebar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    
+    /* Ensure content is scrollable */
+    .main-content {
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+    
+    /* Smooth scrolling for main content */
+    .main-content {
+      scroll-behavior: smooth;
+    }
+  </style>
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-gray-50 overflow-hidden">
 
 <!-- ================= AUTH CHECK ================= -->
 <script>
@@ -20,88 +265,118 @@
   }
 </script>
 
-<div class="min-h-screen flex">
-
-  <!-- ================= SIDEBAR ================= -->
-  <aside class="w-64 bg-white border-r shadow-sm flex flex-col">
-    <div class="p-6 border-b">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+<div class="flex h-screen overflow-hidden">
+  <!-- ================= FIXED SIDEBAR - NEVER MOVES ================= -->
+  <aside class="fixed-sidebar bg-white flex flex-col" id="sidebar">
+    <div class="p-6 border-b flex items-center justify-between">
+      <div class="flex items-center space-x-3 group">
+        <div class="hospital-logo w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 group-hover:rotate-3">
           <i class="fas fa-hospital text-white"></i>
         </div>
-        <div>
-          <h2 class="text-xl font-bold">Hospital Panel</h2>
+        <div class="hospital-info">
+          <h2 class="hospital-name text-xl font-bold">Hospital Panel</h2>
           <p class="text-xs text-gray-500" id="hospitalName">Loading...</p>
         </div>
       </div>
+      
+      <!-- Toggle button for sidebar collapse -->
+      <button onclick="toggleSidebar()" class="toggle-btn w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition-all flex-shrink-0">
+        <i class="fas fa-chevron-left text-gray-600 transition-transform duration-300"></i>
+      </button>
     </div>
 
-    <nav class="flex-1 p-4 space-y-2">
-      <button data-tab="overview"
-        class="tab-btn w-full text-left px-4 py-3 rounded-lg bg-red-50 text-red-600">
-        <i class="fas fa-chart-line mr-2"></i> Dashboard
+    <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+      <button data-tab="overview" data-tooltip="Dashboard"
+        class="tab-btn w-full text-left px-4 py-3 rounded-lg bg-red-50 text-red-600 flex items-center">
+        <i class="fas fa-chart-line nav-icon mr-2 transition-transform group-hover:scale-110"></i>
+        <span class="nav-text">Dashboard</span>
       </button>
-
-      <button data-tab="request"
-        class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50">
-        <i class="fas fa-tint mr-2"></i> Blood Requests
+      <button data-tab="request" data-tooltip="Blood Requests"
+        class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 flex items-center">
+        <i class="fas fa-tint nav-icon mr-2"></i>
+        <span class="nav-text">Blood Requests</span>
       </button>
-
-      <button data-tab="stock"
-        class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50">
-        <i class="fas fa-boxes mr-2"></i> Blood Stock
+      <button data-tab="stock" data-tooltip="Blood Stock"
+        class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 flex items-center">
+        <i class="fas fa-boxes nav-icon mr-2"></i>
+        <span class="nav-text">Blood Stock</span>
       </button>
-
-     
-
-      <button data-tab="inventory"
-        class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50">
-        <i class="fas fa-clipboard-list mr-2"></i> Inventory Management
+      <button data-tab="inventory" data-tooltip="Inventory"
+        class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 flex items-center">
+        <i class="fas fa-clipboard-list nav-icon mr-2"></i>
+        <span class="nav-text">Inventory Management</span>
       </button>
-
-      <button data-tab="history"
-        class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50">
-        <i class="fas fa-history mr-2"></i> Stock History
+      <button data-tab="history" data-tooltip="Stock History"
+        class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 flex items-center">
+        <i class="fas fa-history nav-icon mr-2"></i>
+        <span class="nav-text">Stock History</span>
+      </button>
+      <button data-tab="profile" data-tooltip="Profile"
+        class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 flex items-center">
+        <i class="fas fa-user-md nav-icon mr-2"></i>
+        <span class="nav-text">Hospital Profile</span>
       </button>
     </nav>
 
     <div class="p-4 border-t">
-      <div class="mb-3 p-3 bg-blue-50 rounded-lg">
+      <div class="hospital-info mb-3 p-3 bg-blue-50 rounded-lg transition-all hover:shadow-md">
         <p class="text-sm text-blue-800 font-medium">Hospital ID:</p>
-        <p class="text-xs text-blue-600" id="hospitalId">Loading...</p>
+        <p class="hospital-id-text text-xs text-blue-600" id="hospitalId">Loading...</p>
       </div>
       <button onclick="logoutHospital()"
-        class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-        Logout
+        class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center">
+        <i class="fas fa-sign-out-alt mr-2"></i>
+        <span class="logout-text">Logout</span>
       </button>
     </div>
   </aside>
 
-  <!-- ================= MAIN ================= -->
-  <main class="flex-1 overflow-y-auto">
-
-    <!-- HEADER -->
-    <header class="bg-white border-b px-6 py-4 flex justify-between items-center">
+  <!-- ================= MAIN CONTENT - SCROLLABLE ================= -->
+  <main class="main-content flex flex-col" id="mainContent">
+    <!-- FIXED HEADER - STICKS TO TOP -->
+    <header class="fixed-header px-6 py-4 flex justify-between items-center">
       <div>
         <h1 class="text-2xl font-bold" id="pageTitle">Hospital Overview</h1>
         <p class="text-gray-600 text-sm" id="pageSubtitle">
           Manage blood requests and donors
         </p>
       </div>
-      <div class="flex items-center space-x-4">
-        <div class="text-right">
-          <p class="text-sm font-medium" id="currentDate"></p>
-          <p class="text-xs text-gray-500" id="lastSync">Last sync: Just now</p>
-        </div>
+ <div class="flex items-center space-x-4">
+
+  <!-- Notification Bell -->
+  <div class="relative">
+    <button onclick="toggleNotifications()" class="text-gray-600 hover:text-red-600 text-xl">
+      <i class="fas fa-bell"></i>
+    </button>
+
+    <div id="notificationBox"
+         class="hidden absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg max-h-96 overflow-y-auto">
+
+      <div class="p-2 border-b font-semibold">
+        Notifications
       </div>
+
+      <div id="notificationList"></div>
+
+    </div>
+  </div>
+
+  <!-- Date + Sync -->
+  <div class="text-right">
+    <p class="text-sm font-medium" id="currentDate"></p>
+    <p class="text-xs text-gray-500" id="lastSync">Last sync: Just now</p>
+  </div>
+
+</div>
+      
     </header>
 
-    <div class="p-6">
-
+    <!-- SCROLLABLE CONTENT AREA -->
+    <div class="flex-1 overflow-y-auto p-6" id="contentArea">
       <!-- ================= OVERVIEW ================= -->
       <section id="overview" class="tab-section space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div class="bg-white p-6 rounded-xl shadow">
+          <div class="bg-white p-6 rounded-xl shadow stat-card transition-all">
             <div class="flex justify-between items-start">
               <div>
                 <h3 class="text-3xl font-bold" id="totalRequests">0</h3>
@@ -113,8 +388,7 @@
               <i class="fas fa-arrow-up"></i> 0% from last week
             </div>
           </div>
-
-          <div class="bg-white p-6 rounded-xl shadow">
+          <div class="bg-white p-6 rounded-xl shadow stat-card">
             <div class="flex justify-between items-start">
               <div>
                 <h3 class="text-3xl font-bold" id="approvedRequests">0</h3>
@@ -123,8 +397,7 @@
               <i class="fas fa-check-circle text-green-500 text-2xl"></i>
             </div>
           </div>
-
-          <div class="bg-white p-6 rounded-xl shadow">
+          <div class="bg-white p-6 rounded-xl shadow stat-card">
             <div class="flex justify-between items-start">
               <div>
                 <h3 class="text-3xl font-bold" id="pendingRequests">0</h3>
@@ -133,8 +406,7 @@
               <i class="fas fa-clock text-yellow-500 text-2xl"></i>
             </div>
           </div>
-
-          <div class="bg-white p-6 rounded-xl shadow">
+          <div class="bg-white p-6 rounded-xl shadow stat-card">
             <div class="flex justify-between items-start">
               <div>
                 <h3 class="text-3xl font-bold" id="totalStock">0</h3>
@@ -153,17 +425,10 @@
             <h3 class="text-lg font-semibold mb-4">Blood Stock Overview</h3>
             <canvas id="stockChart" height="250"></canvas>
           </div>
-
           <div class="bg-white p-6 rounded-xl shadow">
             <h3 class="text-lg font-semibold mb-4">Recent Activity</h3>
             <div id="recentActivity" class="space-y-3">
-              <div class="flex items-center p-3 bg-gray-50 rounded-lg">
-                <i class="fas fa-sync text-blue-500 mr-3"></i>
-                <div>
-                  <p class="text-sm font-medium">Loading recent activity...</p>
-                  <p class="text-xs text-gray-500">Just now</p>
-                </div>
-              </div>
+              <!-- dynamic -->
             </div>
           </div>
         </div>
@@ -172,22 +437,22 @@
           <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <button onclick="switchTab('request')" 
-              class="p-4 bg-red-50 rounded-lg hover:bg-red-100 transition">
+              class="p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-all hover:scale-105 active:scale-95">
               <i class="fas fa-plus text-red-600 mb-2"></i>
               <p class="font-medium">New Request</p>
             </button>
             <button onclick="switchTab('stock')"
-              class="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
+              class="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all hover:scale-105 active:scale-95">
               <i class="fas fa-chart-bar text-blue-600 mb-2"></i>
               <p class="font-medium">View Stock</p>
             </button>
             <button onclick="switchTab('inventory')"
-              class="p-4 bg-green-50 rounded-lg hover:bg-green-100 transition">
+              class="p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-all hover:scale-105 active:scale-95">
               <i class="fas fa-edit text-green-600 mb-2"></i>
               <p class="font-medium">Update Inventory</p>
             </button>
             <button onclick="refreshAllData()"
-              class="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
+              class="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-all hover:scale-105 active:scale-95">
               <i class="fas fa-sync-alt text-purple-600 mb-2"></i>
               <p class="font-medium">Refresh Data</p>
             </button>
@@ -241,19 +506,11 @@
               class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500" rows="2"></textarea>
           </div>
           <div class="mb-4">
-  <label class="block text-sm font-medium mb-1">
-    Hospital Verification Document
-  </label>
-  <input 
-    type="file" 
-    id="hospitalDoc"
-    accept=".pdf,.jpg,.jpeg,.png"
-    class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500"
-  />
-  <p class="text-xs text-gray-500 mt-1">
-    Upload signed letter or medical verification document
-  </p>
-</div>
+            <label class="block text-sm font-medium mb-1">Hospital Verification Document</label>
+            <input type="file" id="hospitalDoc" accept=".pdf,.jpg,.jpeg,.png"
+              class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500" />
+            <p class="text-xs text-gray-500 mt-1">Upload signed letter or medical verification document</p>
+          </div>
 
           <div class="flex justify-between">
             <div class="text-sm text-gray-600">
@@ -352,9 +609,7 @@
                   <th class="px-4 py-3 text-left">Actions</th>
                 </tr>
               </thead>
-              <tbody id="stockTable">
-                <!-- Stock data will be populated here -->
-              </tbody>
+              <tbody id="stockTable"></tbody>
             </table>
           </div>
         </div>
@@ -366,9 +621,7 @@
           </div>
           <div class="bg-white p-6 rounded-xl shadow">
             <h3 class="text-lg font-semibold mb-4">Stock Alerts</h3>
-            <div id="stockAlerts" class="space-y-3">
-              <!-- Alerts will be populated here -->
-            </div>
+            <div id="stockAlerts" class="space-y-3"></div>
           </div>
         </div>
       </section>
@@ -377,10 +630,7 @@
       <section id="donors" class="tab-section hidden space-y-6">
         <div class="bg-white rounded-xl shadow p-6">
           <h3 class="text-xl font-semibold mb-4">Assigned Donors</h3>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="donorList">
-            <!-- Donor cards will be populated here -->
-          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="donorList"></div>
         </div>
       </section>
 
@@ -471,9 +721,7 @@
 
         <div class="bg-white p-6 rounded-xl shadow">
           <h3 class="text-xl font-semibold mb-4">Set Minimum Stock Levels</h3>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="minStockSettings">
-            <!-- Minimum stock settings will be populated here -->
-          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="minStockSettings"></div>
         </div>
       </section>
 
@@ -504,14 +752,137 @@
                   <th class="px-4 py-3 text-left">New Balance</th>
                 </tr>
               </thead>
-              <tbody id="historyTable">
-                <!-- History data will be populated here -->
-              </tbody>
+              <tbody id="historyTable"></tbody>
             </table>
           </div>
         </div>
       </section>
 
+      <!-- ================= HOSPITAL PROFILE ================= -->
+      <section id="profile" class="tab-section hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow-lg overflow-hidden relative">
+          <div class="absolute top-0 right-0 w-40 h-40 bg-red-50 rounded-full -mr-10 -mt-10 opacity-30"></div>
+          <div class="absolute bottom-0 left-0 w-32 h-32 bg-blue-50 rounded-full -ml-10 -mb-10 opacity-30"></div>
+
+          <div class="relative z-10">
+            <h3 class="text-2xl font-bold mb-6 flex items-center">
+              <i class="fas fa-user-md text-red-600 mr-3"></i> Hospital Profile
+            </h3>
+
+            <div class="flex flex-col items-center mb-8">
+              <div class="profile-avatar w-28 h-28 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center text-white text-5xl font-bold shadow-lg mb-3 transition-all">
+                <i class="fas fa-hospital"></i>
+              </div>
+              <div class="text-center">
+                <p class="text-xl font-bold" id="profileNameDisplay">—</p>
+                <p class="text-sm text-gray-500 bg-gray-100 px-4 py-1 rounded-full mt-1 inline-block">verified hospital</p>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+  <h3 class="text-xl font-bold mb-6 flex items-center">
+    <i class="fas fa-info-circle text-red-600 mr-3"></i> Hospital Information
+  </h3>
+
+  <div class="grid md:grid-cols-3 gap-6">
+
+    <div>
+      <p class="text-xs text-gray-500">Registration Number</p>
+      <p class="font-semibold" id="profileRegistrationNumber">—</p>
+    </div>
+
+    <div>
+      <p class="text-xs text-gray-500">Hospital Type</p>
+      <p class="font-semibold" id="profileHospitalType">—</p>
+    </div>
+
+    <div>
+      <p class="text-xs text-gray-500">Bed Capacity</p>
+      <p class="font-semibold" id="profileBedCapacity">—</p>
+    </div>
+
+    <div>
+      <p class="text-xs text-gray-500">Blood Bank Type</p>
+      <p class="font-semibold" id="profileBloodBankType">—</p>
+    </div>
+
+    <div>
+      <p class="text-xs text-gray-500">Year Established</p>
+      <p class="font-semibold" id="profileYearEstablished">—</p>
+    </div>
+
+    <div>
+      <p class="text-xs text-gray-500">Website</p>
+      <p class="font-semibold" id="profileWebsite">—</p>
+    </div>
+
+  </div>
+</div>
+<div class="bg-white p-6 rounded-xl shadow-lg">
+  <h3 class="text-xl font-bold mb-6 flex items-center">
+    <i class="fas fa-clinic-medical text-red-600 mr-3"></i> Medical Facilities
+  </h3>
+
+  <div class="grid md:grid-cols-3 gap-4">
+
+    <div class="facility-item" id="facilityEmergency"></div>
+    <div class="facility-item" id="facilityICU"></div>
+    <div class="facility-item" id="facilityOT"></div>
+    <div class="facility-item" id="facilityStorage"></div>
+    <div class="facility-item" id="facilityTesting"></div>
+    <div class="facility-item" id="facilityCamp"></div>
+
+  </div>
+</div>
+
+            <div class="mt-6 flex flex-wrap items-center justify-between gap-4 p-4 bg-gray-50 rounded-xl">
+              <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-800">Verification status</p>
+                  <p class="text-xs text-gray-500">Your hospital is verified</p>
+                </div>
+              </div>
+              <button onclick="updateHospitalProfile()"
+                class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all hover:scale-105 active:scale-95 shadow-md flex items-center gap-2">
+                <i class="fas fa-save"></i> Update Profile
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white p-5 rounded-xl shadow flex items-center space-x-4 transition-all hover:shadow-md">
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+              <i class="fas fa-tint text-red-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Total donations received</p>
+              <p class="text-2xl font-bold" id="profileDonationStat">245</p>
+            </div>
+          </div>
+          <div class="bg-white p-5 rounded-xl shadow flex items-center space-x-4 transition-all hover:shadow-md">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+              <i class="fas fa-clock text-blue-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Pending requests</p>
+              <p class="text-2xl font-bold" id="profilePendingStat">3</p>
+            </div>
+          </div>
+          <div class="bg-white p-5 rounded-xl shadow flex items-center space-x-4 transition-all hover:shadow-md">
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <i class="fas fa-calendar-check text-green-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Member since</p>
+              <p class="font-bold" id="profileMemberSince">Jan 2023</p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
 </div>
@@ -522,13 +893,9 @@
     <div class="p-6 border-b">
       <h3 class="text-xl font-semibold">Request Details</h3>
     </div>
-    <div class="p-6" id="requestDetailsContent">
-      <!-- Details will be populated here -->
-    </div>
+    <div class="p-6" id="requestDetailsContent"></div>
     <div class="p-6 border-t flex justify-end space-x-3">
-      <button onclick="closeModal('requestDetailsModal')" class="px-4 py-2 border rounded-lg">
-        Close
-      </button>
+      <button onclick="closeModal('requestDetailsModal')" class="px-4 py-2 border rounded-lg">Close</button>
     </div>
   </div>
 </div>
@@ -538,60 +905,94 @@
     <div class="p-6 border-b">
       <h3 class="text-xl font-semibold">Stock Alert</h3>
     </div>
-    <div class="p-6" id="stockAlertContent">
-      <!-- Alert details will be populated here -->
-    </div>
+    <div class="p-6" id="stockAlertContent"></div>
     <div class="p-6 border-t flex justify-end">
-      <button onclick="closeModal('stockAlertModal')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">
-        Acknowledge
-      </button>
+      <button onclick="closeModal('stockAlertModal')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Acknowledge</button>
     </div>
   </div>
 </div>
 
 <!-- ================= JS ================= -->
 <script>
-  // Global variables
+ // Global variables
   let hospitalData = {};
   let stockData = [];
   let requestsData = [];
+  
+  // Sidebar collapse state
+  let isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+  
   function authHeaders() {
-  const token = localStorage.getItem("hospitalToken");
-  return {
-    "Authorization": `Bearer ${token}`,
-    "Content-Type": "application/json"
-  };
-}
-
- // Initialize on page load
-document.addEventListener('DOMContentLoaded', async function() {
-  updateCurrentDate();
-
-  try {
-    await loadHospitalData();
-    await loadOverviewData();
-    await loadStockData();
-    await loadRequests();
-  } catch (err) {
-    console.error("Initialization error:", err);
+    const token = localStorage.getItem("hospitalToken");
+    return {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json"
+    };
   }
 
-  // Auto refresh every 5 minutes
-  setInterval(loadOverviewData, 300000);
-});
+  // Toggle sidebar function
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.querySelector('.toggle-btn i');
+    
+    isSidebarCollapsed = !isSidebarCollapsed;
+    localStorage.setItem('sidebarCollapsed', isSidebarCollapsed);
+    
+    if (isSidebarCollapsed) {
+      sidebar.classList.add('collapsed');
+      toggleBtn.style.transform = 'rotate(180deg)';
+    } else {
+      sidebar.classList.remove('collapsed');
+      toggleBtn.style.transform = 'rotate(0deg)';
+    }
+  }
 
-  // Tab Management
+  // Initialize sidebar state
+  document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.querySelector('.toggle-btn i');
+    
+    if (isSidebarCollapsed) {
+      sidebar.classList.add('collapsed');
+      toggleBtn.style.transform = 'rotate(180deg)';
+    }
+    
+    updateCurrentDate();
+    
+    try {
+      loadHospitalData();
+      loadOverviewData();
+      loadStockData();
+      loadRequests();
+    } catch (err) {
+      console.error("Initialization error:", err);
+    }
+    
+    setInterval(loadOverviewData, 300000);
+  });
+
+  // Tab Management with animation
   const tabs = document.querySelectorAll(".tab-btn");
   const sections = document.querySelectorAll(".tab-section");
 
   tabs.forEach(btn => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+      // Remove active class from all tabs
       tabs.forEach(b => b.classList.remove("bg-red-50", "text-red-600"));
+      
+      // Add active class to clicked tab
       btn.classList.add("bg-red-50", "text-red-600");
-
+      
+      // Hide all sections
       sections.forEach(sec => sec.classList.add("hidden"));
+      
+      // Show selected section with animation
       const tabId = btn.dataset.tab;
-      document.getElementById(tabId).classList.remove("hidden");
+      const targetSection = document.getElementById(tabId);
+      targetSection.classList.remove("hidden");
+      targetSection.style.animation = 'none';
+      targetSection.offsetHeight; // Trigger reflow
+      targetSection.style.animation = 'fadeIn 0.3s ease';
       
       // Update page title
       document.getElementById('pageTitle').textContent = 
@@ -610,6 +1011,9 @@ document.addEventListener('DOMContentLoaded', async function() {
           break;
         case 'history':
           loadStockHistory();
+          break;
+        case 'profile':
+          loadHospitalProfile();
           break;
       }
     });
@@ -1516,6 +1920,172 @@ document.addEventListener('DOMContentLoaded', async function() {
     nextWeek.setDate(nextWeek.getDate() + 7);
     return nextWeek.toLocaleDateString();
   }
+  async function loadHospitalProfile() {
+  try {
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/hospital/profile/",
+      { headers: authHeaders() }
+    );
+
+    const data = await response.json();
+
+    // display name
+    const nameDisplay = document.getElementById("profileNameDisplay");
+    if (nameDisplay) nameDisplay.textContent = data.name || "N/A";
+
+    const hospitalId = document.getElementById("profileHospitalId");
+    if (hospitalId) hospitalId.textContent = data.hospital_id || "-";
+
+    const email = document.getElementById("profileEmail");
+    if (email) email.textContent = data.email || "-";
+
+    const phone = document.getElementById("profilePhone");
+    if (phone) phone.textContent = data.contact_number || "-";
+
+    const address = document.getElementById("profileAddress");
+    if (address) address.textContent = data.address || "-";
+
+    document.getElementById("profileRegistrationNumber").textContent =
+      data.registration_number || "-";
+
+    document.getElementById("profileHospitalType").textContent =
+      data.hospital_type || "-";
+
+    document.getElementById("profileBedCapacity").textContent =
+      data.bed_capacity || "-";
+
+    document.getElementById("profileBloodBankType").textContent =
+      data.blood_bank_type || "-";
+
+    document.getElementById("profileYearEstablished").textContent =
+      data.year_established || "-";
+
+    document.getElementById("profileWebsite").textContent =
+      data.website || "-";
+
+    document.getElementById("facilityEmergency").innerHTML =
+      facilityBadge("Emergency Service", data.has_emergency);
+
+    document.getElementById("facilityICU").innerHTML =
+      facilityBadge("ICU", data.has_icu);
+
+    document.getElementById("facilityOT").innerHTML =
+      facilityBadge("Operation Theater", data.has_operation_theater);
+
+    document.getElementById("facilityStorage").innerHTML =
+      facilityBadge("Blood Storage", data.has_blood_storage);
+
+    document.getElementById("facilityTesting").innerHTML =
+      facilityBadge("Blood Testing", data.has_blood_testing);
+
+    document.getElementById("facilityCamp").innerHTML =
+      facilityBadge("Donation Camp Host", data.hosts_donation_camp);
+
+  } catch (err) {
+    console.error("Error loading profile:", err);
+  }
+}
+async function updateHospitalProfile() {
+
+  const body = {
+  name: document.getElementById("profileName").value,
+  email: document.getElementById("profileEmail").value,
+  contact_number: document.getElementById("profilePhone").value,
+  address: document.getElementById("profileAddress").value
+};
+
+  try {
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/hospital/profile/",
+      {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify(body)
+      }
+    );
+
+    if(response.ok){
+      alert("Profile updated successfully");
+      loadHospitalData();
+    } else {
+      alert("Failed to update profile");
+    }
+
+  } catch(err){
+    console.error(err);
+  }
+
+}
+function facilityBadge(label, enabled){
+  return `
+  <div class="p-4 border rounded-lg flex items-center gap-3">
+    <div class="w-8 h-8 rounded-full flex items-center justify-center
+      ${enabled ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-400"}">
+      <i class="fas ${enabled ? "fa-check" : "fa-times"}"></i>
+    </div>
+    <span class="font-medium">${label}</span>
+  </div>`;
+}
+async function loadHospitalNotifications() {
+
+  try {
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/hospital/notifications/",
+      { headers: authHeaders() }
+    );
+
+    const data = await response.json();
+
+    const container = document.getElementById("notificationList");
+    container.innerHTML = "";
+
+    if(data.length === 0){
+      container.innerHTML = `
+        <div class="p-4 text-gray-500 text-center">
+          No notifications
+        </div>`;
+      return;
+    }
+
+    data.forEach(n => {
+
+      container.innerHTML += `
+        <div class="p-3 border-b hover:bg-gray-50">
+
+          <p class="font-semibold text-sm">${n.title}</p>
+
+          <p class="text-xs text-gray-600">
+            ${n.message}
+          </p>
+
+          <p class="text-xs text-gray-400 mt-1">
+            ${new Date(n.created_at).toLocaleString()}
+          </p>
+
+        </div>
+      `;
+
+    });
+
+  } catch(err){
+    console.error("Notification load error", err);
+  }
+
+}
+function toggleNotifications(){
+
+  const box = document.getElementById("notificationBox");
+
+  box.classList.toggle("hidden");
+
+  if(!box.classList.contains("hidden")){
+      loadHospitalNotifications();
+  }
+
+}
 </script>
 
 </body>

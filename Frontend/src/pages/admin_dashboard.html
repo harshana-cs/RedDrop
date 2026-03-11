@@ -10,6 +10,206 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Inventory Management Styles */
+.progress-bar {
+    transition: width 0.3s ease;
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.status-critical { background-color: #ef4444; }
+.status-low { background-color: #f59e0b; }
+.status-moderate { background-color: #3b82f6; }
+.status-optimal { background-color: #10b981; }
+
+.inventory-card {
+    transition: all 0.2s ease;
+}
+
+.inventory-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+        /* Custom scrollbar for better UX */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* For Firefox */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 #f1f1f1;
+}
+        /* Fixed sidebar styles - CORRECTED */
+        .fixed-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 16rem; /* 256px */
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 40;
+        }
+        
+        .main-content {
+            margin-left: 16rem; /* Same as sidebar width */
+            width: calc(100% - 16rem);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Scrollable content area */
+        .scrollable-content {
+            flex: 1;
+            overflow-y: auto;
+            height: calc(100vh - 73px); /* Viewport height minus header height */
+        }
+        
+        /* Custom scrollbar */
+        .scrollable-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .scrollable-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .scrollable-content::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 4px;
+        }
+        
+        .scrollable-content::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* Activity timeline styles - ENHANCED */
+        .timeline-wrapper {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .timeline-wrapper::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #e5e7eb, #d1d5db);
+            border-radius: 2px;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            left: -2rem;
+            top: 0.25rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 10;
+            transition: transform 0.2s ease;
+        }
+        
+        .timeline-item:hover .timeline-dot {
+            transform: scale(1.2);
+        }
+        
+        /* Activity card hover effect */
+        .activity-card {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            transition: all 0.2s ease;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 0.75rem;
+        }
+        
+        .activity-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: #fecaca;
+        }
+        
+        /* Badge styles */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .badge-blue {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .badge-red {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+        
+        .badge-green {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        
+        .badge-purple {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+        }
+        
+        .badge-yellow {
+            background-color: #fef9c3;
+            color: #854d0e;
+        }
+        
+        /* Summary cards */
+        .summary-card {
+            transition: all 0.2s ease;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50">
@@ -48,9 +248,9 @@
         </div>
     </div>
 
-    <div class="min-h-screen flex">
-        <!-- ================= SIDEBAR ================= -->
-        <aside class="w-64 bg-white border-r border-gray-200 shadow-sm flex flex-col">
+    <div class="min-h-screen">
+        <!-- ================= FIXED SIDEBAR ================= -->
+        <aside class="fixed-sidebar bg-white border-r border-gray-200 shadow-sm flex flex-col">
             <div class="p-6 border-b border-gray-200">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center">
@@ -82,6 +282,16 @@
                     <i class="ri-hospital-line"></i>
                     <span>Hospitals</span>
                 </button>
+                <button data-tab="users"
+class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
+    <i class="ri-group-line"></i>
+    <span>Users</span>
+</button>
+<button data-tab="inventory"
+class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
+    <i class="ri-drop-line"></i>
+    <span>Blood Inventory</span>
+</button>
                 <button data-tab="analytics" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
                     <i class="ri-bar-chart-line"></i>
                     <span>Analytics</span>
@@ -101,9 +311,9 @@
             </div>
         </aside>
 
-        <!-- ================= MAIN ================= -->
-        <main class="flex-1 overflow-y-auto">
-            <!-- Header -->
+        <!-- ================= MAIN CONTENT ================= -->
+        <main class="main-content">
+            <!-- Fixed Header -->
             <header class="sticky top-0 z-30 bg-white border-b border-gray-200 px-6 py-4">
                 <div class="flex items-center justify-between">
                     <div>
@@ -116,9 +326,30 @@
                                    class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent w-64">
                             <i class="ri-search-line absolute left-3 top-2.5 text-gray-400"></i>
                         </div>
-                        <button class="p-2 hover:bg-gray-100 rounded-lg">
-                            <i class="ri-notification-3-line text-xl"></i>
-                        </button>
+                        <div class="relative">
+                            <button id="notificationBtn" class="p-2 hover:bg-gray-100 rounded-lg relative">
+                                <i class="ri-notification-3-line text-xl"></i>
+                                <span id="notificationBadge"
+                                      class="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1.5 rounded-full hidden">
+                                </span>
+                            </button>
+
+                            <div id="notificationDropdown"
+                    
+                                 class="hidden absolute right-0 mt-2 w-96 bg-white border rounded-xl shadow-xl max-h-[420px] overflow-y-auto">
+                                 <div class="p-3 border-b flex justify-between">
+    <span class="font-semibold">Notifications</span>
+    <button onclick="markAllRead()" class="text-sm text-red-600">
+        Mark all read
+    </button>
+</div>
+                                <div class="p-3 border-b font-semibold">
+                                    Notifications
+                                </div>
+                                <div id="notificationList"></div>
+                            </div>
+                            
+                        </div>
                         <button class="p-2 hover:bg-gray-100 rounded-lg">
                             <i class="ri-settings-3-line text-xl"></i>
                         </button>
@@ -572,9 +803,626 @@
       </tbody>
     </table>
   </div>
+    <!-- Enhanced Activity Timeline Section -->
+                    <div class="mt-10">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h4 class="text-xl font-bold text-gray-900">Hospital Activity Timeline</h4>
+                                <p class="text-sm text-gray-600">Real-time monitoring of hospital actions</p>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <!-- Filter dropdown with improved styling -->
+                                <select id="activityFilter" onchange="filterHospitalActivities()"
+                                        class="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                    <option value="all">All Activities</option>
+                                    <option value="login">🔵 Logins</option>
+                                    <option value="blood">🔴 Blood Requests</option>
+                                    <option value="profile">🟢 Profile Updates</option>
+                                    <option value="other">⚪ Other</option>
+                                </select>
+                                <button onclick="loadHospitalAuditLogs()"
+                                        class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 flex items-center space-x-2 transition-colors">
+                                    <i class="ri-refresh-line"></i>
+                                    <span>Refresh</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Activity Summary Cards with hover effects -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <div class="summary-card bg-blue-50 rounded-xl p-5 border border-blue-100">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-blue-600 font-medium mb-1">Total Activities</p>
+                                        <p class="text-3xl font-bold text-blue-700" id="totalActivities">0</p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="ri-history-line text-xl text-blue-600"></i>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-blue-500 mt-2">Last 30 days</p>
+                            </div>
+                            
+                            <div class="summary-card bg-green-50 rounded-xl p-5 border border-green-100">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-green-600 font-medium mb-1">Logins Today</p>
+                                        <p class="text-3xl font-bold text-green-700" id="todayLogins">0</p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i class="ri-login-box-line text-xl text-green-600"></i>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-green-500 mt-2">Active sessions</p>
+                            </div>
+                            
+                            <div class="summary-card bg-red-50 rounded-xl p-5 border border-red-100">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-red-600 font-medium mb-1">Blood Requests</p>
+                                        <p class="text-3xl font-bold text-red-700" id="bloodRequestsToday">0</p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                        <i class="ri-heart-pulse-line text-xl text-red-600"></i>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-red-500 mt-2">Today</p>
+                            </div>
+                            
+                            <div class="summary-card bg-purple-50 rounded-xl p-5 border border-purple-100">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-purple-600 font-medium mb-1">Active Hospitals</p>
+                                        <p class="text-3xl font-bold text-purple-700" id="activeHospitalsCount">0</p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                        <i class="ri-hospital-line text-xl text-purple-600"></i>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-purple-500 mt-2">Currently online</p>
+                            </div>
+                        </div>
+<!-- Modals -->
+    <div id="hospitalDetailModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl w-full max-w-xl p-6">
+            <h3 class="text-xl font-semibold mb-4">Hospital Application Details</h3>
+            <div id="hospitalDetailBody" class="space-y-2 text-sm"></div>
+            <div class="mt-6 text-right">
+                <button onclick="closeHospitalDetail()"
+                    class="px-4 py-2 bg-gray-200 rounded">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="approveHospitalModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl w-full max-w-md p-6">
+            <h3 class="text-xl font-semibold mb-4">Approve Hospital</h3>
+            <div class="space-y-3 mb-4">
+                <p><strong>Hospital:</strong> <span id="approveHospitalName"></span></p>
+                <p><strong>Email:</strong> <span id="approveHospitalEmail"></span></p>
+            </div>
+            <div class="space-y-3">
+                <input id="approveUsername" placeholder="Create Username"
+                       class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                <input id="approvePassword" type="password" placeholder="Create Password"
+                       class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                <input id="approveConfirmPassword" type="password" placeholder="Confirm Password"
+                       class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent">
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeApproveModal()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition">
+                    Cancel
+                </button>
+                <button onclick="submitHospitalApproval()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+                    Approve
+                </button>
+            </div>
+        </div>
+    </div>
+
+                        <!-- Timeline View with connecting lines -->
+                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="px-6 py-4 border-b bg-gradient-to-r from-gray-50 to-white">
+                                <h4 class="text-lg font-semibold flex items-center">
+                                    <i class="ri-timeline-view mr-2 text-red-500"></i>
+                                    Activity Timeline
+                                </h4>
+                            </div>
+                            
+                            <div class="p-6">
+                                <div id="hospitalActivityTimeline" class="timeline-wrapper">
+                                    <!-- Timeline will be populated here -->
+                                    <div class="text-center py-12 text-gray-500">
+                                        <i class="ri-loader-4-line text-4xl animate-spin mb-3 text-red-400"></i>
+                                        <p>Loading activities...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Activity Table -->
+                        <div class="mt-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-lg font-semibold flex items-center">
+                                    <i class="ri-list-view mr-2 text-red-500"></i>
+                                    Detailed Activity Log
+                                </h4>
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="exportActivityLogs()" 
+                                            class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm flex items-center space-x-2 transition">
+                                        <i class="ri-download-line"></i>
+                                        <span>Export CSV</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
+                                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">IP Address</th>
+                                                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="hospitalAuditTable" class="divide-y divide-gray-200">
+                                            <tr>
+                                                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                                    Loading detailed logs...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <div id="usersSection" class="hidden">
+
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h3 class="text-2xl font-bold text-gray-900">All Users</h3>
+        <p class="text-gray-600">Manage users who request or donate blood</p>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+
+<div class="overflow-x-auto">
+
+<table class="min-w-full">
+
+<thead class="bg-gray-50">
+<tr>
+<th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+<th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Blood Type</th>
+<th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
+<th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Donations</th>
+<th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Requests</th>
+<th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Availability</th>
+<th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+</tr>
+</thead>
+
+<tbody id="usersTableBody">
+
+<tr>
+<td colspan="7" class="px-6 py-12 text-center text-gray-500">
+Click the tab to load users
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
 </div>
 </div>
 
+</div>
+<!-- ================= BLOOD INVENTORY MANAGEMENT ================= -->
+<div id="inventorySection" class="hidden space-y-6">
+    <!-- Header with Actions -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h3 class="text-2xl font-bold text-gray-900">Blood Bank Inventory</h3>
+            <p class="text-gray-600">Manage central blood bank stock and monitor levels</p>
+        </div>
+        
+        <div class="flex items-center space-x-3">
+            <button onclick="exportInventoryReport()" 
+                    class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2">
+                <i class="ri-file-excel-line"></i>
+                <span>Export Report</span>
+            </button>
+            <button onclick="showAddStockModal()"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center space-x-2 shadow-sm">
+                <i class="ri-add-line"></i>
+                <span>Add Stock</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Inventory Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-red-50 rounded-lg">
+                    <i class="ri-drop-line text-2xl text-red-600"></i>
+                </div>
+                <span class="text-sm text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                    <i class="ri-arrow-up-line"></i> 8%
+                </span>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900" id="totalUnits">0</h3>
+            <p class="text-gray-600">Total Units</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-yellow-50 rounded-lg">
+                    <i class="ri-alert-line text-2xl text-yellow-600"></i>
+                </div>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900" id="lowStockCount">0</h3>
+            <p class="text-gray-600">Low Stock Items</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-green-50 rounded-lg">
+                    <i class="ri-checkbox-circle-line text-2xl text-green-600"></i>
+                </div>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900" id="optimalStockCount">0</h3>
+            <p class="text-gray-600">Optimal Stock</p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div class="p-3 bg-purple-50 rounded-lg">
+                    <i class="ri-calendar-check-line text-2xl text-purple-600"></i>
+                </div>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900" id="lastUpdated">-</h3>
+            <p class="text-gray-600">Last Updated</p>
+        </div>
+    </div>
+
+    <!-- Blood Type Distribution Chart -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold">Inventory by Blood Type</h3>
+                <select id="inventoryTimeRange" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm">
+                    <option>Last 7 days</option>
+                    <option>Last 30 days</option>
+                    <option>Last 90 days</option>
+                </select>
+            </div>
+            <div class="h-64">
+                <canvas id="inventoryChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+            <div class="space-y-3">
+                <button onclick="showBulkAddModal()" class="w-full p-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 flex items-center justify-between">
+                    <span class="flex items-center">
+                        <i class="ri-add-circle-line mr-2"></i>
+                        Bulk Add Stock
+                    </span>
+                    <i class="ri-arrow-right-s-line"></i>
+                </button>
+                <button onclick="showStockAdjustModal()" class="w-full p-3 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 flex items-center justify-between">
+                    <span class="flex items-center">
+                        <i class="ri-exchange-line mr-2"></i>
+                        Adjust Stock
+                    </span>
+                    <i class="ri-arrow-right-s-line"></i>
+                </button>
+                <button onclick="showInventoryReport()" class="w-full p-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 flex items-center justify-between">
+                    <span class="flex items-center">
+                        <i class="ri-file-chart-line mr-2"></i>
+                        Generate Report
+                    </span>
+                    <i class="ri-arrow-right-s-line"></i>
+                </button>
+                <button onclick="showAlertSettings()" class="w-full p-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 flex items-center justify-between">
+                    <span class="flex items-center">
+                        <i class="ri-notification-line mr-2"></i>
+                        Alert Settings
+                    </span>
+                    <i class="ri-arrow-right-s-line"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Inventory Table with Status Cards -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b flex items-center justify-between flex-wrap gap-4">
+            <div>
+                <h4 class="text-lg font-semibold">Current Stock Levels</h4>
+                <p class="text-sm text-gray-600">Real-time blood inventory status</p>
+            </div>
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2">
+                    <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                    <span class="text-sm text-gray-600">Optimal</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="w-3 h-3 bg-yellow-500 rounded-full"></span>
+                    <span class="text-sm text-gray-600">Low</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="w-3 h-3 bg-red-500 rounded-full"></span>
+                    <span class="text-sm text-gray-600">Critical</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Blood Type</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Available Units</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Minimum Required</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryTableBody" class="divide-y divide-gray-200">
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center justify-center space-y-3">
+                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                                    <i class="ri-drop-line text-2xl text-gray-400"></i>
+                                </div>
+                                <p class="text-gray-500">Click tab to load inventory</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recent Stock Movements -->
+    <div class="mt-8">
+        <div class="flex items-center justify-between mb-4">
+            <h4 class="text-lg font-semibold">Recent Stock Movements</h4>
+            <button onclick="viewAllMovements()" class="text-sm text-red-600 hover:text-red-700">
+                View All <i class="ri-arrow-right-line ml-1"></i>
+            </button>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Blood Type</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Units</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Updated By</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="movementTableBody" class="divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                No recent movements
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Stock Modal -->
+<div id="addStockModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-md shadow-2xl">
+        <div class="bg-gradient-to-r from-red-600 to-red-500 px-6 py-4 rounded-t-xl flex items-center justify-between">
+            <h3 class="text-xl font-semibold text-white flex items-center">
+                <i class="ri-add-line mr-2"></i>
+                Add Blood Stock
+            </h3>
+            <button onclick="closeAddStockModal()" class="text-white/80 hover:text-white">
+                <i class="ri-close-line text-2xl"></i>
+            </button>
+        </div>
+        
+        <div class="p-6">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Blood Type *</label>
+                    <select id="addBloodType" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500">
+                        <option value="">Select blood type</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Units to Add *</label>
+                    <input type="number" id="addUnits" min="1" placeholder="Enter number of units"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Source / Notes</label>
+                    <textarea id="addNotes" rows="3" placeholder="e.g., Blood donation camp, Hospital name, etc."
+                              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500"></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Expiry Date (Optional)</label>
+                    <input type="date" id="addExpiry" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500">
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeAddStockModal()" 
+                        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button onclick="submitAddStock()" 
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                    Add Stock
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Add Modal -->
+<div id="bulkAddModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-2xl shadow-2xl">
+        <div class="bg-gradient-to-r from-green-600 to-green-500 px-6 py-4 rounded-t-xl flex items-center justify-between">
+            <h3 class="text-xl font-semibold text-white flex items-center">
+                <i class="ri-add-circle-line mr-2"></i>
+                Bulk Add Stock
+            </h3>
+            <button onclick="closeBulkAddModal()" class="text-white/80 hover:text-white">
+                <i class="ri-close-line text-2xl"></i>
+            </button>
+        </div>
+        
+        <div class="p-6">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">A+</label>
+                    <input type="number" id="bulk_A_plus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">A-</label>
+                    <input type="number" id="bulk_A_minus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">B+</label>
+                    <input type="number" id="bulk_B_plus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">B-</label>
+                    <input type="number" id="bulk_B_minus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">AB+</label>
+                    <input type="number" id="bulk_AB_plus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">AB-</label>
+                    <input type="number" id="bulk_AB_minus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">O+</label>
+                    <input type="number" id="bulk_O_plus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">O-</label>
+                    <input type="number" id="bulk_O_minus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Bulk Notes</label>
+                <textarea id="bulkNotes" rows="3" placeholder="e.g., Monthly donation camp results"
+                          class="w-full border border-gray-300 rounded-lg px-4 py-3"></textarea>
+            </div>
+            
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeBulkAddModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button onclick="submitBulkAdd()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                    Add All
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Adjust Stock Modal -->
+<div id="adjustStockModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-md shadow-2xl">
+        <div class="bg-gradient-to-r from-yellow-600 to-yellow-500 px-6 py-4 rounded-t-xl flex items-center justify-between">
+            <h3 class="text-xl font-semibold text-white flex items-center">
+                <i class="ri-exchange-line mr-2"></i>
+                Adjust Stock Levels
+            </h3>
+            <button onclick="closeAdjustStockModal()" class="text-white/80 hover:text-white">
+                <i class="ri-close-line text-2xl"></i>
+            </button>
+        </div>
+        
+        <div class="p-6">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Blood Type *</label>
+                    <select id="adjustBloodType" class="w-full border rounded-lg px-4 py-3">
+                        <option value="">Select blood type</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Action *</label>
+                    <select id="adjustAction" class="w-full border rounded-lg px-4 py-3">
+                        <option value="add">Add Units</option>
+                        <option value="remove">Remove Units</option>
+                        <option value="set">Set Exact Value</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Units *</label>
+                    <input type="number" id="adjustUnits" min="1" class="w-full border rounded-lg px-4 py-3">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Reason</label>
+                    <input type="text" id="adjustReason" placeholder="e.g., Expired, Transferred"
+                           class="w-full border rounded-lg px-4 py-3">
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeAdjustStockModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button onclick="submitAdjustStock()" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">
+                    Apply Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
                 <!-- ================= ANALYTICS ================= -->
                 <div id="analyticsSection" class="hidden">
                     <div class="mb-6">
@@ -604,7 +1452,7 @@
 
         // Global state
         let currentAction = { type: '', id: null, data: null };
-        let bloodTypeChart, requestStatusChart;
+let bloodTypeChart, requestStatusChart, inventoryChart;
 
         /* ---------- UTILITY FUNCTIONS ---------- */
         function showToast(type, title, message) {
@@ -680,6 +1528,8 @@
             blood: document.getElementById('pendingBloodRequests'),
             donor: document.getElementById('pendingDonorRequests'),
             hospital: document.getElementById('hospitalSection'),
+            users: document.getElementById('usersSection'),
+            inventory: document.getElementById('inventorySection'),
             analytics: document.getElementById('analyticsSection')
         };
 
@@ -688,6 +1538,14 @@
             blood: { title: 'Blood Requests', subtitle: 'Review and manage blood donation requests' },
             donor: { title: 'Donor Registrations', subtitle: 'Review and verify new donor applications' },
             hospital: { title: 'Hospital Management', subtitle: 'Create and manage hospital accounts' },
+            users: {
+title: 'User Management',
+subtitle: 'Monitor patients and donors'
+},
+inventory: {
+title: "Blood Inventory",
+subtitle: "Manage blood bank stock levels"
+},
             analytics: { title: 'Analytics Dashboard', subtitle: 'System-wide statistics and insights' }
         };
 
@@ -725,8 +1583,14 @@
     loadHospitalRequests();
     loadHospitals();
     loadRejectedHospitalRequests();
+    loadHospitalAuditLogs();
 }
-
+if (tabName === 'users') {
+    loadUsers();
+}
+if (tabName === 'inventory') {
+    loadInventory();
+}
                 if (tabName === 'overview') initializeCharts();
             });
         });
@@ -1832,8 +2696,1160 @@ async function loadRequestStatusChart() {
         }
     });
 }
+async function loadNotifications() {
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/notifications/`);
+        const data = await res.json();
 
+        const list = document.getElementById("notificationList");
+        const badge = document.getElementById("notificationBadge");
 
+        list.innerHTML = "";
+
+        if (!data.notifications.length) {
+            list.innerHTML = `
+                <div class="p-4 text-center text-gray-500">
+                    No notifications
+                </div>`;
+        }
+
+        data.notifications.forEach(n => {
+
+const unreadStyle = n.is_read
+    ? "bg-white"
+    : "bg-red-50 border-l-4 border-red-500";
+
+list.innerHTML += `
+<div onclick="handleNotificationClick(${n.id}, \`${n.type}\`)"
+     class="p-4 border-b hover:bg-red-50 cursor-pointer transition flex gap-3 ${unreadStyle}">
+
+    <div class="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+        <i class="ri-heart-pulse-line"></i>
+    </div>
+
+    <div class="flex-1">
+        <p class="font-semibold text-gray-800">${n.title}</p>
+        <p class="text-sm text-gray-600">${n.message}</p>
+        <p class="text-xs text-gray-400 mt-1">${n.created_at}</p>
+    </div>
+
+    ${!n.is_read ? `<span class="text-xs text-red-600 font-semibold">NEW</span>` : ""}
+
+</div>
+`;
+});
+
+        if (data.unread > 0) {
+            badge.textContent = data.unread;
+            badge.classList.remove("hidden");
+        } else {
+            badge.classList.add("hidden");
+        }
+
+    } catch (error) {
+        console.error("Failed to load notifications", error);
+    }
+}
+document.getElementById("notificationBtn").addEventListener("click", () => {
+    document.getElementById("notificationDropdown").classList.toggle("hidden");
+});
+document.addEventListener("DOMContentLoaded", () => {
+    loadNotifications();
+});
+function openBloodRequests() {
+
+    // activate blood tab
+    tabs.forEach(t => {
+        t.classList.remove('bg-red-50', 'text-red-600');
+    });
+
+    const bloodTab = document.querySelector('[data-tab="blood"]');
+    bloodTab.classList.add('bg-red-50', 'text-red-600');
+
+    // hide all sections
+    Object.values(sections).forEach(section => {
+        section.classList.add('hidden');
+    });
+
+    // show blood request section
+    sections.blood.classList.remove('hidden');
+
+    // change header title
+    document.getElementById('page-title').textContent = "Blood Requests";
+    document.getElementById('page-subtitle').textContent = "Review and manage blood donation requests";
+
+    // load data
+    loadBloodRequests();
+    loadProcessedBloodRequests();
+
+    // close notification dropdown
+    document.getElementById("notificationDropdown").classList.add("hidden");
+}
+async function handleNotificationClick(id, type) {
+    console.log("Notification clicked:", id, type);
+
+    try {
+        await fetch(`${API_BASE}/api/admin/notifications/${id}/read/`, {
+            method: "POST"
+        });
+
+        loadNotifications();
+    } catch (error) {
+        console.error("Failed to mark notification as read");
+    }
+
+    type = type.trim().toLowerCase();
+    console.log("Normalized type:", type);
+
+    if (type === "blood_request" || type === "blood") {
+        openBloodRequests();
+    }
+
+    else if (type === "donor_registration" || type === "donor") {
+        openDonorRequests();
+    }
+
+    else if (type === "hospital_registration" || type === "hospital") {
+        openHospitalSection();
+    }
+
+    document.getElementById("notificationDropdown").classList.add("hidden");
+}
+function openDonorRequests() {
+
+    tabs.forEach(t => {
+        t.classList.remove('bg-red-50', 'text-red-600');
+    });
+
+    const donorTab = document.querySelector('[data-tab="donor"]');
+    donorTab.classList.add('bg-red-50', 'text-red-600');
+
+    Object.values(sections).forEach(section => {
+        section.classList.add('hidden');
+    });
+
+    sections.donor.classList.remove('hidden');
+
+    document.getElementById('page-title').textContent = "Donor Registrations";
+    document.getElementById('page-subtitle').textContent = "Review and verify new donor applications";
+
+    loadDonors();
+    loadProcessedDonors();
+
+    document.getElementById("notificationDropdown").classList.add("hidden");
+}
+function openHospitalSection() {
+
+    tabs.forEach(t => {
+        t.classList.remove('bg-red-50', 'text-red-600');
+    });
+
+    const hospitalTab = document.querySelector('[data-tab="hospital"]');
+    hospitalTab.classList.add('bg-red-50', 'text-red-600');
+
+    Object.values(sections).forEach(section => {
+        section.classList.add('hidden');
+    });
+
+    sections.hospital.classList.remove('hidden');
+
+    document.getElementById('page-title').textContent = "Hospital Management";
+    document.getElementById('page-subtitle').textContent = "Manage hospital registrations";
+
+    loadHospitalRequests();
+    loadHospitals();
+
+    document.getElementById("notificationDropdown").classList.add("hidden");
+}
+// Add this function before loadHospitalAuditLogs
+function getActionBadgeClass(action) {
+    if (!action) return 'bg-gray-100 text-gray-700';
+    
+    if (action.toLowerCase().includes('login')) {
+        return 'bg-blue-100 text-blue-700';
+    } else if (action.toLowerCase().includes('blood')) {
+        return 'bg-red-100 text-red-700';
+    } else if (action.toLowerCase().includes('profile') || action.toLowerCase().includes('update')) {
+        return 'bg-green-100 text-green-700';
+    } else if (action.toLowerCase().includes('reject')) {
+        return 'bg-red-100 text-red-700';
+    } else if (action.toLowerCase().includes('approve')) {
+        return 'bg-green-100 text-green-700';
+    } else {
+        return 'bg-gray-100 text-gray-700';
+    }
+}
+
+// Also add this helper function for icons
+function getActionIcon(action) {
+    if (!action) return 'ri-information-line';
+    
+    if (action.toLowerCase().includes('login')) {
+        return 'ri-login-box-line';
+    } else if (action.toLowerCase().includes('blood')) {
+        return 'ri-heart-pulse-line';
+    } else if (action.toLowerCase().includes('profile') || action.toLowerCase().includes('update')) {
+        return 'ri-user-settings-line';
+    } else if (action.toLowerCase().includes('reject')) {
+        return 'ri-close-circle-line';
+    } else if (action.toLowerCase().includes('approve')) {
+        return 'ri-checkbox-circle-line';
+    } else {
+        return 'ri-information-line';
+    }
+}
+
+// And this one for dot colors
+function getActionColor(action) {
+    if (!action) return 'bg-gray-500';
+    
+    if (action.toLowerCase().includes('login')) {
+        return 'bg-blue-500';
+    } else if (action.toLowerCase().includes('blood')) {
+        return 'bg-red-500';
+    } else if (action.toLowerCase().includes('profile') || action.toLowerCase().includes('update')) {
+        return 'bg-green-500';
+    } else {
+        return 'bg-gray-500';
+    }
+}
+
+// And this one for background colors
+function getActionBgColor(action) {
+    if (!action) return 'bg-gray-100';
+    
+    if (action.toLowerCase().includes('login')) {
+        return 'bg-blue-50';
+    } else if (action.toLowerCase().includes('blood')) {
+        return 'bg-red-50';
+    } else if (action.toLowerCase().includes('profile') || action.toLowerCase().includes('update')) {
+        return 'bg-green-50';
+    } else {
+        return 'bg-gray-100';
+    }
+}
+  async function loadHospitalAuditLogs() {
+            const timeline = document.getElementById("hospitalActivityTimeline");
+            const table = document.getElementById("hospitalAuditTable");
+            const totalActivities = document.getElementById("totalActivities");
+            const todayLogins = document.getElementById("todayLogins");
+            const bloodRequestsToday = document.getElementById("bloodRequestsToday");
+            const activeHospitals = document.getElementById("activeHospitalsCount");
+
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/hospital-audit-logs/`);
+                const data = await res.json();
+
+                if (!data.logs || data.logs.length === 0) {
+                    timeline.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="ri-history-line text-4xl mb-3"></i>
+                            <p>No activity logs found</p>
+                        </div>
+                    `;
+                    table.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                No detailed logs available
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Calculate summary stats
+                const today = new Date().toDateString();
+                const todayLogs = data.logs.filter(log => 
+                    new Date(log.time).toDateString() === today
+                );
+                
+                totalActivities.textContent = data.logs.length;
+                todayLogins.textContent = todayLogs.filter(log => 
+                    log.action.includes('login')
+                ).length;
+                bloodRequestsToday.textContent = todayLogs.filter(log => 
+                    log.action.includes('blood')
+                ).length;
+                activeHospitals.textContent = data.active_hospitals || 0;
+
+                // Populate timeline
+                timeline.innerHTML = '';
+                data.logs.slice(0, 10).forEach((log, index) => {
+                    const time = new Date(log.time);
+                    const timeStr = time.toLocaleTimeString();
+                    const dateStr = time.toLocaleDateString();
+                    
+                    let icon = getActionIcon(log.action);
+let color = getActionColor(log.action);
+let bgColor = getActionBgColor(log.action);
+                    timeline.innerHTML += `
+                        <div class="timeline-item activity-card">
+                            <div class="timeline-dot ${color}"></div>
+                            <div class="flex items-start space-x-3">
+                                <div class="w-8 h-8 ${bgColor} rounded-full flex items-center justify-center">
+                                    <i class="${icon} text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <h5 class="font-semibold text-gray-900">${log.hospital}</h5>
+                                        <span class="text-xs text-gray-500" title="${dateStr}">${timeStr}</span>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mt-1">
+                                        <span class="font-medium">${log.action}:</span> ${log.description}
+                                    </p>
+                                    <div class="flex items-center mt-2 space-x-2">
+                                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                            <i class="ri-map-pin-line mr-1"></i> ${log.ip_address || 'Unknown'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                // Populate detailed table
+                table.innerHTML = '';
+                data.logs.forEach(log => {
+                    const time = new Date(log.time).toLocaleString();
+                    table.innerHTML += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium">${log.hospital}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 text-xs rounded-full ${getActionBadgeClass(log.action)}">
+                                    ${log.action}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-700">${log.description}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">${log.ip_address || '-'}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">${time}</td>
+                        </tr>
+                    `;
+                });
+
+            } catch (error) {
+                console.error("Failed to load hospital logs", error);
+                timeline.innerHTML = `
+                    <div class="text-center py-8 text-red-600">
+                        <i class="ri-error-warning-line text-4xl mb-3"></i>
+                        <p>Failed to load activity logs</p>
+                    </div>
+                `;
+                table.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-8 text-center text-red-600">
+                            Failed to load detailed logs
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        async function markAllRead(){
+
+    await fetch(`${API_BASE}/api/admin/notifications/mark-all-read/`,{
+        method:"POST"
+    });
+
+    loadNotifications();
+}
+async function loadUsers(){
+
+const body = document.getElementById("usersTableBody");
+
+body.innerHTML = `
+<tr>
+<td colspan="7" class="px-6 py-8 text-center">
+Loading users...
+</td>
+</tr>`;
+
+const res = await fetch(`${API_BASE}/api/admin/users/`);
+const data = await res.json();
+
+body.innerHTML = "";
+
+data.forEach(u => {
+
+body.innerHTML += `
+<tr class="hover:bg-gray-50">
+
+<td class="px-6 py-4 font-medium">${u.name}</td>
+<td class="px-6 py-4">${u.blood_type}</td>
+<td class="px-6 py-4">${u.district}</td>
+<td class="px-6 py-4">${u.total_donations}</td>
+<td class="px-6 py-4">${u.total_requests}</td>
+
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+${u.availability}
+</span>
+</td>
+
+<td class="px-6 py-4">
+<button onclick="viewUser(${u.id})"
+class="px-3 py-1 bg-blue-100 text-blue-700 rounded">
+View
+</button>
+</td>
+
+</tr>
+`;
+
+});
+
+}
+async function viewUser(id) {
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/users/${id}/`);
+        const data = await res.json();
+
+        // Show modal with loading state first
+        const modal = document.getElementById("userDetailModal");
+        const body = document.getElementById("userDetailBody");
+        
+        // Keep loading state visible
+        modal.classList.remove("hidden");
+
+        // Format date function
+        const formatDate = (dateStr) => {
+            if (!dateStr) return 'Never';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        };
+
+        // Get eligibility badge color
+        const getEligibilityBadge = (status) => {
+            status = status?.toLowerCase() || '';
+            if (status.includes('eligible')) {
+                return 'bg-green-100 text-green-700 border-green-200';
+            } else if (status.includes('not eligible') || status.includes('ineligible')) {
+                return 'bg-red-100 text-red-700 border-red-200';
+            } else {
+                return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+            }
+        };
+
+        // Get status badge color
+        const getStatusBadge = (status) => {
+            status = status?.toLowerCase() || '';
+            if (status === 'approved') return 'bg-green-100 text-green-700';
+            if (status === 'pending') return 'bg-yellow-100 text-yellow-700';
+            if (status === 'rejected') return 'bg-red-100 text-red-700';
+            if (status === 'completed') return 'bg-blue-100 text-blue-700';
+            return 'bg-gray-100 text-gray-700';
+        };
+
+        body.innerHTML = `
+            <div class="space-y-6 pb-2">
+                <!-- User Header Card -->
+                <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-5 border border-red-100">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                                <span class="text-2xl font-bold">${data.name ? data.name.charAt(0).toUpperCase() : 'U'}</span>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">${data.name || 'Unknown User'}</h3>
+                                <p class="text-gray-600 flex items-center mt-1">
+                                    <i class="ri-mail-line mr-2 text-red-400"></i>
+                                    ${data.email || 'No email provided'}
+                                </p>
+                                <p class="text-sm text-gray-500 flex items-center mt-1">
+                                    <i class="ri-calendar-line mr-2 text-red-400"></i>
+                                    Joined: ${formatDate(data.created_on)}
+                                </p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 bg-white text-red-600 rounded-full text-xs font-medium border border-red-200 shadow-sm whitespace-nowrap">
+                            ID: ${id}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Donor Information Card -->
+                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                    <div class="bg-gray-50 px-5 py-3 border-b border-gray-200">
+                        <h4 class="font-semibold text-gray-900 flex items-center">
+                            <i class="ri-user-heart-line text-red-500 mr-2"></i>
+                            Donor Information
+                        </h4>
+                    </div>
+                    <div class="p-5">
+                        ${data.donor ? `
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                <div class="bg-red-50 rounded-lg p-3">
+                                    <p class="text-xs text-red-600 font-medium mb-1">Blood Type</p>
+                                    <p class="text-lg font-bold text-gray-900">${data.donor.blood_type || 'Not specified'}</p>
+                                </div>
+                                <div class="bg-blue-50 rounded-lg p-3">
+                                    <p class="text-xs text-blue-600 font-medium mb-1">Phone</p>
+                                    <p class="text-lg font-bold text-gray-900">${data.donor.phone || '-'}</p>
+                                </div>
+                                <div class="bg-green-50 rounded-lg p-3">
+                                    <p class="text-xs text-green-600 font-medium mb-1">City</p>
+                                    <p class="text-lg font-bold text-gray-900">${data.donor.city || '-'}</p>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="text-center py-6">
+                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="ri-user-unfollow-line text-2xl text-gray-400"></i>
+                                </div>
+                                <p class="text-gray-600">Not registered as a donor</p>
+                            </div>
+                        `}
+                    </div>
+                </div>
+
+                <!-- Donation Status Card -->
+                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                    <div class="bg-gray-50 px-5 py-3 border-b border-gray-200">
+                        <h4 class="font-semibold text-gray-900 flex items-center">
+                            <i class="ri-heart-pulse-line text-red-500 mr-2"></i>
+                            Donation Status
+                        </h4>
+                    </div>
+                    <div class="p-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-2">Last Donation</p>
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <i class="ri-calendar-check-line text-purple-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900">${formatDate(data.last_donation_date)}</p>
+                                        <p class="text-xs text-gray-500">${data.last_donation_date ? 'Last donation date' : 'No donations yet'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600 mb-2">Eligibility Status</p>
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 ${data.eligibility_status?.toLowerCase().includes('eligible') ? 'bg-green-100' : 'bg-yellow-100'} rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                        <i class="ri-checkbox-circle-line ${data.eligibility_status?.toLowerCase().includes('eligible') ? 'text-green-600' : 'text-yellow-600'}"></i>
+                                    </div>
+                                    <div>
+                                        <span class="px-3 py-1 rounded-full text-xs font-medium border ${getEligibilityBadge(data.eligibility_status)}">
+                                            ${data.eligibility_status || 'Unknown'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Donation History Card -->
+                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                    <div class="bg-gray-50 px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+                        <h4 class="font-semibold text-gray-900 flex items-center">
+                            <i class="ri-history-line text-red-500 mr-2"></i>
+                            Donation History
+                        </h4>
+                        <span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-medium">
+                            ${data.donation_history?.length || 0} donations
+                        </span>
+                    </div>
+                    <div class="p-5">
+                        ${!data.donation_history || data.donation_history.length === 0 ? `
+                            <div class="text-center py-8">
+                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="ri-inbox-line text-2xl text-gray-400"></i>
+                                </div>
+                                <p class="text-gray-600">No donation history available</p>
+                                <p class="text-xs text-gray-400 mt-1">This user hasn't made any donations yet</p>
+                            </div>
+                        ` : `
+                            <div class="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                ${data.donation_history.map(d => `
+                                    <div class="border border-gray-100 rounded-lg p-4 hover:bg-red-50 transition-colors">
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                                    <i class="ri-heart-pulse-line text-red-600 text-sm"></i>
+                                                </div>
+                                                <span class="font-semibold text-gray-900">${d.blood_type || 'Unknown'}</span>
+                                            </div>
+                                            <span class="text-sm text-gray-500">
+                                                <i class="ri-time-line mr-1"></i>${formatDate(d.date)}
+                                            </span>
+                                        </div>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 text-sm">
+                                            <div>
+                                                <p class="text-gray-500">Hospital</p>
+                                                <p class="font-medium text-gray-900">${d.hospital || 'Unknown'}</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-gray-500">Units</p>
+                                                <p class="font-medium text-gray-900">${d.units || 1} unit(s)</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join("")}
+                            </div>
+                        `}
+                    </div>
+                </div>
+
+                <!-- Blood Requests Card -->
+                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                    <div class="bg-gray-50 px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+                        <h4 class="font-semibold text-gray-900 flex items-center">
+                            <i class="ri-heart-pulse-line text-red-500 mr-2"></i>
+                            Blood Requests
+                        </h4>
+                        <span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-medium">
+                            ${data.requests?.length || 0} requests
+                        </span>
+                    </div>
+                    <div class="p-5">
+                        ${!data.requests || data.requests.length === 0 ? `
+                            <div class="text-center py-8">
+                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="ri-inbox-line text-2xl text-gray-400"></i>
+                                </div>
+                                <p class="text-gray-600">No blood requests found</p>
+                                <p class="text-xs text-gray-400 mt-1">This user hasn't made any blood requests</p>
+                            </div>
+                        ` : `
+                            <div class="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                ${data.requests.map(r => `
+                                    <div class="border border-gray-100 rounded-lg p-4 hover:bg-red-50 transition-colors">
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-8 h-8 ${r.status === 'approved' ? 'bg-green-100' : r.status === 'pending' ? 'bg-yellow-100' : 'bg-red-100'} rounded-full flex items-center justify-center flex-shrink-0">
+                                                    <i class="${r.status === 'approved' ? 'ri-check-line text-green-600' : r.status === 'pending' ? 'ri-time-line text-yellow-600' : 'ri-close-line text-red-600'}"></i>
+                                                </div>
+                                                <span class="font-semibold text-gray-900">${r.blood_type || 'Unknown'}</span>
+                                            </div>
+                                            <span class="px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(r.status)} self-start sm:self-auto">
+                                                ${r.status || 'Unknown'}
+                                            </span>
+                                        </div>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 text-sm">
+                                            <div>
+                                                <p class="text-gray-500">Hospital</p>
+                                                <p class="font-medium text-gray-900">${r.hospital || 'Unknown'}</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-gray-500">Date</p>
+                                                <p class="font-medium text-gray-900">${formatDate(r.date)}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join("")}
+                            </div>
+                        `}
+                    </div>
+                </div>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error('Error loading user details:', error);
+        document.getElementById("userDetailBody").innerHTML = `
+            <div class="text-center py-12">
+                <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="ri-error-warning-line text-3xl text-red-500"></i>
+                </div>
+                <h4 class="text-lg font-semibold text-gray-900 mb-2">Failed to Load User Data</h4>
+                <p class="text-gray-600 mb-6">Please check your connection and try again</p>
+                <button onclick="viewUser(${id})" class="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium inline-flex items-center gap-2">
+                    <i class="ri-refresh-line"></i> Retry
+                </button>
+            </div>
+        `;
+    }
+}
+function closeUserModal(){
+document.getElementById("userDetailModal").classList.add("hidden");
+}
+async function loadInventory() {
+    const body = document.getElementById("inventoryTableBody");
+    const movementBody = document.getElementById("movementTableBody");
+    
+    body.innerHTML = `
+        <tr>
+            <td colspan="6" class="px-6 py-12 text-center">
+                <div class="flex flex-col items-center justify-center space-y-3">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+                    <p class="text-gray-500">Loading inventory...</p>
+                </div>
+            </td>
+        </tr>
+    `;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/blood-inventory/`);
+        const data = await res.json();
+        
+        // Update summary stats
+        updateInventorySummary(data);
+        
+        // Initialize chart
+        initializeInventoryChart(data);
+        
+        // Load movements
+        await loadStockMovements();
+        
+        body.innerHTML = "";
+        
+        if (data.length === 0) {
+            body.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center">
+                        <div class="flex flex-col items-center justify-center space-y-3">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                                <i class="ri-drop-line text-2xl text-gray-400"></i>
+                            </div>
+                            <h4 class="text-lg font-semibold text-gray-700">No Inventory Data</h4>
+                            <p class="text-gray-500">Click "Add Stock" to start tracking blood inventory</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        data.forEach(stock => {
+            const status = getStockStatus(stock.units, stock.minimum_required);
+            const statusBadge = getStatusBadgeHTML(status);
+            const statusColor = getStatusColor(status);
+            
+            body.innerHTML += `
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                <span class="font-bold text-red-600">${stock.blood_type}</span>
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900">Type ${stock.blood_type}</p>
+                                <p class="text-xs text-gray-500">Blood Group</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        ${statusBadge}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-2xl font-bold ${statusColor}">${stock.units}</span>
+                            <span class="text-sm text-gray-500">units</span>
+                        </div>
+                        <div class="w-24 h-1.5 bg-gray-200 rounded-full mt-1">
+                            <div class="h-1.5 rounded-full ${getProgressBarColor(status)}" 
+                                 style="width: ${Math.min((stock.units / (stock.minimum_required * 2)) * 100, 100)}%"></div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="font-medium">${stock.minimum_required}</span>
+                        <span class="text-sm text-gray-500"> units</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <p class="text-gray-900">${formatDate(stock.last_updated)}</p>
+                        <p class="text-xs text-gray-500">${getTimeAgo(stock.last_updated)}</p>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center space-x-2">
+                            <button onclick="addUnits('${stock.blood_type}')"
+                                    class="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 flex items-center space-x-1">
+                                <i class="ri-add-line"></i>
+                                <span>Add</span>
+                            </button>
+                            <button onclick="removeUnits('${stock.blood_type}')"
+                                    class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 flex items-center space-x-1">
+                                <i class="ri-subtract-line"></i>
+                                <span>Remove</span>
+                            </button>
+                            <button onclick="showHistory('${stock.blood_type}')"
+                                    class="p-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">
+                                <i class="ri-history-line"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+
+    } catch (error) {
+        console.error('Error loading inventory:', error);
+        body.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-12 text-center">
+                    <div class="flex flex-col items-center justify-center space-y-3">
+                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                            <i class="ri-error-warning-line text-2xl text-red-600"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-700">Failed to Load Inventory</h4>
+                        <p class="text-gray-500">Please check your connection and try again</p>
+                        <button onclick="loadInventory()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                            <i class="ri-refresh-line mr-1"></i> Retry
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function getStockStatus(units, minimum) {
+    if (units <= 0) return 'critical';
+    if (units < minimum) return 'low';
+    if (units < minimum * 1.5) return 'moderate';
+    return 'optimal';
+}
+
+function getStatusColor(status) {
+    switch(status) {
+        case 'critical': return 'text-red-600';
+        case 'low': return 'text-yellow-600';
+        case 'moderate': return 'text-blue-600';
+        case 'optimal': return 'text-green-600';
+        default: return 'text-gray-600';
+    }
+}
+
+function getProgressBarColor(status) {
+    switch(status) {
+        case 'critical': return 'bg-red-500';
+        case 'low': return 'bg-yellow-500';
+        case 'moderate': return 'bg-blue-500';
+        case 'optimal': return 'bg-green-500';
+        default: return 'bg-gray-500';
+    }
+}
+
+function getStatusBadgeHTML(status) {
+    const badges = {
+        critical: '<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">Critical</span>',
+        low: '<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">Low Stock</span>',
+        moderate: '<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">Moderate</span>',
+        optimal: '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Optimal</span>'
+    };
+    return badges[status] || badges.moderate;
+}
+
+function updateInventorySummary(data) {
+    const totalUnits = data.reduce((sum, item) => sum + item.units, 0);
+    const lowStock = data.filter(item => item.units < item.minimum_required).length;
+    const optimalStock = data.filter(item => item.units >= item.minimum_required * 1.5).length;
+    const lastUpdated = data.length > 0 ? 
+        new Date(Math.max(...data.map(d => new Date(d.last_updated)))).toLocaleDateString() : '-';
+
+    document.getElementById('totalUnits').textContent = totalUnits;
+    document.getElementById('lowStockCount').textContent = lowStock;
+    document.getElementById('optimalStockCount').textContent = optimalStock;
+    document.getElementById('lastUpdated').textContent = lastUpdated;
+}
+
+function initializeInventoryChart(data) {
+    const ctx = document.getElementById('inventoryChart').getContext('2d');
+    
+    if (inventoryChart) {
+        inventoryChart.destroy();
+    }
+    
+    const bloodTypes = data.map(d => d.blood_type);
+    const units = data.map(d => d.units);
+    const minRequired = data.map(d => d.minimum_required);
+    
+    inventoryChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: bloodTypes,
+            datasets: [
+                {
+                    label: 'Current Units',
+                    data: units,
+                    backgroundColor: '#EF4444',
+                    borderRadius: 6
+                },
+                {
+                    label: 'Minimum Required',
+                    data: minRequired,
+                    backgroundColor: '#9CA3AF',
+                    borderRadius: 6,
+                    type: 'line',
+                    borderColor: '#4B5563',
+                    borderWidth: 2,
+                    pointRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Units'
+                    }
+                }
+            }
+        }
+    });
+}
+
+async function loadStockMovements() {
+    const movementBody = document.getElementById("movementTableBody");
+    
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/stock-movements/?limit=5`);
+        const data = await res.json();
+        
+        movementBody.innerHTML = "";
+        
+        if (data.length === 0) {
+            movementBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                        No recent movements
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        data.forEach(movement => {
+            const typeClass = movement.type === 'add' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+            const typeIcon = movement.type === 'add' ? 'ri-add-line' : 'ri-subtract-line';
+            
+            movementBody.innerHTML += `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 text-gray-600">${formatDate(movement.date)}</td>
+                    <td class="px-6 py-4 font-medium">${movement.blood_type}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${typeClass}">
+                            <i class="${typeIcon} mr-1"></i>
+                            ${movement.type === 'add' ? 'Added' : 'Removed'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 font-medium">${movement.units} units</td>
+                    <td class="px-6 py-4 text-gray-600">${movement.updated_by || 'System'}</td>
+                    <td class="px-6 py-4 text-gray-500">${movement.notes || '-'}</td>
+                </tr>
+            `;
+        });
+        
+    } catch (error) {
+        console.error('Error loading movements:', error);
+    }
+}
+
+// Modal Functions
+function showAddStockModal() {
+    document.getElementById('addStockModal').classList.remove('hidden');
+}
+
+function closeAddStockModal() {
+    document.getElementById('addStockModal').classList.add('hidden');
+    // Clear form
+    document.getElementById('addBloodType').value = '';
+    document.getElementById('addUnits').value = '';
+    document.getElementById('addNotes').value = '';
+    document.getElementById('addExpiry').value = '';
+}
+
+function showBulkAddModal() {
+    document.getElementById('bulkAddModal').classList.remove('hidden');
+}
+
+function closeBulkAddModal() {
+    document.getElementById('bulkAddModal').classList.add('hidden');
+    // Reset all bulk inputs
+    document.querySelectorAll('#bulkAddModal input[type="number"]').forEach(input => input.value = 0);
+    document.getElementById('bulkNotes').value = '';
+}
+
+function showStockAdjustModal() {
+    document.getElementById('adjustStockModal').classList.remove('hidden');
+}
+
+function closeAdjustStockModal() {
+    document.getElementById('adjustStockModal').classList.add('hidden');
+    // Clear form
+    document.getElementById('adjustBloodType').value = '';
+    document.getElementById('adjustAction').value = 'add';
+    document.getElementById('adjustUnits').value = '';
+    document.getElementById('adjustReason').value = '';
+}
+
+async function submitAddStock() {
+    const bloodType = document.getElementById('addBloodType').value;
+    const units = document.getElementById('addUnits').value;
+    const notes = document.getElementById('addNotes').value;
+    const expiry = document.getElementById('addExpiry').value;
+    
+    if (!bloodType || !units) {
+        showToast('error', 'Validation Error', 'Please fill in all required fields');
+        return;
+    }
+    
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/inventory/add/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                blood_type: bloodType,
+                units: parseInt(units),
+                notes: notes,
+                expiry_date: expiry
+            })
+        });
+        
+        if (res.ok) {
+            showToast('success', 'Stock Added', `Successfully added ${units} units of ${bloodType}`);
+            closeAddStockModal();
+            loadInventory();
+        } else {
+            const data = await res.json();
+            showToast('error', 'Failed', data.message || 'Could not add stock');
+        }
+    } catch (error) {
+        showToast('error', 'Network Error', 'Failed to connect to server');
+    }
+}
+
+async function submitBulkAdd() {
+    const stockData = {
+        'A+': document.getElementById('bulk_A_plus').value,
+        'A-': document.getElementById('bulk_A_minus').value,
+        'B+': document.getElementById('bulk_B_plus').value,
+        'B-': document.getElementById('bulk_B_minus').value,
+        'AB+': document.getElementById('bulk_AB_plus').value,
+        'AB-': document.getElementById('bulk_AB_minus').value,
+        'O+': document.getElementById('bulk_O_plus').value,
+        'O-': document.getElementById('bulk_O_minus').value
+    };
+    
+    const notes = document.getElementById('bulkNotes').value;
+    
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/inventory/bulk-add/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                stock: stockData,
+                notes: notes
+            })
+        });
+        
+        if (res.ok) {
+            showToast('success', 'Bulk Add Complete', 'All stock has been updated');
+            closeBulkAddModal();
+            loadInventory();
+        }
+    } catch (error) {
+        showToast('error', 'Network Error', 'Failed to connect to server');
+    }
+}
+
+async function addUnits(bloodType) {
+    const units = prompt(`Enter units to add for ${bloodType}:`);
+    if (!units || isNaN(units) || parseInt(units) <= 0) return;
+    
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/inventory/add/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                blood_type: bloodType,
+                units: parseInt(units)
+            })
+        });
+        
+        if (res.ok) {
+            showToast('success', 'Stock Added', `Added ${units} units of ${bloodType}`);
+            loadInventory();
+        }
+    } catch (error) {
+        showToast('error', 'Network Error', 'Failed to connect to server');
+    }
+}
+
+async function removeUnits(bloodType) {
+    const units = prompt(`Enter units to remove for ${bloodType}:`);
+    if (!units || isNaN(units) || parseInt(units) <= 0) return;
+    
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/inventory/remove/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                blood_type: bloodType,
+                units: parseInt(units)
+            })
+        });
+        
+        if (res.ok) {
+            showToast('success', 'Stock Removed', `Removed ${units} units of ${bloodType}`);
+            loadInventory();
+        } else {
+            const data = await res.json();
+            showToast('error', 'Failed', data.message || 'Insufficient stock');
+        }
+    } catch (error) {
+        showToast('error', 'Network Error', 'Failed to connect to server');
+    }
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function getTimeAgo(dateStr) {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    if (diffInSeconds < 60) return 'just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    return date.toLocaleDateString();
+}
+
+function showHistory(bloodType) {
+    // Implement history modal
+    showToast('info', 'History', `Viewing history for ${bloodType}`);
+}
+
+function exportInventoryReport() {
+    showToast('info', 'Export', 'Generating inventory report...');
+}
+
+function showInventoryReport() {
+    showToast('info', 'Report', 'Opening inventory report...');
+}
+
+function showAlertSettings() {
+    showToast('info', 'Settings', 'Opening alert settings...');
+}
+
+function viewAllMovements() {
+    showToast('info', 'Movements', 'Viewing all stock movements');
+}
     </script>
     <div id="hospitalDetailModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
     <div class="bg-white rounded-xl w-full max-w-xl p-6">
@@ -1883,6 +3899,46 @@ async function loadRequestStatusChart() {
         </div>
     </div>
 </div>
+<!-- User Detail Modal - FIXED VERSION with proper scrolling -->
+<div id="userDetailModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl">
+        <!-- Modal Header - Fixed -->
+        <div class="bg-gradient-to-r from-red-600 to-red-500 px-6 py-4 flex items-center justify-between rounded-t-xl flex-shrink-0">
+            <h3 class="text-xl font-semibold text-white flex items-center">
+                <i class="ri-user-line mr-2"></i>
+                User Details
+            </h3>
+            <button onclick="closeUserModal()" 
+                    class="text-white/80 hover:text-white transition-colors p-1 hover:bg-white/20 rounded-lg">
+                <i class="ri-close-line text-2xl"></i>
+            </button>
+        </div>
+        
+        <!-- Modal Body - Scrollable (THIS IS THE KEY PART) -->
+        <div id="userDetailBody" class="overflow-y-auto p-6" style="max-height: calc(90vh - 130px);">
+            <!-- Content will be populated here -->
+            <div class="text-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+                <p class="mt-4 text-gray-600">Loading user details...</p>
+            </div>
+        </div>
+        
+        <!-- Modal Footer - Fixed -->
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl flex justify-end gap-3 flex-shrink-0">
+            <button onclick="closeUserModal()"
+                    class="px-5 py-2.5 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 hover:border-gray-400 transition-all font-medium flex items-center gap-2 shadow-sm">
+                <i class="ri-close-line text-lg"></i>
+                Cancel
+            </button>
+            <button onclick="window.print()"
+                    class="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium flex items-center gap-2 shadow-sm">
+                <i class="ri-printer-line text-lg"></i>
+                Print
+            </button>
+        </div>
+    </div>
+</div>
+
 
 </body>
 </html>

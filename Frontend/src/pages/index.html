@@ -537,6 +537,38 @@
     </div>
   </div>
 </section>
+<!-- ================= URGENT BLOOD REQUESTS ================= -->
+<section id="bloodRequests" class="py-24 bg-white">
+  <div class="container mx-auto px-6">
+
+    <div class="text-center mb-14">
+      <div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4">
+        <span class="text-[#B91C1C] font-semibold">Emergency</span>
+      </div>
+
+      <h3 class="text-5xl font-bold gradient-text mb-4">
+        Urgent Blood Requests
+      </h3>
+
+      <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+        These patients urgently need blood. If you are eligible,
+        please help save a life.
+      </p>
+    </div>
+
+    <!-- Requests Container -->
+    <div id="bloodRequestContainer"
+         class="grid md:grid-cols-3 gap-8">
+         
+      <!-- Requests will load here -->
+      <p class="text-center col-span-3 text-gray-500">
+        Loading requests...
+      </p>
+
+    </div>
+
+  </div>
+</section>
   <!-- Donate Section -->
   <section id="donate" class="py-24 bg-gradient-to-r from-[#B91C1C] to-[#991B1B] relative overflow-hidden">
     <!-- Background Pattern -->
@@ -776,6 +808,69 @@ async function verifyAdminKey(){
       }
     }
   });
+  async function loadBloodRequests() {
+  try {
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/blood_requests/api/public-requests/"
+    );
+
+    const data = await response.json();
+
+    const container = document.getElementById("bloodRequestContainer");
+    container.innerHTML = "";
+
+    if (!data.length) {
+      container.innerHTML =
+        "<p class='text-center col-span-3 text-gray-500'>No urgent requests right now.</p>";
+      return;
+    }
+
+    data.forEach(req => {
+
+      const card = `
+        <div class="bg-[#FFF5F5] rounded-3xl p-6 shadow-lg border-l-4 border-[#B91C1C]">
+
+          <div class="flex justify-between items-center mb-3">
+            <h4 class="text-xl font-bold text-gray-800">
+              ${req.patient_name}
+            </h4>
+
+            <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm">
+              ${req.blood_type}
+            </span>
+          </div>
+
+          <p class="text-gray-600 mb-2">
+            <strong>Units Needed:</strong> ${req.units}
+          </p>
+
+          <p class="text-gray-600 mb-2">
+            <strong>Hospital:</strong> ${req.hospital_name}
+          </p>
+
+          <p class="text-gray-600 mb-4">
+            <strong>Urgency:</strong> ${req.urgency}
+          </p>
+
+          <a href="login-signup.html"
+             class="block text-center bg-[#B91C1C] text-white py-2 rounded-lg hover:bg-[#991B1B] transition">
+            Donate Now
+          </a>
+
+        </div>
+      `;
+
+      container.innerHTML += card;
+
+    });
+
+  } catch (error) {
+    console.error("Failed to load requests", error);
+  }
+}
+
+loadBloodRequests();
   </script>
 <div id="adminModal"
 class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[999]">

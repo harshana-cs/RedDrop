@@ -186,3 +186,27 @@ def stock_history(request):
         })
 
     return Response(data, status=200)
+
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def blood_bank_stock(request):
+
+    hospital = get_hospital_from_token(request)
+
+    if not hospital:
+        return Response({"detail": "Unauthorized"}, status=401)
+
+    stocks = BloodStock.objects.filter(hospital__isnull=True)
+
+    data = [
+        {
+            "blood_type": s.blood_type,
+            "units": s.units,
+            "minimum_required": s.minimum_required,
+            "last_updated": s.last_updated
+        }
+        for s in stocks
+    ]
+
+    return Response(data)

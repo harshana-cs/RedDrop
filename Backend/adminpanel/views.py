@@ -15,6 +15,13 @@ from blood_requests.models import BloodRequest
 from hospital.models import Hospital, HospitalProfile, HospitalApplication
 from register_donor.models import Donor
 from loginsignup.models import Patient
+from loginsignup.models import Patient
+from register_donor.models import Donor
+# from blood_request.models import BloodRequest, HospitalLocation
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from blood_stock.models import BloodStock, BloodStockHistory
+from django.db import transaction
 
 
 
@@ -63,7 +70,7 @@ def admin_pending_blood_requests(request):
             # ✅ Name from Patient model (NOT User)
             "patient_name": (
                 f"{patient.fullname}"
-                if patient else "Unknown"
+                if patient else "By Hospital"
             ),
 
             "blood_type": r.blood_type,
@@ -123,8 +130,10 @@ from django.contrib.auth.models import User
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def admin_approve_blood_request(request, request_id):
+
     try:
         blood_request = BloodRequest.objects.get(id=request_id)
+
     except BloodRequest.DoesNotExist:
         return Response(
             {"success": False, "message": "Blood request not found"},
@@ -137,17 +146,24 @@ def admin_approve_blood_request(request, request_id):
             status=400
         )
 
-    # ✅ ONLY approve — no donor, no OTP
+    # ✅ Approve request
     blood_request.status = "approved"
     blood_request.patient_confirmed = False
     blood_request.fulfilled = False
     blood_request.save()
 
+    # 🔔 SEND NOTIFICATION TO HOSPITAL
+    Notification.objects.create(
+        title="Blood Request Approved",
+        message=f"Your request for {blood_request.units_required} units of {blood_request.blood_type} has been approved. Please find compatible donors.",
+        type="blood_request",
+        hospital=blood_request.created_by_hospital   # hospital receiving notification
+    )
+
     return Response({
         "success": True,
         "message": "Blood request approved successfully"
     })
-
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -624,7 +640,11 @@ from django.http import JsonResponse
 from .models import Notification
 
 def get_notifications(request):
-    notifications = Notification.objects.order_by("-created_at")[:10]
+
+    # Only admin notifications
+    notifications = Notification.objects.filter(
+        hospital__isnull=True
+    ).order_by("-created_at")[:10]
 
     data = [
         {
@@ -638,13 +658,32 @@ def get_notifications(request):
         for n in notifications
     ]
 
-    unread = Notification.objects.filter(is_read=False).count()
+    unread = Notification.objects.filter(
+        hospital__isnull=True,
+        is_read=False
+    ).count()
 
     return JsonResponse({
         "notifications": data,
         "unread": unread
     })
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404
 
+@csrf_exempt
+def mark_notification_read(request, notification_id):
+
+    if request.method == "POST":
+        notification = get_object_or_404(Notification, id=notification_id)
+
+        notification.is_read = True
+        notification.save()
+
+        return JsonResponse({
+            "success": True
+        })
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import HospitalAuditLog
@@ -669,3 +708,270 @@ def admin_hospital_audit_logs(request):
         })
 
     return Response({"logs": data})
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def admin_users(request):
+
+    users = Patient.objects.all()
+
+    data = []
+
+    for u in users:
+
+        donor = Donor.objects.filter(email=u.emailaddress).first()
+
+        requests_count = BloodRequest.objects.filter(patient=u).count()
+
+        donations_count = BloodRequest.objects.filter(
+            patient=u,
+            status="completed"
+        ).count()
+
+        data.append({
+            "id": u.id,
+            "name": u.fullname,
+            "email": u.emailaddress,
+            "blood_type": donor.blood_type if donor else None,
+            "total_requests": requests_count,
+            "total_donations": donations_count,
+            "availability": "Available" if donor else "Not Donor"
+        })
+
+    return Response(data)
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def admin_user_detail(request, user_id):
+
+    try:
+        user = Patient.objects.get(id=user_id)
+    except Patient.DoesNotExist:
+        return Response(
+            {"success": False, "message": "User not found"},
+            status=404
+        )
+
+    donor = Donor.objects.filter(email=user.emailaddress).first()
+
+    requests = BloodRequest.objects.filter(patient=user)
+
+    request_list = []
+    donation_history = []
+
+    for r in requests:
+
+        request_list.append({
+            "id": r.id,
+            "blood_type": r.blood_type,
+            "units": r.units_required,
+            "hospital": r.hospital_location.name if r.hospital_location else None,
+            "status": r.status,
+            "date": r.created_at.strftime("%Y-%m-%d")
+        })
+
+        # Completed donation
+        if r.status == "completed":
+            donation_history.append({
+                "blood_type": r.blood_type,
+                "hospital": r.hospital_location.name if r.hospital_location else None,
+                "date": r.donation_date.strftime("%Y-%m-%d") if r.donation_date else None
+            })
+
+    # Last donation date
+    last_donation = None
+    completed = requests.filter(status="completed").order_by("-donation_date").first()
+
+    if completed and completed.donation_date:
+        last_donation = completed.donation_date
+
+    # Eligibility check (90 days rule)
+    eligibility = "Eligible"
+
+    if last_donation:
+        days_since = (timezone.now() - last_donation).days
+        if days_since < 90:
+            eligibility = f"Not Eligible ({90 - days_since} days remaining)"
+
+    return Response({
+        "id": user.id,
+        "name": user.fullname,
+        "email": user.emailaddress,
+        "created_on": user.created_on.strftime("%Y-%m-%d"),
+
+        "donor": {
+            "blood_type": donor.blood_type if donor else None,
+            "phone": donor.phone_number if donor else None,
+            "city": donor.city if donor else None,
+            "approved": donor.is_approved if donor else False
+        },
+
+        "last_donation_date": (
+            last_donation.strftime("%Y-%m-%d") if last_donation else None
+        ),
+
+        "eligibility_status": eligibility,
+
+        "requests": request_list,
+
+        "donation_history": donation_history
+    })
+
+@api_view(["GET"])
+def admin_hospital_stock(request):
+
+    stocks = BloodStock.objects.filter(
+        hospital__isnull=False
+    ).select_related("hospital")
+
+    data = []
+
+    for s in stocks:
+
+        data.append({
+            "hospital": s.hospital.name,
+            "blood_type": s.blood_type,
+            "units": s.units,
+            "minimum_required": s.minimum_required,
+            "last_updated": s.last_updated
+        })
+
+    return Response(data)
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def admin_blood_inventory(request):
+
+    stocks = BloodStock.objects.filter(hospital__isnull=True)
+
+    data = []
+
+    for s in stocks:
+        data.append({
+            "blood_type": s.blood_type,
+            "units": s.units,
+            "minimum_required": s.minimum_required,
+            "last_updated": s.last_updated
+        })
+
+    return Response(data)
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def admin_add_inventory(request):
+
+    blood_type = request.data.get("blood_type")
+    units = int(request.data.get("units"))
+    expiry_date = request.data.get("expiry_date")
+
+    stock, created = BloodStock.objects.get_or_create(
+        hospital=None,
+        blood_type=blood_type
+    )
+
+    stock.units += units
+    stock.save()
+
+    BloodStockHistory.objects.create(
+        hospital=None,
+        blood_type=blood_type,
+        transaction_type="add",
+        units=units,
+        performed_by="Admin",
+        expiry_date=expiry_date,
+        new_balance=stock.units
+    )
+
+    return Response({"success": True})
+    return Response({"success": True})
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def admin_remove_inventory(request):
+
+    blood_type = request.data.get("blood_type")
+    units = int(request.data.get("units", 0))
+
+    try:
+        stock = BloodStock.objects.get(
+            hospital=None,
+            blood_type=blood_type
+        )
+    except BloodStock.DoesNotExist:
+        return Response({"message": "Stock not found"}, status=404)
+
+    if units > stock.units:
+        return Response({"message": "Insufficient stock"}, status=400)
+
+    with transaction.atomic():
+
+        stock.units -= units
+        stock.save()
+
+        BloodStockHistory.objects.create(
+            hospital=None,
+            blood_type=blood_type,
+            transaction_type="remove",
+            units=units,
+            reason="Admin removal",
+            performed_by="Admin",
+            new_balance=stock.units
+        )
+
+    return Response({"success": True})
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def admin_bulk_add_inventory(request):
+
+    stock_data = request.data.get("stock", {})
+    notes = request.data.get("notes")
+
+    for blood_type, units in stock_data.items():
+
+        units = int(units)
+
+        if units <= 0:
+            continue
+
+        stock, _ = BloodStock.objects.get_or_create(
+            hospital=None,
+            blood_type=blood_type,
+            defaults={"units": 0}
+        )
+
+        stock.units += units
+        stock.save()
+
+        BloodStockHistory.objects.create(
+            hospital=None,
+            blood_type=blood_type,
+            transaction_type="add",
+            units=units,
+            source=notes,
+            performed_by="Admin",
+            new_balance=stock.units
+        )
+
+    return Response({"success": True})
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def admin_stock_movements(request):
+
+    limit = int(request.GET.get("limit", 10))
+
+    history = BloodStockHistory.objects.filter(
+        hospital__isnull=True
+    ).order_by("-timestamp")[:limit]
+
+    data = []
+
+    for h in history:
+        data.append({
+            "date": h.timestamp,
+            "blood_type": h.blood_type,
+            "type": h.transaction_type,
+            "units": h.units,
+            "updated_by": h.performed_by,
+            "notes": h.source or h.reason
+        })
+
+    return Response(data)

@@ -1,7 +1,6 @@
 import requests
 
 def get_coordinates_from_osm(hospital_name, district):
-
     query = f"{hospital_name}, {district}, Nepal"
 
     url = "https://nominatim.openstreetmap.org/search"

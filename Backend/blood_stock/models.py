@@ -1,5 +1,6 @@
 from django.db import models
 from hospital.models import Hospital
+from django.utils import timezone
 
 class BloodStock(models.Model):
     BLOOD_TYPES = [
@@ -33,20 +34,49 @@ class BloodStock(models.Model):
         owner = "Blood Bank (Admin)" if self.hospital is None else self.hospital.name
         return f"{owner} - {self.blood_type}"
 class BloodStockHistory(models.Model):
+
     TRANSACTION_TYPES = [
         ("add", "Add"),
         ("remove", "Remove"),
     ]
 
-    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE)
+    hospital = models.ForeignKey(
+        Hospital,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
     blood_type = models.CharField(max_length=3)
-    transaction_type = models.CharField(max_length=6, choices=TRANSACTION_TYPES)
+
+    transaction_type = models.CharField(
+        max_length=6,
+        choices=TRANSACTION_TYPES
+    )
+
     units = models.PositiveIntegerField()
+
+    # where blood came from
     source = models.CharField(max_length=100, blank=True, null=True)
+
+    # why removed or adjusted
     reason = models.CharField(max_length=100, blank=True, null=True)
-    performed_by = models.CharField(max_length=100, default="Hospital")
+
+    performed_by = models.CharField(max_length=100, default="Admin")
+
     new_balance = models.PositiveIntegerField()
+
+    # expiry tracking
+    expiry_date = models.DateField(blank=True, null=True)
+
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    def is_expired(self):
+        
+        if self.expiry_date:
+            return self.expiry_date < timezone.now().date()
+        return False
+
     def __str__(self):
-        return f"{self.blood_type} {self.transaction_type} {self.units}"
+        owner = "Admin Blood Bank" if self.hospital is None else self.hospital.name
+        return f"{owner} - {self.blood_type} {self.transaction_type} {self.units}"

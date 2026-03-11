@@ -143,31 +143,77 @@ def hospital_login(request):
 # ======================================================
 # HOSPITAL PROFILE (JWT PROTECTED)
 # ======================================================
-@api_view(["GET"])
+@api_view(["GET", "PUT"])
 @authentication_classes([])
 @permission_classes([AllowAny])
 def hospital_profile(request):
+
     hospital = get_hospital_from_token(request)
     if not hospital:
         return Response({"detail": "Unauthorized"}, status=401)
-    HospitalAuditLog.objects.create(
-    hospital=hospital,
-    action="profile_view",
-    description=f"{hospital.name} viewed hospital profile"
-)
+
+    # Get the approved hospital application
+    application = HospitalApplication.objects.filter(
+        registration_number=hospital.profile.registration_number,
+        status="approved"
+    ).first()
+
     profile = hospital.profile
 
-    return Response({
-        "hospital_id": hospital.id,
-        "name": hospital.name,
-        "username": hospital.username,
-        "district": profile.district,
-        "contact_number": profile.contact_number,
-        "email": profile.email,
-        "registration_number": profile.registration_number,
-        "hospital_type": profile.hospital_type,
-        "bed_capacity": profile.bed_capacity,
-    })
+    # =========================
+    # GET PROFILE
+    # =========================
+    if request.method == "GET":
+
+        HospitalAuditLog.objects.create(
+            hospital=hospital,
+            action="profile_view",
+            description=f"{hospital.name} viewed hospital profile"
+        )
+
+        return Response({
+            "hospital_id": hospital.id,
+            "name": hospital.name,
+            "username": hospital.username,
+
+            # Registration data from HospitalApplication
+            "registration_number": application.registration_number if application else profile.registration_number,
+            "hospital_type": application.hospital_type if application else profile.hospital_type,
+            "bed_capacity": application.bed_capacity if application else profile.bed_capacity,
+            "email": application.email if application else profile.email,
+            "contact_number": application.phone if application else profile.contact_number,
+            "address": application.address if application else profile.address,
+        })
+
+    # =========================
+    # UPDATE PROFILE
+    # =========================
+    if request.method == "PUT":
+
+        profile.contact_number = request.data.get(
+            "contact_number", profile.contact_number
+        )
+
+        profile.email = request.data.get(
+            "email", profile.email
+        )
+
+        profile.address = request.data.get(
+            "address", profile.address
+        )
+
+        profile.save()
+
+        HospitalAuditLog.objects.create(
+            hospital=hospital,
+            action="profile_update",
+            description=f"{hospital.name} updated hospital profile"
+        )
+
+        return Response({
+            "success": True,
+            "message": "Profile updated successfully"
+        })
 
 
 # ======================================================
@@ -407,3 +453,31 @@ def hospital_create_blood_request(request):
             {"success": False, "error": str(e)},
             status=400
         )
+    
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def hospital_notifications(request):
+
+    hospital = get_hospital_from_token(request)
+
+    if not hospital:
+        return Response({"detail": "Unauthorized"}, status=401)
+
+    notifications = Notification.objects.filter(
+        hospital=hospital
+    ).order_by("-created_at")
+
+    data = []
+
+    for n in notifications:
+        data.append({
+            "id": n.id,
+            "title": n.title,
+            "message": n.message,
+            "type": n.type,
+            "is_read": n.is_read,
+            "created_at": n.created_at
+        })
+
+    return Response(data)

@@ -182,7 +182,7 @@ def api_donor_confirm(request):
     # ✅ CREATE DONATION HISTORY
     Donation.objects.create(
         donor=donor,
-        hospital=blood_request.hospital,
+        hospital=blood_request.hospital_location,
         blood_type=blood_request.blood_type,
         date=timezone.now().date(),
         status="verified",

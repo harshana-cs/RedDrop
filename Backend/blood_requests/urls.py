@@ -51,5 +51,6 @@ urlpatterns = [
     "api/compatible-donors/",
     views.api_compatible_donors_for_patient,
     name="api_compatible_donors_for_patient"
-)
+),
+path("api/public-requests/", views.public_blood_requests, name="api_public_blood_requests")
 ]

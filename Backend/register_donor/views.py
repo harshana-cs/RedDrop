@@ -8,6 +8,7 @@ from .models import Donor
 from django.contrib.auth import login
 from blood_requests.models import Patient
 from adminpanel.models import Notification
+from django.utils import timezone
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def register_donor(request):
@@ -53,6 +54,16 @@ def register_donor(request):
         donor.city = data.get("city")
         donor.state = data.get("state")
         donor.zip_code = data.get("zip_code")
+        
+        
+       # ================= LOCATION =================
+        latitude = data.get("latitude")
+        longitude = data.get("longitude")
+
+        if latitude and longitude:
+            donor.latitude = float(latitude)
+            donor.longitude = float(longitude)
+            donor.location_updated_at = timezone.now()
 
         # ================= EMERGENCY CONTACT =================
         donor.emergency_contact_name = data.get("emergency_contact_name")

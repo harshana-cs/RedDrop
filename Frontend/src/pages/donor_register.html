@@ -291,6 +291,7 @@ let isSubmitting = false;
 
 /* ================= PREFILL USER ================= */
 window.addEventListener("DOMContentLoaded", () => {
+    getDonorLocation(); // ask permission early
     const fullname = localStorage.getItem("fullname");
     const email = localStorage.getItem("emailaddress");
 
@@ -312,7 +313,28 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+function getDonorLocation() {
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            resolve(null);
+            return;
+        }
 
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                resolve({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                });
+            },
+            (error) => {
+    console.warn("Location not allowed");
+    resolve(null);
+},
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    });
+}
 /* ================= REGISTER ================= */
 document.getElementById("registerBtn").addEventListener("click", async (e) => {
     e.preventDefault();
@@ -336,6 +358,12 @@ document.getElementById("registerBtn").addEventListener("click", async (e) => {
     }
 
     const formData = new FormData();
+        const location = await getDonorLocation();
+
+    if (location) {
+        formData.append("latitude", location.latitude);
+        formData.append("longitude", location.longitude);
+    }
     document.querySelectorAll("#donorFormContainer input, #donorFormContainer select")
         .forEach(el => {
             if (!el.name) return;

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password as django_check_password
 
+
 class Donor(models.Model):
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
@@ -14,6 +15,11 @@ class Donor(models.Model):
     city = models.CharField(max_length=100, blank=True, null=True)
     state = models.CharField(max_length=100, blank=True, null=True)
     zip_code = models.CharField(max_length=20, blank=True, null=True)
+
+    # 🔴 ADD THESE FOR GPS LOCATION
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    location_updated_at = models.DateTimeField(null=True, blank=True)
 
     emergency_contact_name = models.CharField(max_length=100, blank=True, null=True)
     emergency_contact_phone = models.CharField(max_length=20, blank=True, null=True)
@@ -30,19 +36,10 @@ class Donor(models.Model):
     accepted_terms = models.BooleanField(default=False)
     consent_notifications = models.BooleanField(default=False)
 
-    # password = models.CharField(max_length=255, blank=True, null=True)
-    # confirm_password = models.CharField(max_length=255, blank=True, null=True)
-
     created_on = models.DateTimeField(auto_now_add=True)
-    
+
     is_profile_completed = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
-
-    # def set_password(self, raw_password):
-    #     self.password = make_password(raw_password)
-
-    # def check_password(self, raw_password):
-    #     return django_check_password(raw_password, self.password)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name or ''}"

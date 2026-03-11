@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    admin_hospital_stock,
     admin_secret_login,
 
     admin_pending_blood_requests,
@@ -19,6 +20,7 @@ from .views import (
     admin_processed_donor_registrations,
 
     admin_hospital_requests,
+    admin_user_detail,
     api_blood_type_distribution,
     api_request_status_overview,
     hospital_request_detail,        # ✅ ADD THIS
@@ -26,6 +28,15 @@ from .views import (
     reject_hospital_request,
     get_notifications,
     admin_hospital_audit_logs,
+    mark_notification_read,
+    admin_users,
+    admin_blood_inventory,
+    admin_add_inventory,
+    admin_remove_inventory,
+    admin_bulk_add_inventory,
+    admin_stock_movements,
+    # hospital_notifications,
+
 )
 
 urlpatterns = [
@@ -61,5 +72,22 @@ path("analytics/blood-types/", api_blood_type_distribution),
 path("analytics/request-status/", api_request_status_overview),
 path("notifications/", get_notifications),
 path("hospital-audit-logs/", admin_hospital_audit_logs),
+path(
+    "notifications/<int:notification_id>/read/",
+    mark_notification_read
+),
+    path("users/", admin_users),
+    path("users/<int:user_id>/", admin_user_detail),
+    path("hospital-stock/", admin_hospital_stock),
+    path("blood-inventory/", admin_blood_inventory),
+
+path("inventory/add/", admin_add_inventory),
+
+path("inventory/remove/", admin_remove_inventory),
+
+path("inventory/bulk-add/", admin_bulk_add_inventory),
+
+path("stock-movements/", admin_stock_movements),
+# path("hospital/notifications/", hospital_notifications),
 
 ]
