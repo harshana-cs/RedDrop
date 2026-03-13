@@ -446,3 +446,40 @@ def is_donor_eligible(donor):
     next_allowed = last_donation.date + timedelta(days=MIN_GAP_DAYS)
 
     return timezone.now().date() >= next_allowed
+
+
+
+from django.core.mail import send_mail
+from django.conf import settings
+def send_donor_alert(donor, blood_request, distance):
+
+    subject = "Urgent Blood Donation Needed Near You"
+
+    message = f"""
+Hello {donor.first_name},
+
+A blood donation request has been approved near your location.
+
+Blood Group Needed: {blood_request.blood_type}
+Hospital: {blood_request.hospital_location.name}
+District: {blood_request.district}
+
+Distance from you: {round(distance,2)} km
+
+If you are willing to donate, please contact the patient:
+
+Contact Person: {blood_request.contact_name}
+Phone: {blood_request.contact_phone}
+
+Thank you for being a life saver ❤️
+
+RedDrop Blood Donation System
+"""
+
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [donor.email],
+        fail_silently=True
+    )

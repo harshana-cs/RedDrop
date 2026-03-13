@@ -122,7 +122,51 @@ def admin_pending_donor_registrations(request):
         "count": len(data),
         "data": data
     })
+def send_donor_alert(donor, blood_request, distance):
 
+    subject = "Urgent Blood Donation Needed Near You"
+
+    message = f"""
+Hello {donor.first_name},
+
+A blood donation request has been approved near your location.
+
+Blood Group Needed: {blood_request.blood_type}
+Hospital: {blood_request.hospital_location.name}
+District: {blood_request.district}
+
+Distance from you: {round(distance,2)} km
+
+If you are willing to donate, please contact:
+
+Contact Person: {blood_request.contact_name}
+Phone: {blood_request.contact_phone}
+
+Thank you for saving lives ❤️
+
+RedDrop Blood Donation System
+"""
+
+    send_mail(
+        subject,
+        message,
+        settings.EMAIL_HOST_USER,
+        [donor.email],
+        fail_silently=True
+    )
+
+from math import radians, sin, cos, sqrt, atan2
+
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371
+
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+
+    a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    return R * c
 import random
 from django.utils import timezone
 from django.contrib.auth.models import User
@@ -151,6 +195,29 @@ def admin_approve_blood_request(request, request_id):
     blood_request.patient_confirmed = False
     blood_request.fulfilled = False
     blood_request.save()
+    hospital = blood_request.hospital_location
+
+    if hospital and hospital.latitude and hospital.longitude:
+
+        donors = Donor.objects.filter(
+        is_approved=True,
+        blood_type=blood_request.blood_type
+    )
+
+    for donor in donors:
+
+        if not donor.latitude or not donor.longitude:
+            continue
+
+        distance = haversine(
+            hospital.latitude,
+            hospital.longitude,
+            donor.latitude,
+            donor.longitude
+        )
+
+        if distance <= 15:
+            send_donor_alert(donor, blood_request, distance)
 
     # 🔔 SEND NOTIFICATION TO HOSPITAL
     Notification.objects.create(
