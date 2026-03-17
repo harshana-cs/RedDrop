@@ -1,29 +1,52 @@
 from datetime import timedelta
-
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models import Count
 from django.utils import timezone
 from django.utils.timezone import now
-
+# from Backend import hospital
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-
 from blood_requests.models import BloodRequest
 from hospital.models import Hospital, HospitalProfile, HospitalApplication
 from register_donor.models import Donor
 from loginsignup.models import Patient
 from loginsignup.models import Patient
 from register_donor.models import Donor
-# from blood_request.models import BloodRequest, HospitalLocation
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from blood_stock.models import BloodStock, BloodStockHistory
 from django.db import transaction
+from django.contrib.auth.models import User
 
+import requests
 
+def fetch_hospital_coordinates(hospital_name):
+
+    url = "https://nominatim.openstreetmap.org/search"
+
+    params = {
+        "q": f"{hospital_name} Nepal",
+        "format": "json",
+        "limit": 1
+    }
+
+    headers = {
+        "User-Agent": "reddrop-system"
+    }
+
+    response = requests.get(url, params=params, headers=headers)
+
+    data = response.json()
+
+    if data:
+        lat = float(data[0]["lat"])
+        lon = float(data[0]["lon"])
+        return lat, lon
+
+    return None, None
 
 # ================= ADMIN SECRET LOGIN =================
 @api_view(["POST"])
@@ -129,23 +152,18 @@ def send_donor_alert(donor, blood_request, distance):
     message = f"""
 Hello {donor.first_name},
 
-A blood donation request has been approved near your location.
+A nearby blood request has been approved and you are eligible to help.
 
 Blood Group Needed: {blood_request.blood_type}
 Hospital: {blood_request.hospital_location.name}
 District: {blood_request.district}
-
 Distance from you: {round(distance,2)} km
 
-If you are willing to donate, please contact:
+To help this patient, please login to your RedDrop donor dashboard
+and accept the donation request.
 
-Contact Person: {blood_request.contact_name}
-Phone: {blood_request.contact_phone}
-
-Thank you for saving lives ❤️
-
-RedDrop Blood Donation System
-"""
+Login here:
+http://localhost:5500/donor_dashboard.html"""
 
     send_mail(
         subject,
@@ -177,7 +195,6 @@ def admin_approve_blood_request(request, request_id):
 
     try:
         blood_request = BloodRequest.objects.get(id=request_id)
-
     except BloodRequest.DoesNotExist:
         return Response(
             {"success": False, "message": "Blood request not found"},
@@ -195,43 +212,59 @@ def admin_approve_blood_request(request, request_id):
     blood_request.patient_confirmed = False
     blood_request.fulfilled = False
     blood_request.save()
+
     hospital = blood_request.hospital_location
 
+    # ✅ Check hospital location
     if hospital and hospital.latitude and hospital.longitude:
 
         donors = Donor.objects.filter(
-        is_approved=True,
-        blood_type=blood_request.blood_type
-    )
-
-    for donor in donors:
-
-        if not donor.latitude or not donor.longitude:
-            continue
-
-        distance = haversine(
-            hospital.latitude,
-            hospital.longitude,
-            donor.latitude,
-            donor.longitude
+            is_approved=True,
+            blood_type=blood_request.blood_type,
+            latitude__isnull=False,
+            longitude__isnull=False
         )
 
-        if distance <= 15:
-            send_donor_alert(donor, blood_request, distance)
+        for donor in donors:
 
-    # 🔔 SEND NOTIFICATION TO HOSPITAL
-    Notification.objects.create(
-        title="Blood Request Approved",
-        message=f"Your request for {blood_request.units_required} units of {blood_request.blood_type} has been approved. Please find compatible donors.",
-        type="blood_request",
-        hospital=blood_request.created_by_hospital   # hospital receiving notification
-    )
+            distance = haversine(
+                hospital.latitude,
+                hospital.longitude,
+                donor.latitude,
+                donor.longitude
+            )
+
+            if distance <= 15:
+
+                # ✅ Send email
+                send_donor_alert(donor, blood_request, distance)
+
+                # ✅ FIX: correct user lookup
+                user = User.objects.filter(email__iexact=donor.email).first()
+
+                # 🔍 DEBUG (you can remove later)
+                print("Donor:", donor.email, "User:", user)
+
+                if user:
+                    Notification.objects.create(
+                        title="Blood Donation Needed",
+                        message=(
+                            f"{blood_request.patient.fullname} needs "
+                            f"{blood_request.blood_type} blood at "
+                            f"{hospital.name}. "
+                            "Do you want to donate?"
+                        ),
+                        type="blood_request",   # ✅ must match model
+                        blood_request=blood_request,
+                        user=user
+                    )
+                else:
+                    print("❌ No matching User found for donor:", donor.email)
 
     return Response({
         "success": True,
         "message": "Blood request approved successfully"
     })
-
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def admin_reject_blood_request(request, request_id):

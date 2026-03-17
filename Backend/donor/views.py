@@ -8,6 +8,7 @@ from datetime import timedelta
 from register_donor.models import Donor
 from blood_requests.models import BloodRequest
 from adminpanel.models import DonationCamp
+from adminpanel.models import Notification  
 
 
 MIN_GAP_DAYS = 56
@@ -237,3 +238,83 @@ def api_donor_eligibility(request):
         "days_remaining": max(days_remaining, 0),
         "minimum_gap_days": MIN_GAP_DAYS
     })
+
+# ===============================
+# DONOR ACCEPT BLOOD REQUEST
+# ===============================
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_donor_accept_request(request):
+
+    donor = Donor.objects.filter(email=request.user.email).first()
+
+    if not donor:
+        return Response({"error": "Donor not found"}, status=404)
+
+    request_id = request.data.get("request_id")
+
+    if not request_id:
+        return Response({"error": "Request ID required"}, status=400)
+
+    blood_request = get_object_or_404(BloodRequest, id=request_id)
+
+    # 🚫 prevent multiple donors
+    if blood_request.fulfilled:
+        return Response({
+            "success": False,
+            "message": "Another donor already accepted this request"
+        })
+
+    # ✅ assign donor + lock request
+    blood_request.accepted_donor = donor
+    blood_request.fulfilled = True
+    blood_request.save()
+
+    # ✅ notify patient
+    from django.contrib.auth.models import User
+
+    patient_user = User.objects.filter(
+        email=blood_request.patient.emailaddress
+    ).first()
+
+    if patient_user:
+        Notification.objects.create(
+            title="Donor Accepted ❤️",
+            message=(
+                f"{donor.first_name} has accepted your blood request. "
+                "Please contact them."
+            ),
+            type="donor_accept",
+            blood_request=blood_request,
+            user=patient_user
+        )
+
+    return Response({
+        "success": True,
+        "message": "You accepted the donation request"
+    })
+
+# ===============================
+# DONOR NOTIFICATIONS
+# ===============================
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_donor_notifications(request):
+
+    notifications = Notification.objects.filter(
+        user=request.user
+    ).order_by("-created_at")
+
+    data = []
+
+    for n in notifications:
+        data.append({
+            "id": n.id,
+            "title": n.title,
+            "message": n.message,
+            "request_id": n.blood_request.id if n.blood_request else None,
+            "is_read": n.is_read,
+            "created_at": n.created_at
+        })
+
+    return Response(data)

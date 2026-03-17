@@ -9,7 +9,7 @@ from django.db.models import Sum
 import jwt
 import traceback
 from django.conf import settings
-
+from blood_requests.views import is_donor_eligible, BLOOD_COMPATIBILITY,haversine
 from .models import Hospital, HospitalApplication
 from blood_requests.models import BloodRequest
 from blood_stock.models import BloodStock, BloodStockHistory
@@ -17,6 +17,10 @@ from hospital.auth import get_hospital_from_token
 import time
 from adminpanel.models import Notification
 from adminpanel.models import HospitalAuditLog
+from blood_requests.models import HospitalLocation
+from blood_requests.utils import get_coordinates_from_osm
+from register_donor.models import Donor
+
 
 
 # ======================================================
@@ -340,6 +344,7 @@ def hospital_blood_stock(request):
 # ======================================================
 @api_view(["GET"])
 @authentication_classes([])
+@permission_classes([AllowAny])
 def hospital_donors(request):
     hospital = get_hospital_from_token(request)
     if not hospital:
@@ -401,10 +406,21 @@ def hospital_create_blood_request(request):
             )
 
         if not hospital.location:
-            return Response(
-                {"error": "Hospital location not configured"},
-                status=400
-            )
+
+    # get hospital address
+            address = hospital.profile.address
+
+            lat, lon = get_coordinates_from_osm(hospital.name, address)
+
+            hospital_location = HospitalLocation.objects.create(
+        name=hospital.name,
+        district=address,
+        latitude=lat,
+        longitude=lon
+    )
+
+            hospital.location = hospital_location
+            hospital.save()
 
         # Create blood request
         new_request = BloodRequest.objects.create(
@@ -435,12 +451,13 @@ def hospital_create_blood_request(request):
         "request_id": new_request.id
     }
 )
-        # 🔔 CREATE ADMIN NOTIFICATION
         Notification.objects.create(
-            title="New Hospital Blood Request",
-            message=f"{hospital.name} requested {units} units of {blood_type}",
-            type="blood"
-        )
+    title="New Hospital Blood Request",
+    message=f"{hospital.name} requested {units} units of {blood_type}",
+    type="blood_request",
+    hospital=hospital,
+    blood_request=new_request
+)
 
         return Response({
             "success": True,
@@ -471,13 +488,112 @@ def hospital_notifications(request):
     data = []
 
     for n in notifications:
-        data.append({
-            "id": n.id,
-            "title": n.title,
-            "message": n.message,
-            "type": n.type,
-            "is_read": n.is_read,
-            "created_at": n.created_at
-        })
+      data.append({
+        "id": n.id,
+        "title": n.title,
+        "message": n.message,
+        "type": n.type,
+        "request_id": n.blood_request.id if n.blood_request else None,
+        "is_read": n.is_read,
+        "created_at": n.created_at
+})
 
     return Response(data)
+
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def hospital_request_donors(request, request_id):
+
+    hospital = get_hospital_from_token(request)
+    if not hospital:
+        return Response({"detail": "Unauthorized"}, status=401)
+
+    blood_request = BloodRequest.objects.filter(
+        id=request_id,
+        created_by_hospital=hospital
+    ).first()
+
+    if not blood_request:
+        return Response({"error": "Request not found"}, status=404)
+
+    hospital_location = blood_request.hospital_location
+
+    if not hospital_location:
+        return Response({"error": "Hospital location missing"}, status=400)
+
+    request_lat = hospital_location.latitude
+    request_lon = hospital_location.longitude
+
+    required_blood = blood_request.blood_type
+
+    compatible_bloods = [
+        donor_blood
+        for donor_blood, receivers in BLOOD_COMPATIBILITY.items()
+        if required_blood in receivers
+    ]
+
+    donors = Donor.objects.filter(
+        is_approved=True,
+        blood_type__in=compatible_bloods
+    )
+
+    matched = []
+
+    for donor in donors:
+
+        if not donor.latitude or not donor.longitude:
+            continue
+
+        if not is_donor_eligible(donor):
+            continue
+
+        distance = haversine(
+            request_lat,
+            request_lon,
+            donor.latitude,
+            donor.longitude
+        )
+
+        if distance <= 15:
+
+            matched.append({
+                "id": donor.id,
+                "name": f"{donor.first_name} {donor.last_name}",
+                "blood_type": donor.blood_type,
+                "distance_km": round(distance,2),
+                "phone": donor.phone_number,
+                "email": donor.email
+            })
+
+    matched.sort(key=lambda x: x["distance_km"])
+
+    return Response({
+        "request_id": blood_request.id,
+        "blood_type": required_blood,
+        "hospital": hospital.name,
+        "donors": matched[:10]
+    })
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def mark_notification_read(request, notification_id):
+
+    hospital = get_hospital_from_token(request)
+
+    if not hospital:
+        return Response({"detail": "Unauthorized"}, status=401)
+
+    notification = Notification.objects.filter(
+        id=notification_id,
+        hospital=hospital
+    ).first()
+
+    if not notification:
+        return Response({"error": "Notification not found"}, status=404)
+
+    notification.is_read = True
+    notification.save()
+
+    return Response({"success": True})

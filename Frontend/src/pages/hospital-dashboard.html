@@ -296,6 +296,11 @@
         <i class="fas fa-tint nav-icon mr-2"></i>
         <span class="nav-text">Blood Requests</span>
       </button>
+      <button data-tab="donors" data-tooltip="Donor Matches"
+  class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 flex items-center">
+  <i class="fas fa-users nav-icon mr-2"></i>
+  <span class="nav-text">Matched Donors</span>
+</button>
       <button data-tab="stock" data-tooltip="Blood Stock"
         class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 flex items-center">
         <i class="fas fa-boxes nav-icon mr-2"></i>
@@ -345,9 +350,17 @@
 
   <!-- Notification Bell -->
   <div class="relative">
-    <button onclick="toggleNotifications()" class="text-gray-600 hover:text-red-600 text-xl">
-      <i class="fas fa-bell"></i>
-    </button>
+
+  <button onclick="toggleNotifications()" class="text-gray-600 hover:text-red-600 text-xl relative">
+    <i class="fas fa-bell"></i>
+
+    <!-- Notification Count Badge -->
+    <span id="notificationCount"
+      class="hidden absolute -top-1 -right-2 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-full">
+      0
+    </span>
+
+  </button>
 
     <div id="notificationBox"
          class="hidden absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg max-h-96 overflow-y-auto">
@@ -918,6 +931,7 @@
   let hospitalData = {};
   let stockData = [];
   let requestsData = [];
+  let showMatchedDonors = false;
   
   // Sidebar collapse state
   let isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
@@ -1007,8 +1021,14 @@
           loadRequests();
           break;
         case 'donors':
-          loadDonors();
-          break;
+
+  if(!showMatchedDonors){
+      loadDonors();
+  }
+
+  showMatchedDonors = false;
+
+  break;
         case 'history':
           loadStockHistory();
           break;
@@ -1293,6 +1313,7 @@
   }
 
  async function createBloodRequest() {
+
   const patientName = document.getElementById('patientName').value;
   const bloodType = document.getElementById('bloodType').value;
   const units = document.getElementById('units').value;
@@ -1301,9 +1322,10 @@
   const hospitalDoc = document.getElementById('hospitalDoc').files[0];
 
   const formData = new FormData();
+
   formData.append("patient_name", patientName);
-  formData.append("blood_type", bloodType);
-  formData.append("units", units);
+  formData.append("blood_type", bloodType);   // must match backend
+  formData.append("units", units);            // must match backend
   formData.append("urgency", urgency);
   formData.append("notes", notes);
 
@@ -1323,7 +1345,10 @@
       }
     );
 
+    const data = await response.json();
+
     if (!response.ok) {
+      console.error(data);
       throw new Error("Server responded with error");
     }
 
@@ -1331,7 +1356,7 @@
 
   } catch (err) {
     console.error("Fetch error:", err);
-    alert("Blood request submission completed.");
+    alert("Blood request submission failed.");
   }
 }
   async function loadRequests() {
@@ -1456,7 +1481,7 @@
             </div>
             <div class="flex items-center">
               <i class="fas fa-map-marker-alt text-gray-400 mr-2 w-4"></i>
-              <span>${donor.location || 'N/A'}</span>
+              <span>${donor.distance_km ? donor.distance_km + " km away" : "N/A"}</span>
             </div>
             <div class="flex items-center">
               <i class="fas fa-calendar-alt text-gray-400 mr-2 w-4"></i>
@@ -1818,7 +1843,6 @@
 
   function contactDonor(donorId) {
     alert(`Contact functionality for donor ${donorId} would be implemented here`);
-    // In a real app, this would trigger SMS/email or show contact details
   }
 
   function updateRecentActivity(activities) {
@@ -2038,37 +2062,37 @@ async function loadHospitalNotifications() {
     );
 
     const data = await response.json();
+    console.log("Notifications:", data);
 
-    const container = document.getElementById("notificationList");
+     const container = document.getElementById("notificationList");
+    const countBadge = document.getElementById("notificationCount");
     container.innerHTML = "";
-
-    if(data.length === 0){
-      container.innerHTML = `
-        <div class="p-4 text-gray-500 text-center">
-          No notifications
-        </div>`;
-      return;
+    
+     // update notification count
+    if(data.length > 0){
+        countBadge.textContent = data.length;
+        countBadge.classList.remove("hidden");
+    }else{
+        countBadge.classList.add("hidden");
     }
 
-    data.forEach(n => {
+   data.forEach(n => {
 
-      container.innerHTML += `
-        <div class="p-3 border-b hover:bg-gray-50">
+  let click = "";
 
-          <p class="font-semibold text-sm">${n.title}</p>
-
-          <p class="text-xs text-gray-600">
-            ${n.message}
-          </p>
-
-          <p class="text-xs text-gray-400 mt-1">
-            ${new Date(n.created_at).toLocaleString()}
-          </p>
-
-        </div>
-      `;
-
-    });
+  if(n.type === "blood_request_approved" && n.request_id){
+    click = `onclick="openDonorMatch(${n.request_id})"`
+}
+  container.innerHTML += `
+    <div class="p-3 border-b hover:bg-gray-50 cursor-pointer" ${click}>
+      <p class="font-semibold text-sm">${n.title}</p>
+      <p class="text-xs text-gray-600">${n.message}</p>
+      <p class="text-xs text-gray-400">
+        ${new Date(n.created_at).toLocaleString()}
+      </p>
+    </div>
+  `;
+});
 
   } catch(err){
     console.error("Notification load error", err);
@@ -2083,6 +2107,38 @@ function toggleNotifications(){
 
   if(!box.classList.contains("hidden")){
       loadHospitalNotifications();
+  }
+
+}
+async function openDonorMatch(requestId){
+
+  if(!requestId){
+    console.error("Invalid request ID");
+    return;
+  }
+
+  try{
+
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/hospital/request/${requestId}/donors/`,
+      { headers: authHeaders() }
+    );
+
+    const data = await response.json();
+
+    const donors = data.donors || [];
+
+    showMatchedDonors = true;
+
+    switchTab("donors");   // ✅ CORRECT
+
+    updateDonorsList(donors);
+
+    document.getElementById("pageTitle").textContent =
+      `Matched Donors for Request #${requestId}`;
+
+  }catch(err){
+    console.error(err);
   }
 
 }

@@ -1,4 +1,7 @@
 from django.db import models
+from django.contrib.auth.models import User
+
+from blood_requests.models import BloodRequest
 class DonationCamp(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -25,6 +28,8 @@ class Notification(models.Model):
         ("donor_registration", "Donor Registration"),
         ("hospital_registration", "Hospital Registration"),
         ("blood_request_approved", "Blood Request Approved"),
+        ("donor_request", "Donor Request"),
+        ("donor_accept", "Donor Accepted"),
     ]
 
     title = models.CharField(max_length=255)
@@ -32,9 +37,23 @@ class Notification(models.Model):
 
     type = models.CharField(max_length=50, choices=TYPE_CHOICES)
 
-    # who receives the notification
+    # WHO receives the notification
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
     hospital = models.ForeignKey(
         Hospital,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    blood_request = models.ForeignKey(
+        BloodRequest,
         on_delete=models.CASCADE,
         null=True,
         blank=True
@@ -59,7 +78,9 @@ class HospitalAuditLog(models.Model):
 
     hospital = models.ForeignKey(
         "hospital.Hospital",
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
     )
 
     action = models.CharField(max_length=50, choices=ACTION_TYPES)
@@ -73,4 +94,6 @@ class HospitalAuditLog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.hospital.name} - {self.action}"
+        if self.hospital:
+            return f"{self.hospital.name} - {self.action}"
+        return f"System Log - {self.action}"

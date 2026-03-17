@@ -13,4 +13,13 @@ urlpatterns = [
     path("stock-history/", views.hospital_stock_history),
     path("blood-request/create/", views.hospital_create_blood_request),
     path("notifications/", views.hospital_notifications),
+    path(
+    "request/<int:request_id>/donors/",
+    views.hospital_request_donors
+),
+path(
+    "notifications/<int:notification_id>/read/",
+    views.mark_notification_read
+),
+    
 ]
