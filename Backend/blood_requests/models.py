@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -21,11 +23,13 @@ class HospitalLocation(models.Model):
 class BloodRequest(models.Model):
 
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
-        ('completed', 'Completed'),
-    ]
+    ('pending', 'Pending'),
+    ('approved', 'Approved'),
+    ('rejected', 'Rejected'),
+    ('completed', 'Completed'),
+    ('escalated', 'Escalated'),  
+]
+    
 
     # ACTOR
     patient = models.ForeignKey(
@@ -85,16 +89,24 @@ class BloodRequest(models.Model):
         choices=STATUS_CHOICES,
         default='pending'
     )
+    accepted_donor = models.ForeignKey(
+        Donor,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="accepted_requests"
+    )
 
     fulfilled = models.BooleanField(default=False)
     patient_confirmed = models.BooleanField(default=False)
-
+    is_escalated = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, null=True, blank=True)
     otp_expires_at = models.DateTimeField(null=True, blank=True)
 
     donation_date = models.DateTimeField(null=True, blank=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    # status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending', db_index=True)
 
     def __str__(self):
         if self.patient:
@@ -102,3 +114,10 @@ class BloodRequest(models.Model):
         elif self.created_by_hospital:
             return f"Hospital {self.created_by_hospital.name} - {self.blood_type}"
         return f"Blood Request - {self.blood_type}"
+    def is_expired(self):
+        return (
+        self.status == "approved" and
+        self.accepted_donor is None and
+        self.approved_at and
+        self.approved_at <= timezone.now() - timedelta(minutes=1)
+    )

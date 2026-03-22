@@ -28,21 +28,78 @@
 
 <body class="bg-gray-100 text-gray-800">
 
-<!-- ================= HEADER ================= -->
-<header class="bg-[var(--brand-red)] text-white fixed top-0 left-0 w-full z-50 shadow-lg backdrop-blur-md bg-opacity-95">
-  <nav class="container mx-auto flex items-center py-4 px-6">
-    <div class="flex items-center space-x-2">
-      <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-        <i class="fas fa-tint text-[var(--brand-red)] text-xl"></i>
+<!-- Floating particles for background effect -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden">
+    <div class="particle" style="top: 10%; left: 20%; animation-delay: 0s;"></div>
+    <div class="particle" style="top: 30%; left: 80%; animation-delay: 2s;"></div>
+    <div class="particle" style="top: 70%; left: 10%; animation-delay: 4s;"></div>
+    <div class="particle" style="top: 40%; left: 40%; animation-delay: 6s;"></div>
+    <div class="particle" style="top: 80%; left: 70%; animation-delay: 8s;"></div>
+  </div>
+
+  <!-- Enhanced Header -->
+  <header class="bg-gradient-to-r from-[#B91C1C] via-[#b12a2a] to-[#991B1B] text-white fixed top-0 left-0 w-full z-50 shadow-2xl backdrop-blur-md bg-opacity-95 border-b border-red-400/30">
+    <nav class="container mx-auto flex items-center justify-between py-3 px-6">
+
+      <!-- Logo with enhanced animation -->
+      <div class="flex items-center space-x-3 group cursor-pointer">
+        <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-500 border-2 border-white/30">
+          <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-inner">
+            <i class="fas fa-tint text-[#e03636] text-2xl animate-pulse-slow"></i>
+          </div>
+        </div>
+
+        <a href="index.html" class="ml-2">
+          <h1 class="text-3xl font-bold tracking-wide">
+            Red<span class="font-extrabold text-yellow-300 drop-shadow-lg">Drop</span>
+          </h1>
+          <p class="text-xs text-red-200 mt-0.5 tracking-wider">SAVE LIVES • DONATE BLOOD</p>
+        </a>
       </div>
-      <a href="index.html" class="ml-2">
-        <h1 class="text-3xl font-bold tracking-wide">
-          Red<span class="font-extrabold">Drop</span>
-        </h1>
-      </a>
-    </div>
-  </nav>
-</header>
+
+      <div class="flex items-center gap-4 ml-auto">
+
+        <!-- Enhanced Notification -->
+        <div class="relative">
+          <button onclick="toggleNotifications()" class="relative text-white text-xl hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 hover:rotate-12 p-3 hover:bg-white/10 rounded-xl">
+            <i class="fas fa-bell"></i>
+
+            <span id="notificationBadge" class="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-xs px-2 py-1 rounded-full hidden animate-bounce font-bold shadow-lg">
+              0
+            </span>
+          </button>
+
+          <div id="notificationDropdown" class="hidden absolute right-0 mt-3 w-96 bg-white/95 backdrop-blur-md text-gray-800 rounded-2xl shadow-2xl border border-red-200 transform transition-all duration-300 origin-top-right">
+            <div class="p-5 border-b bg-gradient-to-r from-red-50 to-white rounded-t-2xl">
+              <div class="flex items-center justify-between">
+                <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+                  <i class="fas fa-bell text-red-600"></i>Notifications
+                </h3>
+                <span class="text-xs text-red-600 cursor-pointer hover:underline flex items-center gap-1">
+                  <i class="fas fa-check-circle"></i>Mark all as read
+                </span>
+              </div>
+            </div>
+            <div id="notificationList" class="max-h-80 overflow-y-auto"></div>
+            <div class="p-3 border-t text-center">
+              <button class="text-sm text-red-600 hover:text-red-800 font-medium hover:underline transition-all duration-300">
+                View all notifications
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enhanced Profile Icon -->
+        <button onclick="showSection('profile')" class="text-white text-xl hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 relative group p-2 hover:bg-white/10 rounded-xl">
+          <i class="fas fa-user-circle text-2xl"></i>
+          <span class="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-2.5 h-2.5 bg-green-400 rounded-full pulse-ring"></span>
+          <span class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+            Profile
+          </span>
+        </button>
+      </div>
+    </nav>
+  </header>
 
 <div class="min-h-screen flex pt-16">
 
@@ -67,23 +124,14 @@
       Request Blood
     </a>
 
-    <a href="donor_register.html"
-       class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[var(--brand-red-light)]">
-      <i class="fas fa-heart text-[var(--brand-red)]"></i>
-      Donate Blood
-    </a>
+   
 
-    <a href="history.html"
+    <a href="dashboard.html?tab=history"
        class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[var(--brand-red-light)]">
       <i class="fas fa-history text-[var(--brand-red)]"></i>
       History
     </a>
 
-    <a href="profile.html"
-       class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[var(--brand-red-light)]">
-      <i class="fas fa-user text-[var(--brand-red)]"></i>
-      Profile
-    </a>
 
   </nav>
 
@@ -764,16 +812,22 @@
             const form = document.getElementById("bloodRequestForm");
             if (form) {
                 form.addEventListener("submit", async (e) => {
-                    e.preventDefault();
+    e.preventDefault();
+    e.stopImmediatePropagation(); // 🔥 VERY IMPORTANT
+
+    // Prevent double execution
+    if (form.dataset.submitting === "true") return;
+    form.dataset.submitting = "true";
                     const token = localStorage.getItem("access_token");
 
                     if (!token) {
-                        showNotification("You are not logged in!");
-                        setTimeout(() => {
-                            window.location.href = "login-signup.html";
-                        }, 1500);
-                        return;
-                    }
+    showNotification("You are not logged in!");
+    form.dataset.submitting = "false"; // 🔥 ADD THIS
+    setTimeout(() => {
+        window.location.href = "login-signup.html";
+    }, 1500);
+    return;
+}
 
                     const getValue = (id) => {
                         const el = document.querySelector(id);
@@ -805,19 +859,19 @@
                     const urgency = document.querySelector('input[name="urgency"]:checked')?.value;
                     if (urgency) {
                         formData.append("urgency", urgency);
-                    } else {
+                    }  else {
                         showNotification("Please select urgency level");
-                        return;
-                    }
-
+    form.dataset.submitting = "false"; // 🔥 ADD THIS
+    return;
+}
                     /* ================= FILES (IMPORTANT) ================= */
 const hospitalDoc = document.querySelector("#hospitalDoc")?.files[0];
 const doctorNote = document.querySelector("#doctorNote")?.files[0];
 if (!hospitalDoc || !doctorNote) {
   showNotification("Please upload required documents");
+  form.dataset.submitting = "false"; // 🔥 ADD THIS
   return;
 }
-
 formData.append("hospital_doc", hospitalDoc);
 formData.append("doctor_note", doctorNote);
            try {
@@ -852,16 +906,18 @@ formData.append("doctor_note", doctorNote);
 
     // ✅ FORCE REDIRECT (guaranteed)
     setTimeout(() => {
-      window.location.replace("dashboard.html");
+      window.location.href = "dashboard.html?tab=history";
     }, 1000);
 
   } else {
     showNotification(data.message || "Submission failed");
-  }
+    form.dataset.submitting = "false"; // 🔥 ADD THIS
+}
 
 } catch (err) {
   console.error("Fetch failed:", err);
   showNotification("Network error or server unavailable.");
+  form.dataset.submitting = "false"; // 🔥 ADD THIS
 }
 
 
@@ -886,6 +942,12 @@ formData.append("doctor_note", doctorNote);
             });
 
             console.log("Form initialization complete");
+            // DISABLE PAST DATES
+const dateInput = document.getElementById("requiredDate");
+if (dateInput) {
+    const today = new Date().toISOString().split("T")[0];
+    dateInput.setAttribute("min", today);
+}
         });
     </script>
 </body>

@@ -21,13 +21,18 @@ from adminpanel.models import Notification
 from .utils import get_coordinates_from_osm
 
 def haversine(lat1, lon1, lat2, lon2):
-    R = 6371  # Earth radius in KM
+    if None in [lat1, lon1, lat2, lon2]:
+        return None  # prevent crash
+
+    from math import radians, sin, cos, sqrt, atan2
+
+    R = 6371
 
     dlat = radians(lat2 - lat1)
     dlon = radians(lon2 - lon1)
 
     a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    c = 2 * atan2(sqrt(a), sqrt(1-a))
 
     return R * c
 
@@ -162,6 +167,8 @@ def api_user_requests(request):
 
 from .models import HospitalLocation
 
+from django.contrib.auth.models import User
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def api_create_request(request):
@@ -185,42 +192,97 @@ def api_create_request(request):
             status=400
         )
 
+    # 📍 Get or create hospital location
     hospital_location = HospitalLocation.objects.filter(
-    name=hospital_name,
-    district=district
-).first()
+        name=hospital_name,
+        district=district
+    ).first()
 
     if not hospital_location:
-
         lat, lon = get_coordinates_from_osm(hospital_name, district)
 
         hospital_location = HospitalLocation.objects.create(
-        name=hospital_name,
-        district=district,
-        latitude=lat,
-        longitude=lon
-    )
+            name=hospital_name,
+            district=district,
+            latitude=lat,
+            longitude=lon
+        )
 
     serializer = BloodRequestSerializer(data=request.data)
 
     if serializer.is_valid():
         blood_request = serializer.save(
-        patient=patient,
-        hospital_location=hospital_location,
-        district=district
-    )
+            patient=patient,
+            hospital_location=hospital_location,
+            district=district
+        )
 
-    # 🔔 CREATE NOTIFICATION FOR ADMIN
-    Notification.objects.create(
-        title="New Blood Request",
-        message=f"{patient.fullname} requested {blood_request.blood_type} blood at {hospital_name}",
-        type="blood_request"
-    )
+        # =====================================================
+        # 🔔 1. ADMIN NOTIFICATION (LOG SYSTEM)
+        # =====================================================
+        Notification.objects.create(
+            title="New Blood Request",
+            message=f"{patient.fullname} requested {blood_request.blood_type} blood at {hospital_name}",
+            type="blood_request"
+        )
 
-    return Response(serializer.data, status=201)
+        # =====================================================
+        # 🔔 2. DONOR NOTIFICATIONS (SMART FILTER)
+        # =====================================================
+
+        request_lat = hospital_location.latitude
+        request_lon = hospital_location.longitude
+
+        required_blood = blood_request.blood_type
+
+        # ✅ Compatible blood groups
+        compatible_groups = [
+            donor_blood
+            for donor_blood, receivers in BLOOD_COMPATIBILITY.items()
+            if required_blood in receivers
+        ]
+
+        donors = Donor.objects.filter(
+        is_approved=True,
+        blood_type__in=compatible_groups
+    ).exclude(
+    email=request.user.username   
+)
+
+        for donor in donors:
+
+            # ❌ skip if no location
+            if not donor.latitude or not donor.longitude:
+                continue
+
+            # ❌ skip if not eligible (cooldown)
+            if not is_donor_eligible(donor):
+                continue
+
+            # 📏 distance check
+            distance = haversine(
+                request_lat,
+                request_lon,
+                donor.latitude,
+                donor.longitude
+            )
+
+            # ✅ only nearby donors (15km)
+            if distance <= 15:
+                user = User.objects.filter(email=donor.email).first()
+
+                if user:
+                    Notification.objects.create(
+                        user=user,   # ✅ ONLY donors
+                        blood_request=blood_request,
+                        title="Urgent Blood Request 🚨",
+                        message=f"{required_blood} needed at {hospital_name} ({round(distance,1)} km away)",
+                        type="blood_request"
+                    )
+
+        return Response(serializer.data, status=201)
 
     return Response(serializer.errors, status=400)
-
 # =========================================================
 # API – PATIENT CONFIRM RECEIPT (ONLY CONFIRMATION)
 # =========================================================
@@ -483,3 +545,61 @@ RedDrop Blood Donation System
         [donor.email],
         fail_silently=True
     )
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_patient_notifications(request):
+    notifications = Notification.objects.filter(
+        user=request.user
+    ).select_related(
+        "blood_request__accepted_donor",
+        "blood_request__hospital_location"
+    ).order_by("-created_at")
+
+    data = []
+
+    for n in notifications:
+        donor = None
+        distance = None
+        blood_request = n.blood_request  # ✅ use local variable
+
+        if blood_request and blood_request.accepted_donor:
+            donor = blood_request.accepted_donor
+
+            if (donor.latitude and donor.longitude and
+                blood_request.hospital_location and
+                blood_request.hospital_location.latitude):
+                distance = haversine(
+                    blood_request.hospital_location.latitude,
+                    blood_request.hospital_location.longitude,
+                    donor.latitude,
+                    donor.longitude
+                )
+
+        data.append({
+            "id": n.id,
+            "title": n.title,
+            "message": n.message,
+            "type": n.type,
+            "request_id": blood_request.id if blood_request else None,
+            "is_read": n.is_read,
+            "created_at": str(n.created_at),
+            "donor_name": f"{donor.first_name} {donor.last_name}".strip() if donor else None,
+            "donor_phone": donor.phone_number if donor else None,
+            "distance": round(distance, 2) if distance else None,
+            # ✅ fulfilled=True means donor accepted
+            "is_accepted": blood_request.fulfilled if blood_request else False,
+        })
+
+    return Response(data)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_request_status(request, request_id):
+    blood_request = get_object_or_404(BloodRequest, id=request_id)
+    return Response({
+        "request_id": blood_request.id,
+        "status": blood_request.status,
+        "fulfilled": blood_request.fulfilled,
+        "blood_type": blood_request.blood_type,
+        "hospital": blood_request.hospital_location.name if blood_request.hospital_location else None,
+    })

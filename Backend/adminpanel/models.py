@@ -42,21 +42,24 @@ class Notification(models.Model):
         User,
         on_delete=models.CASCADE,
         null=True,
-        blank=True
+        blank=True,
+        db_index=True
     )
 
     hospital = models.ForeignKey(
         Hospital,
         on_delete=models.CASCADE,
         null=True,
-        blank=True
+        blank=True,
+        db_index=True
     )
 
     blood_request = models.ForeignKey(
         BloodRequest,
         on_delete=models.CASCADE,
         null=True,
-        blank=True
+        blank=True,
+        db_index=True
     )
 
     is_read = models.BooleanField(default=False)

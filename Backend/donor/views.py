@@ -193,7 +193,13 @@ def api_donor_confirm(request):
     # 🔥 EXPIRE OTP **ONLY NOW**
     blood_request.status = "completed"
     blood_request.fulfilled = True
-    blood_request.otp = None           # ← OTP invalidated here
+    # 🔔 ADMIN LOG
+    Notification.objects.create(
+    title="Request Completed",
+    message=f"Request #{blood_request.id} completed successfully",
+    type="completed"
+)
+    blood_request.otp = None           
     blood_request.otp_expires_at = None
     blood_request.save()
 
@@ -272,22 +278,30 @@ def api_donor_accept_request(request):
 
     # ✅ notify patient
     from django.contrib.auth.models import User
-
     patient_user = User.objects.filter(
-        email=blood_request.patient.emailaddress
-    ).first()
-
+    username=blood_request.patient.emailaddress
+).first()
     if patient_user:
+        # ✅ Patient notification
         Notification.objects.create(
-            title="Donor Accepted ❤️",
-            message=(
-                f"{donor.first_name} has accepted your blood request. "
-                "Please contact them."
-            ),
-            type="donor_accept",
+            user=patient_user,
             blood_request=blood_request,
-            user=patient_user
+            title="Donor Accepted Your Request ❤️",
+            message=(
+                f"{donor.first_name} ({donor.blood_type}) has accepted your request at "
+                f"{blood_request.hospital_location.name}. Contact: {donor.phone_number}"
+            ),
+            type="donor_accept"
         )
+
+        # ✅ Admin log
+        Notification.objects.create(
+            title="Donor Accepted",
+            message=f"{donor.first_name} accepted request #{blood_request.id}",
+            type="donor_accept"
+        )
+    else:
+        print("❌ Patient user not found:", blood_request.patient.emailaddress)
 
     return Response({
         "success": True,
@@ -300,21 +314,24 @@ def api_donor_accept_request(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def api_donor_notifications(request):
+    donor = Donor.objects.filter(email=request.user.email).first()
+
+    if not donor or not donor.is_approved:
+        return Response([])
 
     notifications = Notification.objects.filter(
         user=request.user
     ).order_by("-created_at")
 
-    data = []
-
-    for n in notifications:
-        data.append({
+    return Response([
+        {
             "id": n.id,
             "title": n.title,
             "message": n.message,
+            "type": n.type,   # ✅ ADD THIS
             "request_id": n.blood_request.id if n.blood_request else None,
             "is_read": n.is_read,
             "created_at": n.created_at
-        })
-
-    return Response(data)
+        }
+        for n in notifications
+    ])

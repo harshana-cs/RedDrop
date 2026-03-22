@@ -52,5 +52,7 @@ urlpatterns = [
     views.api_compatible_donors_for_patient,
     name="api_compatible_donors_for_patient"
 ),
-path("api/public-requests/", views.public_blood_requests, name="api_public_blood_requests")
+path("api/public-requests/", views.public_blood_requests, name="api_public_blood_requests"),
+path("api/patient-notifications/", views.api_patient_notifications, name="api_patient_notifications"),
+path("api/request-status/<int:request_id>/", views.api_request_status, name="api_request_status"),
 ]

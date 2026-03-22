@@ -623,7 +623,7 @@
                 <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
                   <i class="fas fa-bell text-red-600"></i>Notifications
                 </h3>
-                <span class="text-xs text-red-600 cursor-pointer hover:underline flex items-center gap-1">
+                <span onclick="markAllAsRead()" class="text-xs text-red-600 cursor-pointer hover:underline flex items-center gap-1">
                   <i class="fas fa-check-circle"></i>Mark all as read
                 </span>
               </div>
@@ -2509,7 +2509,16 @@ let currentDonationTab = 'stats';
 let allDonations = [];
 let filteredDonations = [];
 const token = localStorage.getItem("access_token");
+document.addEventListener("DOMContentLoaded", () => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get("tab");
 
+    if (tab) {
+        showSection(tab);
+    } else {
+        showSection("home"); // default
+    }
+});
 function showSection(id) {
   // 1️⃣ Hide all sections safely
   document.querySelectorAll('.section').forEach(section => {
@@ -4203,164 +4212,301 @@ setInterval(loadNotifications,15000)
     showNotification("OTP verification failed", "error");
   }
 }
-function toggleNotifications(){
-  document
-    .getElementById("notificationDropdown")
-    .classList.toggle("hidden");
-}
-async function loadNotifications(){
 
-  const res = await fetch(
-    "http://127.0.0.1:8000/api/donor/notifications/",
-    {
-      headers:{
-        "Authorization": `Bearer ${token}`
+
+async function loadNotifications() {
+  const list = document.getElementById("notificationList");
+  const badge = document.getElementById("notificationBadge");
+  
+  // ✅ Get fresh token every time
+  const token = localStorage.getItem("access_token");
+  
+  if (!token) return;
+
+  const headers = { "Authorization": `Bearer ${token}` };
+
+  try {
+    const [donorRes, patientRes] = await Promise.allSettled([
+      fetch("http://127.0.0.1:8000/api/donor/notifications/", { headers }),
+      fetch("http://127.0.0.1:8000/blood_requests/api/patient-notifications/", { headers })
+    ]);
+
+    let notifications = [];
+
+    // ✅ Only merge if response is OK — ignore 401s silently
+    if (donorRes.status === "fulfilled" && donorRes.value.ok) {
+      const data = await donorRes.value.json();
+      if (Array.isArray(data)) notifications = notifications.concat(data);
+    }
+
+    if (patientRes.status === "fulfilled" && patientRes.value.ok) {
+      const data = await patientRes.value.json();
+      if (Array.isArray(data)) notifications = notifications.concat(data);
+    }
+
+    // Sort newest first
+    notifications.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    list.innerHTML = "";
+
+    if (notifications.length === 0) {
+      list.innerHTML = `<p class="p-4 text-gray-500 text-center">No notifications</p>`;
+      badge.classList.add("hidden");
+      return;
+    }
+
+    const unreadCount = notifications.filter(n => !n.is_read).length;
+    if (unreadCount > 0) {
+      badge.textContent = unreadCount;
+      badge.classList.remove("hidden");
+    } else {
+      badge.classList.add("hidden");
+    }
+
+    notifications.forEach(n => {
+      let clickAction = `markAsReadOnly(${n.id})`;
+
+      if (n.type === "donor_request" || n.type === "blood_request" ||
+         (n.request_id && n.type !== "donor_accept")) {
+        clickAction = `handleDonorRequestClick(${n.id}, ${n.request_id})`;
+      } else if (n.type === "donor_accept") {
+        const name       = (n.donor_name || "").replace(/'/g, "\\'");
+        const phone      = (n.donor_phone || "").replace(/'/g, "\\'");
+        const distance   = n.distance || "";
+        const isAccepted = n.is_accepted ? "true" : "false";
+        clickAction = `openDonorModal(${n.id}, '${name}', '${phone}', '${distance}', ${isAccepted})`;
       }
-    }
-  )
 
-  const notifications = await res.json()
-
-  const list = document.getElementById("notificationList")
-  const badge = document.getElementById("notificationBadge")
-
-  list.innerHTML = ""
-
-  if(notifications.length === 0){
-    list.innerHTML =
-      `<p class="p-4 text-gray-500 text-center">No notifications</p>`
-    badge.classList.add("hidden")
-    return
-  }
-
-  badge.textContent = notifications.length
-  badge.classList.remove("hidden")
-
-  notifications.forEach(n => {
-
-    let actionButtons = ""
-
-    if(n.request_id){
-      actionButtons = `
-        <div class="flex gap-2 mt-2">
-          <button
-            onclick="acceptRequest(${n.request_id})"
-            class="bg-green-600 text-white px-3 py-1 rounded text-sm">
-            Accept
-          </button>
-
-          <button
-            class="bg-gray-400 text-white px-3 py-1 rounded text-sm">
-            Decline
-          </button>
+      list.innerHTML += `
+        <div class="p-4 border-b cursor-pointer hover:bg-gray-100 ${n.is_read ? 'opacity-60' : 'bg-red-50'}"
+             onclick="${clickAction}">
+          <p class="font-semibold">${n.title}</p>
+          <p class="text-sm text-gray-600">${n.message}</p>
         </div>
-      `
-    }
+      `;
+    });
 
-    list.innerHTML += `
-      <div class="p-4 border-b">
-
-        <p class="font-semibold">${n.title}</p>
-
-        <p class="text-sm text-gray-600">
-          ${n.message}
-        </p>
-
-        ${actionButtons}
-
-      </div>
-    `
-  })
-}
-async function loadNotifications(){
-
-  const res = await fetch(
-    "http://127.0.0.1:8000/api/donor/notifications/",
-    {
-      headers:{
-        "Authorization": `Bearer ${token}`
-      }
-    }
-  )
-
-  const notifications = await res.json()
-
-  const list = document.getElementById("notificationList")
-  const badge = document.getElementById("notificationBadge")
-
-  list.innerHTML = ""
-
-  if(notifications.length === 0){
-    list.innerHTML =
-      `<p class="p-4 text-gray-500 text-center">No notifications</p>`
-    badge.classList.add("hidden")
-    return
+  } catch (err) {
+    console.error("Failed to load notifications", err);
   }
+}
+let selectedRequestId = null;
 
-  badge.textContent = notifications.length
-  badge.classList.remove("hidden")
+// 🔓 Open modal
+async function openRequestModal(requestId) {
+  selectedRequestId = requestId;
 
-  notifications.forEach(n => {
+  const modal = document.getElementById("requestModal");
+  modal.classList.remove("hidden");
+  modal.style.display = "flex";
 
-    let actionButtons = ""
+  const details = document.getElementById("requestDetails");
+  details.innerHTML = `<p class="text-gray-500">Loading...</p>`;
 
-    if(n.request_id){
-      actionButtons = `
-        <div class="flex gap-2 mt-2">
-          <button
-            onclick="acceptRequest(${n.request_id})"
-            class="bg-green-600 text-white px-3 py-1 rounded text-sm">
-            Accept
-          </button>
+  try {
+    // ✅ Fetch current status of the request
+    const res = await fetch(
+      `http://127.0.0.1:8000/blood_requests/api/request-status/${requestId}/`,
+      { headers: { "Authorization": `Bearer ${token}` } }
+    );
 
-          <button
-            class="bg-gray-400 text-white px-3 py-1 rounded text-sm">
-            Decline
-          </button>
+    const data = await res.json();
+
+    if (data.fulfilled) {
+      // ✅ Already accepted — show status, hide Accept button
+      details.innerHTML = `
+        <div class="flex items-center gap-3 p-4 bg-green-100 border border-green-300 rounded-xl mb-3">
+          <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+          <div>
+            <p class="font-bold text-green-800">Request Already Accepted ✅</p>
+            <p class="text-sm text-green-700">A donor has already accepted this request.</p>
+          </div>
         </div>
-      `
+        <p class="text-sm text-gray-600">Request ID: <strong>#${requestId}</strong></p>
+      `;
+
+      // ✅ Hide Accept and Decline buttons
+      document.querySelector("#requestModal .btn-accept").classList.add("hidden");
+      document.querySelector("#requestModal .btn-decline").classList.add("hidden");
+
+    } else {
+      // Not yet accepted — show normally
+      details.innerHTML = `
+        <p class="text-sm text-gray-700">Request ID: <strong>#${requestId}</strong></p>
+        <p class="text-sm text-gray-600 mt-2">Do you want to accept this blood request?</p>
+      `;
+
+      document.querySelector("#requestModal .btn-accept").classList.remove("hidden");
+      document.querySelector("#requestModal .btn-decline").classList.remove("hidden");
     }
 
-    list.innerHTML += `
-      <div class="p-4 border-b">
-
-        <p class="font-semibold">${n.title}</p>
-
-        <p class="text-sm text-gray-600">
-          ${n.message}
-        </p>
-
-        ${actionButtons}
-
-      </div>
-    `
-  })
+  } catch (err) {
+    details.innerHTML = `<p class="text-sm text-gray-700">Request ID: #${requestId}</p>`;
+  }
 }
-async function acceptRequest(requestId){
+
+// ❌ Close modal
+function closeRequestModal() {
+  const modal = document.getElementById("requestModal");
+  modal.classList.add("hidden");
+  modal.style.display = "";  // ✅ clear inline flex style
+  selectedRequestId = null;
+}
+async function acceptRequestFromModal() {
+
+  if (!selectedRequestId) return;
 
   const res = await fetch(
     "http://127.0.0.1:8000/api/donor/accept-request/",
     {
-      method:"POST",
-      headers:{
-        "Authorization":`Bearer ${token}`,
-        "Content-Type":"application/json"
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
       },
-      body:JSON.stringify({
-        request_id:requestId
+      body: JSON.stringify({
+        request_id: selectedRequestId
       })
     }
-  )
+  );
 
-  const data = await res.json()
+  const data = await res.json();
 
-  if(res.ok){
-    showNotification("You accepted the request","success")
-    loadNotifications()
-  }else{
-    showNotification(data.message || "Error","error")
+  if (res.ok) {
+    showNotification("Request accepted ✅", "success");
+    closeRequestModal();
+    loadNotifications();
+  } else {
+    showNotification(data.message || "Error", "error");
   }
+}
 
+function toggleNotifications() {
+  const dropdown = document.getElementById("notificationDropdown");
+  dropdown.classList.toggle("hidden");
+
+  if (!dropdown.classList.contains("hidden")) {
+    loadNotifications();  // ✅ ADD THIS
+  }
+}
+async function openDonorModal(id, name, phone, distance, isAccepted) {
+  // Mark as read
+  await fetch(`http://127.0.0.1:8000/api/donor/notifications/${id}/read/`, {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${token}` }
+  });
+
+  const modal = document.getElementById("donorModal");
+  modal.classList.remove("hidden");
+  modal.style.display = "flex";
+
+  document.getElementById("donorDetails").innerHTML = `
+    
+    <!-- ✅ Accepted Banner -->
+    ${isAccepted ? `
+    <div class="flex items-center gap-3 p-4 bg-green-100 border border-green-300 rounded-xl mb-4">
+      <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+      <div>
+        <p class="font-bold text-green-800 text-lg">Request Accepted! ✅</p>
+        <p class="text-sm text-green-700">A donor has accepted your blood request. Please contact them below.</p>
+      </div>
+    </div>` : `
+    <div class="flex items-center gap-3 p-4 bg-yellow-50 border border-yellow-300 rounded-xl mb-4">
+      <i class="fas fa-clock text-yellow-600 text-2xl"></i>
+      <div>
+        <p class="font-bold text-yellow-800">Pending</p>
+        <p class="text-sm text-yellow-700">Waiting for donor to confirm.</p>
+      </div>
+    </div>`}
+
+    <!-- Donor Details -->
+    <div class="space-y-3">
+      <div class="flex items-center gap-3 p-3 bg-green-50 rounded-xl">
+        <i class="fas fa-user text-green-600 text-xl"></i>
+        <div>
+          <p class="text-xs text-gray-500">Donor Name</p>
+          <p class="font-bold text-gray-800">${name || "N/A"}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
+        <i class="fas fa-phone text-blue-600 text-xl"></i>
+        <div>
+          <p class="text-xs text-gray-500">Contact Number</p>
+          <p class="font-bold text-gray-800">${phone || "N/A"}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 p-3 bg-red-50 rounded-xl">
+        <i class="fas fa-map-marker-alt text-red-600 text-xl"></i>
+        <div>
+          <p class="text-xs text-gray-500">Distance from Hospital</p>
+          <p class="font-bold text-gray-800">${distance ? distance + " km" : "Unknown"}</p>
+        </div>
+      </div>
+
+      ${phone ? `
+      <a href="tel:${phone}"
+         class="block w-full text-center bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold mt-2">
+        <i class="fas fa-phone mr-2"></i> Call Donor Now
+      </a>` : ''}
+    </div>
+  `;
+
+  loadNotifications();
+}
+
+function closeDonorModal() {
+  const modal = document.getElementById("donorModal");
+  modal.classList.add("hidden");
+  modal.style.display = "";
+}
+async function markAsReadOnly(id) {
+  await fetch(`http://127.0.0.1:8000/api/donor/notifications/${id}/read/`, {  // ← add donor/
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  });
+  loadNotifications();
+}
+
+async function handleDonorRequestClick(notificationId, requestId) {
+  console.log("notificationId:", notificationId);  // ← add this
+  console.log("requestId:", requestId);             // ← add this
+
+  await fetch(`http://127.0.0.1:8000/api/donor/notifications/${notificationId}/read/`, {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${token}` }
+  });
+
+  openRequestModal(requestId);
+  loadNotifications();
+}
+async function acceptRequestFromModal() {
+  if (!selectedRequestId) return;
+
+  const res = await fetch(
+    "http://127.0.0.1:8000/api/donor/accept-request/",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ request_id: selectedRequestId })
+    }
+  );
+
+  const data = await res.json();
+
+  if (res.ok) {
+    showNotification("Request accepted ✅", "success");
+    closeRequestModal();
+    loadNotifications();
+  } else {
+    // ✅ Show the actual error message (e.g. "Another donor already accepted")
+    showNotification(data.message || "Error", "error");
+    closeRequestModal();
+  }
 }
 </script>
 <!-- PATIENT OTP VIEW MODAL -->
@@ -4387,6 +4533,56 @@ async function acceptRequest(requestId){
     </button>
   </div>
 </div>
+<div id="requestModal"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-xl p-6 w-[400px]">
 
+    <h2 class="text-lg font-bold mb-4">Blood Request</h2>
+
+    <div id="requestDetails" class="text-sm text-gray-700 mb-4">
+      Loading...
+    </div>
+
+    <div class="flex justify-end gap-3">
+      <button onclick="closeRequestModal()"
+              class="px-4 py-2 bg-gray-300 rounded">
+        Cancel
+      </button>
+
+      <!-- ✅ Add btn-decline class -->
+      <button onclick="declineRequest()"
+              class="btn-decline px-4 py-2 bg-gray-500 text-white rounded">
+        Decline
+      </button>
+
+      <!-- ✅ Add btn-accept class -->
+      <button onclick="acceptRequestFromModal()"
+              class="btn-accept px-4 py-2 bg-green-600 text-white rounded">
+        Accept
+      </button>
+    </div>
+
+  </div>
+</div>
+<div id="donorModal"
+     class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+
+  <div class="bg-white rounded-xl p-6 w-[400px]">
+
+    <h2 class="text-xl font-bold mb-4">Donor Details</h2>
+
+    <div id="donorDetails" class="space-y-2 text-gray-700">
+      <!-- dynamic -->
+    </div>
+
+    <div class="flex justify-end mt-4">
+      <button onclick="closeDonorModal()"
+              class="px-4 py-2 bg-red-600 text-white rounded">
+        Close
+      </button>
+    </div>
+
+  </div>
+</div>
 </body>
 </html>

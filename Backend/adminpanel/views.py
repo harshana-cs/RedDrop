@@ -279,6 +279,11 @@ def admin_reject_blood_request(request, request_id):
         )
 
     blood_request.status = "rejected"
+    Notification.objects.create(
+    title="Request Rejected",
+    message=f"Request #{blood_request.id} was rejected",
+    type="alert"
+)
 
     # Optional: save rejection reason if field exists
     if hasattr(blood_request, "rejection_reason"):
@@ -1072,6 +1077,57 @@ def admin_stock_movements(request):
             "units": h.units,
             "updated_by": h.performed_by,
             "notes": h.source or h.reason
+        })
+
+    return Response(data)
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def admin_activity_logs(request):
+
+    role = request.GET.get("role")       # patient / donor / hospital
+    log_type = request.GET.get("type")   # blood_request / donor_accept / completed
+    date = request.GET.get("date")
+
+    logs = Notification.objects.all().order_by("-created_at")
+
+    # ✅ FILTER BY TYPE
+    if log_type and log_type != "all":
+        logs = logs.filter(type=log_type)
+
+    # ✅ FILTER BY DATE
+    if date:
+        logs = logs.filter(created_at__date=date)
+
+    data = []
+
+    for n in logs:
+
+        # 🔍 DETERMINE ROLE
+        role_type = "system"
+
+        if n.user:
+            # Check if donor or patient
+            donor = Donor.objects.filter(email=n.user.email).first()
+            if donor:
+                role_type = "donor"
+            else:
+                role_type = "patient"
+
+        elif hasattr(n, "hospital") and n.hospital:
+            role_type = "hospital"
+
+        # ✅ FILTER BY ROLE
+        if role and role != "all":
+            if role_type != role:
+                continue
+
+        data.append({
+            "role": role_type,
+            "type": n.type,
+            "action": n.title,
+            "message": n.message,
+            "time": n.created_at
         })
 
     return Response(data)
