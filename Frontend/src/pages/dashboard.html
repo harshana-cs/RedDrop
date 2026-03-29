@@ -585,70 +585,106 @@
     <div class="particle" style="top: 80%; left: 70%; animation-delay: 8s;"></div>
   </div>
 
-  <!-- Enhanced Header -->
-  <header class="bg-gradient-to-r from-[#B91C1C] via-[#b12a2a] to-[#991B1B] text-white fixed top-0 left-0 w-full z-50 shadow-2xl backdrop-blur-md bg-opacity-95 border-b border-red-400/30">
-    <nav class="container mx-auto flex items-center justify-between py-3 px-6">
+  <!-- Enhanced Header with Hamburger -->
+<header class="bg-gradient-to-r from-[#B91C1C] via-[#b12a2a] to-[#991B1B] text-white fixed top-0 left-0 w-full z-50 shadow-2xl backdrop-blur-md bg-opacity-95 border-b border-red-400/30">
+  <nav class="container mx-auto flex items-center justify-between py-3 px-6">
+    <!-- Hamburger Menu Button (Mobile) -->
+     <button id="hamburgerBtn" class="text-white text-2xl hover:text-yellow-300 transition-all duration-300 md:hidden mr-3">
+    <i class="fas fa-bars"></i>
+  </button>
 
-      <!-- Logo with enhanced animation -->
-      <div class="flex items-center space-x-3 group cursor-pointer">
-        <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-500 border-2 border-white/30">
-          <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-inner">
-            <i class="fas fa-tint text-[#e03636] text-2xl animate-pulse-slow"></i>
-          </div>
+    <!-- Logo with enhanced animation -->
+    <div class="flex items-center space-x-3 group cursor-pointer">
+      <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-500 border-2 border-white/30">
+        <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-inner">
+          <i class="fas fa-tint text-[#e03636] text-2xl animate-pulse-slow"></i>
         </div>
-
-        <a href="index.html" class="ml-2">
-          <h1 class="text-3xl font-bold tracking-wide">
-            Red<span class="font-extrabold text-yellow-300 drop-shadow-lg">Drop</span>
-          </h1>
-          <p class="text-xs text-red-200 mt-0.5 tracking-wider">SAVE LIVES • DONATE BLOOD</p>
-        </a>
       </div>
+      <a href="index.html" class="ml-2">
+        <h1 class="text-3xl font-bold tracking-wide">
+          Red<span class="font-extrabold text-yellow-300 drop-shadow-lg">Drop</span>
+        </h1>
+        <p class="text-xs text-red-200 mt-0.5 tracking-wider">SAVE LIVES • DONATE BLOOD</p>
+      </a>
+    </div>
 
-      <div class="flex items-center gap-4 ml-auto">
-
-        <!-- Enhanced Notification -->
-        <div class="relative">
-          <button onclick="toggleNotifications()" class="relative text-white text-xl hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 hover:rotate-12 p-3 hover:bg-white/10 rounded-xl">
-            <i class="fas fa-bell"></i>
-
-            <span id="notificationBadge" class="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-xs px-2 py-1 rounded-full hidden animate-bounce font-bold shadow-lg">
-              0
-            </span>
-          </button>
-
-          <div id="notificationDropdown" class="hidden absolute right-0 mt-3 w-96 bg-white/95 backdrop-blur-md text-gray-800 rounded-2xl shadow-2xl border border-red-200 transform transition-all duration-300 origin-top-right">
-            <div class="p-5 border-b bg-gradient-to-r from-red-50 to-white rounded-t-2xl">
-              <div class="flex items-center justify-between">
-                <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
-                  <i class="fas fa-bell text-red-600"></i>Notifications
-                </h3>
-                <span onclick="markAllAsRead()" class="text-xs text-red-600 cursor-pointer hover:underline flex items-center gap-1">
-                  <i class="fas fa-check-circle"></i>Mark all as read
-                </span>
-              </div>
-            </div>
-            <div id="notificationList" class="max-h-80 overflow-y-auto"></div>
-            <div class="p-3 border-t text-center">
-              <button class="text-sm text-red-600 hover:text-red-800 font-medium hover:underline transition-all duration-300">
-                View all notifications
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Enhanced Profile Icon -->
-        <button onclick="showSection('profile')" class="text-white text-xl hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 relative group p-2 hover:bg-white/10 rounded-xl">
-          <i class="fas fa-user-circle text-2xl"></i>
-          <span class="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-2.5 h-2.5 bg-green-400 rounded-full pulse-ring"></span>
-          <span class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-            Profile
-          </span>
+    <div class="flex items-center gap-4 ml-auto">
+      <!-- Notification and Profile icons (keep existing) -->
+      <div class="relative">
+        <button onclick="toggleNotifications()" class="relative text-white text-xl hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 hover:rotate-12 p-3 hover:bg-white/10 rounded-xl">
+          <i class="fas fa-bell"></i>
+          <span id="notificationBadge" class="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-xs px-2 py-1 rounded-full hidden animate-bounce font-bold shadow-lg">0</span>
         </button>
+        <div id="notificationDropdown" class="hidden absolute right-0 mt-3 w-96 bg-white/95 backdrop-blur-md text-gray-800 rounded-2xl shadow-2xl border border-red-200 transform transition-all duration-300 origin-top-right z-50">
+          <div class="p-5 border-b bg-gradient-to-r from-red-50 to-white rounded-t-2xl">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <i class="fas fa-bell text-red-600"></i>Notifications
+              </h3>
+              <span onclick="markAllAsRead()" class="text-xs text-red-600 cursor-pointer hover:underline flex items-center gap-1">
+                <i class="fas fa-check-circle"></i>Mark all as read
+              </span>
+            </div>
+          </div>
+          <div id="notificationList" class="max-h-80 overflow-y-auto"></div>
+        </div>
       </div>
-    </nav>
-  </header>
 
+      <button onclick="showSection('profile')" class="text-white text-xl hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 relative group p-2 hover:bg-white/10 rounded-xl">
+        <i class="fas fa-user-circle text-2xl"></i>
+        <span class="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-2.5 h-2.5 bg-green-400 rounded-full pulse-ring"></span>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- Mobile Hamburger Menu -->
+<div id="mobileMenu" class="fixed top-20 left-0 w-80 bg-white/95 backdrop-blur-md shadow-2xl rounded-r-2xl z-50 transform -translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+  <div class="p-5 border-b border-red-100 bg-gradient-to-r from-red-50 to-white">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-[#B91C1C] to-[#991B1B] rounded-xl flex items-center justify-center">
+          <i class="fas fa-tint text-white"></i>
+        </div>
+        <span class="text-xl font-bold text-gray-800">Menu</span>
+      </div>
+      <button id="closeMobileMenuBtn" class="text-gray-500 hover:text-red-600 text-xl">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  </div>
+  <nav class="px-4 py-6 space-y-2 overflow-y-auto max-h-[calc(100vh-120px)]">
+    <button onclick="showSection('home'); closeMobileMenu()" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-gradient-to-r hover:from-red-50 hover:to-white transition-all duration-300">
+      <i class="fas fa-home text-red-600 w-6"></i>
+      <span class="font-medium">Home</span>
+    </button>
+    <a href="blood_request.html" onclick="closeMobileMenu()" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-gradient-to-r hover:from-red-50 hover:to-white transition-all duration-300">
+      <i class="fas fa-plus-circle text-red-600 w-6"></i>
+      <span class="font-medium">Request Blood</span>
+    </a>
+    <button onclick="showSection('history'); closeMobileMenu()" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-gradient-to-r hover:from-red-50 hover:to-white transition-all duration-300">
+      <i class="fas fa-history text-red-600 w-6"></i>
+      <span class="font-medium">History</span>
+    </button>
+    <button id="openRequestsMobileNav" onclick="showSection('openRequests'); closeMobileMenu()" class="hidden w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-gradient-to-r hover:from-red-50 hover:to-white transition-all duration-300">
+      <i class="fas fa-list-alt text-red-600 w-6"></i>
+      <span class="font-medium">Open Blood Requests</span>
+    </button>
+    <button onclick="showSection('donationCamps'); closeMobileMenu()" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-gradient-to-r hover:from-red-50 hover:to-white transition-all duration-300">
+      <i class="fas fa-campground text-red-600 w-6"></i>
+      <span class="font-medium">Donation Camps</span>
+    </button>
+    <div class="pt-6 mt-6 border-t border-red-100">
+      <button id="registerDonorMobileBtn" onclick="window.location.href='donor_register.html'" class="btn-primary w-full text-white py-4 rounded-xl font-medium shadow-xl flex items-center justify-center gap-2">
+        <i class="fas fa-heart mr-2"></i>
+        <span>Register as Donor</span>
+      </button>
+      <button onclick="logout(); closeMobileMenu()" class="w-full mt-3 bg-gradient-to-r from-gray-800 to-gray-900 text-white py-4 rounded-xl hover:from-gray-900 hover:to-black transition-all duration-300 shadow-xl flex items-center justify-center gap-2">
+        <i class="fas fa-sign-out-alt mr-2"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </nav>
+</div>
   <div class="min-h-screen flex pt-20">
 
     <!-- Enhanced Sidebar -->
@@ -666,7 +702,7 @@
         <button onclick="showSection('home')" class="sidebar-item w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-gradient-to-r hover:from-red-50 hover:to-white transition-all duration-300 group relative overflow-hidden">
           <div class="absolute inset-0 bg-gradient-to-r from-red-500/0 to-red-500/0 group-hover:from-red-500/5 group-hover:to-red-500/0 transition-all duration-300"></div>
           <i class="fas fa-home text-red-600 group-hover:scale-110 transition-transform duration-300 w-6"></i> 
-          <span class="font-medium group-hover:text-red-600 group-hover:translate-x-1 transition-all duration-300">Dashboard</span>
+          <span class="font-medium group-hover:text-red-600 group-hover:translate-x-1 transition-all duration-300">Home</span>
         </button>
 
         <a href="blood_request.html" class="sidebar-item w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-gradient-to-r hover:from-red-50 hover:to-white transition-all duration-300 group relative overflow-hidden">
@@ -1309,6 +1345,27 @@
           </div>
         </div>
       </section>
+      <!-- Donation Camps Section -->
+<section id="donationCamps" class="section">
+  <div class="bg-white rounded-3xl shadow-2xl p-8 transform hover:shadow-3xl transition-all duration-500 border border-gray-100">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h2 class="text-4xl font-bold text-gray-800 flex items-center gap-3">
+          <i class="fas fa-campground text-red-600"></i>
+          Blood Donation Camps
+        </h2>
+        <p class="text-gray-600 text-lg mt-2">Join a camp near you and become a lifesaver</p>
+      </div>
+      <div class="bg-red-100 px-6 py-3 rounded-2xl">
+        <i class="fas fa-hand-holding-heart text-red-600 text-2xl"></i>
+      </div>
+    </div>
+
+    <div id="donationCampsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Camp cards will be dynamically loaded here -->
+    </div>
+  </div>
+</section>
 
    <!-- Enhanced Open Blood Requests Section -->
       <section id="openRequests" class="section">
@@ -1712,33 +1769,29 @@
           <!-- ================= PENDING DONATION TAB ================= -->
           <div id="pendingDonationContent" class="tab-content p-8">
             <!-- OTP DIRECT CONFIRMATION -->
-            <div class="bg-white rounded-2xl shadow-2xl p-8 border border-gray-200 transform hover:shadow-3xl transition-all duration-300">
-              <h3 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-3">
-                <i class="fas fa-key text-red-600"></i>
-                Enter Donation OTP
-              </h3>
-
-              <input
-                id="otpCode"
-                type="text"
-                maxlength="4"
-                placeholder="Enter 4-digit OTP"
-                class="w-full border-2 border-gray-300 rounded-2xl px-6 py-5 text-center text-3xl font-bold tracking-widest focus:ring-4 focus:ring-red-200 focus:border-red-500 transition-all duration-300"
-              />
-
-              <button
-                onclick="submitOtpDirect()"
-                class="btn-primary mt-6 w-full text-white py-5 rounded-2xl text-xl font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
-                <i class="fas fa-check-circle mr-2"></i>
-                Confirm Donation
-              </button>
-              
-              <p class="text-sm text-gray-500 mt-4 text-center">
-                <i class="fas fa-info-circle text-red-500 mr-1"></i>
-                Enter the OTP provided by the patient to verify your donation
-              </p>
-            </div>
-          </div>
+<div id="otpDirectSection">
+  <div class="bg-white rounded-xl shadow p-6 mt-6">
+    <h3 class="text-lg font-bold mb-3 flex items-center gap-2">
+      <i class="fas fa-key text-red-500"></i>
+      Enter Donation OTP
+    </h3>
+    <p class="text-sm text-gray-600 mb-4">
+      Enter the OTP provided by the patient to verify your donation
+    </p>
+    <input
+      id="otpCode"
+      type="text"
+      maxlength="4"
+      placeholder="Enter 4-digit OTP"
+      class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-center text-2xl font-bold tracking-widest focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+    />
+    <button
+      onclick="submitOtpDirect()"
+      class="mt-4 w-full bg-[var(--brand-red)] hover:bg-red-700 text-white py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105">
+      Confirm Donation
+    </button>
+  </div>
+</div>
         </div>
       </section>
 
@@ -2500,6 +2553,7 @@
   <div id="toastContainer" class="fixed top-6 right-6 z-50 space-y-3"></div>
 
 <!-- ================= SCRIPT ================= -->
+<!-- ================= SCRIPT ================= -->
 <script>
 // Global variables
 const MIN_GAP_DAYS = 56;
@@ -2509,67 +2563,334 @@ let currentDonationTab = 'stats';
 let allDonations = [];
 let filteredDonations = [];
 const token = localStorage.getItem("access_token");
-document.addEventListener("DOMContentLoaded", () => {
-    const params = new URLSearchParams(window.location.search);
-    const tab = params.get("tab");
 
-    if (tab) {
-        showSection(tab);
-    } else {
-        showSection("home"); // default
+// Donation Camps Data
+const donationCamps = [
+  {
+    id: 1,
+    name: "City Central Hospital Blood Drive",
+    date: "April 15, 2026",
+    time: "9:00 AM - 5:00 PM",
+    location: "City Central Hospital",
+    address: "123 Healthcare Ave, Downtown",
+    contact: "+1 (555) 123-4567",
+    organizer: "Red Cross Society",
+    slots: 45,
+    bloodTypesNeeded: ["A+", "O+", "B+"]
+  },
+  {
+    id: 2,
+    name: "University Community Blood Camp",
+    date: "April 18, 2026",
+    time: "10:00 AM - 6:00 PM",
+    location: "State University Student Center",
+    address: "University Campus, Building C",
+    contact: "+1 (555) 234-5678",
+    organizer: "University Medical Club",
+    slots: 60,
+    bloodTypesNeeded: ["O+", "O-", "AB+"]
+  },
+  {
+    id: 3,
+    name: "Weekend Heroes Donation Camp",
+    date: "April 22, 2026",
+    time: "8:00 AM - 4:00 PM",
+    location: "Community Health Center",
+    address: "456 Wellness Blvd",
+    contact: "+1 (555) 345-6789",
+    organizer: "LifeSaver Foundation",
+    slots: 35,
+    bloodTypesNeeded: ["A-", "B-", "O+"]
+  },
+  {
+    id: 4,
+    name: "Corporate Blood Donation Drive",
+    date: "April 25, 2026",
+    time: "11:00 AM - 7:00 PM",
+    location: "Business District Convention Hall",
+    address: "789 Corporate Park",
+    contact: "+1 (555) 456-7890",
+    organizer: "Business Cares Initiative",
+    slots: 80,
+    bloodTypesNeeded: ["A+", "B+", "AB+", "O+"]
+  },
+  {
+    id: 5,
+    name: "Rotary Club Blood Camp",
+    date: "April 28, 2026",
+    time: "9:30 AM - 5:30 PM",
+    location: "Rotary Community Center",
+    address: "321 Service Road",
+    contact: "+1 (555) 567-8901",
+    organizer: "Rotary International",
+    slots: 50,
+    bloodTypesNeeded: ["O+", "O-", "A+"]
+  },
+  {
+    id: 6,
+    name: "Ramadan Blood Donation Camp",
+    date: "May 2, 2026",
+    time: "4:00 PM - 9:00 PM",
+    location: "Central Mosque Community Hall",
+    address: "567 Islamic Center Road",
+    contact: "+1 (555) 678-9012",
+    organizer: "Islamic Relief",
+    slots: 40,
+    bloodTypesNeeded: ["All Types"]
+  }
+];
+
+function loadDonationCamps() {
+  const container = document.getElementById('donationCampsContainer');
+  if (!container) return;
+  
+  container.innerHTML = donationCamps.map(camp => `
+    <div class="bg-gradient-to-br from-white to-red-50 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border border-red-100 overflow-hidden group">
+      <div class="bg-gradient-to-r from-red-600 to-red-700 p-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xl font-bold text-white">${camp.name}</h3>
+          <i class="fas fa-tint text-white text-2xl opacity-80"></i>
+        </div>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="flex items-start gap-3">
+          <i class="fas fa-calendar-alt text-red-500 mt-1"></i>
+          <div>
+            <p class="font-semibold text-gray-800">${camp.date}</p>
+            <p class="text-sm text-gray-600">${camp.time}</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <i class="fas fa-map-marker-alt text-red-500 mt-1"></i>
+          <div>
+            <p class="font-semibold text-gray-800">${camp.location}</p>
+            <p class="text-sm text-gray-600">${camp.address}</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <i class="fas fa-users text-red-500 mt-1"></i>
+          <div>
+            <p class="font-semibold text-gray-800">${camp.organizer}</p>
+            <p class="text-sm text-gray-600">${camp.slots} slots available</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-3">
+          ${camp.bloodTypesNeeded.map(type => `<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">${type}</span>`).join('')}
+        </div>
+        <div class="flex items-center gap-3 pt-3 border-t border-gray-100">
+          <i class="fas fa-phone-alt text-green-600"></i>
+          <span class="text-sm text-gray-700">${camp.contact}</span>
+        </div>
+        <button onclick="registerForCamp(${camp.id})" class="btn-primary w-full mt-4 text-white py-3 rounded-xl font-medium transition-all duration-300 hover:shadow-xl flex items-center justify-center gap-2">
+          <i class="fas fa-hand-peace"></i>
+          <span>Register for Camp</span>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function registerForCamp(campId) {
+  const camp = donationCamps.find(c => c.id === campId);
+  if (camp) {
+    showNotification(`You've registered for ${camp.name}! We'll contact you soon.`, "success");
+  }
+}
+
+function addCampsPreviewToHome() {
+  const homeSection = document.getElementById('home');
+  if (!homeSection) return;
+  if (document.getElementById('campsPreview')) return;
+  
+  const campsPreviewHTML = `
+    <div id="campsPreview" class="mb-8">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <i class="fas fa-campground text-red-600"></i>
+          Upcoming Donation Camps
+        </h3>
+        <button onclick="showSection('donationCamps')" class="text-red-600 hover:text-red-800 font-medium flex items-center gap-2">
+          View All <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="campsPreviewContainer"></div>
+    </div>
+  `;
+  
+  const quickActions = homeSection.querySelector('.mb-8');
+  if (quickActions && quickActions.nextSibling) {
+    quickActions.insertAdjacentHTML('afterend', campsPreviewHTML);
+  } else {
+    homeSection.insertAdjacentHTML('beforeend', campsPreviewHTML);
+  }
+  
+  const previewContainer = document.getElementById('campsPreviewContainer');
+  if (previewContainer) {
+    previewContainer.innerHTML = donationCamps.slice(0, 3).map(camp => `
+      <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group cursor-pointer" onclick="showSection('donationCamps')">
+        <div class="bg-gradient-to-r from-red-500 to-red-600 p-3">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-white">${camp.name}</h4>
+            <i class="fas fa-tint text-white"></i>
+          </div>
+        </div>
+        <div class="p-4 space-y-2">
+          <p class="text-sm flex items-center gap-2"><i class="fas fa-calendar text-red-500"></i> ${camp.date}</p>
+          <p class="text-sm flex items-center gap-2"><i class="fas fa-map-marker-alt text-red-500"></i> ${camp.location}</p>
+          <p class="text-sm text-gray-600">${camp.time}</p>
+          <span class="inline-block mt-2 text-red-600 text-sm font-medium">View Details →</span>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+// Hamburger menu functions
+function initHamburgerMenu() {
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const closeBtn = document.getElementById('closeMobileMenuBtn');
+  
+  if (!hamburgerBtn || !mobileMenu) {
+    console.log('Hamburger elements not found');
+    return;
+  }
+  
+  function openMenu() {
+    mobileMenu.classList.remove('-translate-x-full');
+    document.body.style.overflow = 'hidden';
+  }
+  
+  function closeMenu() {
+    mobileMenu.classList.add('-translate-x-full');
+    document.body.style.overflow = '';
+  }
+  
+  hamburgerBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openMenu();
+  });
+  
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeMenu);
+  }
+  
+  document.addEventListener('click', (e) => {
+    if (!mobileMenu.contains(e.target) && !hamburgerBtn.contains(e.target) && !mobileMenu.classList.contains('-translate-x-full')) {
+      closeMenu();
     }
+  });
+  
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !mobileMenu.classList.contains('-translate-x-full')) {
+      closeMenu();
+    }
+  });
+  
+  window.closeMobileMenu = closeMenu;
+}
+
+function closeMobileMenu() {
+  const mobileMenu = document.getElementById('mobileMenu');
+  if (mobileMenu) {
+    mobileMenu.classList.add('-translate-x-full');
+    document.body.style.overflow = '';
+  }
+}
+
+// ===== MAIN INITIALIZATION (SINGLE DOMContentLoaded) =====
+document.addEventListener("DOMContentLoaded", function() {
+  // 1. Initial tab from URL
+  const params = new URLSearchParams(window.location.search);
+  const tab = params.get("tab");
+  window._initialTab = tab || "home";
+  
+  if (tab) {
+    showSection(tab);
+  } else {
+    showSection("home");
+  }
+  
+  // 2. Token validation
+  if (!token) {
+    logout();
+    return;
+  }
+  
+  // 3. Core data loading
+  loadUserCapabilities();
+  loadNotifications();
+  setInterval(loadNotifications, 15000);
+  
+  // 4. Modal close handlers
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeOtpModal();
+  });
+  
+  const otpModal = document.getElementById("otpModal");
+  if (otpModal) {
+    otpModal.addEventListener('click', (e) => {
+      if (e.target.id === "otpModal") closeOtpModal();
+    });
+  }
+  
+  // 5. Sidebar donor button
+  const donorNavButton = document.getElementById("donorNav");
+  if (donorNavButton) donorNavButton.setAttribute("onclick", "showSection('donor')");
+  
+  // 6. NEW FEATURES: Hamburger menu + Donation Camps
+  initHamburgerMenu();
+  loadDonationCamps();
+  addCampsPreviewToHome();
+  
+  // 7. Update sidebar text from Dashboard to Home
+  const homeButtonSpan = document.querySelector('.sidebar-item span');
+  if (homeButtonSpan && homeButtonSpan.textContent === 'Dashboard') {
+    homeButtonSpan.textContent = 'Home';
+  }
+  
+  // Fix empty home button text
+  const homeButton = document.querySelector('.sidebar-item button[onclick="showSection(\'home\')"] span');
+  if (homeButton && (!homeButton.textContent || homeButton.textContent === '')) {
+    homeButton.textContent = 'Home';
+  }
+  
+  // 8. Show donation camps section if hash exists
+  if (window.location.hash === '#donationCamps') {
+    showSection('donationCamps');
+  }
 });
+
+// ===== ALL YOUR EXISTING FUNCTIONS GO HERE (showSection, logout, loadDashboard, etc.) =====
+// Make sure to include ALL your existing functions like showSection, loadDashboard, 
+// loadHistory, loadUserCapabilities, etc. They are too long to repeat but must be here.
+
 function showSection(id) {
-  // 1️⃣ Hide all sections safely
   document.querySelectorAll('.section').forEach(section => {
     section.classList.remove('active');
   });
-
-  // 2️⃣ Find target section
   const target = document.getElementById(id);
-
   if (!target) {
     console.error("showSection(): section not found ->", id);
     return;
   }
-
-  // 3️⃣ Show requested section
   target.classList.add('active');
-
-  // 4️⃣ Load section-specific data
   switch (id) {
-    case 'home':
-      loadUserCapabilities();
-      break;
-
-    case 'profile':
-      loadUserCapabilities();   // profile data
-      break;
-
+    case 'home': loadUserCapabilities(); break;
+    case 'profile': loadUserCapabilities(); break;
     case 'history':
       loadDashboard();
       loadHistory();
       checkApprovedRequestAndToggleDonorsTab();
       showDonationTab('stats');
       break;
-
-    case 'openRequests':
-      loadOpenBloodRequests();
-      break;
-
-    case 'donor':
-      loadUserCapabilities();
-      showDonationTab('stats');
-      break;
-
-    default:
-      // no extra loading required
-      break;
+    case 'openRequests': loadOpenBloodRequests(); break;
+    case 'donor': loadUserCapabilities(); showDonationTab('stats'); break;
+    default: break;
   }
 }
 
-
-function logout(){
+function logout() {
   localStorage.clear();
   window.location.href = "login-signup.html";
 }
@@ -3272,7 +3593,11 @@ if (donations.last_date) {
 
     /* ================= OTP / PENDING CONFIRMATIONS ================= */
     if (data.is_donor) {
-      showDonationTab("pending");
+      // Only switch to pending tab if the user didn't land on history via URL param
+      // (history section already sets showDonationTab('stats') on load)
+      if (window._initialTab !== "history") {
+        showDonationTab("pending");
+      }
       loadPendingDonations();
     }
 
@@ -3652,122 +3977,136 @@ async function loadPendingDonations() {
     const card = document.getElementById("pendingDonationCard");
     const details = document.getElementById("pendingDonationDetails");
     const noPending = document.getElementById("noPendingDonations");
+    const otpSection = document.getElementById("otpDirectSection");
     const otpInput = document.getElementById("otpCode");
 
+    // ── Check last donation date from capabilities API ──────────────
+    let daysSinceLastDonation = Infinity; // default: no donation yet → allow OTP
+
+    try {
+      const capRes = await fetch(
+        "http://127.0.0.1:8000/loginsignup/user-capabilities/",
+        { headers: { "Authorization": `Bearer ${token}` } }
+      );
+      if (capRes.ok) {
+        const capData = await capRes.json();
+        const lastDonationRaw = capData?.donations?.last_date;
+        if (lastDonationRaw) {
+          const lastDonationDate = new Date(lastDonationRaw);
+          const today = new Date();
+          daysSinceLastDonation = Math.floor(
+            (today - lastDonationDate) / (1000 * 60 * 60 * 24)
+          );
+        }
+      }
+    } catch (capErr) {
+      console.warn("Could not fetch capabilities for cooldown check:", capErr);
+    }
+
+    const isEligible = daysSinceLastDonation >= MIN_GAP_DAYS; // 56 days
+
+    // ── Show/hide OTP input section based on eligibility ────────────
+    if (otpSection) {
+      if (!isEligible) {
+        const daysLeft = MIN_GAP_DAYS - daysSinceLastDonation;
+        otpSection.innerHTML = `
+          <div class="bg-yellow-50 border-l-4 border-yellow-400 rounded-xl p-6">
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-hourglass-half text-yellow-600 text-2xl"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-lg text-yellow-800">Donation Cooldown Active</h4>
+                <p class="text-yellow-700 mt-1">
+                  You must wait <span class="font-bold text-xl text-yellow-900">${daysLeft}</span> more 
+                  day${daysLeft !== 1 ? 's' : ''} before your next donation.
+                </p>
+                <p class="text-sm text-yellow-600 mt-2">
+                  <i class="fas fa-info-circle mr-1"></i>
+                  Minimum gap between donations is <strong>${MIN_GAP_DAYS} days</strong> 
+                  (last donation: <strong>${daysSinceLastDonation} days ago</strong>).
+                </p>
+              </div>
+            </div>
+          </div>
+        `;
+        // Hide card too if not eligible
+        if (card) card.classList.add("hidden");
+        if (noPending) noPending.classList.add("hidden");
+        return; // stop further processing
+      } else {
+        // Restore normal OTP section HTML if it was replaced
+        otpSection.innerHTML = `
+          <div class="bg-white rounded-2xl shadow-2xl p-8 border border-gray-200 transform hover:shadow-3xl transition-all duration-300">
+            <h3 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-3">
+              <i class="fas fa-key text-red-600"></i>
+              Enter Donation OTP
+            </h3>
+            <input
+              id="otpCode"
+              type="text"
+              maxlength="4"
+              placeholder="Enter 4-digit OTP"
+              class="w-full border-2 border-gray-300 rounded-2xl px-6 py-5 text-center text-3xl font-bold tracking-widest focus:ring-4 focus:ring-red-200 focus:border-red-500 transition-all duration-300"
+            />
+            <button
+              onclick="submitOtpDirect()"
+              class="btn-primary mt-6 w-full text-white py-5 rounded-2xl text-xl font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
+              <i class="fas fa-check-circle mr-2"></i>
+              Confirm Donation
+            </button>
+            <p class="text-sm text-gray-500 mt-4 text-center">
+              <i class="fas fa-info-circle text-red-500 mr-1"></i>
+              Enter the OTP provided by the patient to verify your donation
+            </p>
+          </div>
+        `;
+      }
+    }
+
+    // ── Handle pending donations display ────────────────────────────
     if (!data || data.length === 0) {
-      // No pending donations
-      card.classList.add("hidden");
-      noPending.classList.remove("hidden");
-      
-      // Show default message in OTP section
-      details.innerHTML = `
-        <div class="bg-blue-50 p-4 rounded-lg">
-          <p class="font-medium text-gray-800">
-            Have you donated blood?
-          </p>
-          <p class="text-sm text-gray-600 mt-1">
-            Enter the OTP provided by the patient to confirm donation.
-          </p>
-        </div>
-      `;
-      
-      // Clear OTP input
+      if (card) card.classList.add("hidden");
+      if (noPending) noPending.classList.remove("hidden");
       if (otpInput) otpInput.value = '';
-      
       return;
     }
 
-    // Pending donation exists
     const donation = data[0];
     currentPendingDonationId = donation.request_id;
 
-    // Show the card
-    card.classList.remove("hidden");
-    noPending.classList.add("hidden");
+    if (card) card.classList.remove("hidden");
+    if (noPending) noPending.classList.add("hidden");
 
-    // Update details
-    details.innerHTML = `
-      <div class="bg-yellow-50 p-4 rounded-lg space-y-2">
-        <div class="flex items-center gap-2">
-          <i class="fas fa-hospital text-yellow-600"></i>
-          <p><strong>Hospital:</strong> ${donation.hospital}</p>
+    if (details) {
+      details.innerHTML = `
+        <div class="bg-yellow-50 p-4 rounded-xl space-y-2">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-hospital text-yellow-600"></i>
+            <p><strong>Hospital:</strong> ${donation.hospital}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-tint text-yellow-600"></i>
+            <p><strong>Blood Type:</strong> ${donation.blood_type}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-map-marker-alt text-yellow-600"></i>
+            <p><strong>District:</strong> ${donation.district}</p>
+          </div>
+          <div class="mt-3 pt-3 border-t border-yellow-200">
+            <p class="text-green-700 font-medium flex items-center gap-2">
+              <i class="fas fa-check-circle"></i>
+              Ready for OTP confirmation
+            </p>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
-          <i class="fas fa-tint text-yellow-600"></i>
-          <p><strong>Blood Type:</strong> ${donation.blood_type}</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <i class="fas fa-map-marker-alt text-yellow-600"></i>
-          <p><strong>District:</strong> ${donation.district}</p>
-        </div>
-        <div class="mt-3 pt-3 border-t border-yellow-200">
-          <p class="text-green-700 font-medium flex items-center gap-2">
-            <i class="fas fa-check-circle"></i>
-            Ready for OTP confirmation
-          </p>
-        </div>
-      </div>
-    `;
+      `;
+    }
 
   } catch (err) {
     console.error("Error loading pending donations:", err);
     showNotification("Error loading pending donations", "error");
-    
-    // Show error state
-    const card = document.getElementById("pendingDonationCard");
-    const details = document.getElementById("pendingDonationDetails");
-    
-    if (card && details) {
-      card.classList.remove("hidden");
-      details.innerHTML = `
-        <div class="bg-red-50 p-4 rounded-lg">
-          <p class="text-red-700">Error loading pending donations. Please try again.</p>
-        </div>
-      `;
-    }
   }
-}
-
-
-
-function updatePendingDonationsUI(pendingDonations) {
-  const card = document.getElementById("pendingDonationCard");
-  const details = document.getElementById("pendingDonationDetails");
-
-  card.classList.remove("hidden");
-
-  // ❌ No patient confirmation yet
-  if (!pendingDonations || pendingDonations.length === 0) {
-    details.innerHTML = `
-      <div class="bg-blue-50 p-4 rounded-xl">
-        <p class="text-sm text-gray-700">
-          Have you already donated blood?
-          <br>
-          If yes, please enter the OTP shared by the patient.
-        </p>
-        <p class="text-xs text-gray-500 mt-2">
-          OTP will become active once patient confirms receipt.
-        </p>
-      </div>
-    `;
-    return;
-  }
-
-  // ✅ Patient has confirmed
-  const c = pendingDonations[0];
-
-  // card.dataset.requestId = c.request_id;
-
-  details.innerHTML = `
-    <div class="bg-yellow-50 p-4 rounded-xl space-y-1">
-      <p><strong>Hospital:</strong> ${c.hospital}</p>
-      <p><strong>Blood Type:</strong> ${c.blood_type}</p>
-      <p><strong>District:</strong> ${c.district}</p>
-      <p class="text-green-700 text-sm font-medium mt-2">
-        OTP ready for verification
-      </p>
-    </div>
-  `;
 }
 
 
@@ -4508,6 +4847,188 @@ async function acceptRequestFromModal() {
     closeRequestModal();
   }
 }
+
+
+function loadDonationCamps() {
+  const container = document.getElementById('donationCampsContainer');
+  if (!container) return;
+  
+  container.innerHTML = donationCamps.map(camp => `
+    <div class="bg-gradient-to-br from-white to-red-50 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border border-red-100 overflow-hidden group">
+      <div class="bg-gradient-to-r from-red-600 to-red-700 p-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xl font-bold text-white">${camp.name}</h3>
+          <i class="fas fa-tint text-white text-2xl opacity-80"></i>
+        </div>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="flex items-start gap-3">
+          <i class="fas fa-calendar-alt text-red-500 mt-1"></i>
+          <div>
+            <p class="font-semibold text-gray-800">${camp.date}</p>
+            <p class="text-sm text-gray-600">${camp.time}</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <i class="fas fa-map-marker-alt text-red-500 mt-1"></i>
+          <div>
+            <p class="font-semibold text-gray-800">${camp.location}</p>
+            <p class="text-sm text-gray-600">${camp.address}</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <i class="fas fa-users text-red-500 mt-1"></i>
+          <div>
+            <p class="font-semibold text-gray-800">${camp.organizer}</p>
+            <p class="text-sm text-gray-600">${camp.slots} slots available</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-3">
+          ${camp.bloodTypesNeeded.map(type => `
+            <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">${type}</span>
+          `).join('')}
+        </div>
+        <div class="flex items-center gap-3 pt-3 border-t border-gray-100">
+          <i class="fas fa-phone-alt text-green-600"></i>
+          <span class="text-sm text-gray-700">${camp.contact}</span>
+        </div>
+        <button onclick="registerForCamp(${camp.id})" class="btn-primary w-full mt-4 text-white py-3 rounded-xl font-medium transition-all duration-300 hover:shadow-xl flex items-center justify-center gap-2">
+          <i class="fas fa-hand-peace"></i>
+          <span>Register for Camp</span>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function registerForCamp(campId) {
+  const camp = donationCamps.find(c => c.id === campId);
+  if (camp) {
+    showNotification(`You've registered for ${camp.name}! We'll contact you soon.`, "success");
+  }
+}
+
+// Add camps preview to home page
+function addCampsPreviewToHome() {
+  const homeSection = document.getElementById('home');
+  if (!homeSection) return;
+  
+  if (document.getElementById('campsPreview')) return;
+  
+  const campsPreviewHTML = `
+    <div id="campsPreview" class="mb-8">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <i class="fas fa-campground text-red-600"></i>
+          Upcoming Donation Camps
+        </h3>
+        <button onclick="showSection('donationCamps')" class="text-red-600 hover:text-red-800 font-medium flex items-center gap-2">
+          View All <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="campsPreviewContainer"></div>
+    </div>
+  `;
+  
+  const quickActions = homeSection.querySelector('.mb-8');
+  if (quickActions && quickActions.nextSibling) {
+    quickActions.insertAdjacentHTML('afterend', campsPreviewHTML);
+  } else {
+    homeSection.insertAdjacentHTML('beforeend', campsPreviewHTML);
+  }
+  
+  const previewContainer = document.getElementById('campsPreviewContainer');
+  if (previewContainer) {
+    previewContainer.innerHTML = donationCamps.slice(0, 3).map(camp => `
+      <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group cursor-pointer" onclick="showSection('donationCamps')">
+        <div class="bg-gradient-to-r from-red-500 to-red-600 p-3">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-white">${camp.name}</h4>
+            <i class="fas fa-tint text-white"></i>
+          </div>
+        </div>
+        <div class="p-4 space-y-2">
+          <p class="text-sm flex items-center gap-2"><i class="fas fa-calendar text-red-500"></i> ${camp.date}</p>
+          <p class="text-sm flex items-center gap-2"><i class="fas fa-map-marker-alt text-red-500"></i> ${camp.location}</p>
+          <p class="text-sm text-gray-600">${camp.time}</p>
+          <span class="inline-block mt-2 text-red-600 text-sm font-medium">View Details →</span>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+// Hamburger menu functions
+// Hamburger menu functions - FIXED VERSION
+function initHamburgerMenu() {
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const closeBtn = document.getElementById('closeMobileMenuBtn');
+  
+  if (!hamburgerBtn || !mobileMenu) {
+    console.log('Hamburger elements not found');
+    return;
+  }
+  
+  // Function to open menu
+  function openMenu() {
+    mobileMenu.classList.remove('-translate-x-full');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  }
+  
+  // Function to close menu
+  function closeMenu() {
+    mobileMenu.classList.add('-translate-x-full');
+    document.body.style.overflow = ''; // Restore scrolling
+  }
+  
+  // Open menu on hamburger click
+  hamburgerBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openMenu();
+  });
+  
+  // Close menu on close button click
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeMenu);
+  }
+  
+  // Close menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!mobileMenu.contains(e.target) && !hamburgerBtn.contains(e.target) && !mobileMenu.classList.contains('-translate-x-full')) {
+      closeMenu();
+    }
+  });
+  
+  // Close menu on escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !mobileMenu.classList.contains('-translate-x-full')) {
+      closeMenu();
+    }
+  });
+  
+  // Expose close function globally
+  window.closeMobileMenu = closeMenu;
+}
+
+function closeMobileMenu() {
+  const mobileMenu = document.getElementById('mobileMenu');
+  if (mobileMenu) {
+    mobileMenu.classList.add('-translate-x-full');
+    document.body.style.overflow = '';
+  }
+}
+
+// Make sure the hamburger button exists and is visible on mobile
+function ensureHamburgerVisibility() {
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  if (hamburgerBtn) {
+    // Remove any hidden classes that might be hiding it
+    hamburgerBtn.classList.remove('hidden');
+  }
+}
+
+
 </script>
 <!-- PATIENT OTP VIEW MODAL -->
 <div id="patientOtpModal"

@@ -11,8 +11,24 @@
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        
-        /* Inventory Management Styles */
+        /* Ensure modal scrolling works */
+#userDetailModal .custom-scrollbar {
+    overflow-y: auto !important;
+    max-height: calc(85vh - 120px); /* Adjust based on header+footer height */
+}
+
+#userDetailModal > div {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
 .progress-bar {
     transition: width 0.3s ease;
 }
@@ -341,18 +357,12 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                             </button>
 
                             <div id="notificationDropdown"
-                    
-                                 class="hidden absolute right-0 mt-2 w-96 bg-white border rounded-xl shadow-xl max-h-[420px] overflow-y-auto">
-                                 <div class="p-3 border-b flex justify-between">
-    <span class="font-semibold">Notifications</span>
-    <button onclick="markAllRead()" class="text-sm text-red-600">
-        Mark all read
-    </button>
-</div>
-                                <div class="p-3 border-b font-semibold">
-                                    Notifications
+                                 class="hidden absolute right-0 mt-2 bg-white border rounded-xl shadow-xl flex flex-col" style="width: 320px; max-height: 400px;">
+                                <div class="p-3 border-b flex justify-between items-center flex-shrink-0">
+                                    <span class="font-semibold">Notifications</span>
+                                    <button onclick="markAllRead()" class="text-sm text-red-600 hover:text-red-700">Mark all read</button>
                                 </div>
-                                <div id="notificationList"></div>
+                                <div id="notificationList" class="overflow-y-auto flex-1 custom-scrollbar"></div>
                             </div>
                             
                         </div>
@@ -1655,7 +1665,8 @@ inventory: {
 title: "Blood Inventory",
 subtitle: "Manage blood bank stock levels"
 },
-            analytics: { title: 'Analytics Dashboard', subtitle: 'System-wide statistics and insights' }
+            analytics: { title: 'Analytics Dashboard', subtitle: 'System-wide statistics and insights' },
+            audit: { title: 'Audit Logs', subtitle: 'Track all system activity and changes' }
         };
 
         tabs.forEach(tab => {
@@ -2523,16 +2534,36 @@ if (tabName === 'inventory') {
         }
         /* ---------- INITIAL LOAD ---------- */
         document.addEventListener('DOMContentLoaded', () => {
-            // Initialize charts
             initializeCharts();
-            
-            // Set overview as active
             tabs[0].click();
-            
-            // Load initial counts
             loadBloodRequests();
             loadDonors();
             loadHospitals();
+            loadNotifications();
+
+            // ── REAL-TIME POLLING ──
+            setInterval(loadNotifications, 15000);  // notifications every 15s
+            setInterval(() => {
+                loadBloodRequests();
+                loadDonors();
+                loadHospitals();
+            }, 30000);  // badges + counts every 30s
+            setInterval(() => {
+                if (!document.getElementById("overviewSection").classList.contains("hidden"))
+                    initializeCharts();
+            }, 60000);  // charts every 60s if visible
+            setInterval(() => {
+                if (!document.getElementById("inventorySection").classList.contains("hidden"))
+                    loadInventory();
+            }, 30000);
+            setInterval(() => {
+                if (!document.getElementById("auditLogsSection").classList.contains("hidden"))
+                    loadAuditLogs();
+            }, 20000);
+            setInterval(() => {
+                if (!document.getElementById("usersSection").classList.contains("hidden"))
+                    loadUsers();
+            }, 30000);
         });
 
         // Close dropdowns when clicking outside
@@ -2851,19 +2882,20 @@ const unreadStyle = n.is_read
 
 list.innerHTML += `
 <div onclick="handleNotificationClick(${n.id}, \`${n.type}\`)"
-     class="p-4 border-b hover:bg-red-50 cursor-pointer transition flex gap-3 ${unreadStyle}">
+     class="px-3 py-2.5 border-b hover:bg-red-50 cursor-pointer transition flex gap-2.5 items-start ${unreadStyle}">
 
-    <div class="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+    <div class="w-7 h-7 flex-shrink-0 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xs mt-0.5">
         <i class="ri-heart-pulse-line"></i>
     </div>
 
-    <div class="flex-1">
-        <p class="font-semibold text-gray-800">${n.title}</p>
-        <p class="text-sm text-gray-600">${n.message}</p>
-        <p class="text-xs text-gray-400 mt-1">${n.created_at}</p>
+    <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between gap-1">
+            <p class="text-xs font-semibold text-gray-800 truncate">${n.title}</p>
+            ${!n.is_read ? `<span class="text-xs text-red-600 font-bold flex-shrink-0">•</span>` : ""}
+        </div>
+        <p class="text-xs text-gray-500 line-clamp-2 leading-snug">${n.message}</p>
+        <p class="text-xs text-gray-400 mt-0.5">${n.created_at}</p>
     </div>
-
-    ${!n.is_read ? `<span class="text-xs text-red-600 font-semibold">NEW</span>` : ""}
 
 </div>
 `;
@@ -2883,9 +2915,7 @@ list.innerHTML += `
 document.getElementById("notificationBtn").addEventListener("click", () => {
     document.getElementById("notificationDropdown").classList.toggle("hidden");
 });
-document.addEventListener("DOMContentLoaded", () => {
-    loadNotifications();
-});
+// notifications polled in main DOMContentLoaded
 function openBloodRequests() {
 
     // activate blood tab
@@ -2916,34 +2946,35 @@ function openBloodRequests() {
     document.getElementById("notificationDropdown").classList.add("hidden");
 }
 async function handleNotificationClick(id, type) {
-    console.log("Notification clicked:", id, type);
-
     try {
-        await fetch(`${API_BASE}/api/admin/notifications/${id}/read/`, {
-            method: "POST"
-        });
-
+        await fetch(`${API_BASE}/api/admin/notifications/${id}/read/`, { method: "POST" });
         loadNotifications();
     } catch (error) {
         console.error("Failed to mark notification as read");
     }
+    document.getElementById("notificationDropdown").classList.add("hidden");
 
-    type = type.trim().toLowerCase();
-    console.log("Normalized type:", type);
-
+    type = (type || "").trim().toLowerCase();
     if (type === "blood_request" || type === "blood") {
         openBloodRequests();
-    }
-
-    else if (type === "donor_registration" || type === "donor") {
+    } else if (type === "donor_registration" || type === "donor" || type === "donor_accept") {
         openDonorRequests();
-    }
-
-    else if (type === "hospital_registration" || type === "hospital") {
+    } else if (type === "hospital_registration" || type === "hospital") {
         openHospitalSection();
+    } else if (type === "alert" || type === "audit" || type === "completed") {
+        openAuditLogs();
     }
+}
 
-    document.getElementById("notificationDropdown").classList.add("hidden");
+function openAuditLogs() {
+    tabs.forEach(t => { t.classList.remove("bg-red-50", "text-red-600"); t.classList.add("text-gray-700"); });
+    const auditTab = document.querySelector("[data-tab=\"audit\"]");
+    if (auditTab) auditTab.classList.add("bg-red-50", "text-red-600");
+    Object.values(sections).forEach(s => s.classList.add("hidden"));
+    sections.audit.classList.remove("hidden");
+    document.getElementById("page-title").textContent = "Audit Logs";
+    document.getElementById("page-subtitle").textContent = "Track all system activity and changes";
+    loadAuditLogs();
 }
 function openDonorRequests() {
 
@@ -3183,62 +3214,78 @@ let bgColor = getActionBgColor(log.action);
     loadNotifications();
 }
 async function loadUsers(){
+  const body = document.getElementById("usersTableBody");
+  body.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-gray-400">
+    <i class="fas fa-spinner fa-pulse mr-2"></i> Loading users...
+  </td></tr>`;
 
-const body = document.getElementById("usersTableBody");
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/users/`);
+    if (!res.ok) throw new Error("Server error: " + res.status);
+    const data = await res.json();
 
-body.innerHTML = `
-<tr>
-<td colspan="7" class="px-6 py-8 text-center">
-Loading users...
-</td>
-</tr>`;
+    // Update summary stats
+    const totalDonations   = data.reduce((s, u) => s + (u.total_donations || 0), 0);
+    const totalRequests    = data.reduce((s, u) => s + (u.total_requests  || 0), 0);
+    const el = (id) => document.getElementById(id);
+    if (el("totalUsersCount"))   el("totalUsersCount").textContent   = data.length;
+    if (el("totalDonationsSum")) el("totalDonationsSum").textContent = totalDonations;
+    if (el("totalRequestsSum"))  el("totalRequestsSum").textContent  = totalRequests;
+    if (el("totalDonations"))    el("totalDonations").textContent    = totalDonations;
 
-const res = await fetch(`${API_BASE}/api/admin/users/`);
-const data = await res.json();
+    body.innerHTML = "";
 
-body.innerHTML = "";
+    if (!data.length) {
+      body.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-gray-400">No users found</td></tr>`;
+      return;
+    }
 
-data.forEach(u => {
+    data.forEach(u => {
+      const bloodType   = u.blood_type && u.blood_type !== "null" ? u.blood_type : "—";
+      const location    = u.city || u.district || "—";
+      const availClass  = u.availability === "Available"
+        ? "bg-green-100 text-green-700"
+        : "bg-gray-100 text-gray-500";
 
-body.innerHTML += `
-<tr class="hover:bg-gray-50">
+      body.innerHTML += `
+        <tr class="hover:bg-gray-50 border-b border-gray-100 transition">
+          <td class="px-6 py-4 font-medium text-gray-900">${u.name || "—"}</td>
+          <td class="px-6 py-4">
+            <span class="px-2 py-1 bg-red-50 text-red-700 rounded font-semibold text-sm">${bloodType}</span>
+          </td>
+          <td class="px-6 py-4 text-gray-600">${location}</td>
+          <td class="px-6 py-4 text-gray-800 font-medium">${u.total_donations ?? 0}</td>
+          <td class="px-6 py-4 text-gray-800 font-medium">${u.total_requests ?? 0}</td>
+          <td class="px-6 py-4">
+            <span class="px-2 py-1 rounded-full text-xs font-medium ${availClass}">${u.availability}</span>
+          </td>
+          <td class="px-6 py-4">
+            <button onclick="viewUser(${u.id})"
+              style="padding:6px 14px;background:#2563eb;color:#fff;border-radius:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:background 0.2s;"
+              onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+              View
+            </button>
+          </td>
+        </tr>`;
+    });
 
-<td class="px-6 py-4 font-medium">${u.name}</td>
-<td class="px-6 py-4">${u.blood_type}</td>
-<td class="px-6 py-4">${u.district}</td>
-<td class="px-6 py-4">${u.total_donations}</td>
-<td class="px-6 py-4">${u.total_requests}</td>
-
-<td class="px-6 py-4">
-<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
-${u.availability}
-</span>
-</td>
-
-<td class="px-6 py-4">
-<button onclick="viewUser(${u.id})"
-class="px-3 py-1 bg-blue-100 text-blue-700 rounded">
-View
-</button>
-</td>
-
-</tr>
-`;
-
-});
-
+  } catch(err) {
+    body.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-red-400">Failed to load users: ${err.message}</td></tr>`;
+  }
 }
 async function viewUser(id) {
+    const modal = document.getElementById("userDetailModal");
+    const body  = document.getElementById("userDetailBody");
+    modal.classList.remove("hidden");
+    body.innerHTML = `
+      <div class="flex flex-col items-center justify-center py-16">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-red-200 border-t-red-600 mb-4"></div>
+        <p class="text-gray-500 text-sm">Loading user details...</p>
+      </div>`;
     try {
         const res = await fetch(`${API_BASE}/api/admin/users/${id}/`);
+        if (!res.ok) throw new Error("Server returned " + res.status);
         const data = await res.json();
-
-        // Show modal with loading state first
-        const modal = document.getElementById("userDetailModal");
-        const body = document.getElementById("userDetailBody");
-        
-        // Keep loading state visible
-        modal.classList.remove("hidden");
 
         // Format date function
         const formatDate = (dateStr) => {
@@ -3395,7 +3442,7 @@ async function viewUser(id) {
                                 <p class="text-xs text-gray-400 mt-1">This user hasn't made any donations yet</p>
                             </div>
                         ` : `
-                            <div class="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                            <div class="space-y-3">
                                 ${data.donation_history.map(d => `
                                     <div class="border border-gray-100 rounded-lg p-4 hover:bg-red-50 transition-colors">
                                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
@@ -3447,7 +3494,7 @@ async function viewUser(id) {
                                 <p class="text-xs text-gray-400 mt-1">This user hasn't made any blood requests</p>
                             </div>
                         ` : `
-                            <div class="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                            <div class="space-y-3">
                                 ${data.requests.map(r => `
                                     <div class="border border-gray-100 rounded-lg p-4 hover:bg-red-50 transition-colors">
                                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
@@ -3991,7 +4038,7 @@ async function loadAuditLogs() {
   table.innerHTML = `<tr><td colspan="5">Loading...</td></tr>`;
 
   const res = await fetch(
-    `${API_BASE}/api/admin/audit-logs/?role=${role}&type=${type}&date=${date}`
+    `${API_BASE}/api/admin/activity-logs/?role=${role}&type=${type}&date=${date}`
   );
 
   const data = await res.json();
@@ -4074,22 +4121,21 @@ async function loadAuditLogs() {
                 <i class="ri-close-line text-2xl"></i>
             </button>
         </div>
-        
-        <!-- Modal Body - Scrollable (THIS IS THE KEY PART) -->
-        <div id="userDetailBody" class="overflow-y-auto p-6" style="max-height: calc(90vh - 130px);">
-            <!-- Content will be populated here -->
-            <div class="text-center py-12">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
-                <p class="mt-4 text-gray-600">Loading user details...</p>
+
+        <!-- Body - takes all remaining space and scrolls -->
+        <div id="userDetailBody" class="flex-1 overflow-y-auto p-6 custom-scrollbar" style="overflow-y: auto !important;">
+            <div class="flex flex-col items-center justify-center py-16">
+                <div class="animate-spin rounded-full h-12 w-12 border-4 border-red-200 border-t-red-600 mb-4"></div>
+                <p class="text-gray-500 text-sm">Loading user details...</p>
             </div>
         </div>
-        
-        <!-- Modal Footer - Fixed -->
+
+        <!-- Footer - fixed, never scrolls -->
         <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl flex justify-end gap-3 flex-shrink-0">
             <button onclick="closeUserModal()"
                     class="px-5 py-2.5 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 hover:border-gray-400 transition-all font-medium flex items-center gap-2 shadow-sm">
                 <i class="ri-close-line text-lg"></i>
-                Cancel
+                Close
             </button>
             <button onclick="window.print()"
                     class="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium flex items-center gap-2 shadow-sm">

@@ -35,7 +35,8 @@ from .views import (
     admin_remove_inventory,
     admin_bulk_add_inventory,
     admin_stock_movements,
-    # hospital_notifications,
+    admin_activity_logs,
+    mark_notification_read,
 
 )
 
@@ -88,6 +89,7 @@ path("inventory/remove/", admin_remove_inventory),
 path("inventory/bulk-add/", admin_bulk_add_inventory),
 
 path("stock-movements/", admin_stock_movements),
-# path("hospital/notifications/", hospital_notifications),
+path("activity-logs/", admin_activity_logs),
+path("notifications/mark-all-read/", mark_notification_read),
 
 ]
