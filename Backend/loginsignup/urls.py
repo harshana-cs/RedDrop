@@ -12,4 +12,5 @@ urlpatterns = [
     path("signup/", views.patient_signup_manually, name="manual_signup"),
     path("login/", views.patient_login, name="manual_login"),
     path("user-capabilities/", views.api_user_capabilities, name="api_user_capabilities"),
+    path("update-profile/", views.update_profile, name="update-profile"),
 ]

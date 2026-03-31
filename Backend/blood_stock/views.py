@@ -188,25 +188,60 @@ def stock_history(request):
     return Response(data, status=200)
 
 @api_view(["GET"])
-@authentication_classes([])
-@permission_classes([AllowAny])
 def blood_bank_stock(request):
 
     hospital = get_hospital_from_token(request)
-
     if not hospital:
         return Response({"detail": "Unauthorized"}, status=401)
 
-    stocks = BloodStock.objects.filter(hospital__isnull=True)
+    BLOOD_TYPES = ["A+","A-","B+","B-","AB+","AB-","O+","O-"]
 
-    data = [
-        {
-            "blood_type": s.blood_type,
-            "units": s.units,
-            "minimum_required": s.minimum_required,
-            "last_updated": s.last_updated
-        }
-        for s in stocks
-    ]
+    data = []
+
+    for bt in BLOOD_TYPES:
+        stock = BloodStock.objects.filter(
+            hospital__isnull=True,
+            blood_type=bt
+        ).first()
+
+        data.append({
+            "blood_type": bt,
+            "units": stock.units if stock else 0,
+            "minimum_required": stock.minimum_required if stock else 10,
+            "last_updated": stock.last_updated if stock else None
+        })
 
     return Response(data)
+
+from collections import defaultdict
+
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def admin_combined_stock(request):
+
+    stocks = BloodStock.objects.select_related("hospital")
+
+    grouped = defaultdict(lambda: {
+        "total_units": 0,
+        "locations": []
+    })
+
+    for s in stocks:
+        location = "Blood Bank" if s.hospital is None else s.hospital.name
+
+        grouped[s.blood_type]["total_units"] += s.units
+        grouped[s.blood_type]["locations"].append({
+            "location": location,
+            "units": s.units
+        })
+
+    result = []
+    for blood_type, value in grouped.items():
+        result.append({
+            "blood_type": blood_type,
+            "total_units": value["total_units"],
+            "details": value["locations"]
+        })
+
+    return Response(result)

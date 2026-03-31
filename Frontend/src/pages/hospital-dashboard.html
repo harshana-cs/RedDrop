@@ -932,6 +932,8 @@
   let stockData = [];
   let requestsData = [];
   let showMatchedDonors = false;
+  let stockChartInstance = null;
+let stockDistributionChartInstance = null;
   
   // Sidebar collapse state
   let isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
@@ -1241,76 +1243,62 @@
   }
 
   function updateStockChart(stockByType) {
-    const ctx = document.getElementById('stockChart').getContext('2d');
-    const chart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: Object.keys(stockByType),
-        datasets: [{
-          label: 'Available Units',
-          data: Object.values(stockByType),
-          backgroundColor: '#EF4444',
-          borderColor: '#DC2626',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            display: false
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: 'Units'
-            }
-          }
-        }
-      }
-    });
+  const ctx = document.getElementById('stockChart').getContext('2d');
+
+  if (stockChartInstance) {
+    stockChartInstance.destroy();
   }
 
-  function updateStockDistributionChart(stock) {
-    const ctx = document.getElementById('stockDistributionChart').getContext('2d');
-    const labels = stock.map(item => item.blood_type);
-    const data = stock.map(item => item.units);
-    const backgroundColors = stock.map(item => {
-      if (item.units < 5) return '#EF4444';
-      if (item.units < item.minimum_required) return '#F59E0B';
-      return '#10B981';
-    });
-    
-    const chart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: labels,
-        datasets: [{
-          data: data,
-          backgroundColor: backgroundColors,
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'bottom'
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return `${context.label}: ${context.raw} units`;
-              }
-            }
-          }
+  stockChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(stockByType),
+      datasets: [{
+        label: 'Available Units',
+        data: Object.values(stockByType),
+        backgroundColor: '#EF4444',
+        borderColor: '#DC2626',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: 'Units' }
         }
       }
-    });
+    }
+  });
+}
+
+  function updateStockDistributionChart(stock) {
+  const ctx = document.getElementById('stockDistributionChart').getContext('2d');
+
+  if (stockDistributionChartInstance) {
+    stockDistributionChartInstance.destroy();
   }
+
+  const labels = stock.map(item => item.blood_type);
+  const data = stock.map(item => item.units);
+
+  stockDistributionChartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: stock.map(item => {
+          if (item.units < 5) return '#EF4444';
+          if (item.units < item.minimum_required) return '#F59E0B';
+          return '#10B981';
+        })
+      }]
+    }
+  });
+}
 
  async function createBloodRequest() {
 

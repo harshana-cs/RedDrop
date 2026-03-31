@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    admin_all_hospitals_stock,
     admin_hospital_stock,
     admin_secret_login,
 
@@ -23,7 +24,7 @@ from .views import (
     admin_user_detail,
     api_blood_type_distribution,
     api_request_status_overview,
-    hospital_request_detail,        # ✅ ADD THIS
+    hospital_request_detail,
     approve_hospital_request,
     reject_hospital_request,
     get_notifications,
@@ -36,60 +37,68 @@ from .views import (
     admin_bulk_add_inventory,
     admin_stock_movements,
     admin_activity_logs,
-    mark_notification_read,
 
+    # ✅ Donation Camps
+    admin_donation_camps,
+    admin_donation_camp_detail,
+    public_donation_camps,
 )
 
 urlpatterns = [
     path("secret-login/", admin_secret_login),
 
-    # Blood
-    path("pending-blood-requests/", admin_pending_blood_requests),
-    path("blood-request/<int:request_id>/approve/", admin_approve_blood_request),
-    path("blood-request/<int:request_id>/reject/", admin_reject_blood_request),
+    # ── Blood Requests ─────────────────────────────────────────
+    path("pending-blood-requests/",                    admin_pending_blood_requests),
+    path("blood-request/<int:request_id>/approve/",    admin_approve_blood_request),
+    path("blood-request/<int:request_id>/reject/",     admin_reject_blood_request),
+    path("blood-requests/processed/",                  admin_processed_blood_requests),
 
-    # Donors
-    path("pending-donor-registrations/", admin_pending_donor_registrations),
-    path("donor/<int:donor_id>/approve/", admin_approve_donor_registration),
-    path("donor/<int:donor_id>/reject/", admin_reject_donor_registration),
+    # ── Donors ────────────────────────────────────────────────
+    path("pending-donor-registrations/",               admin_pending_donor_registrations),
+    path("donor/<int:donor_id>/approve/",              admin_approve_donor_registration),
+    path("donor/<int:donor_id>/reject/",               admin_reject_donor_registration),
+    path("donors/processed/",                          admin_processed_donor_registrations),
 
-    # Hospitals (manual)
-    path("hospital/create/", admin_create_hospital),
-    path("hospitals/list/", admin_list_hospitals),
+    # ── Hospitals (manual creation) ───────────────────────────
+    path("hospital/create/",                           admin_create_hospital),
+    path("hospitals/list/",                            admin_list_hospitals),
     path("hospital/<int:hospital_id>/reset-password/", admin_reset_hospital_password),
-    path("hospital/<int:hospital_id>/toggle/", admin_toggle_hospital),
+    path("hospital/<int:hospital_id>/toggle/",         admin_toggle_hospital),
+    path("hospital-stock/",                            admin_hospital_stock),
 
-    # Processed
-    path("blood-requests/processed/", admin_processed_blood_requests),
-    path("donors/processed/", admin_processed_donor_registrations),
+    # ── Hospital Applications ─────────────────────────────────
+    path("hospital-requests/",                         admin_hospital_requests),
+    path("hospital-request/<int:pk>/",                 hospital_request_detail),
+    path("hospital-request/<int:pk>/approve/",         approve_hospital_request),
+    path("hospital-request/<int:pk>/reject/",          reject_hospital_request),
+    path("hospital-audit-logs/",                       admin_hospital_audit_logs),
 
-    # Hospital applications (IMPORTANT)
-    path("hospital-requests/", admin_hospital_requests),                 
-    path("hospital-request/<int:pk>/", hospital_request_detail),        
-    path("hospital-request/<int:pk>/approve/", approve_hospital_request),
-    path("hospital-request/<int:pk>/reject/", reject_hospital_request),
-    # adminpanel/urls.py
-path("analytics/blood-types/", api_blood_type_distribution),
-path("analytics/request-status/", api_request_status_overview),
-path("notifications/", get_notifications),
-path("hospital-audit-logs/", admin_hospital_audit_logs),
-path(
-    "notifications/<int:notification_id>/read/",
-    mark_notification_read
-),
-    path("users/", admin_users),
-    path("users/<int:user_id>/", admin_user_detail),
-    path("hospital-stock/", admin_hospital_stock),
-    path("blood-inventory/", admin_blood_inventory),
+    # ── Analytics ─────────────────────────────────────────────
+    path("analytics/blood-types/",                     api_blood_type_distribution),
+    path("analytics/request-status/",                  api_request_status_overview),
 
-path("inventory/add/", admin_add_inventory),
+    # ── Notifications (mark-all-read BEFORE <int:id> route) ───
+    path("notifications/mark-all-read/",               mark_notification_read),
+    path("notifications/<int:notification_id>/read/",  mark_notification_read),
+    path("notifications/",                             get_notifications),
 
-path("inventory/remove/", admin_remove_inventory),
+    # ── Users ─────────────────────────────────────────────────
+    path("users/",                                     admin_users),
+    path("users/<int:user_id>/",                       admin_user_detail),
 
-path("inventory/bulk-add/", admin_bulk_add_inventory),
+    # ── Blood Inventory ───────────────────────────────────────
+    path("blood-inventory/",                           admin_blood_inventory),
+    path("inventory/add/",                             admin_add_inventory),
+    path("inventory/remove/",                          admin_remove_inventory),
+    path("inventory/bulk-add/",                        admin_bulk_add_inventory),
+    path("stock-movements/",                           admin_stock_movements),
+    path('combined-stock/', admin_all_hospitals_stock),
 
-path("stock-movements/", admin_stock_movements),
-path("activity-logs/", admin_activity_logs),
-path("notifications/mark-all-read/", mark_notification_read),
+    # ── Audit Logs ────────────────────────────────────────────
+    path("activity-logs/",                             admin_activity_logs),
+
+    # ── Donation Camps (admin) ────────────────────────────────
+    path("donation-camps/",                            admin_donation_camps),
+    path("donation-camps/<int:camp_id>/",              admin_donation_camp_detail),
 
 ]

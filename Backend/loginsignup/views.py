@@ -317,3 +317,45 @@ def api_user_capabilities(request):
         "donor_available": donor.is_approved if donor else False,
         "donor_score": donations_qs.count() * 10 if donor else 0,
     })
+
+@api_view(["PATCH", "PUT"])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
+    email = request.user.email or request.user.username
+
+    patient = Patient.objects.filter(emailaddress=email).first()
+    if not patient:
+        return Response({"success": False, "message": "Patient not found"}, status=404)
+
+    data = request.data
+
+    if "name" in data:
+        patient.fullname = data["name"]
+    if "blood_type" in data:
+        patient.blood_type = data.get("blood_type", "")
+    if "phone" in data:
+        patient.phone = data.get("phone", "")
+    if "district" in data:
+        patient.district = data.get("district", "")
+    if "address" in data:
+        patient.address = data.get("address", "")
+
+    patient.save()
+
+    # Also update donor profile if exists
+    donor = Donor.objects.filter(email=email).first()
+    if donor:
+        if "blood_type" in data:
+            donor.blood_type = data["blood_type"]
+        if "phone" in data:
+            donor.phone = data["phone"]
+        if "district" in data:
+            donor.district = data["district"]
+        donor.save()
+
+    return Response({
+        "success": True,
+        "message": "Profile updated successfully",
+        "name": patient.fullname,
+        "blood_type": getattr(patient, "blood_type", ""),
+    })

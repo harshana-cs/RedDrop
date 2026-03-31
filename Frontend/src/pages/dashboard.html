@@ -1813,6 +1813,12 @@
   <i class="fas fa-user-plus mr-2"></i> Register as Donor
 </button>
   </div>
+  <button
+  onclick="openEditProfileModal()"
+  class="bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-4 rounded-xl hover:from-red-700 hover:to-red-800 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center gap-3">
+  <i class="fas fa-edit"></i>
+  <span>Edit Profile</span>
+</button>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -2563,92 +2569,51 @@ let currentDonationTab = 'stats';
 let allDonations = [];
 let filteredDonations = [];
 const token = localStorage.getItem("access_token");
+let donationCamps = [];
 
-// Donation Camps Data
-const donationCamps = [
-  {
-    id: 1,
-    name: "City Central Hospital Blood Drive",
-    date: "April 15, 2026",
-    time: "9:00 AM - 5:00 PM",
-    location: "City Central Hospital",
-    address: "123 Healthcare Ave, Downtown",
-    contact: "+1 (555) 123-4567",
-    organizer: "Red Cross Society",
-    slots: 45,
-    bloodTypesNeeded: ["A+", "O+", "B+"]
-  },
-  {
-    id: 2,
-    name: "University Community Blood Camp",
-    date: "April 18, 2026",
-    time: "10:00 AM - 6:00 PM",
-    location: "State University Student Center",
-    address: "University Campus, Building C",
-    contact: "+1 (555) 234-5678",
-    organizer: "University Medical Club",
-    slots: 60,
-    bloodTypesNeeded: ["O+", "O-", "AB+"]
-  },
-  {
-    id: 3,
-    name: "Weekend Heroes Donation Camp",
-    date: "April 22, 2026",
-    time: "8:00 AM - 4:00 PM",
-    location: "Community Health Center",
-    address: "456 Wellness Blvd",
-    contact: "+1 (555) 345-6789",
-    organizer: "LifeSaver Foundation",
-    slots: 35,
-    bloodTypesNeeded: ["A-", "B-", "O+"]
-  },
-  {
-    id: 4,
-    name: "Corporate Blood Donation Drive",
-    date: "April 25, 2026",
-    time: "11:00 AM - 7:00 PM",
-    location: "Business District Convention Hall",
-    address: "789 Corporate Park",
-    contact: "+1 (555) 456-7890",
-    organizer: "Business Cares Initiative",
-    slots: 80,
-    bloodTypesNeeded: ["A+", "B+", "AB+", "O+"]
-  },
-  {
-    id: 5,
-    name: "Rotary Club Blood Camp",
-    date: "April 28, 2026",
-    time: "9:30 AM - 5:30 PM",
-    location: "Rotary Community Center",
-    address: "321 Service Road",
-    contact: "+1 (555) 567-8901",
-    organizer: "Rotary International",
-    slots: 50,
-    bloodTypesNeeded: ["O+", "O-", "A+"]
-  },
-  {
-    id: 6,
-    name: "Ramadan Blood Donation Camp",
-    date: "May 2, 2026",
-    time: "4:00 PM - 9:00 PM",
-    location: "Central Mosque Community Hall",
-    address: "567 Islamic Center Road",
-    contact: "+1 (555) 678-9012",
-    organizer: "Islamic Relief",
-    slots: 40,
-    bloodTypesNeeded: ["All Types"]
-  }
-];
 
-function loadDonationCamps() {
+
+const API_BASE = "http://127.0.0.1:8000";
+
+
+async function loadDonationCamps() {
   const container = document.getElementById('donationCampsContainer');
   if (!container) return;
-  
-  container.innerHTML = donationCamps.map(camp => `
+
+  if (!Array.isArray(donationCamps) || donationCamps.length === 0) {
+    container.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">Loading camps...</div>`;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/donation-camps/`);
+      const data = await res.json();
+      donationCamps = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+    } catch (err) {
+      console.error("Error loading donation camps:", err);
+      container.innerHTML = `<div class="col-span-full text-center py-10 text-red-500">Failed to load camps</div>`;
+      return;
+    }
+  }
+
+  if (!donationCamps.length) {
+    container.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">No donation camps are available right now.</div>`;
+    return;
+  }
+
+  container.innerHTML = donationCamps.map(camp => {
+    const title = camp.title || camp.name || 'Donation Camp';
+    const hospitalName = camp.hospital_name || camp.organizer || 'RedDrop Partner';
+    const timeText = camp.time || `${camp.start_time || 'TBD'} - ${camp.end_time || 'TBD'}`;
+    const address = camp.address || hospitalName;
+    const slots = camp.available_slots ?? camp.slots ?? Math.max(0, (camp.total_slots || 0) - (camp.filled_slots || 0));
+    const bloodTypes = Array.isArray(camp.bloodTypesNeeded) && camp.bloodTypesNeeded.length
+      ? camp.bloodTypesNeeded
+      : ['All Types'];
+
+    return `
     <div class="bg-gradient-to-br from-white to-red-50 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border border-red-100 overflow-hidden group">
       <div class="bg-gradient-to-r from-red-600 to-red-700 p-4">
         <div class="flex items-center justify-between">
-          <h3 class="text-xl font-bold text-white">${camp.name}</h3>
+          <h3 class="text-xl font-bold text-white">${title}</h3>
           <i class="fas fa-tint text-white text-2xl opacity-80"></i>
         </div>
       </div>
@@ -2657,29 +2622,27 @@ function loadDonationCamps() {
           <i class="fas fa-calendar-alt text-red-500 mt-1"></i>
           <div>
             <p class="font-semibold text-gray-800">${camp.date}</p>
-            <p class="text-sm text-gray-600">${camp.time}</p>
+            <p class="text-sm text-gray-600">${timeText}</p>
           </div>
         </div>
         <div class="flex items-start gap-3">
           <i class="fas fa-map-marker-alt text-red-500 mt-1"></i>
           <div>
             <p class="font-semibold text-gray-800">${camp.location}</p>
-            <p class="text-sm text-gray-600">${camp.address}</p>
+            <p class="text-sm text-gray-600">${address}</p>
           </div>
         </div>
         <div class="flex items-start gap-3">
           <i class="fas fa-users text-red-500 mt-1"></i>
           <div>
-            <p class="font-semibold text-gray-800">${camp.organizer}</p>
-            <p class="text-sm text-gray-600">${camp.slots} slots available</p>
+            <p class="font-semibold text-gray-800">${hospitalName}</p>
+            <p class="text-sm text-gray-600">${slots} slots available</p>
           </div>
         </div>
         <div class="flex flex-wrap gap-2 mt-3">
-          ${camp.bloodTypesNeeded.map(type => `<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">${type}</span>`).join('')}
-        </div>
-        <div class="flex items-center gap-3 pt-3 border-t border-gray-100">
-          <i class="fas fa-phone-alt text-green-600"></i>
-          <span class="text-sm text-gray-700">${camp.contact}</span>
+          ${bloodTypes.map(type => `
+            <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">${type}</span>
+          `).join('')}
         </div>
         <button onclick="registerForCamp(${camp.id})" class="btn-primary w-full mt-4 text-white py-3 rounded-xl font-medium transition-all duration-300 hover:shadow-xl flex items-center justify-center gap-2">
           <i class="fas fa-hand-peace"></i>
@@ -2687,13 +2650,13 @@ function loadDonationCamps() {
         </button>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
-
 function registerForCamp(campId) {
   const camp = donationCamps.find(c => c.id === campId);
   if (camp) {
-    showNotification(`You've registered for ${camp.name}! We'll contact you soon.`, "success");
+    showNotification(`You've registered for ${camp.title || camp.name || 'this camp'}! We'll contact you soon.`, "success");
   }
 }
 
@@ -2730,14 +2693,14 @@ function addCampsPreviewToHome() {
       <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group cursor-pointer" onclick="showSection('donationCamps')">
         <div class="bg-gradient-to-r from-red-500 to-red-600 p-3">
           <div class="flex items-center justify-between">
-            <h4 class="font-bold text-white">${camp.name}</h4>
+            <h4 class="font-bold text-white">${camp.title}</h4>
             <i class="fas fa-tint text-white"></i>
           </div>
         </div>
         <div class="p-4 space-y-2">
           <p class="text-sm flex items-center gap-2"><i class="fas fa-calendar text-red-500"></i> ${camp.date}</p>
           <p class="text-sm flex items-center gap-2"><i class="fas fa-map-marker-alt text-red-500"></i> ${camp.location}</p>
-          <p class="text-sm text-gray-600">${camp.time}</p>
+          <p class="text-sm text-gray-600">${camp.time || `${camp.start_time || 'TBD'} - ${camp.end_time || 'TBD'}`}</p>
           <span class="inline-block mt-2 text-red-600 text-sm font-medium">View Details →</span>
         </div>
       </div>
@@ -2798,63 +2761,66 @@ function closeMobileMenu() {
   }
 }
 
-// ===== MAIN INITIALIZATION (SINGLE DOMContentLoaded) =====
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", async function() {
+  
   // 1. Initial tab from URL
   const params = new URLSearchParams(window.location.search);
   const tab = params.get("tab");
   window._initialTab = tab || "home";
-  
+
   if (tab) {
     showSection(tab);
   } else {
     showSection("home");
   }
-  
+
   // 2. Token validation
   if (!token) {
     logout();
     return;
   }
-  
+
   // 3. Core data loading
   loadUserCapabilities();
   loadNotifications();
   setInterval(loadNotifications, 15000);
-  
+
+  // ✅ IMPORTANT FIX: wait for camps
+  await loadDonationCamps();
+  addCampsPreviewToHome();
+
   // 4. Modal close handlers
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeOtpModal();
   });
-  
+
   const otpModal = document.getElementById("otpModal");
   if (otpModal) {
     otpModal.addEventListener('click', (e) => {
       if (e.target.id === "otpModal") closeOtpModal();
     });
   }
-  
+
   // 5. Sidebar donor button
   const donorNavButton = document.getElementById("donorNav");
-  if (donorNavButton) donorNavButton.setAttribute("onclick", "showSection('donor')");
-  
-  // 6. NEW FEATURES: Hamburger menu + Donation Camps
+  if (donorNavButton) {
+    donorNavButton.setAttribute("onclick", "showSection('donor')");
+  }
+
+  // 6. Hamburger menu
   initHamburgerMenu();
-  loadDonationCamps();
-  addCampsPreviewToHome();
-  
-  // 7. Update sidebar text from Dashboard to Home
+
+  // 7. Fix sidebar text
   const homeButtonSpan = document.querySelector('.sidebar-item span');
   if (homeButtonSpan && homeButtonSpan.textContent === 'Dashboard') {
     homeButtonSpan.textContent = 'Home';
   }
-  
-  // Fix empty home button text
+
   const homeButton = document.querySelector('.sidebar-item button[onclick="showSection(\'home\')"] span');
   if (homeButton && (!homeButton.textContent || homeButton.textContent === '')) {
     homeButton.textContent = 'Home';
   }
-  
+
   // 8. Show donation camps section if hash exists
   if (window.location.hash === '#donationCamps') {
     showSection('donationCamps');
@@ -2886,6 +2852,9 @@ function showSection(id) {
       break;
     case 'openRequests': loadOpenBloodRequests(); break;
     case 'donor': loadUserCapabilities(); showDonationTab('stats'); break;
+    case 'donationCamps':
+  loadDonationCamps();
+  break;
     default: break;
   }
 }
@@ -4469,48 +4438,6 @@ function updateDonorSidebar(data) {
     if (quickCompatibleBtn) quickCompatibleBtn.classList.add('hidden');
   }
 }
-
-
-
-// ===== INITIALIZATION =====
-document.addEventListener("DOMContentLoaded", function() {
-  // Check if token exists
-  if (!token) {
-    logout();
-    return;
-  }
-  
-  // Load user capabilities on page load
-  loadUserCapabilities();
-  // ✅ LOAD NOTIFICATIONS
-  loadNotifications();
-
-  // ✅ AUTO REFRESH EVERY 15s
-  setInterval(loadNotifications,15000);
-  
-  // Close modal on ESC key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      closeOtpModal();
-    }
-  });
-  
-  // Close modal on background click
-  const otpModal = document.getElementById("otpModal");
-  if (otpModal) {
-    otpModal.addEventListener('click', (e) => {
-      if (e.target.id === "otpModal") {
-        closeOtpModal();
-      }
-    });
-  }
-  
-  // Update sidebar donor button
-  const donorNavButton = document.getElementById("donorNav");
-  if (donorNavButton) {
-    donorNavButton.setAttribute("onclick", "showSection('donor')");
-  }
-});
 async function submitOtpDirect() {
   const otp = document.getElementById("otpCode").value;
 
@@ -4849,115 +4776,6 @@ async function acceptRequestFromModal() {
 }
 
 
-function loadDonationCamps() {
-  const container = document.getElementById('donationCampsContainer');
-  if (!container) return;
-  
-  container.innerHTML = donationCamps.map(camp => `
-    <div class="bg-gradient-to-br from-white to-red-50 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border border-red-100 overflow-hidden group">
-      <div class="bg-gradient-to-r from-red-600 to-red-700 p-4">
-        <div class="flex items-center justify-between">
-          <h3 class="text-xl font-bold text-white">${camp.name}</h3>
-          <i class="fas fa-tint text-white text-2xl opacity-80"></i>
-        </div>
-      </div>
-      <div class="p-6 space-y-4">
-        <div class="flex items-start gap-3">
-          <i class="fas fa-calendar-alt text-red-500 mt-1"></i>
-          <div>
-            <p class="font-semibold text-gray-800">${camp.date}</p>
-            <p class="text-sm text-gray-600">${camp.time}</p>
-          </div>
-        </div>
-        <div class="flex items-start gap-3">
-          <i class="fas fa-map-marker-alt text-red-500 mt-1"></i>
-          <div>
-            <p class="font-semibold text-gray-800">${camp.location}</p>
-            <p class="text-sm text-gray-600">${camp.address}</p>
-          </div>
-        </div>
-        <div class="flex items-start gap-3">
-          <i class="fas fa-users text-red-500 mt-1"></i>
-          <div>
-            <p class="font-semibold text-gray-800">${camp.organizer}</p>
-            <p class="text-sm text-gray-600">${camp.slots} slots available</p>
-          </div>
-        </div>
-        <div class="flex flex-wrap gap-2 mt-3">
-          ${camp.bloodTypesNeeded.map(type => `
-            <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">${type}</span>
-          `).join('')}
-        </div>
-        <div class="flex items-center gap-3 pt-3 border-t border-gray-100">
-          <i class="fas fa-phone-alt text-green-600"></i>
-          <span class="text-sm text-gray-700">${camp.contact}</span>
-        </div>
-        <button onclick="registerForCamp(${camp.id})" class="btn-primary w-full mt-4 text-white py-3 rounded-xl font-medium transition-all duration-300 hover:shadow-xl flex items-center justify-center gap-2">
-          <i class="fas fa-hand-peace"></i>
-          <span>Register for Camp</span>
-        </button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function registerForCamp(campId) {
-  const camp = donationCamps.find(c => c.id === campId);
-  if (camp) {
-    showNotification(`You've registered for ${camp.name}! We'll contact you soon.`, "success");
-  }
-}
-
-// Add camps preview to home page
-function addCampsPreviewToHome() {
-  const homeSection = document.getElementById('home');
-  if (!homeSection) return;
-  
-  if (document.getElementById('campsPreview')) return;
-  
-  const campsPreviewHTML = `
-    <div id="campsPreview" class="mb-8">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <i class="fas fa-campground text-red-600"></i>
-          Upcoming Donation Camps
-        </h3>
-        <button onclick="showSection('donationCamps')" class="text-red-600 hover:text-red-800 font-medium flex items-center gap-2">
-          View All <i class="fas fa-arrow-right"></i>
-        </button>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="campsPreviewContainer"></div>
-    </div>
-  `;
-  
-  const quickActions = homeSection.querySelector('.mb-8');
-  if (quickActions && quickActions.nextSibling) {
-    quickActions.insertAdjacentHTML('afterend', campsPreviewHTML);
-  } else {
-    homeSection.insertAdjacentHTML('beforeend', campsPreviewHTML);
-  }
-  
-  const previewContainer = document.getElementById('campsPreviewContainer');
-  if (previewContainer) {
-    previewContainer.innerHTML = donationCamps.slice(0, 3).map(camp => `
-      <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group cursor-pointer" onclick="showSection('donationCamps')">
-        <div class="bg-gradient-to-r from-red-500 to-red-600 p-3">
-          <div class="flex items-center justify-between">
-            <h4 class="font-bold text-white">${camp.name}</h4>
-            <i class="fas fa-tint text-white"></i>
-          </div>
-        </div>
-        <div class="p-4 space-y-2">
-          <p class="text-sm flex items-center gap-2"><i class="fas fa-calendar text-red-500"></i> ${camp.date}</p>
-          <p class="text-sm flex items-center gap-2"><i class="fas fa-map-marker-alt text-red-500"></i> ${camp.location}</p>
-          <p class="text-sm text-gray-600">${camp.time}</p>
-          <span class="inline-block mt-2 text-red-600 text-sm font-medium">View Details →</span>
-        </div>
-      </div>
-    `).join('');
-  }
-}
-
 // Hamburger menu functions
 // Hamburger menu functions - FIXED VERSION
 function initHamburgerMenu() {
@@ -5027,7 +4845,128 @@ function ensureHamburgerVisibility() {
     hamburgerBtn.classList.remove('hidden');
   }
 }
-
+async function openEditProfileModal() {
+  const modal = document.getElementById("editProfileModal");
+  modal.classList.remove("hidden");
+ 
+  // Pre-fill fields with current profile data
+  try {
+    const res = await fetch(
+      "http://127.0.0.1:8000/loginsignup/user-capabilities/",
+      { headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` } }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      document.getElementById("editName").value        = data.name        || "";
+      document.getElementById("editPhone").value       = data.phone       || "";
+      document.getElementById("editBloodType").value   = data.blood_type  || "";
+      document.getElementById("editDistrict").value    = data.district    || "";
+      document.getElementById("editAddress").value     = data.address     || "";
+    }
+  } catch (err) {
+    console.error("Could not pre-fill profile fields:", err);
+  }
+ 
+  hideEditProfileMsg();
+}
+ 
+function closeEditProfileModal() {
+  document.getElementById("editProfileModal").classList.add("hidden");
+  hideEditProfileMsg();
+}
+ 
+function handleModalBackdropClick(e) {
+  if (e.target.id === "editProfileModal") closeEditProfileModal();
+}
+ 
+async function saveProfile() {
+  const token   = localStorage.getItem("access_token");
+  const btn     = document.getElementById("saveProfileBtn");
+  const btnText = document.getElementById("saveProfileBtnText");
+ 
+  const name       = document.getElementById("editName").value.trim();
+  const phone      = document.getElementById("editPhone").value.trim();
+  const blood_type = document.getElementById("editBloodType").value;
+  const district   = document.getElementById("editDistrict").value.trim();
+  const address    = document.getElementById("editAddress").value.trim();
+ 
+  // Basic validation
+  if (!name) {
+    showEditProfileMsg("Full name is required.", "error");
+    return;
+  }
+ 
+  // Loading state
+  btn.disabled = true;
+  btnText.textContent = "Saving…";
+  btn.classList.add("opacity-80", "cursor-not-allowed");
+ 
+  try {
+    const res = await fetch(
+      "http://127.0.0.1:8000/loginsignup/update-profile/",
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, phone, blood_type, district, address }),
+      }
+    );
+ 
+    const data = await res.json();
+ 
+    if (!res.ok) {
+      // Show field-level errors if backend returns them
+      const errorMsg =
+        data.message ||
+        Object.values(data)[0]?.[0] ||
+        "Failed to update profile. Please try again.";
+      showEditProfileMsg(errorMsg, "error");
+      return;
+    }
+ 
+    showEditProfileMsg("Profile updated successfully! ✓", "success");
+ 
+    // Refresh displayed profile info without page reload
+    const nameEls = document.querySelectorAll("#profileName");
+    nameEls.forEach(el => { el.textContent = name; });
+ 
+    const bloodEls = document.querySelectorAll("#profileBloodType");
+    bloodEls.forEach(el => { el.textContent = blood_type || "—"; });
+ 
+    // Also update the welcome greeting
+    const greeting = document.getElementById("userGreeting");
+    if (greeting) greeting.textContent = name.split(" ")[0];
+ 
+    // Close after a short delay
+    setTimeout(closeEditProfileModal, 1500);
+ 
+  } catch (err) {
+    console.error("Profile update error:", err);
+    showEditProfileMsg("Network error. Please check your connection.", "error");
+  } finally {
+    btn.disabled = false;
+    btnText.textContent = "Save Changes";
+    btn.classList.remove("opacity-80", "cursor-not-allowed");
+  }
+}
+ 
+function showEditProfileMsg(msg, type) {
+  const el = document.getElementById("editProfileMsg");
+  el.textContent = msg;
+  el.className = `rounded-xl px-4 py-3 text-sm font-medium ${
+    type === "success"
+      ? "bg-green-50 border border-green-200 text-green-700"
+      : "bg-red-50 border border-red-200 text-red-700"
+  }`;
+  el.classList.remove("hidden");
+}
+ 
+function hideEditProfileMsg() {
+  const el = document.getElementById("editProfileMsg");
+  if (el) el.classList.add("hidden");
+}
 
 </script>
 <!-- PATIENT OTP VIEW MODAL -->
@@ -5105,5 +5044,131 @@ function ensureHamburgerVisibility() {
 
   </div>
 </div>
+<div
+  id="editProfileModal"
+  class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden backdrop-blur-sm"
+  onclick="handleModalBackdropClick(event)">
+ 
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden transform transition-all duration-300 border border-red-100">
+ 
+    <!-- Modal Header -->
+    <div class="bg-gradient-to-r from-red-600 via-red-500 to-red-700 px-8 py-6 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+          <i class="fas fa-user-edit text-white text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-2xl font-bold text-white">Edit Profile</h3>
+          <p class="text-red-100 text-sm mt-0.5">Update your personal information</p>
+        </div>
+      </div>
+      <button
+        onclick="closeEditProfileModal()"
+        class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center text-white transition-all duration-200">
+        <i class="fas fa-times text-lg"></i>
+      </button>
+    </div>
+ 
+    <!-- Modal Body -->
+    <div class="px-8 py-6 space-y-5 max-h-[70vh] overflow-y-auto">
+ 
+      <!-- Full Name -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          <i class="fas fa-user text-red-500 mr-2"></i>Full Name
+        </label>
+        <input
+          id="editName"
+          type="text"
+          placeholder="Enter your full name"
+          class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-800 font-medium focus:ring-4 focus:ring-red-100 focus:border-red-400 outline-none transition-all duration-200 hover:border-gray-300"
+        />
+      </div>
+ 
+      <!-- Phone Number -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          <i class="fas fa-phone text-red-500 mr-2"></i>Phone Number
+        </label>
+        <input
+          id="editPhone"
+          type="tel"
+          placeholder="Enter your phone number"
+          class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-800 font-medium focus:ring-4 focus:ring-red-100 focus:border-red-400 outline-none transition-all duration-200 hover:border-gray-300"
+        />
+      </div>
+ 
+      <!-- Blood Type -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          <i class="fas fa-tint text-red-500 mr-2"></i>Blood Type
+        </label>
+        <select
+          id="editBloodType"
+          class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-800 font-medium focus:ring-4 focus:ring-red-100 focus:border-red-400 outline-none transition-all duration-200 hover:border-gray-300 bg-white">
+          <option value="">Select blood type</option>
+          <option value="A+">A+</option>
+          <option value="A-">A−</option>
+          <option value="B+">B+</option>
+          <option value="B-">B−</option>
+          <option value="AB+">AB+</option>
+          <option value="AB-">AB−</option>
+          <option value="O+">O+</option>
+          <option value="O-">O−</option>
+        </select>
+      </div>
+ 
+      <!-- District / Location -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>District / Location
+        </label>
+        <input
+          id="editDistrict"
+          type="text"
+          placeholder="Enter your district or city"
+          class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-800 font-medium focus:ring-4 focus:ring-red-100 focus:border-red-400 outline-none transition-all duration-200 hover:border-gray-300"
+        />
+      </div>
+ 
+      <!-- Address -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          <i class="fas fa-home text-red-500 mr-2"></i>Address
+          <span class="text-gray-400 font-normal ml-1">(optional)</span>
+        </label>
+        <textarea
+          id="editAddress"
+          rows="2"
+          placeholder="Enter your address"
+          class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-800 font-medium focus:ring-4 focus:ring-red-100 focus:border-red-400 outline-none transition-all duration-200 hover:border-gray-300 resize-none"
+        ></textarea>
+      </div>
+ 
+      <!-- Error / Success message area -->
+      <div id="editProfileMsg" class="hidden rounded-xl px-4 py-3 text-sm font-medium"></div>
+ 
+    </div>
+ 
+    <!-- Modal Footer -->
+    <div class="px-8 py-5 bg-gray-50 border-t border-gray-100 flex gap-3">
+      <button
+        onclick="closeEditProfileModal()"
+        class="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-semibold py-3.5 rounded-xl transition-all duration-200 shadow hover:shadow-md">
+        Cancel
+      </button>
+      <button
+        id="saveProfileBtn"
+        onclick="saveProfile()"
+        class="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2">
+        <i class="fas fa-save"></i>
+        <span id="saveProfileBtnText">Save Changes</span>
+      </button>
+    </div>
+ 
+  </div>
+</div>
 </body>
 </html>
+
+

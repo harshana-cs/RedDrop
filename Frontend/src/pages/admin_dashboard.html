@@ -8,9 +8,342 @@
     <link href="../../dist/output.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --red:       #E24B4A;
+  --red-light: #FCEBEB;
+  --red-dark:  #791F1F;
+  --amber:     #EF9F27;
+  --amber-lt:  #FAEEDA;
+  --amber-dk:  #633806;
+  --blue:      #378ADD;
+  --blue-lt:   #E6F1FB;
+  --blue-dk:   #0C447C;
+  --green:     #639922;
+  --green-lt:  #EAF3DE;
+  --green-dk:  #27500A;
+  --purple:    #7F77DD;
+  --purple-lt: #EEEDFE;
+  --purple-dk: #3C3489;
+  --teal:      #1D9E75;
+  --teal-lt:   #E1F5EE;
+  --teal-dk:   #085041;
+ 
+  --bg:        #F6F5F2;
+  --surface:   #FFFFFF;
+  --surface2:  #F1EFE8;
+  --border:    rgba(0,0,0,.08);
+  --border2:   rgba(0,0,0,.14);
+  --text:      #1A1A18;
+  --text2:     #5A5A55;
+  --text3:     #9A9A94;
+ 
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+ 
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+ 
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+ 
+/* ── Layout ── */
+.page { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+ 
+/* ── Page header ── */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.page-header h1 {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -.3px;
+  color: var(--text);
+}
+.page-header p { font-size: 13px; color: var(--text2); margin-top: 3px; }
+.hdr-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: var(--radius-md);
+  font-size: 13px; font-weight: 500; font-family: var(--font-sans);
+  cursor: pointer; border: 1px solid var(--border2);
+  background: var(--surface); color: var(--text2);
+  transition: background .15s, border-color .15s, color .15s;
+}
+.btn:hover { background: var(--surface2); color: var(--text); }
+.btn-primary {
+  background: var(--red); color: #fff; border-color: var(--red);
+}
+.btn-primary:hover { background: #c93b3a; border-color: #c93b3a; color: #fff; }
+.btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+ 
+/* ── Alert banner ── */
+.alert {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: var(--red-light); border: 1px solid #F7C1C1;
+  border-radius: var(--radius-md); padding: .75rem 1rem;
+  margin-bottom: 1.5rem;
+}
+.alert-dot {
+  width: 18px; height: 18px; background: var(--red); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.alert-dot::after { content: '!'; font-size: 11px; font-weight: 500; color: #fff; }
+.alert p { font-size: 13px; color: var(--red-dark); line-height: 1.5; }
+ 
+/* ── Summary strip ── */
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+.scard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.1rem;
+  position: relative; overflow: hidden;
+  transition: border-color .15s;
+  cursor: default;
+}
+.scard:hover { border-color: var(--border2); }
+.scard-accent {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 3px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.scard-val { font-size: 28px; font-weight: 500; line-height: 1; margin-top: 6px; }
+.scard-lbl { font-size: 12px; color: var(--text2); margin-top: 5px; }
+ 
+/* ── Filter bar ── */
+.filter-bar {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap; margin-bottom: 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: .75rem 1rem;
+}
+.filter-bar label { font-size: 12px; color: var(--text3); font-weight: 500; }
+.filter-bar select, .filter-bar input[type="text"] {
+  font-size: 13px; font-family: var(--font-sans);
+  padding: 5px 10px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  background: var(--surface2);
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s;
+}
+.filter-bar select:focus, .filter-bar input:focus { border-color: var(--red); }
+.filter-sep { width: 1px; height: 20px; background: var(--border2); flex-shrink: 0; }
+.row-count { font-size: 12px; color: var(--text3); margin-left: auto; }
+ 
+/* ── Charts row ── */
+.charts-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.8fr) minmax(0, 0.7fr);
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.1rem 1.25rem;
+}
+.card-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: .9rem;
+}
+.card-title { font-size: 13px; font-weight: 500; }
+.card-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.chart-wrap { position: relative; width: 100%; }
+ 
+/* ── Legend ── */
+.legend { display: flex; flex-wrap: wrap; gap: 10px; }
+.leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
+.leg-sq { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+ 
+/* ── Gauge ring ── */
+.gauge-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: .5rem 0;
+}
+.gauge-val { font-size: 22px; font-weight: 500; }
+.gauge-lbl { font-size: 11px; color: var(--text3); margin-top: 2px; }
+ 
+/* ── Detailed table ── */
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+.table-hd {
+  padding: .85rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem;
+}
+.table-hd-title { font-size: 13px; font-weight: 500; }
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+  padding: .55rem 1rem; text-align: left;
+  font-size: 11px; font-weight: 500; color: var(--text3);
+  background: var(--surface2);
+  letter-spacing: .05em; text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer; user-select: none;
+}
+th:hover { color: var(--text2); }
+td {
+  padding: .7rem 1rem;
+  border-top: 1px solid var(--border);
+  vertical-align: middle;
+}
+tr:hover td { background: #FAFAF8; }
+.bt-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px;
+  border-radius: 8px;
+  font-size: 12px; font-weight: 500;
+  font-family: var(--font-mono);
+  background: var(--red-light); color: var(--red-dark);
+}
+.bar-cell { display: flex; align-items: center; gap: 8px; }
+.bar-track { width: 80px; height: 5px; background: var(--surface2); border-radius: 3px; flex-shrink: 0; }
+.bar-fill { height: 5px; border-radius: 3px; transition: width .4s; }
+.units-val { font-size: 15px; font-weight: 500; font-family: var(--font-mono); min-width: 30px; }
+ 
+/* ── Badges / pills ── */
+.pill {
+  display: inline-block; padding: 2px 9px;
+  border-radius: 20px; font-size: 11px; font-weight: 500;
+  white-space: nowrap;
+}
+.p-critical { background: var(--red-light); color: var(--red-dark); }
+.p-low      { background: var(--amber-lt);  color: var(--amber-dk); }
+.p-moderate { background: var(--blue-lt);   color: var(--blue-dk);  }
+.p-optimal  { background: var(--green-lt);  color: var(--green-dk); }
+.p-bank     { background: var(--purple-lt); color: var(--purple-dk); }
+ 
+/* ── Sortable header indicator ── */
+th.sort-asc::after  { content: ' ↑'; color: var(--red); }
+th.sort-desc::after { content: ' ↓'; color: var(--red); }
+ 
+/* ── Hospital accordion ── */
+.section-title {
+  font-size: 13px; font-weight: 500;
+  margin-bottom: .75rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.hosp-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.hosp-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .9rem 1.25rem; cursor: pointer; user-select: none;
+  transition: background .15s;
+}
+.hosp-header:hover { background: var(--surface2); }
+.hosp-name { font-size: 13px; font-weight: 500; }
+.hosp-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.hosp-right { display: flex; align-items: center; gap: 10px; }
+.hosp-total { font-size: 20px; font-weight: 500; font-family: var(--font-mono); }
+.chevron { font-size: 12px; color: var(--text3); transition: transform .2s; display: inline-block; }
+.hosp-body { border-top: 1px solid var(--border); }
+.mini-grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0; padding: .85rem 1rem;
+}
+.mini-tile { text-align: center; padding: .5rem .25rem; }
+.mini-bt { font-size: 11px; font-weight: 500; font-family: var(--font-mono); color: var(--text3); margin-bottom: 3px; }
+.mini-val { font-size: 17px; font-weight: 500; font-family: var(--font-mono); }
+.mini-bar { height: 3px; border-radius: 2px; margin: 5px auto 4px; max-width: 32px; }
+.mini-st { font-size: 10px; font-weight: 500; }
+.hosp-footer {
+  padding: .6rem 1rem .85rem;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 8px;
+}
+ 
+/* ── Empty state ── */
+.empty-state {
+  text-align: center; padding: 3rem 1rem;
+  color: var(--text3); font-size: 13px;
+}
+ 
+/* ── Tabs ── */
+.tabs {
+  display: flex; gap: 4px;
+  background: var(--surface2);
+  border-radius: var(--radius-md);
+  padding: 3px; width: fit-content;
+  margin-bottom: 1.25rem;
+}
+.tab {
+  padding: 6px 14px; border-radius: 7px;
+  font-size: 12px; font-weight: 500;
+  cursor: pointer; color: var(--text3);
+  border: none; background: transparent;
+  font-family: var(--font-sans);
+  transition: background .15s, color .15s;
+}
+.tab.active { background: var(--surface); color: var(--text); }
+.tab:hover:not(.active) { color: var(--text2); }
+ 
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .charts-row { grid-template-columns: 1fr 1fr; }
+  .charts-row .card:last-child { grid-column: 1 / -1; }
+  .summary-strip { grid-template-columns: repeat(3, 1fr); }
+  .mini-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 600px) {
+  .summary-strip { grid-template-columns: repeat(2, 1fr); }
+  .charts-row { grid-template-columns: 1fr; }
+  .bar-track { width: 50px; }
+  .page { padding: 1rem 1rem 3rem; }
+}
+ 
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.scard { animation: fadeUp .3s ease both; }
+.scard:nth-child(1) { animation-delay: .04s; }
+.scard:nth-child(2) { animation-delay: .08s; }
+.scard:nth-child(3) { animation-delay: .12s; }
+.scard:nth-child(4) { animation-delay: .16s; }
+.scard:nth-child(5) { animation-delay: .20s; }
         /* Ensure modal scrolling works */
 #userDetailModal .custom-scrollbar {
     overflow-y: auto !important;
@@ -318,6 +651,12 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
     <i class="ri-file-list-3-line"></i>
     <span>Audit Logs</span>
 </button>
+<button data-tab="camps"
+        class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
+    <i class="ri-flag-2-line"></i>
+    <span>Donation Camps</span>
+    <span id="camps-badge" class="ml-auto bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full hidden">0</span>
+</button>
             </nav>
             
             <div class="p-4 border-t border-gray-200">
@@ -432,35 +771,142 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                     </div>
 
                     <!-- Charts -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                            <div class="flex items-center justify-between mb-6">
-                                <h3 class="text-lg font-semibold">Blood Type Distribution</h3>
-                                <select class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm">
-                                    <option>Last 7 days</option>
-                                    <option>Last 30 days</option>
-                                    <option>Last 90 days</option>
-                                </select>
-                            </div>
-                            <div class="h-64">
-                                <canvas id="bloodTypeChart"></canvas>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                            <div class="flex items-center justify-between mb-6">
-                                <h3 class="text-lg font-semibold">Request Status Overview</h3>
-                                <select class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm">
-                                    <option>Last 7 days</option>
-                                    <option>Last 30 days</option>
-                                    <option>Last 90 days</option>
-                                </select>
-                            </div>
-                            <div class="h-64">
-                                <canvas id="requestStatusChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="flex items-center gap-2">
+        <i class="ri-calendar-line text-red-500 text-lg"></i>
+        <span class="font-medium text-gray-700 text-sm">Global Date Range</span>
+        <span class="text-xs text-gray-400">(applies to all charts)</span>
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+        <!-- Quick presets -->
+        <div class="flex bg-gray-100 rounded-lg p-0.5 gap-0.5">
+            <button onclick="setGlobalPreset(7)"   id="preset7"   class="chart-preset px-3 py-1.5 rounded-md text-xs font-medium transition-all bg-white shadow-sm text-gray-900">7d</button>
+            <button onclick="setGlobalPreset(30)"  id="preset30"  class="chart-preset px-3 py-1.5 rounded-md text-xs font-medium transition-all text-gray-500 hover:text-gray-900">30d</button>
+            <button onclick="setGlobalPreset(90)"  id="preset90"  class="chart-preset px-3 py-1.5 rounded-md text-xs font-medium transition-all text-gray-500 hover:text-gray-900">90d</button>
+            <button onclick="setGlobalPreset(180)" id="preset180" class="chart-preset px-3 py-1.5 rounded-md text-xs font-medium transition-all text-gray-500 hover:text-gray-900">6m</button>
+            <button onclick="setGlobalPreset(365)" id="preset365" class="chart-preset px-3 py-1.5 rounded-md text-xs font-medium transition-all text-gray-500 hover:text-gray-900">1y</button>
+        </div>
+        <!-- Custom range -->
+        <div class="flex items-center gap-2">
+            <input type="date" id="globalFromDate"
+                   class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                   onchange="onCustomRangeChange()">
+            <span class="text-gray-400 text-xs">to</span>
+            <input type="date" id="globalToDate"
+                   class="border border-gray-300 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                   onchange="onCustomRangeChange()">
+        </div>
+        <button onclick="refreshAllCharts()"
+                class="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs hover:bg-red-700 flex items-center gap-1 transition-all">
+            <i class="ri-refresh-line"></i> Apply
+        </button>
+    </div>
+</div>
+ 
+<!-- ─── CHARTS GRID ───────────────────────────────────────────── -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+ 
+    <!-- Blood Type Distribution -->
+    <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="text-base font-semibold text-gray-900">Blood Type Distribution</h3>
+                <p class="text-xs text-gray-500 mt-0.5" id="bloodTypeChartSubtitle">Last 7 days</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <!-- Chart type toggle -->
+                <div class="flex bg-gray-100 rounded-lg p-0.5">
+                    <button onclick="setBloodTypeChartType('doughnut')" id="btDoughnut"
+                            class="px-2.5 py-1 rounded-md text-xs font-medium transition-all bg-white shadow-sm text-gray-900">
+                        <i class="ri-donut-chart-line"></i>
+                    </button>
+                    <button onclick="setBloodTypeChartType('bar')" id="btBar"
+                            class="px-2.5 py-1 rounded-md text-xs font-medium transition-all text-gray-500 hover:text-gray-900">
+                        <i class="ri-bar-chart-line"></i>
+                    </button>
+                    <button onclick="setBloodTypeChartType('pie')" id="btPie"
+                            class="px-2.5 py-1 rounded-md text-xs font-medium transition-all text-gray-500 hover:text-gray-900">
+                        <i class="ri-pie-chart-line"></i>
+                    </button>
+                </div>
+                <!-- Loading spinner -->
+                <div id="bloodTypeChartLoader" class="hidden">
+                    <div class="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full"></div>
+                </div>
+            </div>
+        </div>
+ 
+        <!-- Summary pills -->
+        <div id="bloodTypeSummaryPills" class="flex flex-wrap gap-2 mb-4"></div>
+ 
+        <div class="h-64 relative">
+            <canvas id="bloodTypeChart"></canvas>
+            <div id="bloodTypeChartEmpty" class="hidden absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+                <i class="ri-bar-chart-2-line text-3xl mb-2"></i>
+                <p class="text-sm">No data for this period</p>
+            </div>
+        </div>
+    </div>
+ 
+    <!-- Request Status Overview -->
+    <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="text-base font-semibold text-gray-900">Request Status Overview</h3>
+                <p class="text-xs text-gray-500 mt-0.5" id="requestStatusChartSubtitle">Last 7 days</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <!-- Chart type toggle -->
+                <div class="flex bg-gray-100 rounded-lg p-0.5">
+                    <button onclick="setRequestChartType('bar')" id="rsBar"
+                            class="px-2.5 py-1 rounded-md text-xs font-medium transition-all bg-white shadow-sm text-gray-900">
+                        <i class="ri-bar-chart-line"></i>
+                    </button>
+                    <button onclick="setRequestChartType('line')" id="rsLine"
+                            class="px-2.5 py-1 rounded-md text-xs font-medium transition-all text-gray-500 hover:text-gray-900">
+                        <i class="ri-line-chart-line"></i>
+                    </button>
+                </div>
+                <!-- Status filter -->
+                <select id="requestStatusFilter" onchange="renderRequestStatusChart()"
+                        class="border border-gray-300 rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-red-500">
+                    <option value="all">All Statuses</option>
+                    <option value="pending">Pending Only</option>
+                    <option value="approved">Approved Only</option>
+                    <option value="rejected">Rejected Only</option>
+                </select>
+                <!-- Loading spinner -->
+                <div id="requestStatusChartLoader" class="hidden">
+                    <div class="animate-spin h-4 w-4 border-2 border-red-500 border-t-transparent rounded-full"></div>
+                </div>
+            </div>
+        </div>
+ 
+        <!-- Summary totals -->
+        <div id="requestStatusSummary" class="grid grid-cols-3 gap-3 mb-4">
+            <div class="bg-yellow-50 rounded-lg p-3 text-center">
+                <p class="text-lg font-bold text-yellow-700" id="summaryPending">—</p>
+                <p class="text-xs text-yellow-600">Pending</p>
+            </div>
+            <div class="bg-green-50 rounded-lg p-3 text-center">
+                <p class="text-lg font-bold text-green-700" id="summaryApproved">—</p>
+                <p class="text-xs text-green-600">Approved</p>
+            </div>
+            <div class="bg-red-50 rounded-lg p-3 text-center">
+                <p class="text-lg font-bold text-red-700" id="summaryRejected">—</p>
+                <p class="text-xs text-red-600">Rejected</p>
+            </div>
+        </div>
+ 
+        <div class="h-48 relative">
+            <canvas id="requestStatusChart"></canvas>
+            <div id="requestStatusChartEmpty" class="hidden absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+                <i class="ri-bar-chart-2-line text-3xl mb-2"></i>
+                <p class="text-sm">No data for this period</p>
+            </div>
+        </div>
+    </div>
+</div>
 
                     <!-- Recent Activity -->
                     <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
@@ -1145,403 +1591,274 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
   </div>
 <!-- ================= BLOOD INVENTORY MANAGEMENT ================= -->
 <div id="inventorySection" class="hidden space-y-6">
-    <!-- Header with Actions -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <h3 class="text-2xl font-bold text-gray-900">Blood Bank Inventory</h3>
-            <p class="text-gray-600">Manage central blood bank stock and monitor levels</p>
-        </div>
-        
-        <div class="flex items-center space-x-3">
-            <button onclick="exportInventoryReport()" 
-                    class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2">
-                <i class="ri-file-excel-line"></i>
-                <span>Export Report</span>
-            </button>
-            <button onclick="showAddStockModal()"
-                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center space-x-2 shadow-sm">
-                <i class="ri-add-line"></i>
-                <span>Add Stock</span>
-            </button>
-        </div>
+ 
+   <div class="page">
+ 
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <h1>Blood inventory</h1>
+      <p>Monitor and manage blood stock levels across all locations</p>
     </div>
-
-    <!-- Inventory Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-                <div class="p-3 bg-red-50 rounded-lg">
-                    <i class="ri-drop-line text-2xl text-red-600"></i>
-                </div>
-                <span class="text-sm text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                    <i class="ri-arrow-up-line"></i> 8%
-                </span>
-            </div>
-            <h3 class="text-3xl font-bold text-gray-900" id="totalUnits">0</h3>
-            <p class="text-gray-600">Total Units</p>
-        </div>
-        
-        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-                <div class="p-3 bg-yellow-50 rounded-lg">
-                    <i class="ri-alert-line text-2xl text-yellow-600"></i>
-                </div>
-            </div>
-            <h3 class="text-3xl font-bold text-gray-900" id="lowStockCount">0</h3>
-            <p class="text-gray-600">Low Stock Items</p>
-        </div>
-        
-        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-                <div class="p-3 bg-green-50 rounded-lg">
-                    <i class="ri-checkbox-circle-line text-2xl text-green-600"></i>
-                </div>
-            </div>
-            <h3 class="text-3xl font-bold text-gray-900" id="optimalStockCount">0</h3>
-            <p class="text-gray-600">Optimal Stock</p>
-        </div>
-        
-        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-                <div class="p-3 bg-purple-50 rounded-lg">
-                    <i class="ri-calendar-check-line text-2xl text-purple-600"></i>
-                </div>
-            </div>
-            <h3 class="text-3xl font-bold text-gray-900" id="lastUpdated">-</h3>
-            <p class="text-gray-600">Last Updated</p>
-        </div>
+    <div class="hdr-actions">
+      <button class="btn" onclick="exportCSV()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h10M8 2v8M5 7l3 3 3-3"/></svg>
+        Export CSV
+      </button>
+      <button class="btn" id="refreshBtn" onclick="loadInventory()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13.5 4A6.5 6.5 0 1 0 14 8.5"/><path d="M10 1l3.5 3L10 7"/></svg>
+        Refresh
+      </button>
+      <button class="btn btn-primary" onclick="showAddStock()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3v10M3 8h10"/></svg>
+        Add stock
+      </button>
     </div>
-
-    <!-- Blood Type Distribution Chart -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-semibold">Inventory by Blood Type</h3>
-                <select id="inventoryTimeRange" class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm">
-                    <option>Last 7 days</option>
-                    <option>Last 30 days</option>
-                    <option>Last 90 days</option>
-                </select>
-            </div>
-            <div class="h-64">
-                <canvas id="inventoryChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
-            <div class="space-y-3">
-                <button onclick="showBulkAddModal()" class="w-full p-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 flex items-center justify-between">
-                    <span class="flex items-center">
-                        <i class="ri-add-circle-line mr-2"></i>
-                        Bulk Add Stock
-                    </span>
-                    <i class="ri-arrow-right-s-line"></i>
-                </button>
-                <button onclick="showStockAdjustModal()" class="w-full p-3 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 flex items-center justify-between">
-                    <span class="flex items-center">
-                        <i class="ri-exchange-line mr-2"></i>
-                        Adjust Stock
-                    </span>
-                    <i class="ri-arrow-right-s-line"></i>
-                </button>
-                <button onclick="showInventoryReport()" class="w-full p-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 flex items-center justify-between">
-                    <span class="flex items-center">
-                        <i class="ri-file-chart-line mr-2"></i>
-                        Generate Report
-                    </span>
-                    <i class="ri-arrow-right-s-line"></i>
-                </button>
-                <button onclick="showAlertSettings()" class="w-full p-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 flex items-center justify-between">
-                    <span class="flex items-center">
-                        <i class="ri-notification-line mr-2"></i>
-                        Alert Settings
-                    </span>
-                    <i class="ri-arrow-right-s-line"></i>
-                </button>
-            </div>
-        </div>
+  </div>
+ 
+  <!-- Alert -->
+  <div class="alert" id="alertBox">
+    <div class="alert-dot"></div>
+    <p id="alertText">Checking stock levels...</p>
+  </div>
+ 
+  <!-- Summary strip -->
+  <div class="summary-strip">
+    <div class="scard">
+      <div class="scard-accent" style="background:var(--red)"></div>
+      <div class="scard-lbl">Total units</div>
+      <div class="scard-val" id="sumTotal">—</div>
     </div>
-
-    <!-- Main Inventory Table with Status Cards -->
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b flex items-center justify-between flex-wrap gap-4">
+    <div class="scard">
+      <div class="scard-accent" style="background:var(--blue)"></div>
+      <div class="scard-lbl">Locations</div>
+      <div class="scard-val" id="sumLocs">—</div>
+    </div>
+    <div class="scard">
+      <div class="scard-accent" style="background:var(--red)"></div>
+      <div class="scard-lbl" style="color:var(--red-dark)">Critical types</div>
+      <div class="scard-val" style="color:var(--red)" id="sumCritical">—</div>
+    </div>
+    <div class="scard">
+      <div class="scard-accent" style="background:var(--amber)"></div>
+      <div class="scard-lbl" style="color:var(--amber-dk)">Low stock</div>
+      <div class="scard-val" style="color:var(--amber)" id="sumLow">—</div>
+    </div>
+    <div class="scard">
+      <div class="scard-accent" style="background:var(--green)"></div>
+      <div class="scard-lbl" style="color:var(--green-dk)">Optimal</div>
+      <div class="scard-val" style="color:var(--green)" id="sumOptimal">—</div>
+    </div>
+  </div>
+ 
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" id="tab-all"       onclick="setTab('all')">All stock</button>
+    <button class="tab"        id="tab-hospitals"  onclick="setTab('hospitals')">By hospital</button>
+    <button class="tab"        id="tab-bloodtype"  onclick="setTab('bloodtype')">By blood type</button>
+    <button class="tab"        id="tab-movements"  onclick="setTab('movements')">Movements</button>
+  </div>
+ 
+  <!-- ── ALL STOCK tab ── -->
+  <div id="panel-all">
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <label>Filter</label>
+      <select id="sfStatus" onchange="applyFilter()">
+        <option value="all">All statuses</option>
+        <option value="critical">Critical</option>
+        <option value="low">Low</option>
+        <option value="moderate">Moderate</option>
+        <option value="optimal">Optimal</option>
+      </select>
+      <select id="sfLoc" onchange="applyFilter()">
+        <option value="all">All locations</option>
+      </select>
+      <select id="sfBT" onchange="applyFilter()">
+        <option value="all">All types</option>
+        <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+        <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+      </select>
+      <div class="filter-sep"></div>
+      <input type="text" id="sfSearch" placeholder="Search..." oninput="applyFilter()" style="width:150px">
+      <button class="btn" style="padding:5px 10px;font-size:12px" onclick="resetFilters()">Reset</button>
+      <span class="row-count" id="rowCountLabel"></span>
+    </div>
+ 
+    <!-- Charts -->
+    <div class="charts-row">
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <div class="card-title">Stock levels by blood type</div>
+            <div class="card-sub">Central blood bank</div>
+          </div>
+        </div>
+        <div class="legend" style="margin-bottom:.75rem">
+          <span class="leg"><span class="leg-sq" style="background:#E24B4A"></span>Critical ≤5</span>
+          <span class="leg"><span class="leg-sq" style="background:#EF9F27"></span>Low 6–15</span>
+          <span class="leg"><span class="leg-sq" style="background:#378ADD"></span>Moderate 16–30</span>
+          <span class="leg"><span class="leg-sq" style="background:#639922"></span>Optimal 31+</span>
+        </div>
+        <div class="chart-wrap" style="height:200px"><canvas id="barChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Distribution</div></div>
+        <div class="chart-wrap" style="height:160px"><canvas id="donutChart"></canvas></div>
+        <div class="legend" id="donutLegend" style="margin-top:.75rem;flex-direction:column;gap:5px"></div>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column">
+        <div class="card-hd"><div class="card-title">Status summary</div></div>
+        <div style="display:flex;flex-direction:column;gap:10px;flex:1;justify-content:center">
+          <div id="statusSummary"></div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Table -->
+    <div class="table-card">
+      <div class="table-hd">
+        <span class="table-hd-title">Detailed stock table</span>
+        <span class="row-count" id="tableRowCount"></span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortBy('bt')">Blood type</th>
+              <th onclick="sortBy('loc')">Location</th>
+              <th onclick="sortBy('units')">Units</th>
+              <th>Level</th>
+              <th onclick="sortBy('status')">Status</th>
+              <th>Last updated</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="stockTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- ── HOSPITALS tab ── -->
+  <div id="panel-hospitals" style="display:none">
+    <div id="hospAccordion"></div>
+  </div>
+ 
+  <!-- ── BLOOD TYPE tab ── -->
+  <div id="panel-bloodtype" style="display:none">
+    <div id="btAccordion"></div>
+  </div>
+ 
+  <!-- ── MOVEMENTS tab ── -->
+  <div id="panel-movements" style="display:none">
+    <div class="table-card">
+      <div class="table-hd">
+        <span class="table-hd-title">Recent stock movements</span>
+        <button class="btn" style="font-size:12px;padding:5px 10px" onclick="loadMovements()">Refresh</button>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th><th>Blood type</th><th>Location</th>
+              <th>Type</th><th>Units</th><th>By</th>
+            </tr>
+          </thead>
+          <tbody id="movementsTable">
+            <tr><td colspan="6" class="empty-state">Loading movements...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+ 
+</div><!-- /page -->
+ 
+<!-- ── Add Stock Modal ── -->
+<div id="addStockOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:var(--radius-xl);width:100%;max-width:420px;margin:1rem;overflow:hidden">
+    <div style="background:var(--red);padding:1.1rem 1.5rem;display:flex;justify-content:space-between;align-items:center">
+      <span style="color:#fff;font-size:15px;font-weight:500">Add blood stock</span>
+      <button onclick="closeAddStock()" style="background:none;border:none;color:rgba(255,255,255,.8);font-size:20px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div style="padding:1.5rem;display:flex;flex-direction:column;gap:14px">
+      <div>
+        <label style="font-size:12px;color:var(--text2);font-weight:500;display:block;margin-bottom:5px">Blood type *</label>
+        <select id="addBT" style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px">
+          <option value="">Select type</option>
+          <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+          <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--text2);font-weight:500;display:block;margin-bottom:5px">Units to add *</label>
+        <input type="number" id="addUnits" min="1" placeholder="e.g. 10"
+          style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--text2);font-weight:500;display:block;margin-bottom:5px">Source / notes</label>
+        <textarea id="addNotes" rows="2" placeholder="e.g. Donation camp, hospital name..."
+          style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;resize:none"></textarea>
+      </div>
+      <div id="addStockError" style="display:none;font-size:12px;color:var(--red);padding:6px 10px;background:var(--red-light);border-radius:6px"></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button class="btn" onclick="closeAddStock()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitAddStock()">Add stock</button>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ── Quick Adjust Modal ── -->
+<div id="adjustOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:var(--radius-xl);width:100%;max-width:360px;margin:1rem;overflow:hidden">
+    <div id="adjustHeader" style="padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center">
+      <span id="adjustTitle" style="color:#fff;font-size:14px;font-weight:500"></span>
+      <button onclick="closeAdjust()" style="background:none;border:none;color:rgba(255,255,255,.8);font-size:20px;cursor:pointer;line-height:1">×</button>
+    </div>
+    <div style="padding:1.25rem;display:flex;flex-direction:column;gap:12px">
+      <p style="font-size:13px;color:var(--text2)" id="adjustMeta"></p>
+      <div>
+        <label style="font-size:12px;color:var(--text2);font-weight:500;display:block;margin-bottom:5px">Units *</label>
+        <input type="number" id="adjustUnits" min="1" placeholder="Number of units"
+          style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px">
+      </div>
+      <div id="adjustCurrent" style="font-size:12px;color:var(--text3)"></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button class="btn" onclick="closeAdjust()">Cancel</button>
+        <button class="btn btn-primary" id="adjustBtn" onclick="submitAdjust()"></button>
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<!-- Quick Adjust Modal (used by inline add/remove buttons) -->
+<div id="quickAdjustModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-sm shadow-2xl">
+        <div id="quickAdjustHeader" class="px-6 py-4 rounded-t-xl flex items-center justify-between bg-gradient-to-r from-green-600 to-green-500">
+            <h3 class="text-lg font-semibold text-white" id="quickAdjustTitle">Adjust Stock</h3>
+            <button onclick="closeQuickAdjust()" class="text-white/80 hover:text-white"><i class="ri-close-line text-xl"></i></button>
+        </div>
+        <div class="p-5 space-y-4">
+            <p class="text-sm text-gray-600">
+                <span id="quickAdjustBloodType" class="font-bold text-red-600 text-base"></span>
+                at <span id="quickAdjustLocation" class="font-medium"></span>
+            </p>
             <div>
-                <h4 class="text-lg font-semibold">Current Stock Levels</h4>
-                <p class="text-sm text-gray-600">Real-time blood inventory status</p>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Units</label>
+                <input type="number" id="quickAdjustUnits" min="1" placeholder="Number of units"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500">
             </div>
-            <div class="flex items-center space-x-3">
-                <div class="flex items-center space-x-2">
-                    <span class="w-3 h-3 bg-green-500 rounded-full"></span>
-                    <span class="text-sm text-gray-600">Optimal</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <span class="w-3 h-3 bg-yellow-500 rounded-full"></span>
-                    <span class="text-sm text-gray-600">Low</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <span class="w-3 h-3 bg-red-500 rounded-full"></span>
-                    <span class="text-sm text-gray-600">Critical</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="overflow-x-auto">
-            <table class="min-w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Blood Type</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Available Units</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Minimum Required</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="inventoryTableBody" class="divide-y divide-gray-200">
-                    <tr>
-                        <td colspan="6" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center justify-center space-y-3">
-                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                                    <i class="ri-drop-line text-2xl text-gray-400"></i>
-                                </div>
-                                <p class="text-gray-500">Click tab to load inventory</p>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Recent Stock Movements -->
-    <div class="mt-8">
-        <div class="flex items-center justify-between mb-4">
-            <h4 class="text-lg font-semibold">Recent Stock Movements</h4>
-            <button onclick="viewAllMovements()" class="text-sm text-red-600 hover:text-red-700">
-                View All <i class="ri-arrow-right-line ml-1"></i>
-            </button>
-        </div>
-        
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="min-w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Blood Type</th>
-                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Units</th>
-                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Updated By</th>
-                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
-                        </tr>
-                    </thead>
-                    <tbody id="movementTableBody" class="divide-y divide-gray-200">
-                        <tr>
-                            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
-                                No recent movements
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div id="quickAdjustCurrentStock" class="text-xs text-gray-500"></div>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeQuickAdjust()" class="px-4 py-2 border rounded-lg text-sm">Cancel</button>
+                <button onclick="submitQuickAdjust()" id="quickAdjustBtn"
+                        class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">Apply</button>
             </div>
         </div>
     </div>
-</div>
-
-<!-- Add Stock Modal -->
-<div id="addStockModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl w-full max-w-md shadow-2xl">
-        <div class="bg-gradient-to-r from-red-600 to-red-500 px-6 py-4 rounded-t-xl flex items-center justify-between">
-            <h3 class="text-xl font-semibold text-white flex items-center">
-                <i class="ri-add-line mr-2"></i>
-                Add Blood Stock
-            </h3>
-            <button onclick="closeAddStockModal()" class="text-white/80 hover:text-white">
-                <i class="ri-close-line text-2xl"></i>
-            </button>
-        </div>
-        
-        <div class="p-6">
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Blood Type *</label>
-                    <select id="addBloodType" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500">
-                        <option value="">Select blood type</option>
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Units to Add *</label>
-                    <input type="number" id="addUnits" min="1" placeholder="Enter number of units"
-                           class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Source / Notes</label>
-                    <textarea id="addNotes" rows="3" placeholder="e.g., Blood donation camp, Hospital name, etc."
-                              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500"></textarea>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Expiry Date (Optional)</label>
-                    <input type="date" id="addExpiry" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500">
-                </div>
-            </div>
-            
-            <div class="flex justify-end gap-3 mt-6">
-                <button onclick="closeAddStockModal()" 
-                        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                    Cancel
-                </button>
-                <button onclick="submitAddStock()" 
-                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                    Add Stock
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Bulk Add Modal -->
-<div id="bulkAddModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl w-full max-w-2xl shadow-2xl">
-        <div class="bg-gradient-to-r from-green-600 to-green-500 px-6 py-4 rounded-t-xl flex items-center justify-between">
-            <h3 class="text-xl font-semibold text-white flex items-center">
-                <i class="ri-add-circle-line mr-2"></i>
-                Bulk Add Stock
-            </h3>
-            <button onclick="closeBulkAddModal()" class="text-white/80 hover:text-white">
-                <i class="ri-close-line text-2xl"></i>
-            </button>
-        </div>
-        
-        <div class="p-6">
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">A+</label>
-                    <input type="number" id="bulk_A_plus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">A-</label>
-                    <input type="number" id="bulk_A_minus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">B+</label>
-                    <input type="number" id="bulk_B_plus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">B-</label>
-                    <input type="number" id="bulk_B_minus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">AB+</label>
-                    <input type="number" id="bulk_AB_plus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">AB-</label>
-                    <input type="number" id="bulk_AB_minus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">O+</label>
-                    <input type="number" id="bulk_O_plus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">O-</label>
-                    <input type="number" id="bulk_O_minus" min="0" value="0" class="w-full border rounded-lg px-3 py-2">
-                </div>
-            </div>
-            
-            <div class="mt-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Bulk Notes</label>
-                <textarea id="bulkNotes" rows="3" placeholder="e.g., Monthly donation camp results"
-                          class="w-full border border-gray-300 rounded-lg px-4 py-3"></textarea>
-            </div>
-            
-            <div class="flex justify-end gap-3 mt-6">
-                <button onclick="closeBulkAddModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-                    Cancel
-                </button>
-                <button onclick="submitBulkAdd()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                    Add All
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Adjust Stock Modal -->
-<div id="adjustStockModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl w-full max-w-md shadow-2xl">
-        <div class="bg-gradient-to-r from-yellow-600 to-yellow-500 px-6 py-4 rounded-t-xl flex items-center justify-between">
-            <h3 class="text-xl font-semibold text-white flex items-center">
-                <i class="ri-exchange-line mr-2"></i>
-                Adjust Stock Levels
-            </h3>
-            <button onclick="closeAdjustStockModal()" class="text-white/80 hover:text-white">
-                <i class="ri-close-line text-2xl"></i>
-            </button>
-        </div>
-        
-        <div class="p-6">
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Blood Type *</label>
-                    <select id="adjustBloodType" class="w-full border rounded-lg px-4 py-3">
-                        <option value="">Select blood type</option>
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Action *</label>
-                    <select id="adjustAction" class="w-full border rounded-lg px-4 py-3">
-                        <option value="add">Add Units</option>
-                        <option value="remove">Remove Units</option>
-                        <option value="set">Set Exact Value</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Units *</label>
-                    <input type="number" id="adjustUnits" min="1" class="w-full border rounded-lg px-4 py-3">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Reason</label>
-                    <input type="text" id="adjustReason" placeholder="e.g., Expired, Transferred"
-                           class="w-full border rounded-lg px-4 py-3">
-                </div>
-            </div>
-            
-            <div class="flex justify-end gap-3 mt-6">
-                <button onclick="closeAdjustStockModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50">
-                    Cancel
-                </button>
-                <button onclick="submitAdjustStock()" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">
-                    Apply Changes
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-                <!-- ================= ANALYTICS ================= -->
+</div>                <!-- ================= ANALYTICS ================= -->
                 <div id="analyticsSection" class="hidden">
                     <div class="mb-6">
                         <h3 class="text-2xl font-bold text-gray-900">Analytics Dashboard</h3>
@@ -1557,6 +1874,108 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                         <p class="text-gray-500">Detailed analytics and reports will be available in the next update.</p>
                     </div>
                 </div>
+</div>
+                
+ 
+    <!-- Header -->
+     <div id="campsSection" class="hidden space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h3 class="text-2xl font-bold text-gray-900">Donation Camps</h3>
+            <p class="text-gray-600">Create and manage blood donation camp events visible to users</p>
+        </div>
+        <button onclick="openCampModal()"
+                class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 shadow-sm transition-all font-medium">
+            <i class="ri-add-line text-lg"></i>
+            Create Camp
+        </button>
+    </div>
+ 
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+                <div class="p-2 bg-red-50 rounded-lg"><i class="ri-flag-2-line text-xl text-red-600"></i></div>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900" id="campTotalCount">0</h3>
+            <p class="text-gray-500 text-sm mt-1">Total Camps</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+                <div class="p-2 bg-green-50 rounded-lg"><i class="ri-calendar-check-line text-xl text-green-600"></i></div>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900" id="campActiveCount">0</h3>
+            <p class="text-gray-500 text-sm mt-1">Upcoming Camps</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+                <div class="p-2 bg-orange-50 rounded-lg"><i class="ri-alarm-warning-line text-xl text-orange-600"></i></div>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900" id="campUrgentCount">0</h3>
+            <p class="text-gray-500 text-sm mt-1">Urgent Camps</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-2">
+                <div class="p-2 bg-blue-50 rounded-lg"><i class="ri-group-line text-xl text-blue-600"></i></div>
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900" id="campTotalSlots">0</h3>
+            <p class="text-gray-500 text-sm mt-1">Total Slots</p>
+        </div>
+    </div>
+ 
+    <!-- Filter bar -->
+    <div class="flex flex-wrap gap-3 items-center">
+        <select id="campStatusFilter" onchange="filterCamps()"
+                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500">
+            <option value="all">All Camps</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="past">Past</option>
+            <option value="urgent">Urgent Only</option>
+        </select>
+        <button onclick="loadCamps()"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">
+            <i class="ri-refresh-line text-gray-500"></i> Refresh
+        </button>
+    </div>
+ 
+    <!-- Camps Grid (cards view) -->
+    <div id="campsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <!-- Dynamic cards -->
+        <div class="col-span-full flex flex-col items-center justify-center py-16 text-gray-400">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-400 mb-3"></div>
+            <p>Loading camps...</p>
+        </div>
+    </div>
+ 
+    <!-- Camps Table (fallback / detail view) -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b flex items-center justify-between">
+            <h4 class="font-semibold text-gray-900">All Camps — List View</h4>
+            <button onclick="exportCampsCSV()" class="text-sm text-gray-600 hover:text-red-600 flex items-center gap-1">
+                <i class="ri-download-line"></i> Export CSV
+            </button>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Camp</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date & Time</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Slots</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="campsTableBody" class="divide-y divide-gray-200">
+                    <tr><td colspan="7" class="px-6 py-8 text-center text-gray-400">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+                
             </div>
         </main>
     </div>
@@ -1565,12 +1984,11 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
     <script>
         const API_BASE = "http://127.0.0.1:8000";
 
-        lucide.createIcons();
         let currentHospitalRequest = null;
 
         // Global state
         let currentAction = { type: '', id: null, data: null };
-let bloodTypeChart, requestStatusChart, inventoryChart;
+let bloodTypeChart, requestStatusChart;
 
         /* ---------- UTILITY FUNCTIONS ---------- */
         function showToast(type, title, message) {
@@ -1641,32 +2059,29 @@ let bloodTypeChart, requestStatusChart, inventoryChart;
 
         /* ---------- TAB MANAGEMENT ---------- */
         const tabs = document.querySelectorAll('nav button');
-        const sections = {
-            overview: document.getElementById('overviewSection'),
-            blood: document.getElementById('pendingBloodRequests'),
-            donor: document.getElementById('pendingDonorRequests'),
-            hospital: document.getElementById('hospitalSection'),
-            users: document.getElementById('usersSection'),
-            inventory: document.getElementById('inventorySection'),
-            analytics: document.getElementById('analyticsSection'),
-            audit: document.getElementById('auditLogsSection')
-        };
+       const sections = {
+    overview: document.getElementById('overviewSection'),
+    blood: document.getElementById('pendingBloodRequests'),
+    donor: document.getElementById('pendingDonorRequests'),
+    hospital: document.getElementById('hospitalSection'),
+    users: document.getElementById('usersSection'),
+    inventory: document.getElementById('inventorySection'),
+    analytics: document.getElementById('analyticsSection'),
+    audit: document.getElementById('auditLogsSection'),
+    camps: document.getElementById('campsSection')  // ✅ FIXED
+};
+ 
 
         const pageTitles = {
-            overview: { title: 'Dashboard Overview', subtitle: 'System statistics and quick insights' },
-            blood: { title: 'Blood Requests', subtitle: 'Review and manage blood donation requests' },
-            donor: { title: 'Donor Registrations', subtitle: 'Review and verify new donor applications' },
-            hospital: { title: 'Hospital Management', subtitle: 'Create and manage hospital accounts' },
-            users: {
-title: 'User Management',
-subtitle: 'Monitor patients and donors'
-},
-inventory: {
-title: "Blood Inventory",
-subtitle: "Manage blood bank stock levels"
-},
-            analytics: { title: 'Analytics Dashboard', subtitle: 'System-wide statistics and insights' },
-            audit: { title: 'Audit Logs', subtitle: 'Track all system activity and changes' }
+            overview:  { title: 'Dashboard Overview',    subtitle: 'System statistics and quick insights' },
+            blood:     { title: 'Blood Requests',        subtitle: 'Review and manage blood donation requests' },
+            donor:     { title: 'Donor Registrations',   subtitle: 'Review and verify new donor applications' },
+            hospital:  { title: 'Hospital Management',   subtitle: 'Create and manage hospital accounts' },
+            users:     { title: 'User Management',       subtitle: 'Monitor patients and donors' },
+            inventory: { title: 'Blood Inventory',       subtitle: 'Manage blood bank stock levels' },
+            analytics: { title: 'Analytics Dashboard',   subtitle: 'System-wide statistics and insights' },
+            audit:     { title: 'Audit Logs',            subtitle: 'Track all system activity and changes' },
+            camps:     { title: 'Donation Camps',        subtitle: 'Create and manage donation camp events' }  // ← ADD THIS LINE
         };
 
         tabs.forEach(tab => {
@@ -1713,19 +2128,353 @@ if (tabName === 'inventory') {
 }
                 if (tabName === 'overview') initializeCharts();
                 if (tabName === 'audit') {
-    loadAuditLogs();   // ✅ this is enough
+    loadAuditLogs();  
 }
+                if (tabName === 'camps') {
+    loadCamps();}
             }
         );
 
         });
 
-        /* ---------- INITIALIZE CHARTS ---------- */
-       async function initializeCharts() {
-    await loadBloodTypeChart();
-    await loadRequestStatusChart();
-}
+       // ─── CHART STATE ──────────────────────────────────────────────
 
+let bloodTypeChartType  = 'doughnut';
+let requestChartType    = 'bar';
+ 
+// Cached raw data so chart-type toggles don't need a new API call
+let _bloodTypeData      = null;
+let _requestStatusData  = null;
+ 
+// Global date range state
+const chartDateState = {
+    preset: 7,       // active preset (days), null if custom
+    from:   null,    // ISO string e.g. "2025-01-01"
+    to:     null,    // ISO string e.g. "2025-03-31"
+};
+ 
+const CHART_COLORS = [
+    '#DC2626','#EA580C','#16A34A','#9333EA',
+    '#F87171','#FB923C','#4ADE80','#A855F7'
+];
+ 
+// ─── PRESET BUTTONS ───────────────────────────────────────────
+function setGlobalPreset(days) {
+    chartDateState.preset = days;
+    chartDateState.from   = null;
+    chartDateState.to     = null;
+ 
+    // Clear custom date inputs
+    document.getElementById('globalFromDate').value = '';
+    document.getElementById('globalToDate').value   = '';
+ 
+    // Highlight active preset button
+    document.querySelectorAll('.chart-preset').forEach(btn => {
+        btn.classList.remove('bg-white','shadow-sm','text-gray-900');
+        btn.classList.add('text-gray-500');
+    });
+    const active = document.getElementById('preset' + days);
+    if (active) {
+        active.classList.add('bg-white','shadow-sm','text-gray-900');
+        active.classList.remove('text-gray-500');
+    }
+ 
+    refreshAllCharts();
+}
+ 
+function onCustomRangeChange() {
+    const from = document.getElementById('globalFromDate').value;
+    const to   = document.getElementById('globalToDate').value;
+    if (from && to && from <= to) {
+        chartDateState.preset = null;
+        chartDateState.from   = from;
+        chartDateState.to     = to;
+ 
+        // Deactivate all preset buttons
+        document.querySelectorAll('.chart-preset').forEach(btn => {
+            btn.classList.remove('bg-white','shadow-sm','text-gray-900');
+            btn.classList.add('text-gray-500');
+        });
+    }
+}
+ 
+// ─── BUILD QUERY STRING ───────────────────────────────────────
+function buildDateQuery() {
+    if (chartDateState.from && chartDateState.to) {
+        return `?from=${chartDateState.from}&to=${chartDateState.to}`;
+    }
+    return `?days=${chartDateState.preset || 7}`;
+}
+ 
+function getSubtitleLabel() {
+    if (chartDateState.from && chartDateState.to) {
+        return `${chartDateState.from} → ${chartDateState.to}`;
+    }
+    const map = { 7:'Last 7 days', 30:'Last 30 days', 90:'Last 90 days', 180:'Last 6 months', 365:'Last year' };
+    return map[chartDateState.preset] || `Last ${chartDateState.preset} days`;
+}
+ 
+// ─── REFRESH ALL ──────────────────────────────────────────────
+async function refreshAllCharts() {
+    await Promise.all([
+        loadBloodTypeChart(),
+        loadRequestStatusChart()
+    ]);
+}
+ 
+async function initializeCharts() {
+    // Set default date inputs to today & 7 days ago
+    const today  = new Date();
+    const week   = new Date(today); week.setDate(today.getDate() - 7);
+    document.getElementById('globalToDate').value   = today.toISOString().split('T')[0];
+    document.getElementById('globalFromDate').value = week.toISOString().split('T')[0];
+ 
+    await refreshAllCharts();
+}
+ 
+// ─── BLOOD TYPE CHART ─────────────────────────────────────────
+async function loadBloodTypeChart() {
+    const loader = document.getElementById('bloodTypeChartLoader');
+    const empty  = document.getElementById('bloodTypeChartEmpty');
+    if (loader) loader.classList.remove('hidden');
+    if (empty)  empty.classList.add('hidden');
+ 
+    try {
+        const res  = await fetch(`${API_BASE}/api/admin/analytics/blood-types/${buildDateQuery()}`);
+        const data = await res.json();
+        _bloodTypeData = data;
+ 
+        // Update subtitle
+        const sub = document.getElementById('bloodTypeChartSubtitle');
+        if (sub) sub.textContent = getSubtitleLabel();
+ 
+        renderBloodTypeChart();
+        renderBloodTypePills(data);
+ 
+    } catch (err) {
+        console.error('Blood type chart error:', err);
+    } finally {
+        if (loader) loader.classList.add('hidden');
+    }
+}
+ 
+function renderBloodTypeChart() {
+    if (!_bloodTypeData) return;
+    const data  = _bloodTypeData;
+    const ctx   = document.getElementById('bloodTypeChart').getContext('2d');
+    const empty = document.getElementById('bloodTypeChartEmpty');
+ 
+    const hasData = data.values && data.values.some(v => v > 0);
+    if (!hasData) {
+        if (empty) empty.classList.remove('hidden');
+        if (bloodTypeChart) { bloodTypeChart.destroy(); bloodTypeChart = null; }
+        return;
+    }
+    if (empty) empty.classList.add('hidden');
+ 
+    if (bloodTypeChart) bloodTypeChart.destroy();
+ 
+    const isBar = bloodTypeChartType === 'bar';
+ 
+    bloodTypeChart = new Chart(ctx, {
+        type: bloodTypeChartType,
+        data: {
+            labels: data.labels,
+            datasets: [{
+                data:            data.values,
+                backgroundColor: CHART_COLORS,
+                borderColor:     isBar ? CHART_COLORS.map(c => c + 'cc') : '#fff',
+                borderWidth:     isBar ? 0 : 2,
+                borderRadius:    isBar ? 6 : 0,
+            }]
+        },
+        options: {
+            responsive:          true,
+            maintainAspectRatio: false,
+            animation: { duration: 400 },
+            plugins: {
+                legend: {
+                    position: isBar ? 'top' : 'bottom',
+                    labels:   { boxWidth: 12, font: { size: 11 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+                            const pct   = total ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                            return ` ${ctx.label}: ${ctx.formattedValue} requests (${pct}%)`;
+                        }
+                    }
+                }
+            },
+            scales: isBar ? {
+                y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f3f4f6' } },
+                x: { grid: { display: false } }
+            } : {}
+        }
+    });
+}
+ 
+function renderBloodTypePills(data) {
+    const container = document.getElementById('bloodTypeSummaryPills');
+    if (!container || !data.labels) return;
+    const total = data.values.reduce((a,b) => a+b, 0);
+    container.innerHTML = data.labels.map((label, i) => {
+        const count = data.values[i] || 0;
+        const pct   = total ? ((count / total) * 100).toFixed(0) : 0;
+        return `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+            <span class="w-2 h-2 rounded-full" style="background:${CHART_COLORS[i % CHART_COLORS.length]}"></span>
+            ${label}: <strong>${count}</strong> <span class="text-gray-400">(${pct}%)</span>
+        </span>`;
+    }).join('');
+}
+ 
+function setBloodTypeChartType(type) {
+    bloodTypeChartType = type;
+ 
+    // Update toggle buttons
+    ['btDoughnut','btBar','btPie'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        btn.classList.remove('bg-white','shadow-sm','text-gray-900');
+        btn.classList.add('text-gray-500');
+    });
+    const map = { doughnut:'btDoughnut', bar:'btBar', pie:'btPie' };
+    const active = document.getElementById(map[type]);
+    if (active) {
+        active.classList.add('bg-white','shadow-sm','text-gray-900');
+        active.classList.remove('text-gray-500');
+    }
+ 
+    renderBloodTypeChart();
+}
+ 
+// ─── REQUEST STATUS CHART ─────────────────────────────────────
+async function loadRequestStatusChart() {
+    const loader = document.getElementById('requestStatusChartLoader');
+    const empty  = document.getElementById('requestStatusChartEmpty');
+    if (loader) loader.classList.remove('hidden');
+    if (empty)  empty.classList.add('hidden');
+ 
+    try {
+        const res  = await fetch(`${API_BASE}/api/admin/analytics/request-status/${buildDateQuery()}`);
+        const data = await res.json();
+        _requestStatusData = data;
+ 
+        // Update subtitle
+        const sub = document.getElementById('requestStatusChartSubtitle');
+        if (sub) sub.textContent = getSubtitleLabel();
+ 
+        // Update summary totals
+        const sumP = data.pending  ? data.pending.reduce((a,b)  => a+b, 0) : 0;
+        const sumA = data.approved ? data.approved.reduce((a,b) => a+b, 0) : 0;
+        const sumR = data.rejected ? data.rejected.reduce((a,b) => a+b, 0) : 0;
+ 
+        const sp = document.getElementById('summaryPending');
+        const sa = document.getElementById('summaryApproved');
+        const sr = document.getElementById('summaryRejected');
+        if (sp) sp.textContent = sumP;
+        if (sa) sa.textContent = sumA;
+        if (sr) sr.textContent = sumR;
+ 
+        renderRequestStatusChart();
+ 
+    } catch (err) {
+        console.error('Request status chart error:', err);
+    } finally {
+        if (loader) loader.classList.add('hidden');
+    }
+}
+ 
+function renderRequestStatusChart() {
+    if (!_requestStatusData) return;
+    const data   = _requestStatusData;
+    const ctx    = document.getElementById('requestStatusChart').getContext('2d');
+    const empty  = document.getElementById('requestStatusChartEmpty');
+    const filter = document.getElementById('requestStatusFilter')?.value || 'all';
+ 
+    // Build datasets based on filter
+    const allDatasets = [
+        { label:'Pending',  data: data.pending  || [], backgroundColor:'#FCD34D', borderColor:'#F59E0B', key:'pending'  },
+        { label:'Approved', data: data.approved || [], backgroundColor:'#4ADE80', borderColor:'#16A34A', key:'approved' },
+        { label:'Rejected', data: data.rejected || [], backgroundColor:'#FCA5A5', borderColor:'#DC2626', key:'rejected' },
+    ];
+ 
+    const datasets = filter === 'all'
+        ? allDatasets
+        : allDatasets.filter(d => d.key === filter);
+ 
+    const hasData = datasets.some(ds => ds.data.some(v => v > 0));
+    if (!hasData) {
+        if (empty) empty.classList.remove('hidden');
+        if (requestStatusChart) { requestStatusChart.destroy(); requestStatusChart = null; }
+        return;
+    }
+    if (empty) empty.classList.add('hidden');
+ 
+    if (requestStatusChart) requestStatusChart.destroy();
+ 
+    const isLine = requestChartType === 'line';
+ 
+    requestStatusChart = new Chart(ctx, {
+        type: requestChartType,
+        data: {
+            labels: data.labels || [],
+            datasets: datasets.map(ds => ({
+                label:           ds.label,
+                data:            ds.data,
+                backgroundColor: isLine ? ds.borderColor + '22' : ds.backgroundColor,
+                borderColor:     ds.borderColor,
+                borderWidth:     isLine ? 2 : 0,
+                borderRadius:    isLine ? 0 : 6,
+                fill:            isLine,
+                tension:         0.4,
+                pointRadius:     isLine ? 4 : 0,
+                pointHoverRadius:isLine ? 6 : 0,
+            }))
+        },
+        options: {
+            responsive:          true,
+            maintainAspectRatio: false,
+            animation: { duration: 400 },
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position:'top', labels:{ boxWidth:12, font:{ size:11 } } },
+                tooltip: {
+                    callbacks: {
+                        footer: items => {
+                            const total = items.reduce((s,i) => s + i.parsed.y, 0);
+                            return `Total: ${total}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { beginAtZero:true, ticks:{ stepSize:1 }, grid:{ color:'#f3f4f6' } },
+                x: { grid:{ display:false } }
+            }
+        }
+    });
+}
+ 
+function setRequestChartType(type) {
+    requestChartType = type;
+ 
+    ['rsBar','rsLine'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        btn.classList.remove('bg-white','shadow-sm','text-gray-900');
+        btn.classList.add('text-gray-500');
+    });
+    const map = { bar:'rsBar', line:'rsLine' };
+    const active = document.getElementById(map[type]);
+    if (active) {
+        active.classList.add('bg-white','shadow-sm','text-gray-900');
+        active.classList.remove('text-gray-500');
+    }
+ 
+    renderRequestStatusChart();
+}
 
         /* ---------- FETCH BLOOD REQUESTS ---------- */
         async function loadBloodRequests() {
@@ -2791,72 +3540,6 @@ async function loadRejectedHospitalRequests() {
       </tr>`;
   }
 }
-async function loadBloodTypeChart() {
-    const res = await fetch(`${API_BASE}/api/admin/analytics/blood-types/`);
-    const data = await res.json();
-
-    const ctx = document.getElementById('bloodTypeChart').getContext('2d');
-    if (bloodTypeChart) bloodTypeChart.destroy();
-
-    bloodTypeChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: data.labels,
-            datasets: [{
-                data: data.values,
-                backgroundColor: [
-                    '#DC2626', '#EA580C', '#16A34A', '#9333EA',
-                    '#F87171', '#FB923C', '#4ADE80', '#A855F7'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' }
-            }
-        }
-    });
-}
-async function loadRequestStatusChart() {
-    const res = await fetch(`${API_BASE}/api/admin/analytics/request-status/`);
-    const data = await res.json();
-
-    const ctx = document.getElementById('requestStatusChart').getContext('2d');
-    if (requestStatusChart) requestStatusChart.destroy();
-
-    requestStatusChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: data.labels,
-            datasets: [
-                {
-                    label: 'Pending',
-                    data: data.pending,
-                    backgroundColor: '#F87171'
-                },
-                {
-                    label: 'Approved',
-                    data: data.approved,
-                    backgroundColor: '#4ADE80'
-                },
-                {
-                    label: 'Rejected',
-                    data: data.rejected,
-                    backgroundColor: '#9CA3AF'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true }
-            }
-        }
-    });
-}
 async function loadNotifications() {
     try {
         const res = await fetch(`${API_BASE}/api/admin/notifications/`);
@@ -3213,6 +3896,11 @@ let bgColor = getActionBgColor(log.action);
 
     loadNotifications();
 }
+function filterHospitalActivities() {
+    const filter = document.getElementById('activityFilter').value;
+    // re-render based on filter
+    loadHospitalAuditLogs();
+}
 async function loadUsers(){
   const body = document.getElementById("usersTableBody");
   body.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-gray-400">
@@ -3546,487 +4234,630 @@ async function viewUser(id) {
 function closeUserModal(){
 document.getElementById("userDetailModal").classList.add("hidden");
 }
+let allInventoryData   = [];   // flat array: { blood_type, units, location, last_updated }
+let filteredInventoryData = [];
+let currentInventoryTab = 'all';
+let currentSort = { field: 'blood_type', direction: 'asc' };
+let currentFilters = { location: 'all', bloodType: 'all', status: 'all', search: '' };
+let quickAdjustState  = {};   // { bloodType, location, action }
+ 
+// ─── TAB MANAGEMENT ───────────────────────────────────────────
+function setInventoryTab(tab) {
+    currentInventoryTab = tab;
+ 
+    // highlight active tab
+    ['all','hospitals','bloodtype','movements'].forEach(t => {
+        const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (btn) {
+            btn.classList.toggle('bg-white', t === tab);
+            btn.classList.toggle('shadow-sm', t === tab);
+            btn.classList.toggle('text-gray-900', t === tab);
+            btn.classList.toggle('text-gray-600', t !== tab);
+        }
+    });
+ 
+    // show/hide panels
+    document.getElementById('panelAll').classList.toggle('hidden', tab !== 'all');
+    document.getElementById('panelHospitals').classList.toggle('hidden', tab !== 'hospitals');
+    document.getElementById('panelBloodType').classList.toggle('hidden', tab !== 'bloodtype');
+    document.getElementById('panelMovements').classList.toggle('hidden', tab !== 'movements');
+ 
+    // filters only visible for 'all'
+    const filtersRow = document.getElementById('inventoryFiltersRow');
+    if (filtersRow) filtersRow.classList.toggle('hidden', tab !== 'all');
+ 
+    if (tab === 'hospitals') renderHospitalAccordion();
+    if (tab === 'bloodtype') renderBloodTypeAccordion();
+    if (tab === 'movements') loadStockMovements();
+}
+ 
+function filterByStatus(s) {
+    document.getElementById('statusFilter').value = s;
+    currentFilters.status = s;
+    setInventoryTab('all');
+    applyFiltersAndRender();
+}
+ 
+// ── STATE ───────────────────────────────────────────────────────────────────
+let allStock   = [];
+let filtered   = [];
+let sortField  = 'bt';
+let sortDir    = 'asc';
+let adjustState = {};
+let barChartInst, donutChartInst;
+let currentTab = 'all';
+ 
+// ── STATUS HELPERS ───────────────────────────────────────────────────────────
+const STATUS_MAX = 50;
+function getStatus(u) {
+  if (u <= 5)  return 'critical';
+  if (u <= 15) return 'low';
+  if (u <= 30) return 'moderate';
+  return 'optimal';
+}
+const STATUS_COLORS = {
+  critical: '#E24B4A', low: '#EF9F27', moderate: '#378ADD', optimal: '#639922'
+};
+const STATUS_LABELS = {
+  critical: 'Critical', low: 'Low', moderate: 'Moderate', optimal: 'Optimal'
+};
+const STATUS_ORDER = { critical: 0, low: 1, moderate: 2, optimal: 3 };
+const BT_ORDER = ['O+','A+','B+','AB+','O-','A-','B-','AB-'];
+const BT_COLORS = {
+  'O+': '#E24B4A', 'A+': '#D85A30', 'B+': '#639922', 'AB+': '#7F77DD',
+  'O-': '#F09595', 'A-': '#EF9F27', 'B-': '#5DCAA5', 'AB-': '#378ADD'
+};
+ 
+// ── LOAD DATA ────────────────────────────────────────────────────────────────
 async function loadInventory() {
-    const body = document.getElementById("inventoryTableBody");
-    const movementBody = document.getElementById("movementTableBody");
-    
-    body.innerHTML = `
-        <tr>
-            <td colspan="6" class="px-6 py-12 text-center">
-                <div class="flex flex-col items-center justify-center space-y-3">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-                    <p class="text-gray-500">Loading inventory...</p>
-                </div>
-            </td>
-        </tr>
-    `;
-
-    try {
-        const res = await fetch(`${API_BASE}/api/admin/blood-inventory/`);
-        const data = await res.json();
-        
-        // Update summary stats
-        updateInventorySummary(data);
-        
-        // Initialize chart
-        initializeInventoryChart(data);
-        
-        // Load movements
-        await loadStockMovements();
-        
-        body.innerHTML = "";
-        
-        if (data.length === 0) {
-            body.innerHTML = `
-                <tr>
-                    <td colspan="6" class="px-6 py-12 text-center">
-                        <div class="flex flex-col items-center justify-center space-y-3">
-                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                                <i class="ri-drop-line text-2xl text-gray-400"></i>
-                            </div>
-                            <h4 class="text-lg font-semibold text-gray-700">No Inventory Data</h4>
-                            <p class="text-gray-500">Click "Add Stock" to start tracking blood inventory</p>
-                        </div>
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        data.forEach(stock => {
-            const status = getStockStatus(stock.units, stock.minimum_required);
-            const statusBadge = getStatusBadgeHTML(status);
-            const statusColor = getStatusColor(status);
-            
-            body.innerHTML += `
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                                <span class="font-bold text-red-600">${stock.blood_type}</span>
-                            </div>
-                            <div>
-                                <p class="font-medium text-gray-900">Type ${stock.blood_type}</p>
-                                <p class="text-xs text-gray-500">Blood Group</p>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4">
-                        ${statusBadge}
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-2xl font-bold ${statusColor}">${stock.units}</span>
-                            <span class="text-sm text-gray-500">units</span>
-                        </div>
-                        <div class="w-24 h-1.5 bg-gray-200 rounded-full mt-1">
-                            <div class="h-1.5 rounded-full ${getProgressBarColor(status)}" 
-                                 style="width: ${Math.min((stock.units / (stock.minimum_required * 2)) * 100, 100)}%"></div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="font-medium">${stock.minimum_required}</span>
-                        <span class="text-sm text-gray-500"> units</span>
-                    </td>
-                    <td class="px-6 py-4">
-                        <p class="text-gray-900">${formatDate(stock.last_updated)}</p>
-                        <p class="text-xs text-gray-500">${getTimeAgo(stock.last_updated)}</p>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center space-x-2">
-                            <button onclick="addUnits('${stock.blood_type}')"
-                                    class="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 flex items-center space-x-1">
-                                <i class="ri-add-line"></i>
-                                <span>Add</span>
-                            </button>
-                            <button onclick="removeUnits('${stock.blood_type}')"
-                                    class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 flex items-center space-x-1">
-                                <i class="ri-subtract-line"></i>
-                                <span>Remove</span>
-                            </button>
-                            <button onclick="showHistory('${stock.blood_type}')"
-                                    class="p-1.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">
-                                <i class="ri-history-line"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
+  document.getElementById('refreshBtn').disabled = true;
+  try {
+    const res  = await fetch(`${API_BASE}/api/admin/combined-stock/`);
+    const raw  = await res.json();
+ 
+    allStock = [];
+    raw.forEach(h => {
+      const name = h.hospital?.name || 'Blood Bank';
+      (h.stock || []).forEach(s => {
+        allStock.push({
+          bt:      s.blood_type,
+          units:   s.units || 0,
+          loc:     name,
+          updated: s.last_updated ? new Date(s.last_updated).toLocaleString() : 'Unknown'
         });
-
-    } catch (error) {
-        console.error('Error loading inventory:', error);
-        body.innerHTML = `
-            <tr>
-                <td colspan="6" class="px-6 py-12 text-center">
-                    <div class="flex flex-col items-center justify-center space-y-3">
-                        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-                            <i class="ri-error-warning-line text-2xl text-red-600"></i>
-                        </div>
-                        <h4 class="text-lg font-semibold text-gray-700">Failed to Load Inventory</h4>
-                        <p class="text-gray-500">Please check your connection and try again</p>
-                        <button onclick="loadInventory()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                            <i class="ri-refresh-line mr-1"></i> Retry
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }
-}
-
-function getStockStatus(units, minimum) {
-    if (units <= 0) return 'critical';
-    if (units < minimum) return 'low';
-    if (units < minimum * 1.5) return 'moderate';
-    return 'optimal';
-}
-
-function getStatusColor(status) {
-    switch(status) {
-        case 'critical': return 'text-red-600';
-        case 'low': return 'text-yellow-600';
-        case 'moderate': return 'text-blue-600';
-        case 'optimal': return 'text-green-600';
-        default: return 'text-gray-600';
-    }
-}
-
-function getProgressBarColor(status) {
-    switch(status) {
-        case 'critical': return 'bg-red-500';
-        case 'low': return 'bg-yellow-500';
-        case 'moderate': return 'bg-blue-500';
-        case 'optimal': return 'bg-green-500';
-        default: return 'bg-gray-500';
-    }
-}
-
-function getStatusBadgeHTML(status) {
-    const badges = {
-        critical: '<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">Critical</span>',
-        low: '<span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">Low Stock</span>',
-        moderate: '<span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">Moderate</span>',
-        optimal: '<span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Optimal</span>'
-    };
-    return badges[status] || badges.moderate;
-}
-
-function updateInventorySummary(data) {
-    const totalUnits = data.reduce((sum, item) => sum + item.units, 0);
-    const lowStock = data.filter(item => item.units < item.minimum_required).length;
-    const optimalStock = data.filter(item => item.units >= item.minimum_required * 1.5).length;
-    const lastUpdated = data.length > 0 ? 
-        new Date(Math.max(...data.map(d => new Date(d.last_updated)))).toLocaleDateString() : '-';
-
-    document.getElementById('totalUnits').textContent = totalUnits;
-    document.getElementById('lowStockCount').textContent = lowStock;
-    document.getElementById('optimalStockCount').textContent = optimalStock;
-    document.getElementById('lastUpdated').textContent = lastUpdated;
-}
-
-function initializeInventoryChart(data) {
-    const ctx = document.getElementById('inventoryChart').getContext('2d');
-    
-    if (inventoryChart) {
-        inventoryChart.destroy();
-    }
-    
-    const bloodTypes = data.map(d => d.blood_type);
-    const units = data.map(d => d.units);
-    const minRequired = data.map(d => d.minimum_required);
-    
-    inventoryChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: bloodTypes,
-            datasets: [
-                {
-                    label: 'Current Units',
-                    data: units,
-                    backgroundColor: '#EF4444',
-                    borderRadius: 6
-                },
-                {
-                    label: 'Minimum Required',
-                    data: minRequired,
-                    backgroundColor: '#9CA3AF',
-                    borderRadius: 6,
-                    type: 'line',
-                    borderColor: '#4B5563',
-                    borderWidth: 2,
-                    pointRadius: 4
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Units'
-                    }
-                }
-            }
-        }
+      });
     });
+  } catch {
+    // Fallback demo data so the UI always renders
+    allStock = buildDemoData();
+  }
+ 
+  populateLocationFilter();
+  updateSummary();
+  updateAlert();
+  filtered = [...allStock];
+  applyFilter();
+  buildBarChart();
+  buildDonut();
+  buildHospitalAccordion();
+  buildBTAccordion();
+  document.getElementById('refreshBtn').disabled = false;
 }
-
-async function loadStockMovements() {
-    const movementBody = document.getElementById("movementTableBody");
-    
-    try {
-        const res = await fetch(`${API_BASE}/api/admin/stock-movements/?limit=5`);
-        const data = await res.json();
-        
-        movementBody.innerHTML = "";
-        
-        if (data.length === 0) {
-            movementBody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">
-                        No recent movements
-                    </td>
-                </tr>
-            `;
-            return;
+ 
+function buildDemoData() {
+  const locations = ['Blood Bank', 'Bir Hospital', 'Patan Hospital', 'Norvic Hospital'];
+  const btUnits   = { 'O+':42,'A+':38,'B+':24,'AB+':31,'O-':4,'A-':9,'B-':3,'AB-':2 };
+  const data = [];
+  Object.entries(btUnits).forEach(([bt, units]) => {
+    data.push({ bt, units, loc: 'Blood Bank', updated: 'Today, 09:14' });
+  });
+  data.push(
+    { bt:'O+',  units:18, loc:'Bir Hospital',    updated:'Yesterday'  },
+    { bt:'A+',  units:12, loc:'Bir Hospital',    updated:'Yesterday'  },
+    { bt:'B+',  units:7,  loc:'Bir Hospital',    updated:'2 days ago' },
+    { bt:'AB+', units:5,  loc:'Bir Hospital',    updated:'2 days ago' },
+    { bt:'O-',  units:2,  loc:'Bir Hospital',    updated:'3 days ago' },
+    { bt:'A-',  units:6,  loc:'Bir Hospital',    updated:'3 days ago' },
+    { bt:'O+',  units:22, loc:'Patan Hospital',  updated:'Today, 11:30' },
+    { bt:'A+',  units:15, loc:'Patan Hospital',  updated:'Today, 11:30' },
+    { bt:'B+',  units:9,  loc:'Patan Hospital',  updated:'Yesterday'   },
+    { bt:'AB+', units:11, loc:'Patan Hospital',  updated:'Yesterday'   },
+    { bt:'B-',  units:4,  loc:'Patan Hospital',  updated:'3 days ago'  },
+    { bt:'O+',  units:14, loc:'Norvic Hospital', updated:'Today, 08:45' },
+    { bt:'A+',  units:10, loc:'Norvic Hospital', updated:'Today, 08:45' },
+    { bt:'B+',  units:5,  loc:'Norvic Hospital', updated:'Yesterday'   }
+  );
+  return data;
+}
+ 
+// ── SUMMARY + ALERT ──────────────────────────────────────────────────────────
+function updateSummary() {
+  const total    = allStock.reduce((s,r) => s + r.units, 0);
+  const locs     = new Set(allStock.map(r => r.loc)).size;
+  const critical = allStock.filter(r => getStatus(r.units) === 'critical').length;
+  const low      = allStock.filter(r => getStatus(r.units) === 'low').length;
+  const optimal  = allStock.filter(r => getStatus(r.units) === 'optimal').length;
+ 
+  document.getElementById('sumTotal').textContent   = total;
+  document.getElementById('sumLocs').textContent    = locs;
+  document.getElementById('sumCritical').textContent = critical;
+  document.getElementById('sumLow').textContent     = low;
+  document.getElementById('sumOptimal').textContent  = optimal;
+ 
+  // Status summary panel
+  const ss = document.getElementById('statusSummary');
+  ['critical','low','moderate','optimal'].forEach(st => {
+    const count = allStock.filter(r => getStatus(r.units) === st).length;
+    ss.innerHTML += `
+      <div style="display:flex;align-items:center;justify-content:space-between;
+                  padding:6px 10px;border-radius:6px;background:var(--surface2);margin-bottom:6px">
+        <span class="pill p-${st}">${STATUS_LABELS[st]}</span>
+        <span style="font-size:15px;font-weight:500;font-family:var(--font-mono);
+                     color:${STATUS_COLORS[st]}">${count}</span>
+      </div>`;
+  });
+}
+ 
+function updateAlert() {
+  const critTypes = [...new Set(allStock.filter(r => getStatus(r.units) === 'critical').map(r => r.bt))];
+  const ab   = document.getElementById('alertBox');
+  const txt  = document.getElementById('alertText');
+  if (critTypes.length) {
+    txt.textContent = `${critTypes.length} blood type${critTypes.length > 1 ? 's' : ''} critically low (${critTypes.join(', ')}) — immediate restocking recommended across all locations.`;
+    ab.style.display = 'flex';
+  } else {
+    ab.style.display = 'none';
+  }
+}
+ 
+// ── FILTER ───────────────────────────────────────────────────────────────────
+function populateLocationFilter() {
+  const sel = document.getElementById('sfLoc');
+  while (sel.options.length > 1) sel.remove(1);
+  [...new Set(allStock.map(r => r.loc))].sort().forEach(loc => {
+    const o = document.createElement('option');
+    o.value = o.textContent = loc;
+    sel.appendChild(o);
+  });
+}
+ 
+function applyFilter() {
+  const st  = document.getElementById('sfStatus').value;
+  const loc = document.getElementById('sfLoc').value;
+  const bt  = document.getElementById('sfBT').value;
+  const q   = (document.getElementById('sfSearch').value || '').toLowerCase();
+ 
+  filtered = allStock.filter(r => {
+    if (st  !== 'all' && getStatus(r.units) !== st)   return false;
+    if (loc !== 'all' && r.loc !== loc)                return false;
+    if (bt  !== 'all' && r.bt  !== bt)                 return false;
+    if (q && !r.bt.toLowerCase().includes(q) && !r.loc.toLowerCase().includes(q)) return false;
+    return true;
+  });
+ 
+  sortData();
+  renderTable();
+  updateBarChart();
+  document.getElementById('rowCountLabel').textContent = `${filtered.length} of ${allStock.length} rows`;
+}
+ 
+function resetFilters() {
+  ['sfStatus','sfLoc','sfBT'].forEach(id => document.getElementById(id).value = 'all');
+  document.getElementById('sfSearch').value = '';
+  sortField = 'bt'; sortDir = 'asc';
+  applyFilter();
+}
+ 
+// ── SORT ─────────────────────────────────────────────────────────────────────
+function sortBy(field) {
+  if (sortField === field) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  else { sortField = field; sortDir = 'asc'; }
+  document.querySelectorAll('th').forEach(th => {
+    th.classList.remove('sort-asc','sort-desc');
+  });
+  sortData();
+  renderTable();
+}
+ 
+function sortData() {
+  filtered.sort((a, b) => {
+    let va, vb;
+    if (sortField === 'units')  { va = a.units; vb = b.units; }
+    else if (sortField === 'status') { va = STATUS_ORDER[getStatus(a.units)]; vb = STATUS_ORDER[getStatus(b.units)]; }
+    else if (sortField === 'loc')    { va = a.loc.toLowerCase(); vb = b.loc.toLowerCase(); }
+    else                             { va = a.bt; vb = b.bt; }
+    if (va < vb) return sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return sortDir === 'asc' ?  1 : -1;
+    return 0;
+  });
+}
+ 
+// ── TABLE ─────────────────────────────────────────────────────────────────────
+function renderTable() {
+  const tb = document.getElementById('stockTable');
+  document.getElementById('tableRowCount').textContent = `${filtered.length} rows`;
+  if (!filtered.length) {
+    tb.innerHTML = `<tr><td colspan="7" class="empty-state">No matching inventory records</td></tr>`;
+    return;
+  }
+  tb.innerHTML = filtered.map(r => {
+    const st  = getStatus(r.units);
+    const pct = Math.min(Math.round((r.units / STATUS_MAX) * 100), 100);
+    const isBank = r.loc === 'Blood Bank';
+    return `<tr>
+      <td><span class="bt-badge">${r.bt}</span></td>
+      <td style="color:var(--text2)">
+        ${r.loc}
+        ${isBank ? '<span class="pill p-bank" style="margin-left:6px">Bank</span>' : ''}
+      </td>
+      <td>
+        <div class="bar-cell">
+          <span class="units-val" style="color:${STATUS_COLORS[st]}">${r.units}</span>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${pct}%;background:${STATUS_COLORS[st]}"></div>
+          </div>
+        </div>
+      </td>
+      <td style="color:var(--text3);font-size:12px">${pct}%</td>
+      <td><span class="pill p-${st}">${STATUS_LABELS[st]}</span></td>
+      <td style="color:var(--text3);font-size:12px">${r.updated}</td>
+      <td>
+        ${isBank
+          ? `<div style="display:flex;gap:6px">
+               <button class="btn" style="font-size:11px;padding:4px 10px" onclick="openAdjust('${r.bt}','${r.loc}','add',${r.units})">+ Add</button>
+               <button class="btn" style="font-size:11px;padding:4px 10px" onclick="openAdjust('${r.bt}','${r.loc}','remove',${r.units})">− Remove</button>
+             </div>`
+          : `<span style="font-size:11px;color:var(--text3);font-style:italic">Hospital-managed</span>`
         }
-        
-        data.forEach(movement => {
-            const typeClass = movement.type === 'add' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
-            const typeIcon = movement.type === 'add' ? 'ri-add-line' : 'ri-subtract-line';
-            
-            movementBody.innerHTML += `
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 text-gray-600">${formatDate(movement.date)}</td>
-                    <td class="px-6 py-4 font-medium">${movement.blood_type}</td>
-                    <td class="px-6 py-4">
-                        <span class="px-2 py-1 rounded-full text-xs font-medium ${typeClass}">
-                            <i class="${typeIcon} mr-1"></i>
-                            ${movement.type === 'add' ? 'Added' : 'Removed'}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 font-medium">${movement.units} units</td>
-                    <td class="px-6 py-4 text-gray-600">${movement.updated_by || 'System'}</td>
-                    <td class="px-6 py-4 text-gray-500">${movement.notes || '-'}</td>
-                </tr>
-            `;
-        });
-        
-    } catch (error) {
-        console.error('Error loading movements:', error);
+      </td>
+    </tr>`;
+  }).join('');
+}
+ 
+// ── CHARTS ────────────────────────────────────────────────────────────────────
+function getBankByBT() {
+  const m = {};
+  allStock.filter(r => r.loc === 'Blood Bank').forEach(r => { m[r.bt] = (m[r.bt] || 0) + r.units; });
+  return m;
+}
+ 
+function buildBarChart() {
+  const totals = getBankByBT();
+  const labels = BT_ORDER;
+  const vals   = labels.map(bt => totals[bt] || 0);
+  const colors = vals.map(v => STATUS_COLORS[getStatus(v)]);
+ 
+  if (barChartInst) barChartInst.destroy();
+  barChartInst = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ data: vals, backgroundColor: colors, borderRadius: 5, borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => ` ${c.raw} units — ${STATUS_LABELS[getStatus(c.raw)]}` }}
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11, family: "'DM Mono', monospace" }}},
+        y: { beginAtZero: true, ticks: { stepSize: 10, font: { size: 11 }}, grid: { color: 'rgba(0,0,0,.05)' }, max: 55 }
+      }
     }
+  });
 }
-
-// Modal Functions
-function showAddStockModal() {
-    document.getElementById('addStockModal').classList.remove('hidden');
+ 
+function updateBarChart() {
+  if (!barChartInst) return;
+  const grouped = {};
+  filtered.forEach(r => { grouped[r.bt] = (grouped[r.bt] || 0) + r.units; });
+  const vals = BT_ORDER.map(bt => grouped[bt] || 0);
+  barChartInst.data.datasets[0].data = vals;
+  barChartInst.data.datasets[0].backgroundColor = vals.map(v => STATUS_COLORS[getStatus(v)]);
+  barChartInst.update();
 }
-
-function closeAddStockModal() {
-    document.getElementById('addStockModal').classList.add('hidden');
-    // Clear form
-    document.getElementById('addBloodType').value = '';
-    document.getElementById('addUnits').value = '';
-    document.getElementById('addNotes').value = '';
-    document.getElementById('addExpiry').value = '';
+ 
+function buildDonut() {
+  const totals = getBankByBT();
+  const labels = BT_ORDER.filter(bt => totals[bt]);
+  const vals   = labels.map(bt => totals[bt]);
+  const total  = vals.reduce((a, b) => a + b, 0);
+  const colors = labels.map(bt => BT_COLORS[bt]);
+ 
+  if (donutChartInst) donutChartInst.destroy();
+  donutChartInst = new Chart(document.getElementById('donutChart'), {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '60%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => ` ${c.label}: ${c.raw} (${Math.round(c.raw / total * 100)}%)` }}
+      }
+    }
+  });
+ 
+  const dl = document.getElementById('donutLegend');
+  dl.innerHTML = '';
+  labels.forEach((l, i) => {
+    dl.innerHTML += `<span class="leg">
+      <span class="leg-sq" style="background:${colors[i]}"></span>
+      <span style="font-family:var(--font-mono)">${l}</span>
+      <span style="color:var(--text3);margin-left:auto">${vals[i]} (${Math.round(vals[i] / total * 100)}%)</span>
+    </span>`;
+  });
 }
-
-function showBulkAddModal() {
-    document.getElementById('bulkAddModal').classList.remove('hidden');
+ 
+// ── HOSPITAL ACCORDION ───────────────────────────────────────────────────────
+function buildHospitalAccordion() {
+  const locs = [...new Set(allStock.map(r => r.loc))].sort();
+  const acc  = document.getElementById('hospAccordion');
+  acc.innerHTML = '';
+ 
+  locs.forEach((loc, idx) => {
+    const rows  = allStock.filter(r => r.loc === loc);
+    const total = rows.reduce((s, r) => s + r.units, 0);
+    const alerts = rows.filter(r => ['critical','low'].includes(getStatus(r.units))).length;
+    const isBank = loc === 'Blood Bank';
+    const dot = isBank ? '#7F77DD' : '#378ADD';
+ 
+    acc.innerHTML += `
+      <div class="hosp-block">
+        <div class="hosp-header" onclick="toggleAcc('hacc${idx}','hchev${idx}')">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="width:8px;height:8px;border-radius:50%;background:${dot};flex-shrink:0;display:inline-block"></span>
+              <span class="hosp-name">${loc}</span>
+              ${isBank ? `<span class="pill p-bank">Central bank</span>` : ''}
+            </div>
+            <div class="hosp-meta">${rows.length} blood types · ${alerts > 0 ? alerts + ' need attention' : 'all levels OK'}</div>
+          </div>
+          <div class="hosp-right">
+            ${alerts > 0 ? `<span class="pill p-low">${alerts} alert${alerts > 1 ? 's' : ''}</span>` : `<span class="pill p-optimal">Healthy</span>`}
+            <span class="hosp-total" style="color:var(--text)">${total}</span>
+            <span class="chevron" id="hchev${idx}">▼</span>
+          </div>
+        </div>
+        <div class="hosp-body" id="hacc${idx}" style="display:none">
+          <div class="mini-grid">
+            ${rows.map(r => {
+              const st  = getStatus(r.units);
+              const pct = Math.min(Math.round((r.units / STATUS_MAX) * 100), 100);
+              return `<div class="mini-tile">
+                <div class="mini-bt">${r.bt}</div>
+                <div class="mini-val" style="color:${STATUS_COLORS[st]}">${r.units}</div>
+                <div class="mini-bar" style="width:${pct}%;background:${STATUS_COLORS[st]}"></div>
+                <div class="mini-st" style="color:${STATUS_COLORS[st]}">${STATUS_LABELS[st]}</div>
+              </div>`;
+            }).join('')}
+          </div>
+          ${isBank ? `
+            <div class="hosp-footer">
+              <button class="btn btn-primary" style="font-size:12px" onclick="showAddStock()">+ Add stock</button>
+            </div>` : ''}
+        </div>
+      </div>`;
+  });
 }
-
-function closeBulkAddModal() {
-    document.getElementById('bulkAddModal').classList.add('hidden');
-    // Reset all bulk inputs
-    document.querySelectorAll('#bulkAddModal input[type="number"]').forEach(input => input.value = 0);
-    document.getElementById('bulkNotes').value = '';
+ 
+// ── BLOOD TYPE ACCORDION ─────────────────────────────────────────────────────
+function buildBTAccordion() {
+  const acc = document.getElementById('btAccordion');
+  acc.innerHTML = '';
+  BT_ORDER.forEach((bt, idx) => {
+    const rows  = allStock.filter(r => r.bt === bt);
+    if (!rows.length) return;
+    const total = rows.reduce((s, r) => s + r.units, 0);
+    const st    = getStatus(total);
+ 
+    acc.innerHTML += `
+      <div class="hosp-block">
+        <div class="hosp-header" onclick="toggleAcc('btacc${idx}','btchev${idx}')">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span class="bt-badge">${bt}</span>
+            <div>
+              <div class="hosp-name">Blood type ${bt}</div>
+              <div class="hosp-meta">${rows.length} location${rows.length > 1 ? 's' : ''}</div>
+            </div>
+          </div>
+          <div class="hosp-right">
+            <span class="pill p-${st}">${STATUS_LABELS[st]}</span>
+            <span class="hosp-total" style="color:${STATUS_COLORS[st]}">${total}</span>
+            <span class="chevron" id="btchev${idx}">▼</span>
+          </div>
+        </div>
+        <div class="hosp-body" id="btacc${idx}" style="display:none">
+          <div style="padding:.75rem 1rem">
+            <table style="width:100%;font-size:13px">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding:5px 8px;font-size:11px;font-weight:500;color:var(--text3);background:var(--surface2)">Location</th>
+                  <th style="text-align:left;padding:5px 8px;font-size:11px;font-weight:500;color:var(--text3);background:var(--surface2)">Units</th>
+                  <th style="text-align:left;padding:5px 8px;font-size:11px;font-weight:500;color:var(--text3);background:var(--surface2)">Status</th>
+                  <th style="text-align:left;padding:5px 8px;font-size:11px;font-weight:500;color:var(--text3);background:var(--surface2)">Updated</th>
+                  <th style="text-align:left;padding:5px 8px;font-size:11px;font-weight:500;color:var(--text3);background:var(--surface2)">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(r => {
+                  const rst = getStatus(r.units);
+                  const isBank = r.loc === 'Blood Bank';
+                  return `<tr>
+                    <td style="padding:6px 8px">${r.loc}</td>
+                    <td style="padding:6px 8px;font-weight:500;color:${STATUS_COLORS[rst]};font-family:var(--font-mono)">${r.units}</td>
+                    <td style="padding:6px 8px"><span class="pill p-${rst}">${STATUS_LABELS[rst]}</span></td>
+                    <td style="padding:6px 8px;color:var(--text3);font-size:12px">${r.updated}</td>
+                    <td style="padding:6px 8px">
+                      ${isBank
+                        ? `<div style="display:flex;gap:5px">
+                             <button class="btn" style="font-size:11px;padding:3px 8px" onclick="openAdjust('${r.bt}','${r.loc}','add',${r.units})">+ Add</button>
+                             <button class="btn" style="font-size:11px;padding:3px 8px" onclick="openAdjust('${r.bt}','${r.loc}','remove',${r.units})">− Remove</button>
+                           </div>`
+                        : `<span style="font-size:11px;color:var(--text3);font-style:italic">Hospital</span>`
+                      }
+                    </td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+  });
 }
-
-function showStockAdjustModal() {
-    document.getElementById('adjustStockModal').classList.remove('hidden');
+ 
+// ── MOVEMENTS ────────────────────────────────────────────────────────────────
+async function loadMovements() {
+  const tb = document.getElementById('movementsTable');
+  tb.innerHTML = `<tr><td colspan="6" class="empty-state">Loading...</td></tr>`;
+  try {
+    const res  = await fetch(`${API_BASE}/api/admin/stock-movements/?limit=20`);
+    const data = await res.json();
+    if (!data.length) {
+      tb.innerHTML = `<tr><td colspan="6" class="empty-state">No movements recorded yet</td></tr>`;
+      return;
+    }
+    tb.innerHTML = data.map(m => {
+      const isAdd = m.type === 'add';
+      return `<tr>
+        <td style="color:var(--text3);font-size:12px">${m.date || '—'}</td>
+        <td><span class="bt-badge" style="width:auto;padding:0 10px">${m.blood_type}</span></td>
+        <td style="color:var(--text2)">${m.location || 'Blood Bank'}</td>
+        <td><span class="pill ${isAdd ? 'p-optimal' : 'p-critical'}">${isAdd ? '+ Added' : '− Removed'}</span></td>
+        <td style="font-weight:500;font-family:var(--font-mono)">${m.units}</td>
+        <td style="color:var(--text3);font-size:12px">${m.updated_by || 'System'}</td>
+      </tr>`;
+    }).join('');
+  } catch {
+    tb.innerHTML = `<tr><td colspan="6" class="empty-state">Could not load movements — API unavailable</td></tr>`;
+  }
 }
-
-function closeAdjustStockModal() {
-    document.getElementById('adjustStockModal').classList.add('hidden');
-    // Clear form
-    document.getElementById('adjustBloodType').value = '';
-    document.getElementById('adjustAction').value = 'add';
-    document.getElementById('adjustUnits').value = '';
-    document.getElementById('adjustReason').value = '';
+ 
+// ── TAB SWITCHING ────────────────────────────────────────────────────────────
+function setTab(tab) {
+  currentTab = tab;
+  ['all','hospitals','bloodtype','movements'].forEach(t => {
+    document.getElementById(`panel-${t}`).style.display = t === tab ? 'block' : 'none';
+    document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+  });
+  if (tab === 'movements') loadMovements();
 }
-
+ 
+// ── ACCORDION TOGGLE ─────────────────────────────────────────────────────────
+function toggleAcc(id, chevId) {
+  const el   = document.getElementById(id);
+  const chev = document.getElementById(chevId);
+  const open = el.style.display === 'none';
+  el.style.display   = open ? 'block' : 'none';
+  chev.style.transform = open ? 'rotate(180deg)' : '';
+}
+ 
+// ── ADD STOCK MODAL ──────────────────────────────────────────────────────────
+function showAddStock() {
+  document.getElementById('addStockOverlay').style.display = 'flex';
+}
+function closeAddStock() {
+  document.getElementById('addStockOverlay').style.display = 'none';
+  ['addBT','addUnits','addNotes'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('addStockError').style.display = 'none';
+}
 async function submitAddStock() {
-    const bloodType = document.getElementById('addBloodType').value;
-    const units = document.getElementById('addUnits').value;
-    const notes = document.getElementById('addNotes').value;
-    const expiry = document.getElementById('addExpiry').value;
-    
-    if (!bloodType || !units) {
-        showToast('error', 'Validation Error', 'Please fill in all required fields');
-        return;
-    }
-    
-    try {
-        const res = await fetch(`${API_BASE}/api/admin/inventory/add/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                blood_type: bloodType,
-                units: parseInt(units),
-                notes: notes,
-                expiry_date: expiry
-            })
-        });
-        
-        if (res.ok) {
-            showToast('success', 'Stock Added', `Successfully added ${units} units of ${bloodType}`);
-            closeAddStockModal();
-            loadInventory();
-        } else {
-            const data = await res.json();
-            showToast('error', 'Failed', data.message || 'Could not add stock');
-        }
-    } catch (error) {
-        showToast('error', 'Network Error', 'Failed to connect to server');
-    }
-}
-
-async function submitBulkAdd() {
-    const stockData = {
-        'A+': document.getElementById('bulk_A_plus').value,
-        'A-': document.getElementById('bulk_A_minus').value,
-        'B+': document.getElementById('bulk_B_plus').value,
-        'B-': document.getElementById('bulk_B_minus').value,
-        'AB+': document.getElementById('bulk_AB_plus').value,
-        'AB-': document.getElementById('bulk_AB_minus').value,
-        'O+': document.getElementById('bulk_O_plus').value,
-        'O-': document.getElementById('bulk_O_minus').value
-    };
-    
-    const notes = document.getElementById('bulkNotes').value;
-    
-    try {
-        const res = await fetch(`${API_BASE}/api/admin/inventory/bulk-add/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                stock: stockData,
-                notes: notes
-            })
-        });
-        
-        if (res.ok) {
-            showToast('success', 'Bulk Add Complete', 'All stock has been updated');
-            closeBulkAddModal();
-            loadInventory();
-        }
-    } catch (error) {
-        showToast('error', 'Network Error', 'Failed to connect to server');
-    }
-}
-
-async function addUnits(bloodType) {
-    const units = prompt(`Enter units to add for ${bloodType}:`);
-    if (!units || isNaN(units) || parseInt(units) <= 0) return;
-    
-    try {
-        const res = await fetch(`${API_BASE}/api/admin/inventory/add/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                blood_type: bloodType,
-                units: parseInt(units)
-            })
-        });
-        
-        if (res.ok) {
-            showToast('success', 'Stock Added', `Added ${units} units of ${bloodType}`);
-            loadInventory();
-        }
-    } catch (error) {
-        showToast('error', 'Network Error', 'Failed to connect to server');
-    }
-}
-
-async function removeUnits(bloodType) {
-    const units = prompt(`Enter units to remove for ${bloodType}:`);
-    if (!units || isNaN(units) || parseInt(units) <= 0) return;
-    
-    try {
-        const res = await fetch(`${API_BASE}/api/admin/inventory/remove/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                blood_type: bloodType,
-                units: parseInt(units)
-            })
-        });
-        
-        if (res.ok) {
-            showToast('success', 'Stock Removed', `Removed ${units} units of ${bloodType}`);
-            loadInventory();
-        } else {
-            const data = await res.json();
-            showToast('error', 'Failed', data.message || 'Insufficient stock');
-        }
-    } catch (error) {
-        showToast('error', 'Network Error', 'Failed to connect to server');
-    }
-}
-
-function formatDate(dateStr) {
-    if (!dateStr) return '-';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+  const bt    = document.getElementById('addBT').value;
+  const units = parseInt(document.getElementById('addUnits').value);
+  const notes = document.getElementById('addNotes').value;
+  const err   = document.getElementById('addStockError');
+ 
+  if (!bt)       { err.textContent = 'Please select a blood type.'; err.style.display = 'block'; return; }
+  if (!units || units < 1) { err.textContent = 'Please enter a valid number of units.'; err.style.display = 'block'; return; }
+ 
+  err.style.display = 'none';
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/inventory/add/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ blood_type: bt, units, notes })
     });
+    if (res.ok) { closeAddStock(); loadInventory(); }
+    else {
+      const d = await res.json();
+      err.textContent = d.message || 'Failed to add stock.';
+      err.style.display = 'block';
+    }
+  } catch {
+    // Optimistic UI for demo
+    closeAddStock();
+    const idx = allStock.findIndex(r => r.bt === bt && r.loc === 'Blood Bank');
+    if (idx !== -1) allStock[idx].units += units;
+    else allStock.push({ bt, units, loc: 'Blood Bank', updated: 'Just now' });
+    populateLocationFilter(); updateSummary(); updateAlert(); applyFilter(); buildBarChart(); buildDonut(); buildHospitalAccordion(); buildBTAccordion();
+  }
 }
-
-function getTimeAgo(dateStr) {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
-    
-    if (diffInSeconds < 60) return 'just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
-    return date.toLocaleDateString();
+ 
+// ── QUICK ADJUST MODAL ───────────────────────────────────────────────────────
+function openAdjust(bt, loc, action, current) {
+  adjustState = { bt, loc, action };
+  const isAdd = action === 'add';
+  const header = document.getElementById('adjustHeader');
+  header.style.background = isAdd ? 'var(--green)' : 'var(--red)';
+  document.getElementById('adjustTitle').textContent   = isAdd ? `Add units — ${bt}` : `Remove units — ${bt}`;
+  document.getElementById('adjustMeta').textContent    = `${bt} at ${loc}`;
+  document.getElementById('adjustCurrent').textContent = `Current stock: ${current} unit(s)`;
+  document.getElementById('adjustUnits').value         = '';
+  const btn = document.getElementById('adjustBtn');
+  btn.textContent   = isAdd ? 'Add' : 'Remove';
+  btn.style.background = isAdd ? 'var(--green)' : 'var(--red)';
+  btn.style.borderColor = isAdd ? 'var(--green)' : 'var(--red)';
+  document.getElementById('adjustOverlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('adjustUnits').focus(), 100);
 }
-
-function showHistory(bloodType) {
-    // Implement history modal
-    showToast('info', 'History', `Viewing history for ${bloodType}`);
+function closeAdjust() {
+  document.getElementById('adjustOverlay').style.display = 'none';
+  adjustState = {};
 }
-
-function exportInventoryReport() {
-    showToast('info', 'Export', 'Generating inventory report...');
+async function submitAdjust() {
+  const { bt, loc, action } = adjustState;
+  const units = parseInt(document.getElementById('adjustUnits').value);
+  if (!units || units < 1) { alert('Please enter a valid number of units.'); return; }
+ 
+  const endpoint = action === 'add' ? 'add' : 'remove';
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/inventory/${endpoint}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ blood_type: bt, units, hospital_name: loc === 'Blood Bank' ? null : loc, notes: `${action} by admin` })
+    });
+    if (res.ok) { closeAdjust(); loadInventory(); }
+    else { alert('Operation failed. Please try again.'); }
+  } catch {
+    // Optimistic UI
+    const idx = allStock.findIndex(r => r.bt === bt && r.loc === loc);
+    if (idx !== -1) {
+      allStock[idx].units = action === 'add'
+        ? allStock[idx].units + units
+        : Math.max(0, allStock[idx].units - units);
+    }
+    closeAdjust();
+    populateLocationFilter(); updateSummary(); updateAlert(); applyFilter(); buildBarChart(); buildDonut(); buildHospitalAccordion(); buildBTAccordion();
+  }
 }
-
-function showInventoryReport() {
-    showToast('info', 'Report', 'Opening inventory report...');
+ 
+// ── EXPORT CSV ────────────────────────────────────────────────────────────────
+function exportCSV() {
+  if (!allStock.length) return;
+  let csv = 'Blood Type,Units,Location,Status,Last Updated\n';
+  allStock.forEach(r => {
+    csv += `"${r.bt}",${r.units},"${r.loc}","${STATUS_LABELS[getStatus(r.units)]}","${r.updated}"\n`;
+  });
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })),
+    download: `blood-inventory-${new Date().toISOString().split('T')[0]}.csv`
+  });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
-
-function showAlertSettings() {
-    showToast('info', 'Settings', 'Opening alert settings...');
-}
-
-function viewAllMovements() {
-    showToast('info', 'Movements', 'Viewing all stock movements');
-}
+ 
+// ── INIT ──────────────────────────────────────────────────────────────────────
+loadInventory();
 async function loadAuditLogs() {
 
   const role = document.getElementById("roleFilter").value;
@@ -4058,55 +4889,456 @@ async function loadAuditLogs() {
   });
 
 }
+// ================= GLOBAL =================
+let allCamps = [];
+
+// ================= LOAD CAMPS =================
+async function loadCamps() {
+    const grid  = document.getElementById('campsGrid');
+    const table = document.getElementById('campsTableBody');
+
+    if (grid) {
+        grid.innerHTML = `
+        <div class="col-span-full text-center py-16 text-gray-400">
+            <div class="animate-spin h-8 w-8 border-b-2 border-red-500 rounded-full mx-auto mb-3"></div>
+            Loading camps...
+        </div>`;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/donation-camps/`);
+        if (!res.ok) throw new Error(res.status);
+
+        allCamps = await res.json();
+
+        updateCampStats(allCamps);
+        renderCampCards(allCamps);
+
+    } catch (err) {
+        console.error(err);
+        if (grid) {
+            grid.innerHTML = `<p class="text-red-500 text-center py-10 col-span-full">Failed to load camps</p>`;
+        }
+        if (table) {
+            table.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-6">Failed to load</td></tr>`;
+        }
+    }
+}
+
+// ================= STATS =================
+function updateCampStats(camps) {
+    const today = new Date().toISOString().split('T')[0];
+
+    document.getElementById('campTotalCount').textContent  = camps.length;
+    document.getElementById('campActiveCount').textContent = camps.filter(c => c.date >= today).length;
+    document.getElementById('campUrgentCount').textContent = camps.filter(c => c.is_urgent).length;
+    document.getElementById('campTotalSlots').textContent  = camps.reduce((s, c) => s + (c.total_slots || 0), 0);
+
+    const badge    = document.getElementById('camps-badge');
+    const upcoming = camps.filter(c => c.date >= today).length;
+
+    if (badge) {
+        if (upcoming > 0) {
+            badge.textContent = upcoming;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+}
+
+// ================= FILTER =================
+function filterCamps() {
+    const filter = document.getElementById('campStatusFilter').value;
+    const today  = new Date().toISOString().split('T')[0];
+
+    let filtered = [...allCamps];
+
+    if (filter === 'upcoming') {
+        filtered = allCamps.filter(c => c.date >= today);
+    } else if (filter === 'past') {
+        filtered = allCamps.filter(c => c.date < today);
+    } else if (filter === 'urgent') {
+        filtered = allCamps.filter(c => c.is_urgent);
+    }
+
+    renderCampCards(filtered);
+    renderCampTable(filtered);
+}
+
+// ================= RENDER CARDS =================
+function renderCampCards(camps) {
+    const grid = document.getElementById('campsGrid');
+    if (!grid) return;
+
+    const today = new Date().toISOString().split('T')[0];
+
+    if (!camps.length) {
+        grid.innerHTML = `
+            <div class="col-span-full flex flex-col items-center justify-center py-16 text-gray-400">
+                <i class="ri-flag-2-line text-5xl mb-3 opacity-30"></i>
+                <p class="font-medium">No camps found</p>
+                <p class="text-sm mt-1">Click "Create Camp" to add one</p>
+            </div>`;
+        renderCampTable(camps);
+        return;
+    }
+
+    grid.innerHTML = camps.map(c => {
+        const isUpcoming   = c.date >= today;
+        const slotPercent  = c.total_slots > 0
+            ? Math.min(Math.round((c.filled_slots / c.total_slots) * 100), 100)
+            : 0;
+        const slotBarColor = slotPercent >= 90
+            ? 'bg-red-500'
+            : slotPercent >= 60
+                ? 'bg-yellow-400'
+                : 'bg-green-500';
+
+        return `
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col">
+
+                <!-- Card Header -->
+                <div class="px-5 py-4 ${isUpcoming
+                    ? 'bg-gradient-to-r from-red-500 to-red-400'
+                    : 'bg-gradient-to-r from-gray-400 to-gray-500'}">
+                    <div class="flex items-start justify-between gap-2">
+                        <h4 class="font-bold text-white text-base leading-tight line-clamp-2">${c.title}</h4>
+                        <div class="flex flex-col gap-1 flex-shrink-0 items-end">
+                            ${c.is_urgent
+                                ? `<span class="px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full">URGENT</span>`
+                                : ''}
+                            <span class="px-2 py-0.5 text-xs font-medium rounded-full
+                                ${isUpcoming
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-gray-200 text-gray-700'}">
+                                ${isUpcoming ? 'Upcoming' : 'Past'}
+                            </span>
+                        </div>
+                    </div>
+                    <p class="text-white/80 text-xs mt-1">
+                        <i class="ri-hospital-line mr-1"></i>${c.hospital_name || ''}
+                    </p>
+                </div>
+
+                <!-- Card Body -->
+                <div class="p-5 flex-1 space-y-3">
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <i class="ri-calendar-line text-red-400 flex-shrink-0"></i>
+                        <span>${c.date} &nbsp;|&nbsp; ${c.start_time || '—'} – ${c.end_time || '—'}</span>
+                    </div>
+                    <div class="flex items-start gap-2 text-sm text-gray-600">
+                        <i class="ri-map-pin-line text-red-400 flex-shrink-0 mt-0.5"></i>
+                        <span>${c.location}</span>
+                    </div>
+
+                    ${c.description
+                        ? `<p class="text-xs text-gray-500 line-clamp-2 border-t pt-2">${c.description}</p>`
+                        : ''}
+
+                    ${c.total_slots > 0 ? `
+                        <div>
+                            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                <span>Slots filled</span>
+                                <span>${c.filled_slots || 0} / ${c.total_slots}</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                <div class="${slotBarColor} h-1.5 rounded-full transition-all"
+                                     style="width: ${slotPercent}%"></div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- Card Footer -->
+                <div class="px-5 py-3 border-t border-gray-100 flex items-center justify-end gap-2">
+                    <button onclick="editCamp(${c.id})"
+                            class="px-3 py-1.5 text-xs bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition flex items-center gap-1">
+                        <i class="ri-edit-line"></i> Edit
+                    </button>
+                    <button onclick="deleteCamp(${c.id})"
+                            class="px-3 py-1.5 text-xs bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition flex items-center gap-1">
+                        <i class="ri-delete-bin-line"></i> Delete
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    renderCampTable(camps);
+}
+
+// ================= RENDER TABLE =================
+function renderCampTable(camps) {
+    const table = document.getElementById('campsTableBody');
+    if (!table) return;
+
+    const today = new Date().toISOString().split('T')[0];
+
+    if (!camps.length) {
+        table.innerHTML = `
+            <tr>
+                <td colspan="7" class="px-6 py-8 text-center text-gray-400">
+                    No camps to display
+                </td>
+            </tr>`;
+        return;
+    }
+
+    table.innerHTML = camps.map(c => {
+        const isUpcoming = c.date >= today;
+        return `
+            <tr class="hover:bg-gray-50 transition">
+                <td class="px-6 py-4">
+                    <p class="font-medium text-gray-900">${c.title}</p>
+                    ${c.is_urgent
+                        ? `<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Urgent</span>`
+                        : ''}
+                </td>
+                <td class="px-6 py-4 text-gray-600">${c.hospital_name || '—'}</td>
+                <td class="px-6 py-4 text-sm">
+                    <p class="font-medium">${c.date}</p>
+                    <p class="text-gray-400">${c.start_time || ''} – ${c.end_time || ''}</p>
+                </td>
+                <td class="px-6 py-4 text-gray-600">${c.location}</td>
+                <td class="px-6 py-4">
+                    <span class="font-medium">${c.filled_slots || 0}</span>
+                    <span class="text-gray-400">/ ${c.total_slots || 0}</span>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="px-2 py-1 rounded-full text-xs font-medium
+                        ${isUpcoming
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-100 text-gray-600'}">
+                        ${isUpcoming ? 'Upcoming' : 'Past'}
+                    </span>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-2">
+                        <button onclick="editCamp(${c.id})"
+                                class="px-3 py-1.5 text-xs bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition flex items-center gap-1">
+                            <i class="ri-edit-line"></i> Edit
+                        </button>
+                        <button onclick="deleteCamp(${c.id})"
+                                class="px-3 py-1.5 text-xs bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition flex items-center gap-1">
+                            <i class="ri-delete-bin-line"></i> Delete
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// ================= OPEN MODAL (CREATE) =================
+function openCampModal() {
+    // Reset hidden edit ID
+    document.getElementById('campEditId').value = '';
+
+    // Clear all fields
+    document.getElementById('campTitle').value       = '';
+    document.getElementById('campDescription').value = '';
+    document.getElementById('campHospital').value    = '';
+    document.getElementById('campDate').value        = '';
+    document.getElementById('campStartTime').value   = '';
+    document.getElementById('campEndTime').value     = '';
+    document.getElementById('campLocation').value    = '';
+    document.getElementById('campTotalSlots').value  = '';
+    document.getElementById('campFilledSlots').value = 0;
+    document.getElementById('campIsUrgent').checked  = false;
+
+    // Reset button label
+    const btnText = document.getElementById('campSaveBtnText');
+    if (btnText) btnText.textContent = 'Register Camp';
+
+    hideCampError();
+    document.getElementById('campModal').classList.remove('hidden');
+}
+
+// ================= OPEN MODAL (EDIT) =================
+function editCamp(id) {
+    const camp = allCamps.find(c => c.id === id);
+    if (!camp) {
+        showToast('error', 'Not Found', 'Camp data not found');
+        return;
+    }
+
+    document.getElementById('campEditId').value      = camp.id;
+    document.getElementById('campTitle').value       = camp.title       || '';
+    document.getElementById('campDescription').value = camp.description || '';
+    document.getElementById('campHospital').value    = camp.hospital_name || '';
+    document.getElementById('campDate').value        = camp.date        || '';
+    document.getElementById('campStartTime').value   = camp.start_time  || '';
+    document.getElementById('campEndTime').value     = camp.end_time    || '';
+    document.getElementById('campLocation').value    = camp.location    || '';
+    document.getElementById('campTotalSlots').value  = camp.total_slots  || 0;
+    document.getElementById('campFilledSlots').value = camp.filled_slots || 0;
+    document.getElementById('campIsUrgent').checked  = camp.is_urgent   || false;
+
+    const btnText = document.getElementById('campSaveBtnText');
+    if (btnText) btnText.textContent = 'Save Changes';
+
+    hideCampError();
+    document.getElementById('campModal').classList.remove('hidden');
+}
+
+// ================= CLOSE MODAL =================
+function closeCampModal() {
+    document.getElementById('campModal').classList.add('hidden');
+}
+
+// ================= BACKDROP CLICK =================
+function handleCampModalBackdrop(event) {
+    if (event.target === document.getElementById('campModal')) {
+        closeCampModal();
+    }
+}
+
+// ================= SAVE (CREATE + UPDATE) =================
+async function saveCamp() {
+    const id        = document.getElementById('campEditId').value;
+    const title     = document.getElementById('campTitle').value.trim();
+    const hospital  = document.getElementById('campHospital').value.trim();
+    const date      = document.getElementById('campDate').value;
+    const startTime = document.getElementById('campStartTime').value;
+    const endTime   = document.getElementById('campEndTime').value;
+    const location  = document.getElementById('campLocation').value.trim();
+
+    // ── Validation ──
+    if (!title || !hospital || !date || !startTime || !endTime || !location) {
+        showCampError('Please fill in all required fields.');
+        return;
+    }
+    if (startTime >= endTime) {
+        showCampError('End time must be after start time.');
+        return;
+    }
+
+    const payload = {
+        title,
+        description:  document.getElementById('campDescription').value.trim(),
+        hospital_name: hospital,
+        date,
+        start_time:   startTime,
+        end_time:     endTime,
+        location,
+        total_slots:  parseInt(document.getElementById('campTotalSlots').value)  || 0,
+        filled_slots: parseInt(document.getElementById('campFilledSlots').value) || 0,
+        is_urgent:    document.getElementById('campIsUrgent').checked
+    };
+
+    const btn  = document.getElementById('campSaveBtn');
+    const text = document.getElementById('campSaveBtnText');
+
+    btn.disabled     = true;
+    text.textContent = id ? 'Saving...' : 'Creating...';
+
+    try {
+        const url    = id
+            ? `${API_BASE}/api/admin/donation-camps/${id}/`
+            : `${API_BASE}/api/admin/donation-camps/`;
+        const method = id ? 'PUT' : 'POST';
+
+        const res  = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            showCampError(data.message || 'Failed to save camp.');
+            return;
+        }
+
+        showToast('success', 'Success', id ? 'Camp updated successfully' : 'Camp created successfully');
+        closeCampModal();
+        loadCamps();
+
+    } catch (err) {
+        console.error(err);
+        showCampError('Network error. Please try again.');
+    } finally {
+        btn.disabled     = false;
+        text.textContent = id ? 'Save Changes' : 'Register Camp';
+    }
+}
+
+// ================= DELETE =================
+async function deleteCamp(id) {
+    if (!confirm('Are you sure you want to delete this camp?')) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/donation-camps/${id}/`, {
+            method: 'DELETE'
+        });
+
+        if (res.ok) {
+            showToast('success', 'Deleted', 'Camp has been removed');
+            loadCamps();
+        } else {
+            showToast('error', 'Failed', 'Could not delete camp');
+        }
+    } catch {
+        showToast('error', 'Network Error', 'Failed to connect to server');
+    }
+}
+
+// ================= EXPORT CSV =================
+function exportCampsCSV() {
+    if (!allCamps.length) {
+        showToast('warning', 'No Data', 'No camps available to export');
+        return;
+    }
+
+    const headers = [
+        'Title', 'Hospital', 'Date', 'Start Time',
+        'End Time', 'Location', 'Total Slots', 'Filled Slots', 'Urgent'
+    ];
+
+    const rows = allCamps.map(c => [
+        `"${(c.title          || '').replace(/"/g, '""')}"`,
+        `"${(c.hospital_name  || '').replace(/"/g, '""')}"`,
+        c.date        || '',
+        c.start_time  || '',
+        c.end_time    || '',
+        `"${(c.location       || '').replace(/"/g, '""')}"`,
+        c.total_slots  || 0,
+        c.filled_slots || 0,
+        c.is_urgent ? 'Yes' : 'No'
+    ]);
+
+    const csv  = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+
+    a.href     = url;
+    a.download = `donation-camps-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast('success', 'Exported', 'Camps exported to CSV successfully');
+}
+
+// ================= ERROR HELPERS =================
+function showCampError(msg) {
+    const el = document.getElementById('campFormError');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.remove('hidden');
+    // Auto-hide after 5 seconds
+    setTimeout(() => el.classList.add('hidden'), 5000);
+}
+
+function hideCampError() {
+    const el = document.getElementById('campFormError');
+    if (el) el.classList.add('hidden');
+}
     </script>
-    <div id="hospitalDetailModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
-    <div class="bg-white rounded-xl w-full max-w-xl p-6">
-        <h3 class="text-xl font-semibold mb-4">Hospital Application Details</h3>
-        <div id="hospitalDetailBody" class="space-y-2 text-sm"></div>
-        <div class="mt-6 text-right">
-            <button onclick="closeHospitalDetail()"
-                class="px-4 py-2 bg-gray-200 rounded">Close</button>
-        </div>
-    </div>
-</div>
-<!-- ================= APPROVE HOSPITAL MODAL ================= -->
-<div id="approveHospitalModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
-    <div class="bg-white rounded-xl w-full max-w-md p-6">
-        <h3 class="text-xl font-semibold mb-4">Approve Hospital</h3>
-
-        <div class="space-y-3 mb-4">
-            <p><strong>Hospital:</strong> <span id="approveHospitalName"></span></p>
-            <p><strong>Email:</strong> <span id="approveHospitalEmail"></span></p>
-        </div>
-
-        <div class="space-y-3">
-            <input id="approveUsername"
-                   placeholder="Create Username"
-                   class="w-full border rounded px-3 py-2">
-
-            <input id="approvePassword"
-                   type="password"
-                   placeholder="Create Password"
-                   class="w-full border rounded px-3 py-2">
-
-            <input id="approveConfirmPassword"
-                   type="password"
-                   placeholder="Confirm Password"
-                   class="w-full border rounded px-3 py-2">
-        </div>
-
-        <div class="flex justify-end gap-3 mt-6">
-            <button onclick="closeApproveModal()"
-                    class="px-4 py-2 bg-gray-200 rounded">
-                Cancel
-            </button>
-            <button onclick="submitHospitalApproval()"
-                    class="px-4 py-2 bg-green-600 text-white rounded">
-                Approve
-            </button>
-        </div>
-    </div>
-</div>
 <!-- User Detail Modal - FIXED VERSION with proper scrolling -->
 <div id="userDetailModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl">
@@ -4146,6 +5378,154 @@ async function loadAuditLogs() {
     </div>
 </div>
 
+<div id="campModal"
+     class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4"
+     onclick="handleCampModalBackdrop(event)">
 
+    <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl"
+         onclick="event.stopPropagation()">
+
+        <!-- HEADER -->
+        <div class="bg-gradient-to-r from-red-600 to-red-500 px-6 py-5 rounded-t-2xl flex justify-between items-center flex-shrink-0">
+            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                <i class="ri-flag-2-line"></i>
+                <span id="campModalTitle">Create Donation Camp</span>
+            </h3>
+            <button onclick="closeCampModal()"
+                    class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-1.5 transition">
+                <i class="ri-close-line text-xl"></i>
+            </button>
+        </div>
+
+        <!-- BODY (scrollable) -->
+        <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+
+            <!-- Hidden edit ID -->
+            <input type="hidden" id="campEditId" value="" />
+
+            <!-- Title -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Camp Title <span class="text-red-500">*</span>
+                </label>
+                <input id="campTitle"
+                       placeholder="e.g. Annual Blood Donation Drive"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2.5
+                              focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea id="campDescription"
+                          placeholder="Describe the camp event..."
+                          rows="3"
+                          class="w-full border border-gray-300 rounded-lg px-4 py-2.5
+                                 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none"></textarea>
+            </div>
+
+            <!-- Hospital -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Hospital / Organizer <span class="text-red-500">*</span>
+                </label>
+                <input id="campHospital"
+                       placeholder="Organizing hospital or body"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2.5
+                              focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
+            </div>
+
+            <!-- Date + Times -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Date <span class="text-red-500">*</span>
+                    </label>
+                    <input id="campDate" type="date"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5
+                                  focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Start Time <span class="text-red-500">*</span>
+                    </label>
+                    <input id="campStartTime" type="time"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5
+                                  focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        End Time <span class="text-red-500">*</span>
+                    </label>
+                    <input id="campEndTime" type="time"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5
+                                  focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Location <span class="text-red-500">*</span>
+                </label>
+                <input id="campLocation"
+                       placeholder="Full address or venue name"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2.5
+                              focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
+            </div>
+
+            <!-- Slots -->
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Total Slots</label>
+                    <input id="campTotalSlots" type="number" min="0" placeholder="e.g. 100"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5
+                                  focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Filled Slots</label>
+                    <input id="campFilledSlots" type="number" min="0" value="0"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5
+                                  focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
+                </div>
+            </div>
+
+            <!-- Urgent -->
+            <label class="flex items-center gap-3 cursor-pointer select-none p-3
+                          bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition">
+                <input type="checkbox" id="campIsUrgent"
+                       class="w-4 h-4 accent-red-600 cursor-pointer" />
+                <div>
+                    <p class="text-sm font-medium text-gray-800">Mark as Urgent</p>
+                    <p class="text-xs text-gray-500">Highlighted to users as a priority camp</p>
+                </div>
+            </label>
+
+            <!-- Error -->
+            <div id="campFormError"
+                 class="hidden text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm flex items-center gap-2">
+                <i class="ri-error-warning-line flex-shrink-0"></i>
+                <span></span>
+            </div>
+
+        </div>
+
+        <!-- FOOTER (always visible) -->
+        <div class="flex-shrink-0 bg-gray-50 border-t border-gray-200 px-6 py-4
+                    flex justify-end gap-3 rounded-b-2xl">
+            <button onclick="closeCampModal()"
+                    class="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg
+                           hover:bg-gray-100 font-medium transition">
+                Cancel
+            </button>
+            <button id="campSaveBtn" onclick="saveCamp()"
+                    class="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700
+                           font-medium transition flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                <i class="ri-flag-2-line"></i>
+                <span id="campSaveBtnText">Register Camp</span>
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

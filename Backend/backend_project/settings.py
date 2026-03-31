@@ -192,6 +192,7 @@ CORS_ALLOW_METHODS = [
     "PUT",
     "DELETE",
     "OPTIONS",
+    "PATCH",
 ]
 # Allow credentials (cookies)
 CORS_ALLOW_CREDENTIALS = True
