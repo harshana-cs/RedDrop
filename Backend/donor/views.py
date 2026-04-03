@@ -9,6 +9,7 @@ from register_donor.models import Donor
 from blood_requests.models import BloodRequest
 from adminpanel.models import DonationCamp
 from adminpanel.models import Notification  
+from .models import Donation, DonationConfirmation
 
 
 MIN_GAP_DAYS = 56
@@ -253,12 +254,10 @@ def api_donor_eligibility(request):
 def api_donor_accept_request(request):
 
     donor = Donor.objects.filter(email=request.user.email).first()
-
     if not donor:
         return Response({"error": "Donor not found"}, status=404)
 
     request_id = request.data.get("request_id")
-
     if not request_id:
         return Response({"error": "Request ID required"}, status=400)
 
@@ -266,42 +265,57 @@ def api_donor_accept_request(request):
 
     # 🚫 prevent multiple donors
     if blood_request.fulfilled:
-        return Response({
-            "success": False,
-            "message": "Another donor already accepted this request"
-        })
+        return Response(
+            {"success": False, "message": "Another donor already accepted this request"},
+            status=400
+        )
 
     # ✅ assign donor + lock request
     blood_request.accepted_donor = donor
     blood_request.fulfilled = True
     blood_request.save()
 
-    # ✅ notify patient
     from django.contrib.auth.models import User
     patient_user = User.objects.filter(
-    username=blood_request.patient.emailaddress
-).first()
+        username=blood_request.patient.emailaddress
+    ).first()
+
     if patient_user:
-        # ✅ Patient notification
-        Notification.objects.create(
+        # ✅ Guard: notify patient only once
+        already_notified = Notification.objects.filter(
             user=patient_user,
             blood_request=blood_request,
-            title="Donor Accepted Your Request ❤️",
-            message=(
-                f"{donor.first_name} ({donor.blood_type}) has accepted your request at "
-                f"{blood_request.hospital_location.name}. Contact: {donor.phone_number}"
-            ),
             type="donor_accept"
-        )
+        ).exists()
 
-        # ✅ Admin log
-        Notification.objects.create(
-            title="Donor Accepted",
-            message=f"{donor.first_name} accepted request #{blood_request.id}",
-            type="donor_accept"
-        )
+        if not already_notified:
+            Notification.objects.create(
+                user=patient_user,
+                blood_request=blood_request,
+                title="Donor Accepted Your Request",
+                message=(
+                    f"{donor.first_name} ({donor.blood_type}) accepted your request at "
+                    f"{blood_request.hospital_location.name}. Contact: {donor.phone_number}"
+                ),
+                type="donor_accept"
+            )
+
+        # ✅ Guard: admin log only once
+        admin_log_exists = Notification.objects.filter(
+            blood_request=blood_request,
+            type="donor_accept",
+            user__isnull=True
+        ).exists()
+
+        if not admin_log_exists:
+            Notification.objects.create(
+                title="Donor Accepted Request",
+                message=f"{donor.first_name} ({donor.blood_type}) accepted request #{blood_request.id}",
+                type="donor_accept"
+                # no user= field → admin only
+            )
     else:
-        print("❌ Patient user not found:", blood_request.patient.emailaddress)
+        print("Patient user not found:", blood_request.patient.emailaddress)
 
     return Response({
         "success": True,
@@ -335,3 +349,80 @@ def api_donor_notifications(request):
         }
         for n in notifications
     ])
+
+from .models import Donor
+
+def get_approved_donors_basic():
+    donors = Donor.objects.filter(is_approved=True)
+
+    result = []
+    for donor in donors:
+        result.append({
+            "name": f"{donor.first_name or ''} {donor.last_name or ''}".strip(),
+            "city": donor.city,
+            "address": donor.address,
+            "blood_type": donor.blood_type
+        })
+
+    return result
+from django.http import JsonResponse
+
+def approved_donors_basic_view(request):
+    data = get_approved_donors_basic()
+    return JsonResponse(data, safe=False)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def all_donors(request):
+    """
+    GET /blood_requests/api/all-donors/
+    Returns all approved donors.
+    Each donor object matches the shape expected by the frontend
+    (name, email, phone, blood_type, district/location,
+     last_donation_date, is_eligible).
+    """
+    donors = Donor.objects.filter(is_approved=True).order_by("-created_on")
+ 
+    data = []
+    for donor in donors:
+        # Calculate days since last donation if available
+        last_donation_date = None
+        days_since         = None
+        is_eligible        = True  # default: never donated → eligible
+ 
+        # If your Donation model has a FK to Donor, you can do:
+        #   last = donor.donation_set.filter(status="completed").order_by("-donation_date").first()
+        # For now we expose the raw field if it exists on the model,
+        # otherwise leave it None. Swap the block below once your
+        # Donation model is wired up.
+        try:
+            last = (
+                Donation.objects
+                .filter(donor=donor, status__in=["completed", "verified"])
+                .order_by("-date")
+                .first()
+            )
+            if last:
+                last_donation_date = last.date.isoformat()
+                days_since = (timezone.now().date() - last.date).days
+                is_eligible = days_since >= 56
+        except Exception:
+            # Donation model not available yet — skip silently
+            pass
+ 
+        data.append({
+            "id":                 donor.id,
+            "name":               f"{donor.first_name or ''} {donor.last_name or ''}".strip(),
+            "email":              donor.email or "",
+            "phone":              donor.phone_number or "",
+            "blood_type":         donor.blood_type or "",
+            # 'district' maps to city in your model
+            "district":           donor.city or donor.state or "",
+            "location":           donor.address or "",
+            "last_donation_date": last_donation_date,
+            "days_since_last":    days_since,
+            "is_eligible":        is_eligible,
+            "is_approved":        donor.is_approved,
+        })
+ 
+    return Response({"donors": data, "total": len(data)})

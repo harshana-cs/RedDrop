@@ -10,9 +10,11 @@ class DonationCamp(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     location = models.CharField(max_length=200)
-    total_slots = models.IntegerField(default=0)
-    filled_slots = models.IntegerField(default=0)
     is_urgent = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
+    created_by = models.CharField(max_length=100, blank=True, null=True)
+    contact_number = models.CharField(max_length=15, blank=True, null=True)
+    map_link = models.URLField(max_length=500, blank=True, null=True)
 
     def __str__(self):
         return self.title

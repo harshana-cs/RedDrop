@@ -3,8 +3,6 @@ from .models import DonationCamp          # adjust import path to wherever your 
  
  
 class DonationCampSerializer(serializers.ModelSerializer):
- 
-    available_slots = serializers.SerializerMethodField()
     is_past         = serializers.SerializerMethodField()
  
     class Meta:
@@ -18,15 +16,11 @@ class DonationCampSerializer(serializers.ModelSerializer):
             'start_time',
             'end_time',
             'location',
-            'total_slots',
-            'filled_slots',
             'is_urgent',
-            'available_slots',
             'is_past',
+                'contact_number',
+                'map_link',
         ]
- 
-    def get_available_slots(self, obj):
-        return max(0, (obj.total_slots or 0) - (obj.filled_slots or 0))
  
     def get_is_past(self, obj):
         from django.utils import timezone

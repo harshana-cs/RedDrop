@@ -192,7 +192,6 @@ def api_create_request(request):
             status=400
         )
 
-    # 📍 Get or create hospital location
     hospital_location = HospitalLocation.objects.filter(
         name=hospital_name,
         district=district
@@ -200,7 +199,6 @@ def api_create_request(request):
 
     if not hospital_location:
         lat, lon = get_coordinates_from_osm(hospital_name, district)
-
         hospital_location = HospitalLocation.objects.create(
             name=hospital_name,
             district=district,
@@ -217,68 +215,13 @@ def api_create_request(request):
             district=district
         )
 
-        # =====================================================
-        # 🔔 1. ADMIN NOTIFICATION (LOG SYSTEM)
-        # =====================================================
+        # ✅ Admin log only — donors notified when admin approves
         Notification.objects.create(
             title="New Blood Request",
             message=f"{patient.fullname} requested {blood_request.blood_type} blood at {hospital_name}",
             type="blood_request"
+            # no user= field → admin only
         )
-
-        # =====================================================
-        # 🔔 2. DONOR NOTIFICATIONS (SMART FILTER)
-        # =====================================================
-
-        request_lat = hospital_location.latitude
-        request_lon = hospital_location.longitude
-
-        required_blood = blood_request.blood_type
-
-        # ✅ Compatible blood groups
-        compatible_groups = [
-            donor_blood
-            for donor_blood, receivers in BLOOD_COMPATIBILITY.items()
-            if required_blood in receivers
-        ]
-
-        donors = Donor.objects.filter(
-        is_approved=True,
-        blood_type__in=compatible_groups
-    ).exclude(
-    email=request.user.username   
-)
-
-        for donor in donors:
-
-            # ❌ skip if no location
-            if not donor.latitude or not donor.longitude:
-                continue
-
-            # ❌ skip if not eligible (cooldown)
-            if not is_donor_eligible(donor):
-                continue
-
-            # 📏 distance check
-            distance = haversine(
-                request_lat,
-                request_lon,
-                donor.latitude,
-                donor.longitude
-            )
-
-            # ✅ only nearby donors (15km)
-            if distance <= 15:
-                user = User.objects.filter(email=donor.email).first()
-
-                if user:
-                    Notification.objects.create(
-                        user=user,   # ✅ ONLY donors
-                        blood_request=blood_request,
-                        title="Urgent Blood Request 🚨",
-                        message=f"{required_blood} needed at {hospital_name} ({round(distance,1)} km away)",
-                        type="blood_request"
-                    )
 
         return Response(serializer.data, status=201)
 

@@ -24,8 +24,10 @@ from .views import (
     admin_user_detail,
     api_blood_type_distribution,
     api_request_status_overview,
+    create_camp_by_partner,
     hospital_request_detail,
     approve_hospital_request,
+    reject_camp,
     reject_hospital_request,
     get_notifications,
     admin_hospital_audit_logs,
@@ -42,6 +44,10 @@ from .views import (
     admin_donation_camps,
     admin_donation_camp_detail,
     public_donation_camps,
+    create_camp_by_partner,
+    approve_camp,
+    reject_camp,
+
 )
 
 urlpatterns = [
@@ -100,5 +106,13 @@ urlpatterns = [
     # ── Donation Camps (admin) ────────────────────────────────
     path("donation-camps/",                            admin_donation_camps),
     path("donation-camps/<int:camp_id>/",              admin_donation_camp_detail),
+     # 🏢 Corporate Partner submits camp
+    path("partner/create-camp/", create_camp_by_partner),
+
+    # ✅ Admin approves camp
+    path("approve-camp/<int:camp_id>/", approve_camp),
+
+    # ❌ Admin rejects camp
+    path("reject-camp/<int:camp_id>/", reject_camp),
 
 ]

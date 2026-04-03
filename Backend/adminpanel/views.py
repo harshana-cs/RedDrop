@@ -1,4 +1,5 @@
 from datetime import timedelta
+from urllib import request
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db.models import Count
@@ -28,7 +29,19 @@ from dateutil.relativedelta import relativedelta
 from .models import HospitalAuditLog, Notification
 import random
 import requests
-
+# Add this with your other imports at the top
+from blood_requests.views import is_donor_eligible
+# Add this near the top of adminpanel/views.py
+BLOOD_COMPATIBILITY = {
+    "O-": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
+    "O+": ["O+", "A+", "B+", "AB+"],
+    "A-": ["A-", "A+", "AB-", "AB+"],
+    "A+": ["A+", "AB+"],
+    "B-": ["B-", "B+", "AB-", "AB+"],
+    "B+": ["B+", "AB+"],
+    "AB-": ["AB-", "AB+"],
+    "AB+": ["AB+"],
+}
 
 # ================= HELPER =================
 def fetch_hospital_coordinates(hospital_name):
@@ -57,23 +70,56 @@ def haversine(lat1, lon1, lat2, lon2):
     return R * c
 
 
+def send_sms(phone_number, message):
+    """Send SMS via Sparrow SMS Nepal"""
+    try:
+        response = requests.post(
+    "http://api.sparrowsms.com/v2/sms/",
+    data={
+        "token": settings.SMS_TOKEN.strip(),
+        "from": settings.SMS_FROM.strip(),
+        "to": str(phone_number).strip(),
+        "text": message,
+    },
+    timeout=5
+)
+        result = response.json()
+        print(f"SMS to {phone_number}: {result}")
+        return result.get("response_code") == 200
+    except Exception as e:
+        print(f"SMS failed for {phone_number}: {e}")
+        return False
+
+
 def send_donor_alert(donor, blood_request, distance):
-    subject = "Urgent Blood Donation Needed Near You"
-    message = f"""
-Hello {donor.first_name},
 
-A nearby blood request has been approved and you are eligible to help.
+    # ✅ SMS — keep under 160 chars
+    sms_message = (
+    f"Blood needed near you. Please login and accept if you want to donate. "
+    f"- RedDrop"
+)
 
-Blood Group Needed: {blood_request.blood_type}
-Hospital: {blood_request.hospital_location.name}
-District: {blood_request.district}
-Distance from you: {round(distance, 2)} km
+    if donor.phone_number:
+        send_sms(donor.phone_number, sms_message)
 
-To help this patient, please login to your RedDrop donor dashboard
-and accept the donation request.
+    # ✅ Email — shorter than before
+    subject = f"RedDrop: {blood_request.blood_type} blood needed near you"
 
-Login here:
-http://localhost:5500/donor_dashboard.html"""
+    message = f"""Hi {donor.first_name},
+
+{blood_request.blood_type} blood is urgently needed near you.
+
+Hospital : {blood_request.hospital_location.name}
+District : {blood_request.district}
+Distance : {round(distance, 1)} km
+Contact  : {blood_request.contact_phone}
+
+Login to donate:
+http://localhost:5500/donor_dashboard.html
+
+Thank you for saving lives.
+— RedDrop Team"""
+
     send_mail(
         subject,
         message,
@@ -164,7 +210,6 @@ def admin_pending_donor_registrations(request):
     })
 
 
-# ================= APPROVE BLOOD REQUEST =================
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def admin_approve_blood_request(request, request_id):
@@ -189,46 +234,116 @@ def admin_approve_blood_request(request, request_id):
 
     hospital = blood_request.hospital_location
 
+    # ✅ FIX 1: If hospital has no coordinates, try to fetch them now
+    if hospital and (not hospital.latitude or not hospital.longitude):
+        lat, lon = fetch_hospital_coordinates(hospital.name)
+        if lat and lon:
+            hospital.latitude = lat
+            hospital.longitude = lon
+            hospital.save()
+            print(f"✅ Fetched coordinates for {hospital.name}: {lat}, {lon}")
+        else:
+            print(f"❌ Could not fetch coordinates for hospital: {hospital.name}")
+
     if hospital and hospital.latitude and hospital.longitude:
+        compatible_groups = [
+            donor_blood
+            for donor_blood, receivers in BLOOD_COMPATIBILITY.items()
+            if blood_request.blood_type in receivers
+        ]
+
+        # ✅ FIX 2: Removed latitude/longitude filter to catch ALL approved donors
+        # We'll check distance manually and skip donors with no coords
         donors = Donor.objects.filter(
             is_approved=True,
-            blood_type=blood_request.blood_type,
-            latitude__isnull=False,
-            longitude__isnull=False
+            blood_type__in=compatible_groups,
         )
+
+        # ✅ FIX 3: Safe patient exclusion (patient could be None)
+        if blood_request.patient:
+            donors = donors.exclude(email=blood_request.patient.emailaddress)
+
+        print(f"=== APPROVAL DEBUG for Request #{blood_request.id} ===")
+        print(f"Hospital: {hospital.name} | lat: {hospital.latitude} | lon: {hospital.longitude}")
+        print(f"Compatible blood groups: {compatible_groups}")
+        print(f"Total approved compatible donors: {donors.count()}")
+
+        alerted_count = 0
+
         for donor in donors:
+
+            # ✅ FIX 4: Skip donors with no coordinates but log it
+            if not donor.latitude or not donor.longitude:
+                print(f"  ⚠️ Donor {donor.email} has no coordinates — skipping")
+                continue
+
+            # ✅ skip donors in cooldown period
+            if not is_donor_eligible(donor):
+                print(f"  ⏳ Donor {donor.email} is in cooldown — skipping")
+                continue
+
             distance = haversine(
                 hospital.latitude,
                 hospital.longitude,
                 donor.latitude,
                 donor.longitude
             )
+
+            print(f"  Donor: {donor.email} | blood: {donor.blood_type} | distance: {round(distance, 2)} km")
+
             if distance <= 15:
-                send_donor_alert(donor, blood_request, distance)
-                user = User.objects.filter(email__iexact=donor.email).first()
-                print("Donor:", donor.email, "User:", user)
-                if user:
-                    Notification.objects.create(
-                        title="Blood Donation Needed",
-                        message=(
-                            f"{blood_request.patient.fullname} needs "
-                            f"{blood_request.blood_type} blood at "
-                            f"{hospital.name}. "
-                            "Do you want to donate?"
-                        ),
-                        type="blood_request",
+                print(f"  ✅ Sending alert to {donor.email}")
+
+                # ✅ FIX 5: Wrap send_donor_alert in try/except so one failure
+                # doesn't stop other donors from being notified
+                try:
+                    send_donor_alert(donor, blood_request, distance)
+                    alerted_count += 1
+                except Exception as e:
+                    print(f"  ❌ Alert failed for {donor.email}: {e}")
+
+                donor_user = User.objects.filter(email__iexact=donor.email).first()
+                if donor_user:
+                    already_notified = Notification.objects.filter(
+                        user=donor_user,
                         blood_request=blood_request,
-                        user=user
-                    )
+                        type="blood_request"
+                    ).exists()
+
+                    if not already_notified:
+                        Notification.objects.create(
+                            user=donor_user,
+                            blood_request=blood_request,
+                            title="Blood Donation Needed",
+                            message=(
+                                f"{blood_request.blood_type} blood needed at "
+                                f"{hospital.name} ({round(distance, 1)} km away). "
+                                f"Can you donate?"
+                            ),
+                            type="blood_request"
+                        )
                 else:
-                    print("❌ No matching User found for donor:", donor.email)
+                    print(f"  ⚠️ No Django User found for donor email: {donor.email}")
+
+        print(f"=== Total donors alerted: {alerted_count} ===")
+
+    else:
+        print(f"❌ Hospital missing or has no coordinates — NO donors alerted!")
+
+    # ✅ Admin-only log
+    Notification.objects.create(
+        title="Blood Request Approved",
+        message=(
+            f"Request #{blood_request.id} for {blood_request.blood_type} at "
+            f"{hospital.name if hospital else 'Unknown'} approved"
+        ),
+        type="blood_request"
+    )
 
     return Response({
         "success": True,
         "message": "Blood request approved successfully"
     })
-
-
 # ================= REJECT BLOOD REQUEST =================
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -1068,24 +1183,28 @@ def admin_activity_logs(request):
 
 # ================= DONATION CAMPS: SERIALIZE HELPER =================
 def _serialize_camp(camp):
-    today = timezone.localdate()  # returns datetime.date — safe to compare with camp.date
+    today = timezone.localdate()
     return {
-        "id":              camp.id,
-        "title":           camp.title,
-        "description":     camp.description,
-        "hospital_name":   camp.hospital_name,
-        "date":            str(camp.date),        # send as string to frontend
-        "start_time":      str(camp.start_time),
-        "end_time":        str(camp.end_time),
-        "location":        camp.location,
-        "total_slots":     camp.total_slots,
-        "filled_slots":    camp.filled_slots,
-        "is_urgent":       camp.is_urgent,
-        "available_slots": max(0, (camp.total_slots or 0) - (camp.filled_slots or 0)),
-        "is_past":         camp.date < today,     # both datetime.date now ✅
+        "id": camp.id,
+        "title": camp.title,
+        "description": camp.description,
+        "hospital_name": camp.hospital_name,
+        "date": str(camp.date),
+        "start_time": str(camp.start_time),
+        "end_time": str(camp.end_time),
+        "location": camp.location,
+        "is_urgent": camp.is_urgent,
+        "is_past": camp.date < today,
+
+        # 🔥 ADD THESE TWO (THIS FIXES YOUR PROBLEM)
+        "is_approved": camp.is_approved,
+        "created_by": camp.created_by,
+        "contact_number": camp.contact_number or "",   
+        "map_link": camp.map_link or "", 
     }
 
 
+# ================= DONATION CAMPS: LIST + CREATE =================
 # ================= DONATION CAMPS: LIST + CREATE =================
 @api_view(["GET", "POST"])
 @permission_classes([AllowAny])
@@ -1104,6 +1223,10 @@ def admin_donation_camps(request):
     end_time   = request.data.get("end_time")
     location   = request.data.get("location", "").strip()
 
+    # ✅ NEW FIELDS
+    contact_number = request.data.get("contact_number", "").strip()
+    map_link       = request.data.get("map_link", "").strip()
+
     missing = []
     if not title:      missing.append("title")
     if not hospital:   missing.append("hospital_name")
@@ -1119,33 +1242,32 @@ def admin_donation_camps(request):
         )
 
     camp = DonationCamp.objects.create(
-        title        = title,
-        description  = request.data.get("description", ""),
-        hospital_name= hospital,
-        date         = date_val,
-        start_time   = start_time,
-        end_time     = end_time,
-        location     = location,
-        total_slots  = int(request.data.get("total_slots",  0) or 0),
-        filled_slots = int(request.data.get("filled_slots", 0) or 0),
-        is_urgent    = bool(request.data.get("is_urgent", False)),
+        title=title,
+        description=request.data.get("description", ""),
+        hospital_name=hospital,
+        date=date_val,
+        start_time=start_time,
+        end_time=end_time,
+        location=location,
+        contact_number=contact_number,   # ✅ NEW
+        map_link=map_link,               # ✅ NEW
+        is_urgent=bool(request.data.get("is_urgent", False)),
+        is_approved=False,
+        created_by="admin"
     )
 
-    # ✅ Refresh so camp.date is datetime.date, not a raw string
     camp.refresh_from_db()
 
     try:
         Notification.objects.create(
-            title   = "New Donation Camp Created",
-            message = f'"{camp.title}" has been scheduled on {camp.date} at {camp.location}.',
-            type    = "alert",
+            title="New Donation Camp Created",
+            message=f'"{camp.title}" on {camp.date} at {camp.location}',
+            type="alert",
         )
-    except Exception:
-        pass  # notification is non-critical
+    except:
+        pass
 
     return Response(_serialize_camp(camp), status=status.HTTP_201_CREATED)
-
-
 # ================= DONATION CAMPS: DETAIL + UPDATE + DELETE =================
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
 @permission_classes([AllowAny])
@@ -1154,75 +1276,59 @@ def admin_donation_camp_detail(request, camp_id):
     try:
         camp = DonationCamp.objects.get(id=camp_id)
     except DonationCamp.DoesNotExist:
-        return Response(
-            {"success": False, "message": "Camp not found"},
-            status=status.HTTP_404_NOT_FOUND
-        )
+        return Response({"success": False, "message": "Camp not found"}, status=404)
 
-    # ── GET ───────────────────────────────────────────────────
     if request.method == "GET":
         return Response(_serialize_camp(camp))
 
-    # ── DELETE ────────────────────────────────────────────────
     if request.method == "DELETE":
         camp.delete()
-        return Response(
-            {"success": True, "message": "Camp deleted successfully"},
-            status=status.HTTP_204_NO_CONTENT
-        )
+        return Response({"success": True, "message": "Deleted"}, status=204)
 
     data = request.data
 
-    # ── FULL UPDATE (PUT) ─────────────────────────────────────
+    # ── PUT (FULL UPDATE) ─────────────────
     if request.method == "PUT":
-        title      = data.get("title", "").strip()
-        hospital   = data.get("hospital_name", "").strip()
-        date_val   = data.get("date")
-        start_time = data.get("start_time")
-        end_time   = data.get("end_time")
-        location   = data.get("location", "").strip()
-
-        missing = []
-        if not title:      missing.append("title")
-        if not hospital:   missing.append("hospital_name")
-        if not date_val:   missing.append("date")
-        if not start_time: missing.append("start_time")
-        if not end_time:   missing.append("end_time")
-        if not location:   missing.append("location")
-
-        if missing:
-            return Response(
-                {"success": False, "message": f"Required fields missing: {', '.join(missing)}"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        camp.title         = title
+        camp.title         = data.get("title", "").strip()
         camp.description   = data.get("description", "")
-        camp.hospital_name = hospital
-        camp.date          = date_val
-        camp.start_time    = start_time
-        camp.end_time      = end_time
-        camp.location      = location
-        camp.total_slots   = int(data.get("total_slots",  0) or 0)
-        camp.filled_slots  = int(data.get("filled_slots", 0) or 0)
-        camp.is_urgent     = bool(data.get("is_urgent", False))
-        camp.save()
-        camp.refresh_from_db()  # ✅ ensure date is datetime.date after save
+        camp.hospital_name = data.get("hospital_name", "").strip()
+        camp.date          = data.get("date")
+        camp.start_time    = data.get("start_time")
+        camp.end_time      = data.get("end_time")
+        camp.location      = data.get("location", "").strip()
 
-    # ── PARTIAL UPDATE (PATCH) ────────────────────────────────
-    elif request.method == "PATCH":
-        if "title"         in data: camp.title         = data["title"].strip()
-        if "description"   in data: camp.description   = data["description"]
-        if "hospital_name" in data: camp.hospital_name = data["hospital_name"].strip()
-        if "date"          in data: camp.date          = data["date"]
-        if "start_time"    in data: camp.start_time    = data["start_time"]
-        if "end_time"      in data: camp.end_time      = data["end_time"]
-        if "location"      in data: camp.location      = data["location"].strip()
-        if "total_slots"   in data: camp.total_slots   = int(data["total_slots"]  or 0)
-        if "filled_slots"  in data: camp.filled_slots  = int(data["filled_slots"] or 0)
-        if "is_urgent"     in data: camp.is_urgent     = bool(data["is_urgent"])
+        # ✅ NEW
+        camp.contact_number = data.get("contact_number", "")
+        camp.map_link       = data.get("map_link", "")
+
+        camp.is_urgent     = bool(data.get("is_urgent", False))
+
         camp.save()
-        camp.refresh_from_db()  # ✅ ensure date is datetime.date after save
+        camp.refresh_from_db()
+
+    # ── PATCH (PARTIAL UPDATE) ────────────
+    elif request.method == "PATCH":
+
+        if "title" in data: camp.title = data["title"].strip()
+        if "description" in data: camp.description = data["description"]
+        if "hospital_name" in data: camp.hospital_name = data["hospital_name"].strip()
+        if "date" in data: camp.date = data["date"]
+        if "start_time" in data: camp.start_time = data["start_time"]
+        if "end_time" in data: camp.end_time = data["end_time"]
+        if "location" in data: camp.location = data["location"].strip()
+
+        # ✅ NEW
+        if "contact_number" in data:
+            camp.contact_number = data["contact_number"]
+
+        if "map_link" in data:
+            camp.map_link = data["map_link"]
+
+        if "is_urgent" in data:
+            camp.is_urgent = bool(data["is_urgent"])
+
+        camp.save()
+        camp.refresh_from_db()
 
     return Response(_serialize_camp(camp))
 
@@ -1232,7 +1338,7 @@ def admin_donation_camp_detail(request, camp_id):
 @permission_classes([AllowAny])
 def public_donation_camps(request):
     today = timezone.localdate()
-    camps = DonationCamp.objects.filter(date__gte=today).order_by("date", "start_time")
+    camps = DonationCamp.objects.filter(date__gte=today, is_approved=True).order_by("date", "start_time")
     return Response([_serialize_camp(c) for c in camps])
 
 
@@ -1269,3 +1375,60 @@ def admin_all_hospitals_stock(request):
         })
 
     return Response(result)
+
+# ================= PARTNER CREATE (FIXED) =================
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def create_camp_by_partner(request):
+
+    camp = DonationCamp.objects.create(
+        title=request.data.get("title"),
+        description=request.data.get("description"),
+        hospital_name=request.data.get("hospital_name"),
+        date=request.data.get("date"),
+        start_time=request.data.get("start_time"),
+        end_time=request.data.get("end_time"),
+        location=request.data.get("location"),
+
+        # ✅ ADD THESE
+        contact_number=request.data.get("contact_number"),
+        map_link=request.data.get("map_link"),
+
+        is_urgent=request.data.get("is_urgent", False),
+        is_approved=False,
+        created_by="corporate"
+    )
+
+    Notification.objects.create(
+        title="New Camp Submitted",
+        message=f'"{camp.title}" waiting for approval',
+        type="camp"
+    )
+
+    return Response({"success": True})
+
+@api_view(["PATCH"])
+@permission_classes([AllowAny])
+def approve_camp(request, camp_id):
+    try:
+        camp = DonationCamp.objects.get(id=camp_id)
+        camp.is_approved = True
+        camp.save()
+
+        return Response({"success": True, "message": "Camp approved"})
+    except DonationCamp.DoesNotExist:
+        return Response({"success": False, "message": "Not found"}, status=404)
+    
+@api_view(["DELETE"])
+@permission_classes([AllowAny])
+def reject_camp(request, camp_id):
+    try:
+        camp = DonationCamp.objects.get(id=camp_id)
+        camp.delete()
+
+        return Response({"success": True, "message": "Camp rejected"})
+    except DonationCamp.DoesNotExist:
+        return Response({"success": False}, status=404)
+    
+
+    

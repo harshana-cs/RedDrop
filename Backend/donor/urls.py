@@ -10,7 +10,8 @@ from .views import (
     api_donor_confirm,
     api_donor_eligibility,
     api_donor_dashboard_stats,
-    # mark_notification_read,
+    approved_donors_basic_view,   
+    all_donors,
     
 )
 
@@ -27,5 +28,9 @@ urlpatterns = [
     path(
     "notifications/<int:notification_id>/read/",
     mark_notification_read
+
 ),
+    path("approved-donors-basic/", approved_donors_basic_view),
+    path("api/all-donors/",  all_donors),
+
 ]

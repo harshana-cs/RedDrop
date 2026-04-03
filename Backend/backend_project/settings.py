@@ -220,3 +220,7 @@ import os
 load_dotenv()
 
 ADMIN_SECRET_KEY = os.getenv("ADMIN_SECRET_KEY")
+
+# Sparrow SMS
+SMS_TOKEN = "v2_xRmgUORNX8vY8GJeLaAVzAmJDFG.Ocow"
+SMS_FROM = "Demo"  
