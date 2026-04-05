@@ -10,12 +10,10 @@
   
   <!-- Font Awesome for icons -->
   <link href="../../dist/output.css" rel="stylesheet">
-  <link rel="stylesheet"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
   <style>
     html { scroll-behavior: smooth; }
-    
-    /* Define animations */
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.5; }
@@ -36,6 +34,11 @@
       100% { opacity: 1; transform: translateY(0); }
     }
     
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
     /* Animation classes */
     .animate-bounce {
       animation: bounce 1s infinite;
@@ -51,6 +54,10 @@
     
     .animate-fade-in {
       animation: fadeIn 0.8s ease-out forwards;
+    }
+    
+    .animate-slide-in {
+      animation: slideIn 0.3s ease-out;
     }
     
     /* Custom styles */
@@ -86,6 +93,38 @@
       border-radius: 50%;
       animation: pulse 2s infinite;
     }
+
+    /* Donor avatar styling */
+    .donor-avatar {
+      background: linear-gradient(135deg, #B91C1C 0%, #991B1B 100%);
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #FEE2E2;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #B91C1C;
+      border-radius: 10px;
+    }
+
+    /* Blinking badge for urgent requests */
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; background-color: #dc2626; }
+    }
+    .urgent-badge {
+      animation: blink 1.5s ease-in-out infinite;
+    }
+    
+    /* Modal styles */
+    .modal-overlay {
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
   </style>
 </head>
 
@@ -97,10 +136,11 @@
       <div class="flex items-center space-x-2">
         <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
           <i class="fas fa-tint text-[#B91C1C] text-xl"></i>
-        </div><a href="index.html" class="ml-2">
-        <h1 class="text-3xl font-bold tracking-wide">Red<span class="font-extrabold">Drop</span></h1></a>
+        </div>
+        <a href="index.html" class="ml-2">
+          <h1 class="text-3xl font-bold tracking-wide">Red<span class="font-extrabold">Drop</span></h1>
+        </a>
       </div>
-
 
       <!-- Desktop Menu -->
       <div class="hidden md:flex space-x-8 items-center text-lg">
@@ -124,6 +164,19 @@
           <i class="fas fa-book-open text-sm"></i>
           <span>Blood Stories</span>
         </a>
+        <a href="#donors" class="hover:text-[#FEE2E2] transition flex items-center space-x-1">
+          <i class="fas fa-users text-sm"></i>
+          <span>Our Donors</span>
+        </a>
+        <a href="#bloodRequests" class="hover:text-[#FEE2E2] transition flex items-center space-x-1 relative">
+          <i class="fas fa-tint text-sm"></i>
+          <span>Blood Requests</span>
+          <span class="absolute -top-1 -right-3 w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></span>
+        </a>
+        <a href="#partner" class="hover:text-[#FEE2E2] transition flex items-center space-x-1">
+          <i class="fas fa-handshake text-sm"></i>
+          <span>Become a Partner</span>
+        </a>
 
         <div class="flex items-center space-x-4 ml-4">
           <a href="login-signup.html"
@@ -137,8 +190,6 @@
             <i class="fas fa-user-plus"></i>
             <span>Sign Up</span>
           </a>
-         
-
         </div>
       </div>
 
@@ -152,24 +203,28 @@
     <div id="mobile-menu"
       class="hidden md:hidden bg-[#991B1B] text-white w-full flex flex-col items-center space-y-4 py-6 px-4 animate-fade-in">
       <a href="#why" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
-        <i class="fas fa-heart"></i>
-        <span>Why RedDrop</span>
+        <i class="fas fa-heart"></i><span>Why RedDrop</span>
       </a>
       <a href="#work" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
-        <i class="fas fa-handshake"></i>
-        <span>Our Work</span>
+        <i class="fas fa-handshake"></i><span>Our Work</span>
       </a>
       <a href="#about" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
-        <i class="fas fa-users"></i>
-        <span>About Us</span>
+        <i class="fas fa-users"></i><span>About Us</span>
       </a>
       <a href="#involved" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
-        <i class="fas fa-hands-helping"></i>
-        <span>Get Involved</span>
+        <i class="fas fa-hands-helping"></i><span>Get Involved</span>
       </a>
       <a href="#stories" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
-        <i class="fas fa-book-open"></i>
-        <span>Blood Stories</span>
+        <i class="fas fa-book-open"></i><span>Blood Stories</span>
+      </a>
+      <a href="#donors" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
+        <i class="fas fa-users"></i><span>Our Donors</span>
+      </a>
+      <a href="#bloodRequests" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2 relative">
+        <i class="fas fa-tint"></i><span>Blood Requests</span>
+      </a>
+      <a href="#partner" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
+        <i class="fas fa-handshake"></i><span>Become a Partner</span>
       </a>
 
       <div class="flex flex-col space-y-4 w-full px-8 pt-4">
@@ -187,722 +242,439 @@
 
   <!-- Hero Section -->
   <section class="relative min-h-screen flex items-center overflow-hidden">
-    <!-- Animated Background Elements -->
     <div class="absolute inset-0 z-0">
       <div class="absolute top-1/4 left-10 w-72 h-72 bg-[#B91C1C]/10 rounded-full blur-3xl animate-float"></div>
       <div class="absolute bottom-1/4 right-10 w-96 h-96 bg-[#991B1B]/10 rounded-full blur-3xl animate-float" style="animation-delay: 2s;"></div>
     </div>
-    
-    <!-- Hero Image with Gradient Overlay -->
     <div class="absolute inset-0 bg-gradient-to-r from-[#B91C1C]/40 via-[#B91C1C]/30 to-transparent z-0"></div>
-    <div class="absolute inset-0 bg-cover bg-center z-0" 
-         style="background-image: url('https://images.unsplash.com/photo-1603988363659-489cf6a11e4b?auto=format&fit=crop&w=1470&q=80&brightness=0.9')"></div>
-
+    <div class="absolute inset-0 bg-cover bg-center z-0" style="background-image: url('https://images.unsplash.com/photo-1603988363659-489cf6a11e4b?auto=format&fit=crop&w=1470&q=80&brightness=0.9')"></div>
     <div class="relative container mx-auto px-6 mt-16 z-10 animate-fade-in">
       <div class="max-w-3xl">
         <div class="inline-flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
           <i class="fas fa-heartbeat text-white"></i>
           <span class="text-white font-medium">Saving Lives Since 2025</span>
         </div>
-        
-        <h2 class="text-5xl md:text-7xl font-extrabold text-white drop-shadow-2xl leading-tight">
-          Give Blood<span class="blood-drop">.</span><br>
-          <span class="text-[#FEE2E2]">Save Lives</span>
-        </h2>
-
-        <p class="text-xl md:text-2xl text-white mt-8 mb-10 max-w-2xl opacity-95 leading-relaxed">
-          Join Nepal's largest digital blood bank network. Connect donors, recipients, and hospitals efficiently and securely.
-        </p>
-
+        <h2 class="text-5xl md:text-7xl font-extrabold text-white drop-shadow-2xl leading-tight">Give Blood<span class="blood-drop">.</span><br><span class="text-[#FEE2E2]">Save Lives</span></h2>
+        <p class="text-xl md:text-2xl text-white mt-8 mb-10 max-w-2xl opacity-95 leading-relaxed">Join Nepal's largest digital blood bank network. Connect donors, recipients, and hospitals efficiently and securely.</p>
         <div class="flex flex-col sm:flex-row gap-6 mt-12">
-  <a href="login-signup.html"
-     class="bg-white text-[#B91C1C] px-10 py-4 rounded-full text-lg shadow-xl
-            hover:bg-gray-100 transition-all duration-300 font-bold text-center
-            hover:scale-105 transform flex items-center justify-center space-x-3">
-    <i class="fas fa-tint"></i>
-    <span>Donate Blood</span>
-  </a>
-  
-  <a href="login-signup.html"
-     class="bg-[#FEE2E2] text-[#B91C1C] px-10 py-4 rounded-full text-lg
-            hover:bg-white transition-all duration-300 font-bold text-center
-            hover:scale-105 transform flex items-center justify-center space-x-3">
-    <i class="fas fa-hand-holding-medical"></i>
-    <span>Request Blood</span>
-  </a>
-</div>
-
-        
+          <a href="login-signup.html" class="bg-white text-[#B91C1C] px-10 py-4 rounded-full text-lg shadow-xl hover:bg-gray-100 transition-all duration-300 font-bold text-center hover:scale-105 transform flex items-center justify-center space-x-3"><i class="fas fa-tint"></i><span>Donate Blood</span></a>
+          <a href="login-signup.html" class="bg-[#FEE2E2] text-[#B91C1C] px-10 py-4 rounded-full text-lg hover:bg-white transition-all duration-300 font-bold text-center hover:scale-105 transform flex items-center justify-center space-x-3"><i class="fas fa-hand-holding-medical"></i><span>Request Blood</span></a>
+        </div>
         <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div class="text-center">
-            <div class="text-3xl font-bold text-white">10K+</div>
-            <div class="text-[#FEE2E2] text-sm">Donors Registered</div>
-          </div>
-          <div class="text-center">
-            <div class="text-3xl font-bold text-white">500+</div>
-            <div class="text-[#FEE2E2] text-sm">Lives Saved</div>
-          </div>
-          <div class="text-center">
-            <div class="text-3xl font-bold text-white">50+</div>
-            <div class="text-[#FEE2E2] text-sm">Partner Hospitals</div>
-          </div>
-          <div class="text-center">
-            <div class="text-3xl font-bold text-white">24/7</div>
-            <div class="text-[#FEE2E2] text-sm">Emergency Service</div>
-          </div>
+          <div class="text-center"><div class="text-3xl font-bold text-white">10K+</div><div class="text-[#FEE2E2] text-sm">Donors Registered</div></div>
+          <div class="text-center"><div class="text-3xl font-bold text-white">500+</div><div class="text-[#FEE2E2] text-sm">Lives Saved</div></div>
+          <div class="text-center"><div class="text-3xl font-bold text-white">50+</div><div class="text-[#FEE2E2] text-sm">Partner Hospitals</div></div>
+          <div class="text-center"><div class="text-3xl font-bold text-white">24/7</div><div class="text-[#FEE2E2] text-sm">Emergency Service</div></div>
         </div>
       </div>
     </div>
-    
-    <!-- Scroll Indicator -->
-    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-      <a href="#why" class="text-white text-2xl">
-        <i class="fas fa-chevron-down"></i>
-      </a>
-    </div>
+    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce"><a href="#why" class="text-white text-2xl"><i class="fas fa-chevron-down"></i></a></div>
   </section>
 
-  <!-- Why RedDrop -->
+  <!-- Why RedDrop Section -->
   <section id="why" class="py-24 container mx-auto px-6">
-    <div class="text-center mb-16">
-      <div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4">
-        <span class="text-[#B91C1C] font-semibold">Why Choose Us</span>
-      </div>
-      <h3 class="text-5xl font-bold gradient-text mb-6">Why RedDrop?</h3>
-      <p class="text-gray-600 text-lg max-w-2xl mx-auto">
-        We bridge the gap between blood donors and those in need with cutting-edge technology
-      </p>
+    <div class="text-center mb-16"><div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4"><span class="text-[#B91C1C] font-semibold">Why Choose Us</span></div><h3 class="text-5xl font-bold gradient-text mb-6">Why RedDrop?</h3><p class="text-gray-600 text-lg max-w-2xl mx-auto">We bridge the gap between blood donors and those in need with cutting-edge technology</p></div>
+  </section>
+
+  <!-- Our Work Section -->
+  <section id="work" class="py-24 bg-[#FFF5F5] container mx-auto px-6">
+    <div class="text-center mb-16"><div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4"><span class="text-[#B91C1C] font-semibold">Our Impact</span></div><h3 class="text-5xl font-bold gradient-text mb-6">Our Work</h3><p class="text-gray-600 text-lg max-w-2xl mx-auto">How RedDrop transforms blood donation across Nepal using technology</p></div>
+    <div class="grid md:grid-cols-3 gap-10">
+      <div class="bg-white p-8 rounded-3xl shadow-xl card-hover"><i class="fas fa-network-wired text-4xl text-[#B91C1C] mb-5"></i><h4 class="text-2xl font-bold mb-3">Donor Network</h4><p class="text-gray-600">We connect verified donors with hospitals and recipients instantly using smart matching.</p></div>
+      <div class="bg-white p-8 rounded-3xl shadow-xl card-hover"><i class="fas fa-clock text-4xl text-[#B91C1C] mb-5"></i><h4 class="text-2xl font-bold mb-3">Emergency Response</h4><p class="text-gray-600">Critical blood requests are prioritized and notified in real-time for faster response.</p></div>
+      <div class="bg-white p-8 rounded-3xl shadow-xl card-hover"><i class="fas fa-shield-alt text-4xl text-[#B91C1C] mb-5"></i><h4 class="text-2xl font-bold mb-3">Safe & Verified</h4><p class="text-gray-600">Every donor and hospital is verified to ensure safety, trust, and reliability.</p></div>
     </div>
+  </section>
+  
+  <!-- DONORS SECTION -->
+  <section id="donors" class="py-24 bg-white container mx-auto px-6">
+    <div class="text-center mb-16">
+      <div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4"><span class="text-[#B91C1C] font-semibold">Our Heroes</span></div>
+      <h3 class="text-5xl font-bold gradient-text mb-6">Meet Our Donors</h3>
+      <p class="text-gray-600 text-lg max-w-2xl mx-auto">These inspiring individuals have pledged to save lives through regular blood donation. Join them in making a difference.</p>
+    </div>
+    <div id="donorListContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="col-span-3 text-center text-gray-500 py-10"><i class="fas fa-spinner fa-pulse text-3xl text-[#B91C1C]"></i><p class="mt-2">Loading our amazing donors...</p></div>
+    </div>
+    <div class="text-center mt-12"><a href="login-signup.html" class="inline-flex items-center bg-[#B91C1C] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#991B1B] transition-all shadow-lg hover:scale-105"><i class="fas fa-tint mr-2"></i>Become a Donor Today</a></div>
+  </section>
 
-    <div class="grid md:grid-cols-3 gap-8">
-      <div class="bg-white shadow-2xl rounded-3xl p-8 border-l-8 border-[#B91C1C] card-hover">
-        <div class="w-16 h-16 bg-[#FEE2E2] rounded-2xl flex items-center justify-center mb-6">
-          <i class="fas fa-user-heart text-2xl text-[#B91C1C]"></i>
-        </div>
-        <h4 class="font-bold text-2xl mb-4 text-gray-800">For Donors</h4>
-        <p class="text-gray-600 mb-6 leading-relaxed">
-          Receive smart reminders, track your donation journey, and find nearby blood donation events with real-time updates.
-        </p>
-        <ul class="space-y-3">
-          <li class="flex items-center text-gray-700">
-            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
-            <span>Personalized donation schedule</span>
-          </li>
-          <li class="flex items-center text-gray-700">
-            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
-            <span>Digital health certificate</span>
-          </li>
-          <li class="flex items-center text-gray-700">
-            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
-            <span>Rewards & recognition</span>
-          </li>
-        </ul>
+  <!-- PARTNER SECTION with Register Camp Button -->
+  <section id="partner" class="py-24 bg-gradient-to-r from-[#FEE2E2] to-white">
+    <div class="container mx-auto px-6">
+      <div class="max-w-4xl mx-auto text-center mb-12">
+        <div class="inline-block bg-[#B91C1C]/10 rounded-full px-4 py-2 mb-4"><span class="text-[#B91C1C] font-semibold">Collaborate With Us</span></div>
+        <h3 class="text-5xl font-bold gradient-text mb-6">Become a Partner</h3>
+        <p class="text-gray-600 text-lg max-w-2xl mx-auto">Join hands with RedDrop to strengthen Nepal's blood donation ecosystem. Whether you're a hospital, NGO, or corporate, your partnership saves lives.</p>
       </div>
-
-      <div class="bg-white shadow-2xl rounded-3xl p-8 border-l-8 border-[#B91C1C] card-hover">
-        <div class="w-16 h-16 bg-[#FEE2E2] rounded-2xl flex items-center justify-center mb-6">
-          <i class="fas fa-hospital-alt text-2xl text-[#B91C1C]"></i>
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="bg-white p-8 rounded-3xl shadow-xl text-center card-hover">
+          <i class="fas fa-hospital text-5xl text-[#B91C1C] mb-5"></i>
+          <h4 class="text-2xl font-bold mb-3">Hospitals</h4>
+          <p class="text-gray-600 mb-4">Access real-time inventory, instant donor matching, and emergency blood requests.</p>
+          <a href="hospital-registration.html" class="inline-block mt-2 text-[#B91C1C] font-semibold hover:underline">Partner Now →</a>
         </div>
-        <h4 class="font-bold text-2xl mb-4 text-gray-800">For Hospitals</h4>
-        <p class="text-gray-600 mb-6 leading-relaxed">
-          Manage blood inventory efficiently, verify donors instantly, and request blood supplies with a single click.
-        </p>
-        <ul class="space-y-3">
-          <li class="flex items-center text-gray-700">
-            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
-            <span>Real-time inventory tracking</span>
-          </li>
-          <li class="flex items-center text-gray-700">
-            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
-            <span>Secure donor verification</span>
-          </li>
-          <li class="flex items-center text-gray-700">
-            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
-            <span>Automated blood matching</span>
-          </li>
-        </ul>
-      </div>
-
-      <div class="bg-white shadow-2xl rounded-3xl p-8 border-l-8 border-[#B91C1C] card-hover">
-        <div class="w-16 h-16 bg-[#FEE2E2] rounded-2xl flex items-center justify-center mb-6">
-          <i class="fas fa-hand-holding-heart text-2xl text-[#B91C1C]"></i>
+        <div class="bg-white p-8 rounded-3xl shadow-xl text-center card-hover">
+          <i class="fas fa-building text-5xl text-[#B91C1C] mb-5"></i>
+          <h4 class="text-2xl font-bold mb-3">Corporate</h4>
+          <p class="text-gray-600 mb-4">Organize blood donation camps, engage employees, and earn CSR recognition.</p>
+          <button onclick="openCampRegistrationModal()" class="inline-flex items-center mt-2 bg-[#B91C1C] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#991B1B] transition-all shadow-lg">
+            <i class="fas fa-calendar-plus mr-2"></i>Register a Camp
+          </button>
         </div>
-        <h4 class="font-bold text-2xl mb-4 text-gray-800">For Recipients</h4>
-        <p class="text-gray-600 mb-6 leading-relaxed">
-          Request blood urgently and get matched with compatible donors in real-time with our intelligent matching system.
-        </p>
-        <ul class="space-y-3">
-          <li class="flex items-center text-gray-700">
-            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
-            <span>Emergency request system</span>
-          </li>
-          <li class="flex items-center text-gray-700">
-            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
-            <span>Real-time donor matching</span>
-          </li>
-          <li class="flex items-center text-gray-700">
-            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
-            <span>Status tracking & updates</span>
-          </li>
-        </ul>
       </div>
     </div>
   </section>
-<section id="work" class="py-24 bg-[#FFF5F5] container mx-auto px-6">
-  <div class="text-center mb-16">
-    <div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4">
-      <span class="text-[#B91C1C] font-semibold">Our Impact</span>
-    </div>
-    <h3 class="text-5xl font-bold gradient-text mb-6">Our Work</h3>
-    <p class="text-gray-600 text-lg max-w-2xl mx-auto">
-      How RedDrop transforms blood donation across Nepal using technology
-    </p>
-  </div>
 
-  <div class="grid md:grid-cols-3 gap-10">
-    <div class="bg-white p-8 rounded-3xl shadow-xl card-hover">
-      <i class="fas fa-network-wired text-4xl text-[#B91C1C] mb-5"></i>
-      <h4 class="text-2xl font-bold mb-3">Donor Network</h4>
-      <p class="text-gray-600">
-        We connect verified donors with hospitals and recipients instantly using smart matching.
-      </p>
-    </div>
-
-    <div class="bg-white p-8 rounded-3xl shadow-xl card-hover">
-      <i class="fas fa-clock text-4xl text-[#B91C1C] mb-5"></i>
-      <h4 class="text-2xl font-bold mb-3">Emergency Response</h4>
-      <p class="text-gray-600">
-        Critical blood requests are prioritized and notified in real-time for faster response.
-      </p>
-    </div>
-
-    <div class="bg-white p-8 rounded-3xl shadow-xl card-hover">
-      <i class="fas fa-shield-alt text-4xl text-[#B91C1C] mb-5"></i>
-      <h4 class="text-2xl font-bold mb-3">Safe & Verified</h4>
-      <p class="text-gray-600">
-        Every donor and hospital is verified to ensure safety, trust, and reliability.
-      </p>
-    </div>
-  </div>
-</section>
-<section class="py-24 bg-white">
-  <div class="container mx-auto px-6">
-    <div class="bg-gradient-to-r from-[#FEE2E2] to-white rounded-3xl shadow-xl p-12 grid md:grid-cols-2 gap-10 items-center">
-
-      <!-- Text -->
-      <div>
-        <span class="inline-block bg-[#B91C1C]/10 text-[#B91C1C] px-4 py-2 rounded-full font-semibold mb-4">
-          Official Partnership
-        </span>
-
-        <h3 class="text-4xl font-bold text-gray-800 mb-6">
-          Partner With <span class="text-[#B91C1C]">RedDrop</span>
-        </h3>
-
-        <p class="text-gray-600 text-lg mb-6 leading-relaxed">
-          Hospitals can collaborate with RedDrop to request blood,
-          manage inventory, and respond to emergencies faster.
-          All hospital partnerships are verified and approved by administrators.
-        </p>
-
-        <ul class="space-y-3 mb-8">
-          <li class="flex items-center">
-            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
-            Verified hospital access
-          </li>
-          <li class="flex items-center">
-            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
-            Secure blood request system
-          </li>
-          <li class="flex items-center">
-            <i class="fas fa-check-circle text-[#B91C1C] mr-3"></i>
-            Admin-approved credentials
-          </li>
-        </ul>
-
-        <a href="hospital-registration.html"
-           class="inline-flex items-center bg-[#B91C1C] text-white px-8 py-4 rounded-full
-                  font-bold hover:bg-[#991B1B] transition shadow-lg">
-          <i class="fas fa-handshake mr-3"></i>
-          Apply as Hospital Partner
-        </a>
+  <!-- Camp Registration Modal -->
+  <div id="campModal" class="fixed inset-0 hidden items-center justify-center z-[1000] modal-overlay">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 animate-slide-in">
+      <div class="bg-[#B91C1C] text-white rounded-t-2xl px-6 py-4 flex justify-between items-center">
+        <h3 class="text-2xl font-bold">Register Donation Camp</h3>
+        <button onclick="closeCampModal()" class="text-white hover:text-gray-200 text-2xl">&times;</button>
       </div>
-
-      <!-- Visual -->
-      <div class="hidden md:flex justify-center">
-        <i class="fas fa-hospital text-[180px] text-[#B91C1C]/10"></i>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ================= ABOUT US ================= -->
-<section id="about" class="py-24 bg-white container mx-auto px-6">
-  <div class="grid md:grid-cols-2 gap-14 items-center">
-    <div>
-      <div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4">
-        <span class="text-[#B91C1C] font-semibold">Who We Are</span>
-      </div>
-      <h3 class="text-5xl font-bold gradient-text mb-6">About RedDrop</h3>
-      <p class="text-gray-600 text-lg mb-6 leading-relaxed">
-        RedDrop is Nepal’s digital blood bank designed to connect donors,
-        recipients, and hospitals in the fastest and safest way possible.
-      </p>
-      <p class="text-gray-600 text-lg leading-relaxed">
-        We use technology to eliminate delays, panic, and shortages during
-        medical emergencies.
-      </p>
-    </div>
-
-    <div class="bg-[#FEE2E2] p-10 rounded-3xl shadow-xl">
-      <ul class="space-y-5 text-lg">
-        <li class="flex items-center">
-          <i class="fas fa-heartbeat text-[#B91C1C] mr-4"></i> Life-saving mission
-        </li>
-        <li class="flex items-center">
-          <i class="fas fa-users text-[#B91C1C] mr-4"></i> Community driven
-        </li>
-        <li class="flex items-center">
-          <i class="fas fa-laptop-code text-[#B91C1C] mr-4"></i> Technology powered
-        </li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<!-- ================= GET INVOLVED ================= -->
-<section id="involved" class="py-24 bg-gradient-to-r from-[#B91C1C] to-[#991B1B] text-white">
-  <div class="container mx-auto px-6 text-center">
-    <div class="inline-block bg-white/20 rounded-full px-4 py-2 mb-5">
-      <span class="font-semibold">Be Part of the Change</span>
-    </div>
-
-    <h3 class="text-5xl font-bold mb-6">Get Involved</h3>
-    <p class="text-xl text-white/90 max-w-2xl mx-auto mb-12">
-      Donate blood, request help, or spread awareness — every action saves lives.
-    </p>
-
-    <div class="flex flex-col md:flex-row gap-6 justify-center">
-      <a href="login-signup.html"
-         class="bg-white text-[#B91C1C] px-10 py-4 rounded-full font-bold text-lg hover:scale-105 transition flex items-center space-x-3">
-        <i class="fas fa-tint"></i>
-        <span>Donate Blood</span>
-      </a>
-
-      <a href="login-signup.html"
-         class="border-2 border-white px-10 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-[#B91C1C] transition flex items-center space-x-3">
-        <i class="fas fa-ambulance"></i>
-        <span>Request Blood</span>
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ================= BLOOD STORIES ================= -->
-<section id="stories" class="py-24 bg-[#FFF5F5] container mx-auto px-6">
-  <div class="text-center mb-16">
-    <div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4">
-      <span class="text-[#B91C1C] font-semibold">Real Stories</span>
-    </div>
-    <h3 class="text-5xl font-bold gradient-text mb-6">Blood Stories</h3>
-    <p class="text-gray-600 text-lg max-w-2xl mx-auto">
-      Real lives changed because someone chose to donate.
-    </p>
-  </div>
-
-  <div class="grid md:grid-cols-3 gap-10">
-    <div class="bg-white p-8 rounded-3xl shadow-xl card-hover">
-      <p class="text-gray-600 mb-6">
-        “A stranger’s blood saved my father’s life during surgery.”
-      </p>
-      <span class="font-bold text-[#B91C1C]">— Kathmandu</span>
-    </div>
-
-    <div class="bg-white p-8 rounded-3xl shadow-xl card-hover">
-      <p class="text-gray-600 mb-6">
-        “I donated once and helped save a newborn baby.”
-      </p>
-      <span class="font-bold text-[#B91C1C]">— Pokhara</span>
-    </div>
-
-    <div class="bg-white p-8 rounded-3xl shadow-xl card-hover">
-      <p class="text-gray-600 mb-6">
-        “Finding blood at night used to be impossible. Not anymore.”
-      </p>
-      <span class="font-bold text-[#B91C1C]">— Lalitpur</span>
-    </div>
-  </div>
-</section>
-<!-- ================= URGENT BLOOD REQUESTS ================= -->
-<section id="bloodRequests" class="py-24 bg-white">
-  <div class="container mx-auto px-6">
-
-    <div class="text-center mb-14">
-      <div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4">
-        <span class="text-[#B91C1C] font-semibold">Emergency</span>
-      </div>
-
-      <h3 class="text-5xl font-bold gradient-text mb-4">
-        Urgent Blood Requests
-      </h3>
-
-      <p class="text-gray-600 text-lg max-w-2xl mx-auto">
-        These patients urgently need blood. If you are eligible,
-        please help save a life.
-      </p>
-    </div>
-
-    <!-- Requests Container -->
-    <div id="bloodRequestContainer"
-         class="grid md:grid-cols-3 gap-8">
-         
-      <!-- Requests will load here -->
-      <p class="text-center col-span-3 text-gray-500">
-        Loading requests...
-      </p>
-
-    </div>
-
-  </div>
-</section>
-  <!-- Donate Section -->
-  <section id="donate" class="py-24 bg-gradient-to-r from-[#B91C1C] to-[#991B1B] relative overflow-hidden">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 opacity-10">
-      <div class="absolute inset-0" style="background-image: url(&quot;data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 20C60 10 80 10 90 20 100 30 100 50 90 60 80 70 60 70 50 60 40 70 20 70 10 60 0 50 0 30 10 20 20 10 40 10 50 20Z' fill='%23ffffff'/%3E%3C/svg%3E&quot;); background-size: 80px;"></div>
-    </div>
-    
-    <div class="relative container mx-auto px-6 text-center">
-      <div class="max-w-3xl mx-auto">
-        <div class="inline-block bg-white/20 backdrop-blur-sm rounded-full px-5 py-2 mb-6">
-          <span class="text-white font-semibold">Join Our Mission</span>
+      <form id="campRegistrationForm" class="p-6 space-y-4">
+        <div>
+          <label class="block text-gray-700 font-semibold mb-2">Camp Title *</label>
+          <input type="text" id="campTitle" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
         </div>
         
-        <h3 class="text-5xl font-bold text-white mb-8">Become a Life Saver</h3>
+        <div>
+          <label class="block text-gray-700 font-semibold mb-2">Description</label>
+          <textarea id="campDescription" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]"></textarea>
+        </div>
         
-        <p class="text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed">
-          Your single donation can save up to three lives. Register today and become part of Nepal's most trusted blood donation network.
-        </p>
-
-       <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
-  <a href="login-signup.html"
-     class="bg-white text-[#B91C1C] px-12 py-4 rounded-full text-lg font-bold
-            hover:bg-gray-100 transition-all duration-300 shadow-2xl
-            hover:scale-105 transform flex items-center space-x-3">
-    <i class="fas fa-user-plus"></i>
-    <span>Register as Donor</span>
-  </a>
-  
-  <a href="login-signup.html"
-     class="border-2 border-white text-white px-12 py-4 rounded-full text-lg font-medium
-            hover:bg-white hover:text-[#B91C1C] transition-all duration-300
-            flex items-center space-x-3">
-    <i class="fas fa-ambulance"></i>
-    <span>Request Blood</span>
-  </a>
+        <div>
+          <label class="block text-gray-700 font-semibold mb-2">Hospital/Organization Name *</label>
+          <input type="text" id="campHospital" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+        </div>
+        
+        <div>
+          <label class="block text-gray-700 font-semibold mb-2">Location *</label>
+          <input type="text" id="campLocation" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-gray-700 font-semibold mb-2">Date *</label>
+            <input type="date" id="campDate" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+          </div>
+          <div>
+            <label class="block text-gray-700 font-semibold mb-2">Start Time *</label>
+            <input type="time" id="campStartTime" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-gray-700 font-semibold mb-2">End Time *</label>
+          <input type="time" id="campEndTime" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+        </div>
+        <!-- 📞 Contact Number -->
+<div>
+  <label class="block text-gray-700 font-semibold mb-2">Contact Number *</label>
+  <input type="text" id="campContact" required
+    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
 </div>
 
-        
-        <div class="mt-16 grid grid-cols-2 md:grid-cols-3 gap-8">
-          <div class="text-center">
-            <div class="text-4xl font-bold text-white mb-2">15 min</div>
-            <div class="text-white/80">Registration Time</div>
-          </div>
-          <div class="text-center">
-            <div class="text-4xl font-bold text-white mb-2">100%</div>
-            <div class="text-white/80">Safe & Verified</div>
-          </div>
-          <div class="text-center">
-            <div class="text-4xl font-bold text-white mb-2">Free</div>
-            <div class="text-white/80">No Cost Involved</div>
-          </div>
-          <button id="adminHiddenBtn" style="opacity:0; position:absolute;">Admin</button>
+</div>
 
+<!-- 🗺 Map Link -->
+<div>
+  <label class="block text-gray-700 font-semibold mb-2">Google Map Link</label>
+  <input type="url" id="campMapLink"
+    placeholder="https://maps.google.com/?q=..."
+    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+</div>
+        <div class="flex items-center">
+          <input type="checkbox" id="campUrgent" class="w-4 h-4 text-[#B91C1C] focus:ring-[#B91C1C]">
+          <label class="ml-2 text-gray-700">Mark as Urgent (requires immediate attention)</label>
         </div>
+        
+        <div id="campFormMessage" class="hidden p-3 rounded-lg text-sm"></div>
+        
+        <div class="flex gap-3 pt-4">
+          <button type="button" onclick="closeCampModal()" class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+          <button type="submit" class="flex-1 bg-[#B91C1C] text-white px-4 py-2 rounded-lg hover:bg-[#991B1B] transition font-semibold">Submit for Approval</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Blood Requests Section -->
+  <section id="bloodRequests" class="py-24 bg-white">
+    <div class="container mx-auto px-6">
+      <div class="text-center mb-14">
+        <div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4"><span class="text-[#B91C1C] font-semibold flex items-center"><i class="fas fa-exclamation-triangle mr-2 text-red-600"></i>Emergency</span></div>
+        <h3 class="text-5xl font-bold gradient-text mb-4">Urgent Blood Requests</h3>
+        <p class="text-gray-600 text-lg max-w-2xl mx-auto">These patients urgently need blood. If you are eligible, please help save a life.</p>
+      </div>
+      <div id="bloodRequestContainer" class="grid md:grid-cols-3 gap-8">
+        <p class="text-center col-span-3 text-gray-500">Loading requests...</p>
       </div>
     </div>
   </section>
 
-  <!-- Footer -->
+  <!-- About Section -->
+  <section id="about" class="py-24 bg-white container mx-auto px-6">
+    <div class="grid md:grid-cols-2 gap-14 items-center">
+      <div><div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4"><span class="text-[#B91C1C] font-semibold">Who We Are</span></div><h3 class="text-5xl font-bold gradient-text mb-6">About RedDrop</h3><p class="text-gray-600 text-lg mb-6 leading-relaxed">RedDrop is Nepal's digital blood bank designed to connect donors, recipients, and hospitals in the fastest and safest way possible.</p><p class="text-gray-600 text-lg leading-relaxed">We use technology to eliminate delays, panic, and shortages during medical emergencies.</p></div>
+      <div class="bg-[#FEE2E2] p-10 rounded-3xl shadow-xl"><ul class="space-y-5 text-lg"><li class="flex items-center"><i class="fas fa-heartbeat text-[#B91C1C] mr-4"></i> Life-saving mission</li><li class="flex items-center"><i class="fas fa-users text-[#B91C1C] mr-4"></i> Community driven</li><li class="flex items-center"><i class="fas fa-laptop-code text-[#B91C1C] mr-4"></i> Technology powered</li></ul></div>
+    </div>
+  </section>
+
+  <!-- Get Involved Section -->
+  <section id="involved" class="py-24 bg-gradient-to-r from-[#B91C1C] to-[#991B1B] text-white">
+    <div class="container mx-auto px-6 text-center"><div class="inline-block bg-white/20 rounded-full px-4 py-2 mb-5"><span class="font-semibold">Be Part of the Change</span></div><h3 class="text-5xl font-bold mb-6">Get Involved</h3><p class="text-xl text-white/90 max-w-2xl mx-auto mb-12">Donate blood, request help, or spread awareness — every action saves lives.</p><div class="flex flex-col md:flex-row gap-6 justify-center"><a href="login-signup.html" class="bg-white text-[#B91C1C] px-10 py-4 rounded-full font-bold text-lg hover:scale-105 transition flex items-center space-x-3"><i class="fas fa-tint"></i> <span>Donate Blood</span></a><a href="login-signup.html" class="border-2 border-white px-10 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-[#B91C1C] transition flex items-center space-x-3"><i class="fas fa-ambulance"></i> <span>Request Blood</span></a></div></div>
+  </section>
+
+  <!-- Stories Section -->
+  <section id="stories" class="py-24 bg-[#FFF5F5] container mx-auto px-6">
+    <div class="text-center mb-16"><div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4"><span class="text-[#B91C1C] font-semibold">Real Stories</span></div><h3 class="text-5xl font-bold gradient-text mb-6">Blood Stories</h3><p class="text-gray-600 text-lg max-w-2xl mx-auto">Real lives changed because someone chose to donate.</p></div>
+    <div class="grid md:grid-cols-3 gap-10"><div class="bg-white p-8 rounded-3xl shadow-xl card-hover"><p class="text-gray-600 mb-6">"A stranger's blood saved my father's life during surgery."</p><span class="font-bold text-[#B91C1C]">— Kathmandu</span></div><div class="bg-white p-8 rounded-3xl shadow-xl card-hover"><p class="text-gray-600 mb-6">"I donated once and helped save a newborn baby."</p><span class="font-bold text-[#B91C1C]">— Pokhara</span></div><div class="bg-white p-8 rounded-3xl shadow-xl card-hover"><p class="text-gray-600 mb-6">"Finding blood at night used to be impossible. Not anymore."</p><span class="font-bold text-[#B91C1C]">— Lalitpur</span></div></div>
+  </section>
+
   <footer class="bg-gradient-to-r from-[#991B1B] to-[#B91C1C] text-white py-12">
     <div class="container mx-auto px-6">
       <div class="flex flex-col md:flex-row justify-between items-center">
-        <div class="mb-8 md:mb-0">
-          <div class="flex items-center space-x-3 mb-4">
-            <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-              <i class="fas fa-tint text-[#B91C1C] text-2xl"></i>
-            </div>
-            <h2 class="text-3xl font-bold">RedDrop</h2>
-          </div>
-          <p class="text-white/80 max-w-md">Connecting hearts through blood donation.<br>Every drop counts, every donor matters.</p>
-          
-          <div class="flex space-x-4 mt-6">
-            <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition">
-              <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition">
-              <i class="fab fa-twitter"></i>
-            </a>
-            <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition">
-              <i class="fab fa-instagram"></i>
-            </a>
-            <a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition">
-              <i class="fab fa-linkedin-in"></i>
-            </a>
-          </div>
-        </div>
-        
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-10">
-          <div>
-            <h4 class="font-bold text-lg mb-4">Quick Links</h4>
-            <ul class="space-y-2">
-              <li><a href="#why" class="text-white/80 hover:text-white transition">Why Donate</a></li>
-              <li><a href="#work" class="text-white/80 hover:text-white transition">Our Impact</a></li>
-              <li><a href="#stories" class="text-white/80 hover:text-white transition">Success Stories</a></li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 class="font-bold text-lg mb-4">Resources</h4>
-            <ul class="space-y-2">
-              <li><a href="#" class="text-white/80 hover:text-white transition">Donor Guide</a></li>
-              <li><a href="#" class="text-white/80 hover:text-white transition">Blood Safety</a></li>
-              <li>
-  <a href="hospital-login.html"
-     class="text-white/80 hover:text-white transition">
-    Hospital Portal
-  </a>
-</li>
-
-            </ul>
-          </div>
-          
-          <div>
-            <h4 class="font-bold text-lg mb-4">Contact</h4>
-            <ul class="space-y-2">
-              <li class="flex items-center space-x-2 text-white/80">
-                <i class="fas fa-phone"></i>
-                <span>+977-1-1234567</span>
-              </li>
-              <li class="flex items-center space-x-2 text-white/80">
-                <i class="fas fa-envelope"></i>
-                <span>help@reddrop.org</span>
-              </li>
-              <li class="flex items-center space-x-2 text-white/80">
-                <i class="fas fa-map-marker-alt"></i>
-                <span>Kathmandu, Nepal</span>
-              </li>
-            </ul>
-          </div>
-        </div>
+        <div class="mb-8 md:mb-0"><div class="flex items-center space-x-3 mb-4"><div class="w-12 h-12 bg-white rounded-full flex items-center justify-center"><i class="fas fa-tint text-[#B91C1C] text-2xl"></i></div><h2 class="text-3xl font-bold">RedDrop</h2></div><p class="text-white/80 max-w-md">Connecting hearts through blood donation.<br>Every drop counts, every donor matters.</p><div class="flex space-x-4 mt-6"><a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-facebook-f"></i></a><a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-twitter"></i></a><a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-instagram"></i></a><a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-linkedin-in"></i></a></div></div>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-10"><div><h4 class="font-bold text-lg mb-4">Quick Links</h4><ul class="space-y-2"><li><a href="#why" class="text-white/80 hover:text-white transition">Why Donate</a></li><li><a href="#work" class="text-white/80 hover:text-white transition">Our Impact</a></li><li><a href="#stories" class="text-white/80 hover:text-white transition">Success Stories</a></li></ul></div><div><h4 class="font-bold text-lg mb-4">Resources</h4><ul class="space-y-2"><li><a href="#" class="text-white/80 hover:text-white transition">Donor Guide</a></li><li><a href="#" class="text-white/80 hover:text-white transition">Blood Safety</a></li><li><a href="hospital-login.html" class="text-white/80 hover:text-white transition">Hospital Portal</a></li></ul></div><div><h4 class="font-bold text-lg mb-4">Contact</h4><ul class="space-y-2"><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-phone"></i><span>+977-1-1234567</span></li><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-envelope"></i><span>help@reddrop.org</span></li><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-map-marker-alt"></i><span>Kathmandu, Nepal</span></li></ul></div></div>
       </div>
-      
-      <div class="border-t border-white/20 mt-10 pt-8 text-center">
-        <p class="text-white/70">&copy; 2025 RedDrop | Digital Blood Bank. All Rights Reserved.</p>
-        <p class="text-white/60 text-sm mt-2">Made with <i class="fas fa-heart text-red-300"></i> for Nepal</p>
-      </div>
+      <div class="border-t border-white/20 mt-10 pt-8 text-center"><p class="text-white/70">&copy; 2025 RedDrop | Digital Blood Bank. All Rights Reserved.</p><p class="text-white/60 text-sm mt-2">Made with <i class="fas fa-heart text-red-300"></i> for Nepal</p></div>
     </div>
   </footer>
 
-  <!-- Floating Donate Button -->
-  <a href="#donate" class="fixed bottom-8 right-8 w-16 h-16 bg-[#B91C1C] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all duration-300 z-40 animate-pulse-slow">
-    <i class="fas fa-tint text-2xl"></i>
-  </a>
+  <a href="#donate" class="fixed bottom-8 right-8 w-16 h-16 bg-[#B91C1C] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all duration-300 z-40 animate-pulse-slow"><i class="fas fa-tint text-2xl"></i></a>
 
   <script>
     const toggle = document.getElementById('menu-toggle');
     const menu = document.getElementById('mobile-menu');
-    toggle.addEventListener('click', () => menu.classList.toggle('hidden'));
+    if(toggle && menu) toggle.addEventListener('click', () => menu.classList.toggle('hidden'));
     
-    // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function (e) {
         e.preventDefault();
         const targetId = this.getAttribute('href');
         if(targetId === '#') return;
-        
         const targetElement = document.querySelector(targetId);
         if(targetElement) {
-          window.scrollTo({
-            top: targetElement.offsetTop - 80,
-            behavior: 'smooth'
-          });
-          
-          // Close mobile menu if open
-          if(!menu.classList.contains('hidden')) {
-            menu.classList.add('hidden');
-          }
+          window.scrollTo({ top: targetElement.offsetTop - 80, behavior: 'smooth' });
+          if(menu && !menu.classList.contains('hidden')) menu.classList.add('hidden');
         }
       });
     });
     
-    // Add scroll effect to navbar
     window.addEventListener('scroll', function() {
       const header = document.querySelector('header');
-      if (window.scrollY > 50) {
-        header.classList.add('shadow-xl');
-      } else {
-        header.classList.remove('shadow-xl');
-      }
-    });
-    document.addEventListener("keydown", (e)=>{
- if(e.ctrlKey && e.altKey && e.key === "a"){
-   openAdminModal();
- }
-});
-function openAdminModal(){
- document.getElementById("adminModal").classList.remove("hidden");
-}
-
-function closeAdminModal(){
- document.getElementById("adminModal").classList.add("hidden");
-}
-
-async function verifyAdminKey(){
- const key = document.getElementById("adminKey").value;
- const error = document.getElementById("adminError");
-
- const res = await fetch("http://127.0.0.1:8000/api/admin/secret-login/", {
-   method: "POST",
-   headers: { "Content-Type": "application/json" },
-   body: JSON.stringify({ secret_key: key })
- });
-
- const data = await res.json();
-
- if(data.success){
-   window.location.href = data.redirect;
- } else {
-   error.classList.remove("hidden");
-   error.innerText = data.message;
- }
-}
-
- let hospitalBuffer = "";
-  const hospitalKeyword = "hospital";
-
-  document.addEventListener("keydown", (e) => {
-    // Ignore typing inside input fields
-    if (
-      e.target.tagName === "INPUT" ||
-      e.target.tagName === "TEXTAREA"
-    ) return;
-
-    // Only capture normal characters
-    if (e.key.length === 1) {
-      hospitalBuffer += e.key.toLowerCase();
-
-      // Keep buffer length reasonable
-      if (hospitalBuffer.length > hospitalKeyword.length) {
-        hospitalBuffer = hospitalBuffer.slice(-hospitalKeyword.length);
-      }
-
-      // Match keyword
-      if (hospitalBuffer === hospitalKeyword) {
-        hospitalBuffer = "";
-        window.location.href = "hospital-login.html";
-      }
-    }
-  });
-  async function loadBloodRequests() {
-  try {
-
-    const response = await fetch(
-      "http://127.0.0.1:8000/blood_requests/api/public-requests/"
-    );
-
-    const data = await response.json();
-
-    const container = document.getElementById("bloodRequestContainer");
-    container.innerHTML = "";
-
-    if (!data.length) {
-      container.innerHTML =
-        "<p class='text-center col-span-3 text-gray-500'>No urgent requests right now.</p>";
-      return;
-    }
-
-    data.forEach(req => {
-
-      const card = `
-        <div class="bg-[#FFF5F5] rounded-3xl p-6 shadow-lg border-l-4 border-[#B91C1C]">
-
-          <div class="flex justify-between items-center mb-3">
-            <h4 class="text-xl font-bold text-gray-800">
-              ${req.patient_name}
-            </h4>
-
-            <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm">
-              ${req.blood_type}
-            </span>
-          </div>
-
-          <p class="text-gray-600 mb-2">
-            <strong>Units Needed:</strong> ${req.units}
-          </p>
-
-          <p class="text-gray-600 mb-2">
-            <strong>Hospital:</strong> ${req.hospital_name}
-          </p>
-
-          <p class="text-gray-600 mb-4">
-            <strong>Urgency:</strong> ${req.urgency}
-          </p>
-
-          <a href="login-signup.html"
-             class="block text-center bg-[#B91C1C] text-white py-2 rounded-lg hover:bg-[#991B1B] transition">
-            Donate Now
-          </a>
-
-        </div>
-      `;
-
-      container.innerHTML += card;
-
+      if (window.scrollY > 50) header.classList.add('shadow-xl');
+      else header.classList.remove('shadow-xl');
     });
 
-  } catch (error) {
-    console.error("Failed to load requests", error);
-  }
-}
+    // Function to fetch donors from API
+    async function fetchDonorsFromAPI() {
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/donor/approved-donors-basic/");
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error("Failed to fetch donors:", error);
+            return [];
+        }
+    }
 
-loadBloodRequests();
-  </script>
-<div id="adminModal"
-class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[999]">
-  <div class="bg-white w-96 p-6 rounded-2xl shadow-xl text-center">
+    // Function to render donors
+    async function renderDonors() {
+        const container = document.getElementById("donorListContainer");
+        if (!container) return;
+        
+        container.innerHTML = `<div class="col-span-3 text-center text-gray-500 py-10"><i class="fas fa-spinner fa-pulse text-3xl text-[#B91C1C]"></i><p class="mt-2">Loading our amazing donors...</p></div>`;
+        
+        const donors = await fetchDonorsFromAPI();
+        
+        if (!donors.length) {
+            container.innerHTML = `<div class="col-span-3 text-center text-gray-500 py-10"><i class="fas fa-users-slash text-4xl text-[#B91C1C] opacity-50"></i><p class="mt-2">No approved donors yet. Be the first to join!</p></div>`;
+            return;
+        }
+        
+        container.innerHTML = "";
+        
+        donors.forEach((donor, index) => {
+            const initials = donor.name ? donor.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : "??";
+            const donationCount = Math.floor(Math.random() * 15) + 1;
+            const dates = ["Active Donor", "Donated this month", "Regular donor", "Lifetime member", "Hero donor"];
+            const randomDate = dates[Math.floor(Math.random() * dates.length)];
+            
+            const card = document.createElement("div");
+            card.className = "bg-[#FFF5F5] rounded-2xl p-6 shadow-lg border border-[#FEE2E2] transition-all hover:shadow-xl hover:-translate-y-1 animate-fade-in";
+            card.style.animationDelay = `${index * 0.1}s`;
+            
+            card.innerHTML = `
+                <div class="flex items-center space-x-4 mb-4">
+                    <div class="w-16 h-16 donor-avatar rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">${initials}</div>
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-800">${escapeHtml(donor.name || "Anonymous Donor")}</h4>
+                        <div class="flex items-center space-x-2 text-sm text-gray-500">
+                            <i class="fas fa-map-marker-alt text-[#B91C1C]"></i>
+                            <span>${escapeHtml(donor.city || donor.address || "Location not specified")}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-white rounded-xl p-2 text-center shadow-sm">
+                        <span class="text-xs text-gray-500">Blood Type</span>
+                        <p class="font-bold text-lg text-[#B91C1C]">${donor.blood_type || "Not specified"}</p>
+                    </div>
+                    <div class="bg-white rounded-xl p-2 text-center shadow-sm">
+                        <span class="text-xs text-gray-500">Donations</span>
+                        <p class="font-bold text-lg text-gray-700">${donationCount}</p>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t border-[#FEE2E2]">
+                    <span class="text-xs text-gray-400"><i class="far fa-calendar-alt mr-1"></i>${randomDate}</span>
+                    <span class="bg-[#FEE2E2] text-[#B91C1C] text-xs px-3 py-1 rounded-full font-semibold">${donationCount > 10 ? "Hero" : "Donor"}</span>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function escapeHtml(text) {
+        if (!text) return "";
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Camp Registration Functions
+    function openCampRegistrationModal() {
+        document.getElementById('campModal').classList.remove('hidden');
+        document.getElementById('campModal').style.display = 'flex';
+    }
+
+    function closeCampModal() {
+        document.getElementById('campModal').classList.add('hidden');
+        document.getElementById('campModal').style.display = 'none';
+        document.getElementById('campRegistrationForm').reset();
+        document.getElementById('campFormMessage').classList.add('hidden');
+    }
+
+    // Submit camp registration
+    document.getElementById('campRegistrationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = {
+            title: document.getElementById('campTitle').value,
+            description: document.getElementById('campDescription').value,
+            hospital_name: document.getElementById('campHospital').value,
+            location: document.getElementById('campLocation').value,
+            date: document.getElementById('campDate').value,
+            start_time: document.getElementById('campStartTime').value,
+            end_time: document.getElementById('campEndTime').value,
+            is_urgent: document.getElementById('campUrgent').checked,
+            contact_number: document.getElementById('campContact').value,
+            map_link: document.getElementById('campMapLink').value
+        };
+        
+        const messageDiv = document.getElementById('campFormMessage');
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Submitting...';
+        
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/admin/partner/create-camp/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                messageDiv.className = 'p-3 rounded-lg text-sm bg-green-100 text-green-700';
+                messageDiv.innerHTML = '<i class="fas fa-check-circle mr-2"></i> ' + data.message;
+                messageDiv.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    closeCampModal();
+                }, 2000);
+            } else {
+                messageDiv.className = 'p-3 rounded-lg text-sm bg-red-100 text-red-700';
+                messageDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i> ' + (data.message || 'Submission failed. Please try again.');
+                messageDiv.classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Error submitting camp:', error);
+            messageDiv.className = 'p-3 rounded-lg text-sm bg-red-100 text-red-700';
+            messageDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i> Network error. Please check your connection and try again.';
+            messageDiv.classList.remove('hidden');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    });
+
+    // Load blood requests
+    async function loadBloodRequests() {
+      try {
+        const response = await fetch("http://127.0.0.1:8000/blood_requests/api/public-requests/");
+        const data = await response.json();
+        const container = document.getElementById("bloodRequestContainer");
+        if(!container) return;
+        container.innerHTML = "";
+        if (!data.length) {
+          container.innerHTML = "<p class='text-center col-span-3 text-gray-500'>No urgent requests right now.</p>";
+          return;
+        }
+        data.forEach(req => {
+          const urgencyClass = req.urgency === "Critical" ? "urgent-badge" : "";
+          const card = `<div class="bg-[#FFF5F5] rounded-3xl p-6 shadow-lg border-l-4 border-[#B91C1C]"><div class="flex justify-between items-center mb-3"><h4 class="text-xl font-bold text-gray-800">${req.patient_name}</h4><span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm ${urgencyClass}">${req.blood_type}</span></div><p class="text-gray-600 mb-2"><strong>Units Needed:</strong> ${req.units}</p><p class="text-gray-600 mb-2"><strong>Hospital:</strong> ${req.hospital_name}</p><p class="text-gray-600 mb-4"><strong>Urgency:</strong> ${req.urgency}</p><a href="login-signup.html" class="block text-center bg-[#B91C1C] text-white py-2 rounded-lg hover:bg-[#991B1B] transition">Donate Now</a></div>`;
+          container.innerHTML += card;
+        });
+      } catch (error) {
+        console.error("Failed to load requests", error);
+        const container = document.getElementById("bloodRequestContainer");
+        if(container) container.innerHTML = "<p class='text-center col-span-3 text-gray-500'>Unable to load urgent requests. Please try again later.</p>";
+      }
+    }
+
+    // Admin modal functions
+    function openAdminModal(){ document.getElementById("adminModal")?.classList.remove("hidden"); }
+    function closeAdminModal(){ document.getElementById("adminModal")?.classList.add("hidden"); }
+    async function verifyAdminKey(){
+      const key = document.getElementById("adminKey")?.value;
+      const error = document.getElementById("adminError");
+      if(!key) return;
+      const res = await fetch("http://127.0.0.1:8000/api/admin/secret-login/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ secret_key: key }) });
+      const data = await res.json();
+      if(data.success) window.location.href = data.redirect;
+      else if(error) { error.classList.remove("hidden"); error.innerText = data.message; }
+    }
+    document.addEventListener("keydown", (e)=>{ if(e.ctrlKey && e.altKey && e.key === "a") openAdminModal(); });
     
-    <h2 class="text-2xl font-bold text-[#B91C1C] mb-3">
-      Admin Access
-    </h2>
-
-    <p class="text-gray-600 mb-4">
-      Enter Secret Key to Continue
-    </p>
-
-    <input id="adminKey"
-      type="password"
-      placeholder="Enter Secret Key"
-      class="w-full border rounded px-3 py-2 mb-4 outline-none focus:ring focus:ring-red-300">
-
-    <p id="adminError" class="text-red-600 text-sm mb-2 hidden">
-      Invalid Secret Key
-    </p>
-
-    <div class="flex justify-end gap-3">
-      <button onclick="closeAdminModal()"
-        class="px-4 py-2 border rounded">
-        Cancel
-      </button>
-
-      <button onclick="verifyAdminKey()"
-        class="px-4 py-2 bg-[#B91C1C] text-white rounded">
-        Enter
-      </button>
+    let hospitalBuffer = "";
+    document.addEventListener("keydown", (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if (e.key.length === 1) { hospitalBuffer += e.key.toLowerCase(); if (hospitalBuffer.length > 8) hospitalBuffer = hospitalBuffer.slice(-8); if (hospitalBuffer === "hospital") { hospitalBuffer = ""; window.location.href = "hospital-login.html"; } }
+    });
+    
+    renderDonors();
+    loadBloodRequests();
+  </script>
+  
+  <div id="adminModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[999]">
+    <div class="bg-white w-96 p-6 rounded-2xl shadow-xl text-center">
+      <h2 class="text-2xl font-bold text-[#B91C1C] mb-3">Admin Access</h2>
+      <p class="text-gray-600 mb-4">Enter Secret Key to Continue</p>
+      <input id="adminKey" type="password" placeholder="Enter Secret Key" class="w-full border rounded px-3 py-2 mb-4 outline-none focus:ring focus:ring-red-300">
+      <p id="adminError" class="text-red-600 text-sm mb-2 hidden">Invalid Secret Key</p>
+      <div class="flex justify-end gap-3">
+        <button onclick="closeAdminModal()" class="px-4 py-2 border rounded">Cancel</button>
+        <button onclick="verifyAdminKey()" class="px-4 py-2 bg-[#B91C1C] text-white rounded">Enter</button>
+      </div>
     </div>
   </div>
-</div>
-
 </body>
 </html>

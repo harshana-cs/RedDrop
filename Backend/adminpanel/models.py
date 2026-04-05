@@ -27,6 +27,7 @@ class Notification(models.Model):
 
     TYPE_CHOICES = [
         ("blood_request", "Blood Request"),
+        ("blood_request_approved_by_admin", "Blood Request Approved by Admin"),
         ("donor_registration", "Donor Registration"),
         ("hospital_registration", "Hospital Registration"),
         ("blood_request_approved", "Blood Request Approved"),

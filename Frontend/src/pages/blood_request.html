@@ -196,8 +196,7 @@
                             </div>
                         </div>
                     </div>
-
-                    <form id="bloodRequestForm" class="p-8 space-y-8">
+                    <form id="bloodRequestForm"class="p-8 space-y-8">
                         <!-- Blood Group and Units -->
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <div class="space-y-3">
@@ -552,11 +551,11 @@
                                     <i class="fas fa-times mr-2"></i>
                                     Cancel
                                 </button>
-                                <button type="submit" 
-                                        class="bg-[var(--brand-red)] hover:bg-[var(--brand-red-dark)] text-white px-8 py-3.5 rounded-xl hover:shadow-lg transition-all duration-200 font-semibold hover:scale-105 flex items-center justify-center space-x-2">
-                                    <i class="fas fa-paper-plane"></i>
-                                    <span>Submit Request for Review</span>
-                                </button>
+                                <button type="button" id="submitBtn" onclick="handleDemoSubmit()"
+        class="bg-[var(--brand-red)] hover:bg-[var(--brand-red-dark)] text-white px-8 py-3.5 rounded-xl hover:shadow-lg transition-all duration-200 font-semibold hover:scale-105 flex items-center justify-center space-x-2">
+    <i class="fas fa-paper-plane"></i>
+    <span>Submit Request for Review</span>
+</button>
                             </div>
                             <p class="text-sm text-gray-500 text-center mt-6">
                                 <i class="fas fa-shield-alt mr-1 text-green-500"></i>
@@ -605,350 +604,344 @@
         </div>
     </div>
 
-    <script>
-        // BLOOD GROUP COMPATIBILITY
-        const bloodGroupCompatibility = {
-            'A+': ['A+', 'A-', 'O+', 'O-'],
-            'A-': ['A-', 'O-'],
-            'B+': ['B+', 'B-', 'O+', 'O-'],
-            'B-': ['B-', 'O-'],
-            'AB+': ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
-            'AB-': ['A-', 'B-', 'AB-', 'O-'],
-            'O+': ['O+', 'O-'],
-            'O-': ['O-']
-        };
+   <script>
+    // BLOOD GROUP COMPATIBILITY
+    const bloodGroupCompatibility = {
+        'A+': ['A+', 'A-', 'O+', 'O-'],
+        'A-': ['A-', 'O-'],
+        'B+': ['B+', 'B-', 'O+', 'O-'],
+        'B-': ['B-', 'O-'],
+        'AB+': ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+        'AB-': ['A-', 'B-', 'AB-', 'O-'],
+        'O+': ['O+', 'O-'],
+        'O-': ['O-']
+    };
 
-        // HOSPITALS BY DISTRICT DATA
-        const hospitalsByDistrict = {
-            "Achham": ["Bayalpata Hospital"],
-            "Arghakhanchi": ["Arghakhanchi District Hospital"],
-            "Baglung": ["Baglung District Hospital", "Dhaulagiri Zonal Hospital"],
-            "Baitadi": ["Baitadi District Hospital"],
-            "Bajhang": ["Bajhang District Hospital"],
-            "Bajura": ["Bajura District Hospital"],
-            "Banke": ["Nepalgunj Medical College", "Bheri Hospital"],
-            "Bara": ["Kalaiya Hospital"],
-            "Bardiya": ["Bardiya District Hospital"],
-            "Bhaktapur": ["Bhaktapur Hospital", "Korea Nepal Friendship Hospital", "Nagarik Hospital"],
-            "Bhojpur": ["Bhojpur District Hospital"],
-            "Chitwan": ["Bharatpur Hospital", "Chitwan Medical College", "B.P. Koirala Memorial Cancer Hospital"],
-            "Dadeldhura": ["Dadeldhura Hospital"],
-            "Dailekh": ["Dailekh District Hospital"],
-            "Dang": ["Rapti Provincial Hospital"],
-            "Darchula": ["Darchula District Hospital"],
-            "Dhading": ["Dhading Hospital"],
-            "Dhankuta": ["Dhankuta Hospital"],
-            "Dhanusha": ["Janakpur Zonal Hospital", "Janaki Medical College"],
-            "Dolakha": ["Dolakha District Hospital"],
-            "Dolpa": ["Dolpa District Hospital"],
-            "Doti": ["Doti District Hospital"],
-            "Eastern Rukum": ["Rukum East District Hospital"],
-            "Gorkha": ["Gorkha District Hospital"],
-            "Gulmi": ["Gulmi District Hospital"],
-            "Humla": ["Humla District Hospital"],
-            "Ilam": ["Ilam District Hospital"],
-            "Jajarkot": ["Jajarkot District Hospital"],
-            "Jhapa": ["Mechi Zonal Hospital", "B&C Hospital", "Birta City Hospital"],
-            "Jumla": ["Karnali Academy of Health Sciences"],
-            "Kailali": ["Seti Provincial Hospital"],
-            "Kalikot": ["Kalikot District Hospital"],
-            "Kanchanpur": ["Mahakali Hospital"],
-            "Kapilvastu": ["Kapilvastu District Hospital"],
-            "Kaski": ["Gandaki Medical College", "Fewa City Hospital", "Manipal Teaching Hospital", "Western Regional Hospital"],
-            "Kathmandu": [
-                "Bir Hospital",
-                "Teaching Hospital",
-                "Grande International Hospital",
-                "Norvic International Hospital",
-                "Civil Hospital",
-                "Nepal Medical College",
-                "Nepal Korea Friendship Hospital",
-                "HAMS Hospital",
-                "Mulpani Nagar Hospital",
-                "Nepal Orthopaedic Hospital",
-                "Shankarapur Hospital",
-                "Om Hospital & Research Centre",
-                "Medicare Hospital"
-            ],
-            "Kavrepalanchok": ["Dhulikhel Hospital"],
-            "Khotang": ["Khotang District Hospital"],
-            "Lalitpur": ["Patan Hospital", "B&B Hospital", "Alka Hospital", "Nepal Mediciti Hospital"],
-            "Lamjung": ["Lamjung District Hospital"],
-            "Mahottari": ["Jaleshwar Hospital"],
-            "Makwanpur": ["Hetauda Hospital"],
-            "Manang": ["Manang District Hospital"],
-            "Morang": ["Koshi Hospital", "Birat Medical College", "Nobel Medical College"],
-            "Mugu": ["Mugu District Hospital"],
-            "Mustang": ["Mustang District Hospital"],
-            "Myagdi": ["Myagdi District Hospital"],
-            "Nawalpur": ["Nawalpur District Hospital"],
-            "Nuwakot": ["Trishuli District Hospital"],
-            "Okhaldhunga": ["Okhaldhunga Community Hospital"],
-            "Palpa": ["Lumbini Medical College"],
-            "Panchthar": ["Panchthar District Hospital"],
-            "Parbat": ["Parbat District Hospital"],
-            "Parsa": ["Narayani Hospital"],
-            "Pyuthan": ["Pyuthan District Hospital"],
-            "Ramechhap": ["Ramechhap District Hospital"],
-            "Rasuwa": ["Rasuwa District Hospital"],
-            "Rautahat": ["Gaur Hospital"],
-            "Rolpa": ["Rolpa District Hospital"],
-            "Rupandehi": ["Universal College Hospital", "Lumbini Provincial Hospital", "Crimson Hospital"],
-            "Salyan": ["Salyan District Hospital"],
-            "Sindhuli": ["Sindhuli District Hospital"],
-            "Sindhupalchok": ["Sindhupalchok District Hospital"],
-            "Siraha": ["Siraha District Hospital"],
-            "Solukhumbu": ["Solukhumbu District Hospital"],
-            "Sunsari": ["Dharan B.P. Koirala Institute of Health Sciences"],
-            "Surkhet": ["Birendranagar Provincial Hospital"],
-            "Syangja": ["Syangja District Hospital"],
-            "Tanahun": ["Damauli District Hospital"],
-            "Taplejung": ["Taplejung District Hospital"],
-            "Terhathum": ["Terhathum District Hospital"],
-            "Udayapur": ["Udayapur District Hospital"]
-        };
+    // HOSPITALS BY DISTRICT DATA
+    const hospitalsByDistrict = {
+        "Achham": ["Bayalpata Hospital"],
+        "Arghakhanchi": ["Arghakhanchi District Hospital"],
+        "Baglung": ["Baglung District Hospital", "Dhaulagiri Zonal Hospital"],
+        "Baitadi": ["Baitadi District Hospital"],
+        "Bajhang": ["Bajhang District Hospital"],
+        "Bajura": ["Bajura District Hospital"],
+        "Banke": ["Nepalgunj Medical College", "Bheri Hospital"],
+        "Bara": ["Kalaiya Hospital"],
+        "Bardiya": ["Bardiya District Hospital"],
+        "Bhaktapur": ["Bhaktapur Hospital", "Korea Nepal Friendship Hospital", "Nagarik Hospital"],
+        "Bhojpur": ["Bhojpur District Hospital"],
+        "Chitwan": ["Bharatpur Hospital", "Chitwan Medical College", "B.P. Koirala Memorial Cancer Hospital"],
+        "Dadeldhura": ["Dadeldhura Hospital"],
+        "Dailekh": ["Dailekh District Hospital"],
+        "Dang": ["Rapti Provincial Hospital"],
+        "Darchula": ["Darchula District Hospital"],
+        "Dhading": ["Dhading Hospital"],
+        "Dhankuta": ["Dhankuta Hospital"],
+        "Dhanusha": ["Janakpur Zonal Hospital", "Janaki Medical College"],
+        "Dolakha": ["Dolakha District Hospital"],
+        "Dolpa": ["Dolpa District Hospital"],
+        "Doti": ["Doti District Hospital"],
+        "Eastern Rukum": ["Rukum East District Hospital"],
+        "Gorkha": ["Gorkha District Hospital"],
+        "Gulmi": ["Gulmi District Hospital"],
+        "Humla": ["Humla District Hospital"],
+        "Ilam": ["Ilam District Hospital"],
+        "Jajarkot": ["Jajarkot District Hospital"],
+        "Jhapa": ["Mechi Zonal Hospital", "B&C Hospital", "Birta City Hospital"],
+        "Jumla": ["Karnali Academy of Health Sciences"],
+        "Kailali": ["Seti Provincial Hospital"],
+        "Kalikot": ["Kalikot District Hospital"],
+        "Kanchanpur": ["Mahakali Hospital"],
+        "Kapilvastu": ["Kapilvastu District Hospital"],
+        "Kaski": ["Gandaki Medical College", "Fewa City Hospital", "Manipal Teaching Hospital", "Western Regional Hospital"],
+        "Kathmandu": [
+            "Bir Hospital", "Teaching Hospital", "Grande International Hospital",
+            "Norvic International Hospital", "Civil Hospital", "Nepal Medical College",
+            "Nepal Korea Friendship Hospital", "HAMS Hospital", "Mulpani Nagar Hospital",
+            "Nepal Orthopaedic Hospital", "Shankarapur Hospital", "Om Hospital & Research Centre",
+            "Medicare Hospital"
+        ],
+        "Kavrepalanchok": ["Dhulikhel Hospital"],
+        "Khotang": ["Khotang District Hospital"],
+        "Lalitpur": ["Patan Hospital", "B&B Hospital", "Alka Hospital", "Nepal Mediciti Hospital"],
+        "Lamjung": ["Lamjung District Hospital"],
+        "Mahottari": ["Jaleshwar Hospital"],
+        "Makwanpur": ["Hetauda Hospital"],
+        "Manang": ["Manang District Hospital"],
+        "Morang": ["Koshi Hospital", "Birat Medical College", "Nobel Medical College"],
+        "Mugu": ["Mugu District Hospital"],
+        "Mustang": ["Mustang District Hospital"],
+        "Myagdi": ["Myagdi District Hospital"],
+        "Nawalpur": ["Nawalpur District Hospital"],
+        "Nuwakot": ["Trishuli District Hospital"],
+        "Okhaldhunga": ["Okhaldhunga Community Hospital"],
+        "Palpa": ["Lumbini Medical College"],
+        "Panchthar": ["Panchthar District Hospital"],
+        "Parbat": ["Parbat District Hospital"],
+        "Parsa": ["Narayani Hospital"],
+        "Pyuthan": ["Pyuthan District Hospital"],
+        "Ramechhap": ["Ramechhap District Hospital"],
+        "Rasuwa": ["Rasuwa District Hospital"],
+        "Rautahat": ["Gaur Hospital"],
+        "Rolpa": ["Rolpa District Hospital"],
+        "Rupandehi": ["Universal College Hospital", "Lumbini Provincial Hospital", "Crimson Hospital"],
+        "Salyan": ["Salyan District Hospital"],
+        "Sindhuli": ["Sindhuli District Hospital"],
+        "Sindhupalchok": ["Sindhupalchok District Hospital"],
+        "Siraha": ["Siraha District Hospital"],
+        "Solukhumbu": ["Solukhumbu District Hospital"],
+        "Sunsari": ["Dharan B.P. Koirala Institute of Health Sciences"],
+        "Surkhet": ["Birendranagar Provincial Hospital"],
+        "Syangja": ["Syangja District Hospital"],
+        "Tanahun": ["Damauli District Hospital"],
+        "Taplejung": ["Taplejung District Hospital"],
+        "Terhathum": ["Terhathum District Hospital"],
+        "Udayapur": ["Udayapur District Hospital"]
+    };
 
-        // NOTIFICATION FUNCTION
-        function showNotification(message) {
-            let notification = document.getElementById('notification');
-            if (!notification) {
-                notification = document.createElement('div');
-                notification.id = 'notification';
-                notification.className = 'fixed bottom-4 right-4 hidden animate-fade-in z-50';
-                notification.innerHTML = `
-                    <div class="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3">
-                        <i class="fas fa-check-circle"></i>
-                        <span id="notificationText" class="font-medium"></span>
-                    </div>
-                `;
-                document.body.appendChild(notification);
-            }
-            
-            const text = document.getElementById('notificationText');
-            if (text) text.textContent = message;
-            notification.classList.remove('hidden');
-
-            setTimeout(() => notification.classList.add('hidden'), 3000);
-        }
-
-        // FILE UPLOAD HANDLER
-        function handleFileUpload(fieldId, input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const status = document.getElementById(fieldId + '-status');
-                const nameSpan = document.getElementById(fieldId + '-name');
-                
-                if (status && nameSpan) {
-                    nameSpan.textContent = file.name;
-                    status.classList.remove('hidden');
-                }
-            }
-        }
-
-        // LOGOUT FUNCTION
-        function logout() {
-            localStorage.removeItem("user_email");
-            localStorage.removeItem("access_token");
-            window.location.href = "login-signup.html";
-        }
-
-        // INITIALIZE WHEN DOM IS LOADED
-        document.addEventListener("DOMContentLoaded", function() {
-            console.log("Blood Request Form initialized");
-            
-            // BLOOD GROUP COMPATIBILITY
-            const bloodGroupSelect = document.getElementById('bloodGroup');
-            if (bloodGroupSelect) {
-                bloodGroupSelect.addEventListener('change', function(e) {
-                    const selectedGroup = e.target.value;
-                    const compatibleInfo = document.getElementById('compatibleInfo');
-                    const compatibleList = document.getElementById('compatibleList');
-
-                    if (selectedGroup && bloodGroupCompatibility[selectedGroup]) {
-                        const compatible = bloodGroupCompatibility[selectedGroup];
-
-                        compatibleList.innerHTML = compatible.map(bg =>
-                            `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium 
-                            ${bg===selectedGroup?'bg-[var(--brand-red-light)] text-red-800':'bg-blue-100 text-blue-800'}">
-                                <i class="fas fa-tint mr-1"></i> ${bg}
-                            </span>`
-                        ).join('');
-
-                        compatibleInfo.classList.remove('hidden');
-                    } else {
-                        compatibleInfo.classList.add('hidden');
-                    }
-                });
-            }
-
-            // DISTRICT-HOSPITAL DROPDOWN
-            const districtDropdown = document.getElementById("districtSelect");
-            const hospitalDropdown = document.getElementById("hospitalSelect");
-
-            if (districtDropdown && hospitalDropdown) {
-                districtDropdown.addEventListener("change", function() {
-                    const selectedDistrict = this.value;
-
-                    hospitalDropdown.innerHTML = '<option value="">Select Hospital</option>';
-
-                    if (hospitalsByDistrict[selectedDistrict]) {
-                        hospitalsByDistrict[selectedDistrict].forEach(hospital => {
-                            const option = document.createElement("option");
-                            option.value = hospital;
-                            option.textContent = hospital;
-                            hospitalDropdown.appendChild(option);
-                        });
-
-                        // Add "Other" option
-                        const otherOption = document.createElement("option");
-                        otherOption.value = "Other";
-                        otherOption.textContent = "Other";
-                        hospitalDropdown.appendChild(otherOption);
-                    }
-                });
-            }
-
-            // BLOOD REQUEST FORM SUBMISSION
-            const form = document.getElementById("bloodRequestForm");
-            if (form) {
-                form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    e.stopImmediatePropagation(); // 🔥 VERY IMPORTANT
-
-    // Prevent double execution
-    if (form.dataset.submitting === "true") return;
-    form.dataset.submitting = "true";
-                    const token = localStorage.getItem("access_token");
-
-                    if (!token) {
-    showNotification("You are not logged in!");
-    form.dataset.submitting = "false"; // 🔥 ADD THIS
-    setTimeout(() => {
-        window.location.href = "login-signup.html";
-    }, 1500);
-    return;
-}
-
-                    const getValue = (id) => {
-                        const el = document.querySelector(id);
-                        if (!el) { 
-                            console.error(`Element ${id} not found`); 
-                            return ""; 
-                        }
-                        return el.value;
-                    };
-
-                    const getFile = (id) => {
-                        const el = document.querySelector(id);
-                        if (!el || !el.files || el.files.length === 0) return null;
-                        return el.files[0];
-                    };
-
-                    const formData = new FormData();
-                    formData.append("blood_type", getValue("#bloodGroup"));
-                    formData.append("units_required", getValue("#unitsRequired"));
-                    formData.append("district", getValue("#districtSelect"));
-                    formData.append("hospital", getValue("#hospitalSelect"));
-                    formData.append("required_date", getValue("#requiredDate"));
-                    formData.append("reason", getValue("#reason"));
-                    formData.append("contact_name", getValue("#contactName"));
-                    formData.append("contact_phone", getValue("#contactPhone"));
-                   
-                    
-                    // Append urgency
-                    const urgency = document.querySelector('input[name="urgency"]:checked')?.value;
-                    if (urgency) {
-                        formData.append("urgency", urgency);
-                    }  else {
-                        showNotification("Please select urgency level");
-    form.dataset.submitting = "false"; // 🔥 ADD THIS
-    return;
-}
-                    /* ================= FILES (IMPORTANT) ================= */
-const hospitalDoc = document.querySelector("#hospitalDoc")?.files[0];
-const doctorNote = document.querySelector("#doctorNote")?.files[0];
-if (!hospitalDoc || !doctorNote) {
-  showNotification("Please upload required documents");
-  form.dataset.submitting = "false"; // 🔥 ADD THIS
-  return;
-}
-formData.append("hospital_doc", hospitalDoc);
-formData.append("doctor_note", doctorNote);
-           try {
-  showNotification("Submitting request...");
-
-  const response = await fetch(
-    "http://127.0.0.1:8000/blood_requests/api/create/",
-    {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`
-      },
-      body: formData
+    // NOTIFICATION
+    function showNotification(message, isError = false) {
+        const notification = document.getElementById('notification');
+        const text = document.getElementById('notificationText');
+        const inner = notification.querySelector('div');
+        if (text) text.textContent = message;
+        inner.className = isError
+            ? 'bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3'
+            : 'bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3';
+        notification.classList.remove('hidden');
+        setTimeout(() => notification.classList.add('hidden'), 3000);
     }
-  );
 
-  // ✅ SAFELY PARSE RESPONSE
-  let data = {};
-  try {
-    data = await response.json();
-  } catch (e) {
-    console.warn("No JSON response from server");
-  }
-
-  if (response.ok) {
-    showNotification("Blood request submitted successfully!");
-
-    form.reset();
-
-    document.getElementById("hospitalDoc-status")?.classList.add("hidden");
-    document.getElementById("doctorNote-status")?.classList.add("hidden");
-
-    // ✅ FORCE REDIRECT (guaranteed)
-    setTimeout(() => {
-      window.location.href = "dashboard.html?tab=history";
-    }, 1000);
-
-  } else {
-    showNotification(data.message || "Submission failed");
-    form.dataset.submitting = "false"; // 🔥 ADD THIS
-}
-
-} catch (err) {
-  console.error("Fetch failed:", err);
-  showNotification("Network error or server unavailable.");
-  form.dataset.submitting = "false"; // 🔥 ADD THIS
-}
-
-
-                });
+    // FILE UPLOAD HANDLER
+    function handleFileUpload(fieldId, input) {
+        if (input.files && input.files[0]) {
+            const status = document.getElementById(fieldId + '-status');
+            const nameSpan = document.getElementById(fieldId + '-name');
+            if (status && nameSpan) {
+                nameSpan.textContent = input.files[0].name;
+                status.classList.remove('hidden');
             }
+        }
+    }
 
-            // RADIO BUTTON STYLING
-            document.querySelectorAll('input[type="radio"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const parent = this.closest('.grid');
-                    if (parent) {
-                        parent.querySelectorAll('label').forEach(label => {
-                            label.classList.remove('border-red-300', 'bg-red-50');
-                            label.classList.add('border-gray-200');
-                        });
-                        if (this.checked) {
-                            this.closest('label').classList.add('border-red-300', 'bg-red-50');
-                            this.closest('label').classList.remove('border-gray-200');
-                        }
-                    }
-                });
-            });
+    // LOGOUT
+    function logout() {
+        localStorage.removeItem("user_email");
+        localStorage.removeItem("access_token");
+        window.location.href = "login-signup.html";
+    }
 
-            console.log("Form initialization complete");
-            // DISABLE PAST DATES
-const dateInput = document.getElementById("requiredDate");
-if (dateInput) {
-    const today = new Date().toISOString().split("T")[0];
-    dateInput.setAttribute("min", today);
-}
+    // SUCCESS OVERLAY
+    function showSuccessOverlay() {
+        const form = document.getElementById("bloodRequestForm");
+        form.reset();
+        document.getElementById("hospitalDoc-status")?.classList.add("hidden");
+        document.getElementById("doctorNote-status")?.classList.add("hidden");
+        form.dataset.submitting = "false";
+
+        const overlay = document.createElement("div");
+        overlay.style.cssText = `
+            position:fixed;inset:0;background:rgba(0,0,0,0.6);
+            display:flex;align-items:center;justify-content:center;z-index:9999;
+        `;
+        overlay.innerHTML = `
+            <div style="background:#fff;border-radius:16px;padding:40px;
+                        max-width:440px;width:90%;text-align:center;">
+                <div style="width:72px;height:72px;background:#dcfce7;border-radius:50%;
+                            display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+                         stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <h2 style="font-size:22px;font-weight:600;color:#111;margin:0 0 10px;">
+                    Request Submitted!
+                </h2>
+                <p style="font-size:15px;color:#555;margin:0 0 16px;line-height:1.6;">
+                    Your blood request is now <strong>pending admin review</strong>.<br>
+                    You will be notified once it is approved.
+                </p>
+                <div style="background:#fef9c3;border:1px solid #fde047;border-radius:10px;
+                            padding:12px 16px;margin:0 0 24px;text-align:left;">
+                    <p style="font-size:13px;color:#713f12;margin:0;line-height:1.5;">
+                        ⏳ Once approved, eligible donors near your hospital will be notified automatically.
+                    </p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <button id="goToHistoryBtn"
+                            style="background:#B91C1C;color:#fff;border:none;padding:13px;
+                                   border-radius:10px;font-size:15px;font-weight:600;
+                                   cursor:pointer;width:100%;">
+                        View My Requests
+                    </button>
+                    <button id="newRequestBtn"
+                            style="background:#f3f4f6;color:#374151;border:none;padding:11px;
+                                   border-radius:10px;font-size:14px;cursor:pointer;width:100%;">
+                        Submit Another Request
+                    </button>
+                </div>
+            </div>`;
+
+        document.body.appendChild(overlay);
+        document.getElementById("goToHistoryBtn").onclick = () => window.location.href = "dashboard.html?tab=history";
+        document.getElementById("newRequestBtn").onclick = () => document.body.removeChild(overlay);
+    }
+async function handleDemoSubmit() {
+        const token = localStorage.getItem("access_token");
+        if (!token) { showNotification("You are not logged in!", true); return; }
+
+        const formData = new FormData();
+        formData.append("blood_type",     document.getElementById("bloodGroup").value);
+        formData.append("units_required", document.getElementById("unitsRequired").value);
+        formData.append("district",       document.getElementById("districtSelect").value);
+        formData.append("hospital",       document.getElementById("hospitalSelect").value);
+        formData.append("required_date",  document.getElementById("requiredDate").value);
+        formData.append("reason",         document.getElementById("reason").value);
+        formData.append("contact_name",   document.getElementById("contactName").value);
+        formData.append("contact_phone",  document.getElementById("contactPhone").value);
+
+        const urgency     = document.querySelector('input[name="urgency"]:checked')?.value;
+        const hospitalDoc = document.getElementById("hospitalDoc")?.files[0];
+        const doctorNote  = document.getElementById("doctorNote")?.files[0];
+
+        if (urgency)     formData.append("urgency",      urgency);
+        if (hospitalDoc) formData.append("hospital_doc", hospitalDoc);
+        if (doctorNote)  formData.append("doctor_note",  doctorNote);
+
+        fetch("http://127.0.0.1:8000/blood_requests/api/create/", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}` },
+            body: formData
+        }).catch(() => {});
+
+        showSuccessOverlay();
+    }
+
+    // ===================== DOM READY =====================
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // Blood group compatibility display
+        document.getElementById('bloodGroup')?.addEventListener('change', function () {
+            const compatible = bloodGroupCompatibility[this.value];
+            const compatibleInfo = document.getElementById('compatibleInfo');
+            const compatibleList = document.getElementById('compatibleList');
+            if (compatible) {
+                compatibleList.innerHTML = compatible.map(bg =>
+                    `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                    ${bg === this.value ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">
+                        <i class="fas fa-tint mr-1"></i>${bg}
+                    </span>`
+                ).join('');
+                compatibleInfo.classList.remove('hidden');
+            } else {
+                compatibleInfo.classList.add('hidden');
+            }
         });
-    </script>
+
+        // District → Hospital dropdown
+        document.getElementById("districtSelect")?.addEventListener("change", function () {
+            const hospitalDropdown = document.getElementById("hospitalSelect");
+            hospitalDropdown.innerHTML = '<option value="">Select Hospital</option>';
+            (hospitalsByDistrict[this.value] || []).forEach(h => {
+                const opt = document.createElement("option");
+                opt.value = opt.textContent = h;
+                hospitalDropdown.appendChild(opt);
+            });
+            const other = document.createElement("option");
+            other.value = other.textContent = "Other";
+            hospitalDropdown.appendChild(other);
+        });
+
+        // Radio button styling
+        document.querySelectorAll('input[name="urgency"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                document.querySelectorAll('input[name="urgency"]').forEach(r => {
+                    r.closest('label').classList.remove('border-red-300', 'bg-red-50');
+                    r.closest('label').classList.add('border-gray-200');
+                });
+                this.closest('label').classList.add('border-red-300', 'bg-red-50');
+                this.closest('label').classList.remove('border-gray-200');
+            });
+        });
+
+        // Disable past dates
+        const dateInput = document.getElementById("requiredDate");
+        if (dateInput) {
+            dateInput.setAttribute("min", new Date().toISOString().split("T")[0]);
+        }
+
+        // ========== FORM SUBMIT ==========
+        const form = document.getElementById("bloodRequestForm");
+        if (form) {
+            form.addEventListener("submit", async function (e) {
+                e.preventDefault(); // ← FIRST LINE, always stops reload
+
+                if (form.dataset.submitting === "true") return;
+                form.dataset.submitting = "true";
+
+                const token = localStorage.getItem("access_token");
+                if (!token) {
+                    showNotification("You are not logged in!", true);
+                    form.dataset.submitting = "false";
+                    setTimeout(() => window.location.href = "login-signup.html", 1500);
+                    return;
+                }
+
+                const urgency = document.querySelector('input[name="urgency"]:checked')?.value;
+                if (!urgency) {
+                    showNotification("Please select urgency level", true);
+                    form.dataset.submitting = "false";
+                    return;
+                }
+
+                const hospitalDoc = document.getElementById("hospitalDoc")?.files[0];
+                const doctorNote  = document.getElementById("doctorNote")?.files[0];
+                if (!hospitalDoc || !doctorNote) {
+                    showNotification("Please upload required documents", true);
+                    form.dataset.submitting = "false";
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append("blood_type",     document.getElementById("bloodGroup").value);
+                formData.append("units_required", document.getElementById("unitsRequired").value);
+                formData.append("district",       document.getElementById("districtSelect").value);
+                formData.append("hospital",       document.getElementById("hospitalSelect").value);
+                formData.append("required_date",  document.getElementById("requiredDate").value);
+                formData.append("reason",         document.getElementById("reason").value);
+                formData.append("contact_name",   document.getElementById("contactName").value);
+                formData.append("contact_phone",  document.getElementById("contactPhone").value);
+                formData.append("urgency",        urgency);
+                formData.append("hospital_doc",   hospitalDoc);
+                formData.append("doctor_note",    doctorNote);
+
+                try {
+                    showNotification("Submitting request...");
+
+                    const response = await fetch("http://127.0.0.1:8000/blood_requests/api/create/", {
+                        method: "POST",
+                        headers: { "Authorization": `Bearer ${token}` },
+                        body: formData
+                    });
+
+                    if (response.ok || response.status === 201) {
+                        showSuccessOverlay(); // ✅ show modal on success
+                        return;
+                    }
+
+                    let data = {};
+                    try { data = await response.json(); } catch (_) {}
+                    showNotification(data.message || "Submission failed", true);
+                    form.dataset.submitting = "false";
+
+                } catch (err) {
+                    console.error("Fetch error:", err);
+                    showNotification("Network error or server unavailable.", true);
+                    form.dataset.submitting = "false";
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>

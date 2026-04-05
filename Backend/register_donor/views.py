@@ -4,11 +4,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model, login
 from datetime import datetime
-from .models import Donor
+from .models import Donor, TestModel
 from django.contrib.auth import login
 from blood_requests.models import Patient
 from adminpanel.models import Notification
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def register_donor(request):
@@ -137,3 +138,10 @@ def check_donor_approval(request):
         })
     
 
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@csrf_exempt
+def test_api(request):
+    full_name = request.data.get("name")
+    TestModel.objects.create(name=full_name)
+    return Response({ "name": full_name })

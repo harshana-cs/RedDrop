@@ -199,6 +199,9 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
+    "http://localhost:5501",
+    "http://127.0.0.1:5501",
+    
 ]
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -207,13 +210,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'rdrop7214@gmail.com'
 EMAIL_HOST_PASSWORD = 'knpg pwzb vzji aqkc' 
-# CSRF_TRUSTED_ORIGINS = [
-#     "http://localhost:8000",
-#     "http://127.0.0.1:8000",
-#     "http://127.0.0.1:5500",
-#     "http://localhost:5500",
-# ]
-
 LOGIN_REDIRECT_URL = '/login-success/'
 from dotenv import load_dotenv
 import os

@@ -2,22 +2,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-
-    # ==========================
-    # PAGES (Django-rendered)
-    # ==========================
-    path(
-        "create/",
-        views.create_request_view,
-        name="blood_request_create"
-    ),
-
-    path(
-        "list/",
-        views.request_list,
-        name="blood_request_list"
-    ),
-
     # ==========================
     # API – Blood Requests
     # ==========================

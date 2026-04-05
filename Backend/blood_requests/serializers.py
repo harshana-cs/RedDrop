@@ -5,15 +5,15 @@ from donor.models import DonationConfirmation
 
 class BloodRequestSerializer(serializers.ModelSerializer):
     hospital_doc = serializers.FileField(required=True)
-    doctor_note = serializers.FileField(required=True)
+    doctor_note  = serializers.FileField(required=True)
 
-    # 🔥 MAKE THESE READ ONLY
-    hospital_location = serializers.PrimaryKeyRelatedField(read_only=True)
-    created_by_hospital = serializers.PrimaryKeyRelatedField(read_only=True)
+    hospital_location    = serializers.PrimaryKeyRelatedField(read_only=True)
+    created_by_hospital  = serializers.PrimaryKeyRelatedField(read_only=True)
 
     patient_confirmed_at = serializers.SerializerMethodField()
-    donor_confirmed_at = serializers.SerializerMethodField()
-    donated_at = serializers.SerializerMethodField()
+    donor_confirmed_at   = serializers.SerializerMethodField()
+    donated_at           = serializers.SerializerMethodField()
+    hospital_name = serializers.SerializerMethodField()
 
     class Meta:
         model = BloodRequest
@@ -23,11 +23,9 @@ class BloodRequestSerializer(serializers.ModelSerializer):
             "units_required",
             "urgency",
             "district",
-
-            # 🔥 now read-only
+            "hospital_name",
             "created_by_hospital",
             "hospital_location",
-
             "required_date",
             "reason",
             "contact_name",
@@ -41,23 +39,32 @@ class BloodRequestSerializer(serializers.ModelSerializer):
             "donor_confirmed_at",
             "donated_at",
         ]
+        # ✅ These fields must not be required on input
+        read_only_fields = [
+            "id",
+            "status",
+            "created_at",
+            "donation_date",
+            "hospital_location",
+            "created_by_hospital",
+        ]
+
     def get_patient_confirmed_at(self, obj):
         confirmation = DonationConfirmation.objects.filter(
-            request=obj,
-            patient_confirmed=True
+            request=obj, patient_confirmed=True
         ).first()
         return confirmation.created_at if confirmation else None
 
     def get_donor_confirmed_at(self, obj):
         confirmation = DonationConfirmation.objects.filter(
-            request=obj,
-            donor_confirmed=True
+            request=obj, donor_confirmed=True
         ).first()
         return confirmation.donation_date if confirmation else None
 
     def get_donated_at(self, obj):
         confirmation = DonationConfirmation.objects.filter(
-            request=obj,
-            donor_confirmed=True
+            request=obj, donor_confirmed=True
         ).first()
         return confirmation.donation_date if confirmation else None
+    def get_hospital_name(self, obj):
+        return obj.hospital_location.name if obj.hospital_location else None

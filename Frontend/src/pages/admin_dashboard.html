@@ -455,6 +455,68 @@ th.sort-desc::after { content: ' ↓'; color: var(--red); }
             background: #94a3b8;
         }
         
+    /* Custom scrollbar styling for better visibility */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e0;
+        border-radius: 10px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+    
+    /* Firefox scrollbar */
+    .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e0 #f1f1f1;
+    }
+    
+    /* Notification item styles */
+    .notification-item {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f0f0f0;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .notification-item:hover {
+        background: #fef2f2;
+    }
+    
+    .notification-item.unread {
+        background: #fff5f5;
+        border-left: 3px solid #ef4444;
+    }
+    
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+    
+    /* Dropdown animation */
+    #notificationDropdown {
+        animation: fadeInDown 0.2s ease-out;
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
         /* Activity timeline styles - ENHANCED */
         .timeline-wrapper {
             position: relative;
@@ -688,23 +750,33 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                             <i class="ri-search-line absolute left-3 top-2.5 text-gray-400"></i>
                         </div>
                         <div class="relative">
-                            <button id="notificationBtn" class="p-2 hover:bg-gray-100 rounded-lg relative">
-                                <i class="ri-notification-3-line text-xl"></i>
-                                <span id="notificationBadge"
-                                      class="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1.5 rounded-full hidden">
-                                </span>
-                            </button>
+    <button id="notificationBtn" class="p-2 hover:bg-gray-100 rounded-lg relative">
+        <i class="ri-notification-3-line text-xl"></i>
+        <span id="notificationBadge"
+              class="absolute -top-1 -right-1 bg-red-600 text-white text-xs px-1.5 rounded-full hidden">
+        </span>
+    </button>
 
-                            <div id="notificationDropdown"
-                                 class="hidden absolute right-0 mt-2 bg-white border rounded-xl shadow-xl flex flex-col" style="width: 320px; max-height: 400px;">
-                                <div class="p-3 border-b flex justify-between items-center flex-shrink-0">
-                                    <span class="font-semibold">Notifications</span>
-                                    <button onclick="markAllRead()" class="text-sm text-red-600 hover:text-red-700">Mark all read</button>
-                                </div>
-                                <div id="notificationList" class="overflow-y-auto flex-1 custom-scrollbar"></div>
-                            </div>
-                            
-                        </div>
+    <div id="notificationDropdown"
+     class="hidden absolute right-0 mt-2 bg-white border rounded-xl shadow-xl flex flex-col" 
+     style="width: 320px; height: 450px;">
+    <div class="p-3 border-b flex justify-between items-center flex-shrink-0 bg-white rounded-t-xl">
+        <span class="font-semibold text-gray-900">Notifications</span>
+        <button onclick="markAllRead()" class="text-sm text-red-600 hover:text-red-700 transition-colors">
+            Mark all read
+        </button>
+    </div>
+    <!-- SCROLLABLE AREA - FIXED HEIGHT -->
+    <div id="notificationList" class="overflow-y-auto custom-scrollbar" 
+         style="height: 350px; overflow-y: auto !important;">
+        <!-- Notifications will be dynamically inserted here -->
+        <div class="text-center py-8 text-gray-400 text-sm">
+            <i class="ri-notification-line text-2xl mb-2 block"></i>
+            No notifications
+        </div>
+    </div>
+</div>
+</div>
                         <button class="p-2 hover:bg-gray-100 rounded-lg">
                             <i class="ri-settings-3-line text-xl"></i>
                         </button>
@@ -1914,13 +1986,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
             <h3 class="text-3xl font-bold text-gray-900" id="campUrgentCount">0</h3>
             <p class="text-gray-500 text-sm mt-1">Urgent Camps</p>
         </div>
-        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <div class="p-2 bg-blue-50 rounded-lg"><i class="ri-group-line text-xl text-blue-600"></i></div>
-            </div>
-            <h3 class="text-3xl font-bold text-gray-900" id="campTotalSlots">0</h3>
-            <p class="text-gray-500 text-sm mt-1">Total Slots</p>
-        </div>
+       
     </div>
  
     <!-- Filter bar -->
@@ -1963,7 +2029,6 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date & Time</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Slots</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                     </tr>
@@ -3595,9 +3660,25 @@ list.innerHTML += `
         console.error("Failed to load notifications", error);
     }
 }
-document.getElementById("notificationBtn").addEventListener("click", () => {
-    document.getElementById("notificationDropdown").classList.toggle("hidden");
-});
+// Toggle notification dropdown with proper click handling
+const notifBtn = document.getElementById("notificationBtn");
+const notifDropdown = document.getElementById("notificationDropdown");
+
+if (notifBtn && notifDropdown) {
+    notifBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        notifDropdown.classList.toggle("hidden");
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener("click", (e) => {
+        if (!notifDropdown.classList.contains("hidden")) {
+            if (!notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
+                notifDropdown.classList.add("hidden");
+            }
+        }
+    });
+}
 // notifications polled in main DOMContentLoaded
 function openBloodRequests() {
 
@@ -3639,14 +3720,16 @@ async function handleNotificationClick(id, type) {
 
     type = (type || "").trim().toLowerCase();
     if (type === "blood_request" || type === "blood") {
-        openBloodRequests();
-    } else if (type === "donor_registration" || type === "donor" || type === "donor_accept") {
-        openDonorRequests();
-    } else if (type === "hospital_registration" || type === "hospital") {
-        openHospitalSection();
-    } else if (type === "alert" || type === "audit" || type === "completed") {
-        openAuditLogs();
-    }
+    openBloodRequests();
+} else if (type === "donor_registration" || type === "donor" || type === "donor_accept") {
+    openDonorRequests();
+} else if (type === "hospital_registration" || type === "hospital") {
+    openHospitalSection();
+} else if (type === "camp" || type === "donation_camp" || type === "camp_registration") {
+    openCampsSection();
+} else if (type === "alert" || type === "audit" || type === "completed") {
+    openAuditLogs();
+}
 }
 
 function openAuditLogs() {
@@ -3704,6 +3787,27 @@ function openHospitalSection() {
     loadHospitals();
 
     document.getElementById("notificationDropdown").classList.add("hidden");
+}
+function openCampsSection() {
+    tabs.forEach(t => {
+        t.classList.remove('bg-red-50', 'text-red-600');
+        t.classList.add('text-gray-700');
+    });
+
+    const campsTab = document.querySelector('[data-tab="camps"]');
+    if (campsTab) campsTab.classList.add('bg-red-50', 'text-red-600');
+
+    Object.values(sections).forEach(section => {
+        section.classList.add('hidden');
+    });
+
+    sections.camps.classList.remove('hidden');
+
+    document.getElementById('page-title').textContent    = 'Donation Camps';
+    document.getElementById('page-subtitle').textContent = 'Create and manage donation camp events';
+
+    loadCamps();
+    document.getElementById('notificationDropdown').classList.add('hidden');
 }
 // Add this function before loadHospitalAuditLogs
 function getActionBadgeClass(action) {
@@ -4932,7 +5036,7 @@ function updateCampStats(camps) {
     document.getElementById('campTotalCount').textContent  = camps.length;
     document.getElementById('campActiveCount').textContent = camps.filter(c => c.date >= today).length;
     document.getElementById('campUrgentCount').textContent = camps.filter(c => c.is_urgent).length;
-    document.getElementById('campTotalSlots').textContent  = camps.reduce((s, c) => s + (c.total_slots || 0), 0);
+
 
     const badge    = document.getElementById('camps-badge');
     const upcoming = camps.filter(c => c.date >= today).length;
@@ -4986,14 +5090,6 @@ function renderCampCards(camps) {
 
     grid.innerHTML = camps.map(c => {
         const isUpcoming   = c.date >= today;
-        const slotPercent  = c.total_slots > 0
-            ? Math.min(Math.round((c.filled_slots / c.total_slots) * 100), 100)
-            : 0;
-        const slotBarColor = slotPercent >= 90
-            ? 'bg-red-500'
-            : slotPercent >= 60
-                ? 'bg-yellow-400'
-                : 'bg-green-500';
 
         return `
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col">
@@ -5022,45 +5118,92 @@ function renderCampCards(camps) {
                 </div>
 
                 <!-- Card Body -->
-                <div class="p-5 flex-1 space-y-3">
-                    <div class="flex items-center gap-2 text-sm text-gray-600">
-                        <i class="ri-calendar-line text-red-400 flex-shrink-0"></i>
-                        <span>${c.date} &nbsp;|&nbsp; ${c.start_time || '—'} – ${c.end_time || '—'}</span>
-                    </div>
-                    <div class="flex items-start gap-2 text-sm text-gray-600">
-                        <i class="ri-map-pin-line text-red-400 flex-shrink-0 mt-0.5"></i>
-                        <span>${c.location}</span>
-                    </div>
+<div class="p-5 flex-1 space-y-3">
 
-                    ${c.description
-                        ? `<p class="text-xs text-gray-500 line-clamp-2 border-t pt-2">${c.description}</p>`
-                        : ''}
+    <!-- 📅 Date -->
+    <div class="flex items-center gap-2 text-sm text-gray-600">
+        <i class="ri-calendar-line text-red-400 flex-shrink-0"></i>
+        <span>${c.date} &nbsp;|&nbsp; ${c.start_time || '—'} – ${c.end_time || '—'}</span>
+    </div>
 
-                    ${c.total_slots > 0 ? `
-                        <div>
-                            <div class="flex justify-between text-xs text-gray-500 mb-1">
-                                <span>Slots filled</span>
-                                <span>${c.filled_slots || 0} / ${c.total_slots}</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-1.5">
-                                <div class="${slotBarColor} h-1.5 rounded-full transition-all"
-                                     style="width: ${slotPercent}%"></div>
-                            </div>
-                        </div>
-                    ` : ''}
-                </div>
+    <!-- 📍 Location -->
+    <div class="flex items-start gap-2 text-sm text-gray-600">
+        <i class="ri-map-pin-line text-red-400 flex-shrink-0 mt-0.5"></i>
+        <span>${c.location}</span>
+    </div>
+
+    <!-- ✅ 📞 CONTACT -->
+    ${c.contact_number ? `
+    <div class="flex items-center gap-2 text-sm">
+        <i class="ri-phone-line text-green-600"></i>
+        <a href="tel:${c.contact_number}" 
+           class="text-green-600 font-semibold hover:underline">
+            ${c.contact_number}
+        </a>
+    </div>
+    ` : ""}
+
+    <!-- ✅ 🗺 MAP -->
+    ${c.map_link ? `
+    <div>
+        <a href="${c.map_link}" target="_blank"
+           class="inline-flex items-center gap-2 text-blue-600 hover:underline text-sm font-medium">
+            <i class="ri-map-line"></i>
+            Open Map
+        </a>
+    </div>
+    ` : ""}
+
+    ${c.description
+        ? `<p class="text-xs text-gray-500 line-clamp-2 border-t pt-2">${c.description}</p>`
+        : ''}
+
+</div>
 
                 <!-- Card Footer -->
-                <div class="px-5 py-3 border-t border-gray-100 flex items-center justify-end gap-2">
-                    <button onclick="editCamp(${c.id})"
-                            class="px-3 py-1.5 text-xs bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition flex items-center gap-1">
-                        <i class="ri-edit-line"></i> Edit
-                    </button>
-                    <button onclick="deleteCamp(${c.id})"
-                            class="px-3 py-1.5 text-xs bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition flex items-center gap-1">
-                        <i class="ri-delete-bin-line"></i> Delete
-                    </button>
-                </div>
+                <div class="px-5 py-3 border-t border-gray-100 flex items-center justify-between gap-2">
+
+    <!-- STATUS -->
+    <div>
+        ${
+            c.is_approved
+            ? '<span class="text-green-600 text-xs font-semibold">Approved</span>'
+            : '<span class="text-yellow-600 text-xs font-semibold">Pending</span>'
+        }
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="flex gap-2">
+      
+${
+  !c.is_approved && (c.created_by === "corporate" || c.created_by === "partner")
+    ? `
+      <button onclick="approveCamp(${c.id})"
+          class="px-3 py-1.5 text-xs bg-green-600 text-white rounded-lg">
+          Accept
+      </button>
+      <button onclick="rejectCamp(${c.id})"
+          class="px-3 py-1.5 text-xs bg-red-600 text-white rounded-lg">
+          Decline
+      </button>
+    `
+    : c.is_approved
+    ? `<span class="text-green-600 text-xs font-semibold flex items-center gap-1">
+         <i class="ri-checkbox-circle-fill"></i> Approved
+       </span>`
+    : `
+      <button onclick="editCamp(${c.id})"
+          class="px-3 py-1.5 text-xs bg-blue-50 text-blue-700 rounded-lg">
+          Edit
+      </button>
+      <button onclick="deleteCamp(${c.id})"
+          class="px-3 py-1.5 text-xs bg-red-50 text-red-700 rounded-lg">
+          Delete
+      </button>
+    `
+}
+    </div>
+</div>
             </div>
         `;
     }).join('');
@@ -5102,10 +5245,6 @@ function renderCampTable(camps) {
                 </td>
                 <td class="px-6 py-4 text-gray-600">${c.location}</td>
                 <td class="px-6 py-4">
-                    <span class="font-medium">${c.filled_slots || 0}</span>
-                    <span class="text-gray-400">/ ${c.total_slots || 0}</span>
-                </td>
-                <td class="px-6 py-4">
                     <span class="px-2 py-1 rounded-full text-xs font-medium
                         ${isUpcoming
                             ? 'bg-green-100 text-green-700'
@@ -5113,18 +5252,46 @@ function renderCampTable(camps) {
                         ${isUpcoming ? 'Upcoming' : 'Past'}
                     </span>
                 </td>
-                <td class="px-6 py-4">
-                    <div class="flex items-center gap-2">
-                        <button onclick="editCamp(${c.id})"
-                                class="px-3 py-1.5 text-xs bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition flex items-center gap-1">
-                            <i class="ri-edit-line"></i> Edit
-                        </button>
-                        <button onclick="deleteCamp(${c.id})"
-                                class="px-3 py-1.5 text-xs bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition flex items-center gap-1">
-                            <i class="ri-delete-bin-line"></i> Delete
-                        </button>
-                    </div>
-                </td>
+               <td class="px-6 py-4">
+    <div class="flex items-center gap-2">
+
+        ${
+            c.is_approved
+            ? `<span class="text-green-600 text-xs font-semibold">Approved</span>`
+            : `<span class="text-yellow-600 text-xs font-semibold">Pending</span>`
+        }
+
+       <td class="px-6 py-4">
+  <div class="flex items-center gap-2">
+
+    ${
+      !c.is_approved && (c.created_by === "partner" || c.created_by === "corporate")
+        ? `
+        <button onclick="approveCamp(${c.id})"
+            class="px-2 py-1 text-xs bg-green-600 text-white rounded">
+            Accept
+        </button>
+        <button onclick="rejectCamp(${c.id})"
+            class="px-2 py-1 text-xs bg-red-600 text-white rounded">
+            Decline
+        </button>
+        `
+        : c.is_approved
+        ? `<span class="text-green-600 text-xs font-semibold">✓ Approved</span>`
+        : `
+        <button onclick="editCamp(${c.id})"
+            class="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded">
+            Edit
+        </button>
+        <button onclick="deleteCamp(${c.id})"
+            class="px-2 py-1 text-xs bg-red-50 text-red-700 rounded">
+            Delete
+        </button>
+        `
+    }
+
+  </div>
+</td>
             </tr>
         `;
     }).join('');
@@ -5143,8 +5310,6 @@ function openCampModal() {
     document.getElementById('campStartTime').value   = '';
     document.getElementById('campEndTime').value     = '';
     document.getElementById('campLocation').value    = '';
-    document.getElementById('campTotalSlots').value  = '';
-    document.getElementById('campFilledSlots').value = 0;
     document.getElementById('campIsUrgent').checked  = false;
 
     // Reset button label
@@ -5171,8 +5336,6 @@ function editCamp(id) {
     document.getElementById('campStartTime').value   = camp.start_time  || '';
     document.getElementById('campEndTime').value     = camp.end_time    || '';
     document.getElementById('campLocation').value    = camp.location    || '';
-    document.getElementById('campTotalSlots').value  = camp.total_slots  || 0;
-    document.getElementById('campFilledSlots').value = camp.filled_slots || 0;
     document.getElementById('campIsUrgent').checked  = camp.is_urgent   || false;
 
     const btnText = document.getElementById('campSaveBtnText');
@@ -5222,8 +5385,6 @@ async function saveCamp() {
         start_time:   startTime,
         end_time:     endTime,
         location,
-        total_slots:  parseInt(document.getElementById('campTotalSlots').value)  || 0,
-        filled_slots: parseInt(document.getElementById('campFilledSlots').value) || 0,
         is_urgent:    document.getElementById('campIsUrgent').checked
     };
 
@@ -5264,27 +5425,42 @@ async function saveCamp() {
         text.textContent = id ? 'Save Changes' : 'Register Camp';
     }
 }
-
-// ================= DELETE =================
-async function deleteCamp(id) {
-    if (!confirm('Are you sure you want to delete this camp?')) return;
-
+// ================= APPROVE =================
+async function approveCamp(id) {
     try {
-        const res = await fetch(`${API_BASE}/api/admin/donation-camps/${id}/`, {
-            method: 'DELETE'
+        const res = await fetch(`${API_BASE}/api/admin/approve-camp/${id}/`, {
+            method: "PATCH"
         });
 
         if (res.ok) {
-            showToast('success', 'Deleted', 'Camp has been removed');
+            showToast('success', 'Approved', 'Camp approved successfully');
             loadCamps();
         } else {
-            showToast('error', 'Failed', 'Could not delete camp');
+            showToast('error', 'Failed', 'Could not approve camp');
         }
     } catch {
         showToast('error', 'Network Error', 'Failed to connect to server');
     }
 }
+// ================= DELETE =================
+async function rejectCamp(id) {
+    if (!confirm('Are you sure you want to reject this camp?')) return;
 
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/reject-camp/${id}/`, {
+            method: "DELETE"
+        });
+
+        if (res.ok) {
+            showToast('success', 'Rejected', 'Camp rejected successfully');
+            loadCamps();
+        } else {
+            showToast('error', 'Failed', 'Could not reject camp');
+        }
+    } catch {
+        showToast('error', 'Network Error', 'Failed to connect to server');
+    }
+}
 // ================= EXPORT CSV =================
 function exportCampsCSV() {
     if (!allCamps.length) {
@@ -5294,7 +5470,7 @@ function exportCampsCSV() {
 
     const headers = [
         'Title', 'Hospital', 'Date', 'Start Time',
-        'End Time', 'Location', 'Total Slots', 'Filled Slots', 'Urgent'
+        'End Time', 'Location',  'Urgent'
     ];
 
     const rows = allCamps.map(c => [
@@ -5304,8 +5480,6 @@ function exportCampsCSV() {
         c.start_time  || '',
         c.end_time    || '',
         `"${(c.location       || '').replace(/"/g, '""')}"`,
-        c.total_slots  || 0,
-        c.filled_slots || 0,
         c.is_urgent ? 'Yes' : 'No'
     ]);
 
@@ -5473,23 +5647,6 @@ function hideCampError() {
                        class="w-full border border-gray-300 rounded-lg px-4 py-2.5
                               focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
             </div>
-
-            <!-- Slots -->
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Total Slots</label>
-                    <input id="campTotalSlots" type="number" min="0" placeholder="e.g. 100"
-                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5
-                                  focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Filled Slots</label>
-                    <input id="campFilledSlots" type="number" min="0" value="0"
-                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5
-                                  focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
-                </div>
-            </div>
-
             <!-- Urgent -->
             <label class="flex items-center gap-3 cursor-pointer select-none p-3
                           bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition">

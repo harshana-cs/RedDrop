@@ -231,6 +231,27 @@ def admin_approve_blood_request(request, request_id):
     blood_request.patient_confirmed = False
     blood_request.fulfilled = False
     blood_request.save()
+    # ✅ Notify the patient that their request was approved
+    if blood_request.patient:
+        patient_user = User.objects.filter(
+            username=blood_request.patient.emailaddress
+        ).first()
+
+        if patient_user:
+            Notification.objects.create(
+                user=patient_user,
+                blood_request=blood_request,
+                title="Blood Request Approved by Admin",
+                message=(
+                    f"Your blood request for {blood_request.blood_type} blood at "
+                    f"{blood_request.hospital_location.name if blood_request.hospital_location else 'the hospital'} "
+                    f"has been approved by admin. Please wait while we find eligible donors near you."
+                ),
+                type="blood_request_approved_by_admin"
+            )
+            print(f"✅ Patient notification sent to {blood_request.patient.emailaddress}")
+        else:
+            print(f"⚠️ No Django User found for patient: {blood_request.patient.emailaddress}")
 
     hospital = blood_request.hospital_location
 

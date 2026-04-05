@@ -20,6 +20,15 @@ from .models import HospitalLocation
 from adminpanel.models import Notification
 from .utils import get_coordinates_from_osm
 
+from .models import HospitalLocation
+
+from django.contrib.auth.models import User
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 def haversine(lat1, lon1, lat2, lon2):
     if None in [lat1, lon1, lat2, lon2]:
         return None  # prevent crash
@@ -46,64 +55,6 @@ BLOOD_COMPATIBILITY = {
     "AB-": ["AB-", "AB+"],
     "AB+": ["AB+"],
 }
-
-# =========================================================
-# REGULAR DJANGO VIEWS
-# =========================================================
-
-@login_required
-def create_request(request):
-    if request.method == "POST":
-        form = BloodRequestForm(request.POST, request.FILES)
-        if form.is_valid():
-            blood_request = form.save(commit=False)
-
-            patient = Patient.objects.filter(
-                emailaddress=request.user.username
-            ).first()
-
-            if not patient:
-                messages.error(request, "Patient profile not found.")
-                return redirect("/")
-
-            blood_request.patient = patient
-            blood_request.save()
-
-            messages.success(request, "Blood request submitted successfully!")
-            return redirect("blood_request_list")
-    else:
-        form = BloodRequestForm()
-
-    return render(request, "blood_requests/create_request.html", {"form": form})
-
-
-@login_required
-def request_list(request):
-    patient = Patient.objects.filter(
-        emailaddress=request.user.username
-    ).first()
-
-    if not patient:
-        messages.error(request, "Patient profile not found.")
-        return redirect("/")
-
-    requests_qs = BloodRequest.objects.filter(patient=patient)
-    return render(
-        request,
-        "blood_requests/request_list.html",
-        {"requests": requests_qs}
-    )
-
-
-def create_request_view(request):
-    return render(request, "blood_requests/blood_request.html")
-
-
-@login_required
-def dashboard_view(request):
-    return render(request, "blood_requests/blood_request.html")
-
-
 # =========================================================
 # API – PATIENT DASHBOARD & HISTORY
 # =========================================================
@@ -124,9 +75,21 @@ def api_user_requests(request):
     qs = BloodRequest.objects.filter(
         patient=patient
     ).order_by("-created_at")
+    data = []
+    for r in qs:
+        data.append({
+            "id": r.id,
+            "blood_type": r.blood_type,
+            "units_required": r.units_required,
+            "urgency": r.urgency,
+            "district": r.district,
+            "hospital_name": r.hospital_location.name if r.hospital_location else None,  # ✅ FIXED
+            "status": r.status,
+            "created_at": r.created_at,
+            "donation_date": r.donation_date,
+        })
 
-    serializer = BloodRequestSerializer(qs, many=True)
-
+    # 📊 Stats
     total = qs.count()
     approved = qs.filter(status="approved").count()
     pending = qs.filter(status="pending").count()
@@ -157,75 +120,84 @@ def api_user_requests(request):
             ),
             "success_rate": success_rate
         },
-        "data": serializer.data
+        "data": data 
     })
-
 
 # =========================================================
 # API – CREATE BLOOD REQUEST
 # =========================================================
 
-from .models import HospitalLocation
-
-from django.contrib.auth.models import User
-
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def api_create_request(request):
+    print("DATA  :", dict(request.data))
+    print("FILES :", request.FILES)
+    try:
+        patient = Patient.objects.filter(
+            emailaddress=request.user.username
+        ).first()
 
-    patient = Patient.objects.filter(
-        emailaddress=request.user.username
-    ).first()
+        if not patient:
+            return Response({"success": False, "message": "Patient not found"}, status=403)
 
-    if not patient:
-        return Response(
-            {"success": False, "message": "Patient not found"},
-            status=403
-        )
+        hospital_name = request.data.get("hospital")
+        district      = request.data.get("district")
 
-    hospital_name = request.data.get("hospital")
-    district = request.data.get("district")
+        if not hospital_name or not district:
+            return Response({"message": "Hospital and district are required"}, status=400)
 
-    if not hospital_name or not district:
-        return Response(
-            {"message": "Hospital and district are required"},
-            status=400
-        )
+        hospital_location = HospitalLocation.objects.filter(
+            name=hospital_name, district=district
+        ).first()
 
-    hospital_location = HospitalLocation.objects.filter(
-        name=hospital_name,
-        district=district
-    ).first()
+        if not hospital_location:
+            print("Calling OSM...")
+            try:
+                lat, lon = get_coordinates_from_osm(hospital_name, district)
+                print(f"OSM result: {lat}, {lon}")
+            except Exception as e:
+                print(f"OSM FAILED: {e}")
+                lat, lon = None, None
 
-    if not hospital_location:
-        lat, lon = get_coordinates_from_osm(hospital_name, district)
-        hospital_location = HospitalLocation.objects.create(
-            name=hospital_name,
-            district=district,
-            latitude=lat,
-            longitude=lon
-        )
+            hospital_location = HospitalLocation.objects.create(
+                name=hospital_name, district=district,
+                latitude=lat, longitude=lon
+            )
 
-    serializer = BloodRequestSerializer(data=request.data)
+        print("Running serializer...")
+        serializer = BloodRequestSerializer(data=request.data)
 
-    if serializer.is_valid():
+        print("Validating...")
+        if not serializer.is_valid():
+            print("ERRORS:", serializer.errors)
+            return Response(serializer.errors, status=400)
+
+        print("Saving...")
         blood_request = serializer.save(
             patient=patient,
             hospital_location=hospital_location,
-            district=district
         )
+        print("Saved! ID:", blood_request.id)
 
-        # ✅ Admin log only — donors notified when admin approves
-        Notification.objects.create(
-            title="New Blood Request",
-            message=f"{patient.fullname} requested {blood_request.blood_type} blood at {hospital_name}",
-            type="blood_request"
-            # no user= field → admin only
-        )
+        try:
+            Notification.objects.create(
+                title="New Blood Request",
+                message=f"{patient.fullname} requested {blood_request.blood_type} blood at {hospital_name}",
+                type="blood_request",
+                blood_request=blood_request,
+                user=None,
+                hospital=None,
+            )
+            print("Notification created.")
+        except Exception as e:
+            print(f"Notification failed (non-fatal): {e}")
 
-        return Response(serializer.data, status=201)
+        return Response({"success": True, "message": "Blood request submitted successfully"}, status=201)
 
-    return Response(serializer.errors, status=400)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return Response({"message": str(e)}, status=500)
 # =========================================================
 # API – PATIENT CONFIRM RECEIPT (ONLY CONFIRMATION)
 # =========================================================
