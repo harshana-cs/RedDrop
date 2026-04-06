@@ -10,6 +10,12 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* ── Inventory section: neutralize nested .page wrapper ── */
+#inventorySection .page {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
         /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -1067,11 +1073,12 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
             <p class="text-gray-600">Approved and rejected blood requests</p>
         </div>
         <select id="bloodStatusFilter"
-                class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
-            <option value="all">All</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-        </select>
+        onchange="filterProcessedBloodRequests()"
+        class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+    <option value="all">All</option>
+    <option value="approved">Approved</option>
+    <option value="rejected">Rejected</option>
+</select>
     </div>
 
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -1532,7 +1539,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
       </div>
       
       <!-- Stats summary row (optional but adds context) -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div class="grid grid-cols-3 gap-4 mb-6">
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center gap-3">
           <div class="bg-rose-100 p-3 rounded-full"><i class="fas fa-droplet text-rose-600 text-xl"></i></div>
           <div><p class="text-xs text-gray-500 uppercase">Total users</p><p id="totalUsersCount" class="text-2xl font-bold text-gray-800">0</p></div>
@@ -1930,7 +1937,8 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
             </div>
         </div>
     </div>
-</div>                <!-- ================= ANALYTICS ================= -->
+</div>  
+</div>              <!-- ================= ANALYTICS ================= -->
                 <div id="analyticsSection" class="hidden">
                     <div class="mb-6">
                         <h3 class="text-2xl font-bold text-gray-900">Analytics Dashboard</h3>
@@ -1946,107 +1954,128 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                         <p class="text-gray-500">Detailed analytics and reports will be available in the next update.</p>
                     </div>
                 </div>
-</div>
+
                 
  
-    <!-- Header -->
-     <div id="campsSection" class="hidden space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-            <h3 class="text-2xl font-bold text-gray-900">Donation Camps</h3>
-            <p class="text-gray-600">Create and manage blood donation camp events visible to users</p>
-        </div>
-        <button onclick="openCampModal()"
-                class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 shadow-sm transition-all font-medium">
-            <i class="ri-add-line text-lg"></i>
-            Create Camp
-        </button>
-    </div>
- 
-    <!-- Summary Stats -->
-    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <div class="p-2 bg-red-50 rounded-lg"><i class="ri-flag-2-line text-xl text-red-600"></i></div>
-            </div>
-            <h3 class="text-3xl font-bold text-gray-900" id="campTotalCount">0</h3>
-            <p class="text-gray-500 text-sm mt-1">Total Camps</p>
-        </div>
-        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <div class="p-2 bg-green-50 rounded-lg"><i class="ri-calendar-check-line text-xl text-green-600"></i></div>
-            </div>
-            <h3 class="text-3xl font-bold text-gray-900" id="campActiveCount">0</h3>
-            <p class="text-gray-500 text-sm mt-1">Upcoming Camps</p>
-        </div>
-        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-            <div class="flex items-center justify-between mb-2">
-                <div class="p-2 bg-orange-50 rounded-lg"><i class="ri-alarm-warning-line text-xl text-orange-600"></i></div>
-            </div>
-            <h3 class="text-3xl font-bold text-gray-900" id="campUrgentCount">0</h3>
-            <p class="text-gray-500 text-sm mt-1">Urgent Camps</p>
-        </div>
-       
-    </div>
- 
-    <!-- Filter bar -->
-    <div class="flex flex-wrap gap-3 items-center">
-        <select id="campStatusFilter" onchange="filterCamps()"
-                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500">
-            <option value="all">All Camps</option>
-            <option value="upcoming">Upcoming</option>
-            <option value="past">Past</option>
-            <option value="urgent">Urgent Only</option>
-        </select>
-        <button onclick="loadCamps()"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">
-            <i class="ri-refresh-line text-gray-500"></i> Refresh
-        </button>
-    </div>
- 
-    <!-- Camps Grid (cards view) -->
-    <div id="campsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        <!-- Dynamic cards -->
-        <div class="col-span-full flex flex-col items-center justify-center py-16 text-gray-400">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-400 mb-3"></div>
-            <p>Loading camps...</p>
-        </div>
-    </div>
- 
-    <!-- Camps Table (fallback / detail view) -->
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b flex items-center justify-between">
-            <h4 class="font-semibold text-gray-900">All Camps — List View</h4>
-            <button onclick="exportCampsCSV()" class="text-sm text-gray-600 hover:text-red-600 flex items-center gap-1">
-                <i class="ri-download-line"></i> Export CSV
-            </button>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Camp</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date & Time</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="campsTableBody" class="divide-y divide-gray-200">
-                    <tr><td colspan="7" class="px-6 py-8 text-center text-gray-400">Loading...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-                
-            </div>
+    <!-- ... analytics section ends ... -->
+
+                <div id="campsSection" class="hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900">Donation Camps</h3>
+                            <p class="text-gray-600">Create and manage blood donation camp events visible to users</p>
+                        </div>
+                        <button onclick="openCampModal()"
+                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 shadow-sm transition-all font-medium">
+                            <i class="ri-add-line text-lg"></i>
+                            Create Camp
+                        </button>
+                    </div>
+
+                    <!-- Summary Stats -->
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                            <div class="p-2 bg-red-50 rounded-lg w-fit mb-2"><i class="ri-flag-2-line text-xl text-red-600"></i></div>
+                            <h3 class="text-3xl font-bold text-gray-900" id="campTotalCount">0</h3>
+                            <p class="text-gray-500 text-sm mt-1">Total Camps</p>
+                        </div>
+                        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                            <div class="p-2 bg-green-50 rounded-lg w-fit mb-2"><i class="ri-calendar-check-line text-xl text-green-600"></i></div>
+                            <h3 class="text-3xl font-bold text-gray-900" id="campActiveCount">0</h3>
+                            <p class="text-gray-500 text-sm mt-1">Upcoming Camps</p>
+                        </div>
+                        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                            <div class="p-2 bg-orange-50 rounded-lg w-fit mb-2"><i class="ri-alarm-warning-line text-xl text-orange-600"></i></div>
+                            <h3 class="text-3xl font-bold text-gray-900" id="campUrgentCount">0</h3>
+                            <p class="text-gray-500 text-sm mt-1">Urgent Camps</p>
+                        </div>
+                    </div>
+
+                    <!-- Filter bar -->
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <select id="campStatusFilter" onchange="filterCamps()"
+                                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500">
+                            <option value="all">All Camps</option>
+                            <option value="upcoming">Upcoming</option>
+                            <option value="past">Past</option>
+                            <option value="urgent">Urgent Only</option>
+                        </select>
+                        <button onclick="loadCamps()"
+                                class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">
+                            <i class="ri-refresh-line text-gray-500"></i> Refresh
+                        </button>
+                    </div>
+
+                    <!-- Camps Grid -->
+                    <div id="campsGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                        <div class="col-span-full flex flex-col items-center justify-center py-16 text-gray-400">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-400 mb-3"></div>
+                            <p>Loading camps...</p>
+                        </div>
+                    </div>
+
+                    <!-- Camps Table -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b flex items-center justify-between">
+                            <h4 class="font-semibold text-gray-900">All Camps — List View</h4>
+                            <button onclick="exportCampsCSV()" class="text-sm text-gray-600 hover:text-red-600 flex items-center gap-1">
+                                <i class="ri-download-line"></i> Export CSV
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Camp</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date & Time</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="campsTableBody" class="divide-y divide-gray-200">
+                                    <tr><td colspan="6" class="px-6 py-8 text-center text-gray-400">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div> 
+
+            </div> 
         </main>
     </div>
-
     <!-- ================= JS ================= -->
     <script>
+        function timeAgo(dateStr) {
+    if (!dateStr) return '—';
+    const date = new Date(dateStr);
+    if (isNaN(date)) return dateStr;
+
+    const seconds = Math.floor((new Date() - date) / 1000);
+
+    if (seconds < 10)  return 'Just now';
+    if (seconds < 60)  return `${seconds} seconds ago`;
+
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60)  return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24)    return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+
+    const days = Math.floor(hours / 24);
+    if (days < 7)      return days === 1 ? 'Yesterday' : `${days} days ago`;
+
+    const weeks = Math.floor(days / 7);
+    if (weeks < 4)     return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+
+    const months = Math.floor(days / 30);
+    if (months < 12)   return months === 1 ? '1 month ago' : `${months} months ago`;
+
+    const years = Math.floor(days / 365);
+    return years === 1 ? '1 year ago' : `${years} years ago`;
+}
         const API_BASE = "http://127.0.0.1:8000";
 
         let currentHospitalRequest = null;
@@ -2562,11 +2591,7 @@ function setRequestChartType(type) {
     body.innerHTML = '';
 
     json.data
-        .sort((a, b) => {
-            const dateA = new Date(a.date + ' ' + (a.time || '00:00'));
-            const dateB = new Date(b.date + ' ' + (b.time || '00:00'));
-            return dateB - dateA;
-        })
+        .sort((a, b) => new Date(b.created_at || b.date + ' ' + (b.time || '00:00')) - new Date(a.created_at || a.date + ' ' + (a.time || '00:00')))
         .forEach(r => {
 
             const urgencyClass = r.urgency === 'Critical' ? 'bg-red-100 text-red-800' : 
@@ -2624,9 +2649,9 @@ function setRequestChartType(type) {
 </td>
 
                                 <td class="px-6 py-4">
-                                    <p class="text-gray-900">${r.date || '-'}</p>
-                                    <p class="text-sm text-gray-500">${r.time || ''}</p>
-                                </td>
+    <p class="text-gray-900 font-medium">${timeAgo(r.created_at || r.date)}</p>
+    <p class="text-xs text-gray-400">${r.date || '-'} ${r.time || ''}</p>
+</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center space-x-2">
                                         <button onclick="approveBloodRequest(${r.id})" 
@@ -2778,7 +2803,7 @@ function setRequestChartType(type) {
     body.innerHTML = '';
 
     json.data
-        .sort((a, b) => new Date(b.created_on) - new Date(a.created_on))
+        .sort((a, b) => new Date(b.created_on || b.created_at) - new Date(a.created_on || a.created_at))
         .forEach(d => {
 
             body.innerHTML += `
@@ -2822,10 +2847,11 @@ function setRequestChartType(type) {
                                         }
                                     </div>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <p class="text-gray-900">${d.created_on || '-'}</p>
-                                    <p class="text-sm text-gray-500">${d.age ? `${d.age} years` : ''}</p>
-                                </td>
+                               <td class="px-6 py-4">
+    <p class="text-gray-900 font-medium">${timeAgo(d.created_on || d.created_at)}</p>
+    <p class="text-xs text-gray-400">${d.created_on || '-'}</p>
+    <p class="text-xs text-gray-400">${d.age ? `${d.age} years old` : ''}</p>
+</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center space-x-2">
                                         <button onclick="approveDonor(${d.id})" 
@@ -3397,32 +3423,61 @@ function setRequestChartType(type) {
         const json = await res.json();
 
         if (json.data?.length) {
-            body.innerHTML = "";
-            json.data.forEach(r => {
-                const statusClass = r.status === "approved"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700";
-
-                body.innerHTML += `
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 font-medium">${r.patient_name}</td>
-                        <td class="px-6 py-4">${r.blood_type}</td>
-                        <td class="px-6 py-4">${r.hospital}</td>
-                        <td class="px-6 py-4">
-                            <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
-                                ${r.status.toUpperCase()}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-gray-500">${r.processed_on}</td>
-                    </tr>
-                `;
-            });
+            // Store globally for filtering
+            window._processedBloodRequests = json.data;
+            renderProcessedBloodRequests(json.data);
         } else {
+            window._processedBloodRequests = [];
             body.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-gray-500">No records</td></tr>`;
         }
     } catch {
         body.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-red-600">Failed to load</td></tr>`;
     }
+}
+
+function renderProcessedBloodRequests(data) {
+    const body = document.getElementById("processedBloodRequestsBody");
+
+    if (!data.length) {
+        body.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-gray-500">No records found</td></tr>`;
+        return;
+    }
+
+    // Sort newest first
+    data.sort((a, b) => new Date(b.processed_on) - new Date(a.processed_on));
+
+    body.innerHTML = data.map(r => {
+        const statusClass = r.status === "approved"
+            ? "bg-green-100 text-green-700"
+            : "bg-red-100 text-red-700";
+        return `
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 font-medium">${r.patient_name}</td>
+                <td class="px-6 py-4">
+                    <span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">${r.blood_type}</span>
+                </td>
+                <td class="px-6 py-4">${r.hospital}</td>
+                <td class="px-6 py-4">
+                    <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
+                        ${r.status.toUpperCase()}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-gray-500">
+                    <p class="font-medium">${timeAgo(r.processed_on)}</p>
+                    <p class="text-xs text-gray-400">${r.processed_on}</p>
+                </td>
+            </tr>`;
+    }).join('');
+}
+function filterProcessedBloodRequests() {
+    const status = document.getElementById("bloodStatusFilter").value;
+    const all    = window._processedBloodRequests || [];
+
+    const filtered = status === "all"
+        ? all
+        : all.filter(r => r.status === status);
+
+    renderProcessedBloodRequests(filtered);
 }
 async function loadProcessedDonors() {
     const body = document.getElementById("processedDonorsBody");
@@ -3887,8 +3942,8 @@ function getActionBgColor(action) {
             try {
                 const res = await fetch(`${API_BASE}/api/admin/hospital-audit-logs/`);
                 const data = await res.json();
-
-                if (!data.logs || data.logs.length === 0) {
+window._hospitalLogs = data.logs || [];
+if (!data.logs || data.logs.length === 0) {
                     timeline.innerHTML = `
                         <div class="text-center py-8 text-gray-500">
                             <i class="ri-history-line text-4xl mb-3"></i>
@@ -4000,10 +4055,89 @@ let bgColor = getActionBgColor(log.action);
 
     loadNotifications();
 }
+// Store all logs globally for filtering
+window._hospitalLogs = [];
+
 function filterHospitalActivities() {
-    const filter = document.getElementById('activityFilter').value;
-    // re-render based on filter
-    loadHospitalAuditLogs();
+    const filter   = document.getElementById('activityFilter').value;
+    const timeline = document.getElementById("hospitalActivityTimeline");
+    const table    = document.getElementById("hospitalAuditTable");
+
+    let logs = window._hospitalLogs || [];
+
+    if (filter !== 'all') {
+        logs = logs.filter(log => {
+            const action = (log.action || '').toLowerCase();
+            if (filter === 'login')   return action.includes('login');
+            if (filter === 'blood')   return action.includes('blood');
+            if (filter === 'profile') return action.includes('profile') || action.includes('update');
+            if (filter === 'other')   return !action.includes('login') && !action.includes('blood') && !action.includes('profile') && !action.includes('update');
+            return true;
+        });
+    }
+
+    // Re-render timeline
+    if (!logs.length) {
+        timeline.innerHTML = `
+            <div class="text-center py-8 text-gray-400">
+                <i class="ri-filter-off-line text-4xl mb-3"></i>
+                <p>No activities match this filter</p>
+            </div>`;
+        table.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">No matching logs</td></tr>`;
+        return;
+    }
+
+    // Timeline (top 10)
+    timeline.innerHTML = '';
+    logs.slice(0, 10).forEach(log => {
+        const time    = new Date(log.time);
+        const timeStr = time.toLocaleTimeString();
+        const dateStr = time.toLocaleDateString();
+        const icon    = getActionIcon(log.action);
+        const color   = getActionColor(log.action);
+        const bgColor = getActionBgColor(log.action);
+
+        timeline.innerHTML += `
+            <div class="timeline-item activity-card">
+                <div class="timeline-dot ${color}"></div>
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 ${bgColor} rounded-full flex items-center justify-center">
+                        <i class="${icon} text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <h5 class="font-semibold text-gray-900">${log.hospital}</h5>
+                            <span class="text-xs text-gray-500" title="${dateStr}">${timeStr}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">
+                            <span class="font-medium">${log.action}:</span> ${log.description}
+                        </p>
+                        <div class="flex items-center mt-2 space-x-2">
+                            <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                <i class="ri-map-pin-line mr-1"></i>${log.ip_address || 'Unknown'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+    });
+
+    // Detailed table (all filtered)
+    table.innerHTML = logs.map(log => `
+        <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 font-medium">${log.hospital}</td>
+            <td class="px-6 py-4">
+                <span class="px-2 py-1 text-xs rounded-full ${getActionBadgeClass(log.action)}">
+                    ${log.action}
+                </span>
+            </td>
+            <td class="px-6 py-4 text-gray-700">${log.description}</td>
+            <td class="px-6 py-4 text-sm text-gray-500">${log.ip_address || '-'}</td>
+            <td class="px-6 py-4 text-sm text-gray-500">
+                <p class="font-medium">${timeAgo(log.time)}</p>
+                <p class="text-xs text-gray-400">${new Date(log.time).toLocaleString()}</p>
+            </td>
+        </tr>`).join('');
 }
 async function loadUsers(){
   const body = document.getElementById("usersTableBody");
@@ -4079,30 +4213,28 @@ async function viewUser(id) {
         if (!res.ok) throw new Error("Server returned " + res.status);
         const data = await res.json();
 
-        // Format date function
+        const isDonor = !!(
+    data.donor ||
+    data.is_donor ||
+    data.donor_approved ||
+    (data.donation_history && data.donation_history.length > 0) ||
+    (data.donations && data.donations.length > 0) ||
+    (data.total_donations && data.total_donations > 0)
+);
+
         const formatDate = (dateStr) => {
             if (!dateStr) return 'Never';
             const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
-            });
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
         };
 
-        // Get eligibility badge color
         const getEligibilityBadge = (status) => {
             status = status?.toLowerCase() || '';
-            if (status.includes('eligible')) {
-                return 'bg-green-100 text-green-700 border-green-200';
-            } else if (status.includes('not eligible') || status.includes('ineligible')) {
-                return 'bg-red-100 text-red-700 border-red-200';
-            } else {
-                return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-            }
+            if (status.includes('eligible')) return 'bg-green-100 text-green-700 border-green-200';
+            if (status.includes('not eligible') || status.includes('ineligible')) return 'bg-red-100 text-red-700 border-red-200';
+            return 'bg-yellow-100 text-yellow-700 border-yellow-200';
         };
 
-        // Get status badge color
         const getStatusBadge = (status) => {
             status = status?.toLowerCase() || '';
             if (status === 'approved') return 'bg-green-100 text-green-700';
@@ -4114,7 +4246,8 @@ async function viewUser(id) {
 
         body.innerHTML = `
             <div class="space-y-6 pb-2">
-                <!-- User Header Card -->
+
+                <!-- ── User Header ── -->
                 <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-5 border border-red-100">
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div class="flex items-center space-x-4">
@@ -4133,13 +4266,19 @@ async function viewUser(id) {
                                 </p>
                             </div>
                         </div>
-                        <span class="px-3 py-1 bg-white text-red-600 rounded-full text-xs font-medium border border-red-200 shadow-sm whitespace-nowrap">
-                            ID: ${id}
-                        </span>
+                        <div class="flex flex-col items-end gap-2">
+                            <span class="px-3 py-1 bg-white text-red-600 rounded-full text-xs font-medium border border-red-200 shadow-sm">
+                                ID: ${id}
+                            </span>
+                            <span class="px-3 py-1 rounded-full text-xs font-medium ${isDonor ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}">
+                                ${isDonor ? '❤️ Donor' : '👤 Patient Only'}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Donor Information Card -->
+                <!-- ── Donor Information (only for donors) ── -->
+                ${isDonor ? `
                 <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                     <div class="bg-gray-50 px-5 py-3 border-b border-gray-200">
                         <h4 class="font-semibold text-gray-900 flex items-center">
@@ -4148,33 +4287,49 @@ async function viewUser(id) {
                         </h4>
                     </div>
                     <div class="p-5">
-                        ${data.donor ? `
-                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                <div class="bg-red-50 rounded-lg p-3">
-                                    <p class="text-xs text-red-600 font-medium mb-1">Blood Type</p>
-                                    <p class="text-lg font-bold text-gray-900">${data.donor.blood_type || 'Not specified'}</p>
-                                </div>
-                                <div class="bg-blue-50 rounded-lg p-3">
-                                    <p class="text-xs text-blue-600 font-medium mb-1">Phone</p>
-                                    <p class="text-lg font-bold text-gray-900">${data.donor.phone || '-'}</p>
-                                </div>
-                                <div class="bg-green-50 rounded-lg p-3">
-                                    <p class="text-xs text-green-600 font-medium mb-1">City</p>
-                                    <p class="text-lg font-bold text-gray-900">${data.donor.city || '-'}</p>
-                                </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <div class="bg-red-50 rounded-lg p-3">
+                                <p class="text-xs text-red-600 font-medium mb-1">Blood Type</p>
+                                <p class="text-lg font-bold text-gray-900">
+                                    ${data.donor?.blood_type || data.blood_type || 'Not specified'}
+                                </p>
                             </div>
-                        ` : `
-                            <div class="text-center py-6">
-                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <i class="ri-user-unfollow-line text-2xl text-gray-400"></i>
-                                </div>
-                                <p class="text-gray-600">Not registered as a donor</p>
+                            <div class="bg-blue-50 rounded-lg p-3">
+                                <p class="text-xs text-blue-600 font-medium mb-1">Phone</p>
+                                <p class="text-lg font-bold text-gray-900">
+                                    ${data.donor?.phone || data.phone || '-'}
+                                </p>
                             </div>
-                        `}
+                            <div class="bg-green-50 rounded-lg p-3">
+                                <p class="text-xs text-green-600 font-medium mb-1">City / District</p>
+                                <p class="text-lg font-bold text-gray-900">
+                                    ${data.donor?.city || data.donor?.district || data.district || data.city || '-'}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                ` : `
+                <!-- ── Not a Donor notice ── -->
+                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                    <div class="bg-gray-50 px-5 py-3 border-b border-gray-200">
+                        <h4 class="font-semibold text-gray-900 flex items-center">
+                            <i class="ri-user-heart-line text-gray-400 mr-2"></i>
+                            Donor Information
+                        </h4>
+                    </div>
+                    <div class="p-5 text-center py-8">
+                        <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="ri-user-unfollow-line text-2xl text-gray-400"></i>
+                        </div>
+                        <p class="text-gray-700 font-medium">Not registered as a donor</p>
+                        <p class="text-xs text-gray-400 mt-1">This user has not signed up to donate blood</p>
+                    </div>
+                </div>
+                `}
 
-                <!-- Donation Status Card -->
+                <!-- ── Donation Status (only for donors) ── -->
+                ${isDonor ? `
                 <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                     <div class="bg-gray-50 px-5 py-3 border-b border-gray-200">
                         <h4 class="font-semibold text-gray-900 flex items-center">
@@ -4202,18 +4357,18 @@ async function viewUser(id) {
                                     <div class="w-10 h-10 ${data.eligibility_status?.toLowerCase().includes('eligible') ? 'bg-green-100' : 'bg-yellow-100'} rounded-full flex items-center justify-center mr-3 flex-shrink-0">
                                         <i class="ri-checkbox-circle-line ${data.eligibility_status?.toLowerCase().includes('eligible') ? 'text-green-600' : 'text-yellow-600'}"></i>
                                     </div>
-                                    <div>
-                                        <span class="px-3 py-1 rounded-full text-xs font-medium border ${getEligibilityBadge(data.eligibility_status)}">
-                                            ${data.eligibility_status || 'Unknown'}
-                                        </span>
-                                    </div>
+                                    <span class="px-3 py-1 rounded-full text-xs font-medium border ${getEligibilityBadge(data.eligibility_status)}">
+                                        ${data.eligibility_status || 'Unknown'}
+                                    </span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                ` : ''}
 
-                <!-- Donation History Card -->
+                <!-- ── Donation History (only for donors) ── -->
+                ${isDonor ? `
                 <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                     <div class="bg-gray-50 px-5 py-3 border-b border-gray-200 flex items-center justify-between">
                         <h4 class="font-semibold text-gray-900 flex items-center">
@@ -4221,51 +4376,66 @@ async function viewUser(id) {
                             Donation History
                         </h4>
                         <span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-medium">
-                            ${data.donation_history?.length || 0} donations
+                            ${(data.donation_history || data.donations || []).length} donations
                         </span>
                     </div>
                     <div class="p-5">
-                        ${!data.donation_history || data.donation_history.length === 0 ? `
+                        ${!(data.donation_history || data.donations || []).length ? `
                             <div class="text-center py-8">
-                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                                     <i class="ri-inbox-line text-2xl text-gray-400"></i>
                                 </div>
-                                <p class="text-gray-600">No donation history available</p>
-                                <p class="text-xs text-gray-400 mt-1">This user hasn't made any donations yet</p>
+                                <p class="text-gray-600">No donation history yet</p>
+                                <p class="text-xs text-gray-400 mt-1">Donations will appear here once completed</p>
                             </div>
                         ` : `
                             <div class="space-y-3">
-                                ${data.donation_history.map(d => `
+                                ${(data.donation_history || data.donations || []).map(d => `
                                     <div class="border border-gray-100 rounded-lg p-4 hover:bg-red-50 transition-colors">
                                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                                             <div class="flex items-center space-x-3">
                                                 <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
                                                     <i class="ri-heart-pulse-line text-red-600 text-sm"></i>
                                                 </div>
-                                                <span class="font-semibold text-gray-900">${d.blood_type || 'Unknown'}</span>
+                                                <span class="font-semibold text-gray-900">
+                                                    ${d.blood_type || data.donor?.blood_type || '—'}
+                                                </span>
                                             </div>
-                                            <span class="text-sm text-gray-500">
-                                                <i class="ri-time-line mr-1"></i>${formatDate(d.date)}
-                                            </span>
+                                            <div class="flex items-center gap-2">
+                                                <span class="px-2 py-1 rounded-full text-xs font-medium
+                                                    ${(d.status === 'verified' || d.status === 'completed') ? 'bg-green-100 text-green-700' :
+                                                      d.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                                      'bg-gray-100 text-gray-600'}">
+                                                    ${d.status || 'Completed'}
+                                                </span>
+                                                <span class="text-sm text-gray-500">
+                                                    ${timeAgo(d.donation_date || d.date || d.created_at)}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 text-sm">
-                                            <div>
-                                                <p class="text-gray-500">Hospital</p>
-                                                <p class="font-medium text-gray-900">${d.hospital || 'Unknown'}</p>
+                                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3 text-sm">
+                                            <div class="bg-gray-50 rounded-lg p-2">
+                                                <p class="text-xs text-gray-400 mb-0.5">Hospital</p>
+                                                <p class="font-medium text-gray-800">${d.hospital_name || d.hospital || 'Donation Center'}</p>
                                             </div>
-                                            <div>
-                                                <p class="text-gray-500">Units</p>
-                                                <p class="font-medium text-gray-900">${d.units || 1} unit(s)</p>
+                                            <div class="bg-gray-50 rounded-lg p-2">
+                                                <p class="text-xs text-gray-400 mb-0.5">Date</p>
+                                                <p class="font-medium text-gray-800">${formatDate(d.donation_date || d.date || d.created_at)}</p>
+                                            </div>
+                                            <div class="bg-gray-50 rounded-lg p-2">
+                                                <p class="text-xs text-gray-400 mb-0.5">Units</p>
+                                                <p class="font-medium text-gray-800">${d.units_donated || d.units || d.volume || '1'} unit(s)</p>
                                             </div>
                                         </div>
                                     </div>
-                                `).join("")}
+                                `).join('')}
                             </div>
                         `}
                     </div>
                 </div>
+                ` : ''}
 
-                <!-- Blood Requests Card -->
+                <!-- ── Blood Requests (always shown for everyone) ── -->
                 <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
                     <div class="bg-gray-50 px-5 py-3 border-b border-gray-200 flex items-center justify-between">
                         <h4 class="font-semibold text-gray-900 flex items-center">
@@ -4279,7 +4449,7 @@ async function viewUser(id) {
                     <div class="p-5">
                         ${!data.requests || data.requests.length === 0 ? `
                             <div class="text-center py-8">
-                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                                     <i class="ri-inbox-line text-2xl text-gray-400"></i>
                                 </div>
                                 <p class="text-gray-600">No blood requests found</p>
@@ -4316,6 +4486,7 @@ async function viewUser(id) {
                         `}
                     </div>
                 </div>
+
             </div>
         `;
 
@@ -5211,7 +5382,6 @@ ${
     renderCampTable(camps);
 }
 
-// ================= RENDER TABLE =================
 function renderCampTable(camps) {
     const table = document.getElementById('campsTableBody');
     if (!table) return;
@@ -5221,7 +5391,7 @@ function renderCampTable(camps) {
     if (!camps.length) {
         table.innerHTML = `
             <tr>
-                <td colspan="7" class="px-6 py-8 text-center text-gray-400">
+                <td colspan="6" class="px-6 py-8 text-center text-gray-400">
                     No camps to display
                 </td>
             </tr>`;
@@ -5246,52 +5416,27 @@ function renderCampTable(camps) {
                 <td class="px-6 py-4 text-gray-600">${c.location}</td>
                 <td class="px-6 py-4">
                     <span class="px-2 py-1 rounded-full text-xs font-medium
-                        ${isUpcoming
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-600'}">
+                        ${isUpcoming ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}">
                         ${isUpcoming ? 'Upcoming' : 'Past'}
                     </span>
                 </td>
-               <td class="px-6 py-4">
-    <div class="flex items-center gap-2">
-
-        ${
-            c.is_approved
-            ? `<span class="text-green-600 text-xs font-semibold">Approved</span>`
-            : `<span class="text-yellow-600 text-xs font-semibold">Pending</span>`
-        }
-
-       <td class="px-6 py-4">
-  <div class="flex items-center gap-2">
-
-    ${
-      !c.is_approved && (c.created_by === "partner" || c.created_by === "corporate")
-        ? `
-        <button onclick="approveCamp(${c.id})"
-            class="px-2 py-1 text-xs bg-green-600 text-white rounded">
-            Accept
-        </button>
-        <button onclick="rejectCamp(${c.id})"
-            class="px-2 py-1 text-xs bg-red-600 text-white rounded">
-            Decline
-        </button>
-        `
-        : c.is_approved
-        ? `<span class="text-green-600 text-xs font-semibold">✓ Approved</span>`
-        : `
-        <button onclick="editCamp(${c.id})"
-            class="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded">
-            Edit
-        </button>
-        <button onclick="deleteCamp(${c.id})"
-            class="px-2 py-1 text-xs bg-red-50 text-red-700 rounded">
-            Delete
-        </button>
-        `
-    }
-
-  </div>
-</td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-2">
+                        ${
+                            !c.is_approved && (c.created_by === "partner" || c.created_by === "corporate")
+                            ? `<button onclick="approveCamp(${c.id})"
+                                   class="px-2 py-1 text-xs bg-green-600 text-white rounded">Accept</button>
+                               <button onclick="rejectCamp(${c.id})"
+                                   class="px-2 py-1 text-xs bg-red-600 text-white rounded">Decline</button>`
+                            : c.is_approved
+                            ? `<span class="text-green-600 text-xs font-semibold">✓ Approved</span>`
+                            : `<button onclick="editCamp(${c.id})"
+                                   class="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded">Edit</button>
+                               <button onclick="deleteCamp(${c.id})"
+                                   class="px-2 py-1 text-xs bg-red-50 text-red-700 rounded">Delete</button>`
+                        }
+                    </div>
+                </td>
             </tr>
         `;
     }).join('');
@@ -5299,25 +5444,38 @@ function renderCampTable(camps) {
 
 // ================= OPEN MODAL (CREATE) =================
 function openCampModal() {
-    // Reset hidden edit ID
+    // Reset form fields
     document.getElementById('campEditId').value = '';
-
-    // Clear all fields
-    document.getElementById('campTitle').value       = '';
+    document.getElementById('campTitle').value = '';
     document.getElementById('campDescription').value = '';
-    document.getElementById('campHospital').value    = '';
-    document.getElementById('campDate').value        = '';
-    document.getElementById('campStartTime').value   = '';
-    document.getElementById('campEndTime').value     = '';
-    document.getElementById('campLocation').value    = '';
-    document.getElementById('campIsUrgent').checked  = false;
-
-    // Reset button label
-    const btnText = document.getElementById('campSaveBtnText');
-    if (btnText) btnText.textContent = 'Register Camp';
-
+    document.getElementById('campHospital').value = '';
+    document.getElementById('campDate').value = '';
+    document.getElementById('campStartTime').value = '';
+    document.getElementById('campEndTime').value = '';
+    document.getElementById('campLocation').value = '';
+    document.getElementById('campContactNumber').value = '';
+    document.getElementById('campMapLink').value = '';
+    document.getElementById('campIsUrgent').checked = false;
+    
+    // Update modal title and button text
+    document.getElementById('campModalTitle').textContent = 'Create Donation Camp';
+    document.getElementById('campSaveBtnText').textContent = 'Register Camp';
+    
+    // Hide any previous errors
     hideCampError();
-    document.getElementById('campModal').classList.remove('hidden');
+    
+    // Show modal with animation
+    const modal = document.getElementById('campModal');
+    const inner = document.getElementById('campModalInner');
+    modal.style.display = 'flex';
+    
+    // Trigger reflow for animation
+    setTimeout(() => {
+        if (inner) {
+            inner.classList.remove('scale-95', 'opacity-0');
+            inner.classList.add('scale-100', 'opacity-100');
+        }
+    }, 10);
 }
 
 // ================= OPEN MODAL (EDIT) =================
@@ -5327,185 +5485,292 @@ function editCamp(id) {
         showToast('error', 'Not Found', 'Camp data not found');
         return;
     }
-
-    document.getElementById('campEditId').value      = camp.id;
-    document.getElementById('campTitle').value       = camp.title       || '';
+    
+    // Populate form with existing data
+    document.getElementById('campEditId').value = camp.id;
+    document.getElementById('campTitle').value = camp.title || '';
     document.getElementById('campDescription').value = camp.description || '';
-    document.getElementById('campHospital').value    = camp.hospital_name || '';
-    document.getElementById('campDate').value        = camp.date        || '';
-    document.getElementById('campStartTime').value   = camp.start_time  || '';
-    document.getElementById('campEndTime').value     = camp.end_time    || '';
-    document.getElementById('campLocation').value    = camp.location    || '';
-    document.getElementById('campIsUrgent').checked  = camp.is_urgent   || false;
-
-    const btnText = document.getElementById('campSaveBtnText');
-    if (btnText) btnText.textContent = 'Save Changes';
-
+    document.getElementById('campHospital').value = camp.hospital_name || '';
+    document.getElementById('campDate').value = camp.date || '';
+    document.getElementById('campStartTime').value = camp.start_time || '';
+    document.getElementById('campEndTime').value = camp.end_time || '';
+    document.getElementById('campLocation').value = camp.location || '';
+    document.getElementById('campContactNumber').value = camp.contact_number || '';
+    document.getElementById('campMapLink').value = camp.map_link || '';
+    document.getElementById('campIsUrgent').checked = camp.is_urgent || false;
+    
+    // Update modal title and button text
+    document.getElementById('campModalTitle').textContent = 'Edit Donation Camp';
+    document.getElementById('campSaveBtnText').textContent = 'Save Changes';
+    
+    // Hide any previous errors
     hideCampError();
-    document.getElementById('campModal').classList.remove('hidden');
+    
+    // Show modal with animation
+    const modal = document.getElementById('campModal');
+    const inner = document.getElementById('campModalInner');
+    modal.style.display = 'flex';
+    
+    setTimeout(() => {
+        if (inner) {
+            inner.classList.remove('scale-95', 'opacity-0');
+            inner.classList.add('scale-100', 'opacity-100');
+        }
+    }, 10);
 }
 
 // ================= CLOSE MODAL =================
 function closeCampModal() {
-    document.getElementById('campModal').classList.add('hidden');
+    const modal = document.getElementById('campModal');
+    const inner = document.getElementById('campModalInner');
+    
+    if (inner) {
+        inner.classList.remove('scale-100', 'opacity-100');
+        inner.classList.add('scale-95', 'opacity-0');
+    }
+    
+    // Hide modal after animation completes
+    setTimeout(() => {
+        modal.style.display = 'none';
+        // Reset inner classes for next open
+        if (inner) {
+            inner.classList.remove('scale-95', 'opacity-0');
+            inner.classList.add('scale-100', 'opacity-100');
+        }
+    }, 200);
 }
 
 // ================= BACKDROP CLICK =================
 function handleCampModalBackdrop(event) {
-    if (event.target === document.getElementById('campModal')) {
+    const modal = document.getElementById('campModal');
+    if (event.target === modal) {
         closeCampModal();
     }
 }
-
+function validateCampForm() {
+    const title = document.getElementById('campTitle').value.trim();
+    const hospital = document.getElementById('campHospital').value.trim();
+    const date = document.getElementById('campDate').value;
+    const startTime = document.getElementById('campStartTime').value;
+    const endTime = document.getElementById('campEndTime').value;
+    const location = document.getElementById('campLocation').value.trim();
+    
+    if (!title) {
+        showCampError('Camp title is required');
+        return false;
+    }
+    
+    if (!hospital) {
+        showCampError('Hospital/organizer name is required');
+        return false;
+    }
+    
+    if (!date) {
+        showCampError('Camp date is required');
+        return false;
+    }
+    
+    if (!startTime) {
+        showCampError('Start time is required');
+        return false;
+    }
+    
+    if (!endTime) {
+        showCampError('End time is required');
+        return false;
+    }
+    
+    if (startTime >= endTime) {
+        showCampError('End time must be after start time');
+        return false;
+    }
+    
+    if (!location) {
+        showCampError('Location is required');
+        return false;
+    }
+    
+    return true;
+}
 // ================= SAVE (CREATE + UPDATE) =================
 async function saveCamp() {
-    const id        = document.getElementById('campEditId').value;
-    const title     = document.getElementById('campTitle').value.trim();
-    const hospital  = document.getElementById('campHospital').value.trim();
-    const date      = document.getElementById('campDate').value;
-    const startTime = document.getElementById('campStartTime').value;
-    const endTime   = document.getElementById('campEndTime').value;
-    const location  = document.getElementById('campLocation').value.trim();
-
-    // ── Validation ──
-    if (!title || !hospital || !date || !startTime || !endTime || !location) {
-        showCampError('Please fill in all required fields.');
+    // Validate form first
+    if (!validateCampForm()) {
         return;
     }
-    if (startTime >= endTime) {
-        showCampError('End time must be after start time.');
-        return;
-    }
-
+    
+    const id = document.getElementById('campEditId').value;
     const payload = {
-        title,
-        description:  document.getElementById('campDescription').value.trim(),
-        hospital_name: hospital,
-        date,
-        start_time:   startTime,
-        end_time:     endTime,
-        location,
-        is_urgent:    document.getElementById('campIsUrgent').checked
+        title: document.getElementById('campTitle').value.trim(),
+        description: document.getElementById('campDescription').value.trim(),
+        hospital_name: document.getElementById('campHospital').value.trim(),
+        date: document.getElementById('campDate').value,
+        start_time: document.getElementById('campStartTime').value,
+        end_time: document.getElementById('campEndTime').value,
+        location: document.getElementById('campLocation').value.trim(),
+        contact_number: document.getElementById('campContactNumber').value.trim(),
+        map_link: document.getElementById('campMapLink').value.trim(),
+        is_urgent: document.getElementById('campIsUrgent').checked
     };
-
-    const btn  = document.getElementById('campSaveBtn');
-    const text = document.getElementById('campSaveBtnText');
-
-    btn.disabled     = true;
-    text.textContent = id ? 'Saving...' : 'Creating...';
-
+    
+    const btn = document.getElementById('campSaveBtn');
+    const btnText = document.getElementById('campSaveBtnText');
+    const originalText = btnText.textContent;
+    
+    // Disable button and show loading state
+    btn.disabled = true;
+    btnText.innerHTML = '<i class="ri-loader-4-line animate-spin mr-2"></i> Saving...';
+    
     try {
-        const url    = id
+        const url = id 
             ? `${API_BASE}/api/admin/donation-camps/${id}/`
             : `${API_BASE}/api/admin/donation-camps/`;
         const method = id ? 'PUT' : 'POST';
-
-        const res  = await fetch(url, {
-            method,
+        
+        const response = await fetch(url, {
+            method: method,
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify(payload)
+            body: JSON.stringify(payload)
         });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-            showCampError(data.message || 'Failed to save camp.');
-            return;
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || data.error || `Server responded with ${response.status}`);
         }
-
+        
+        // Success
         showToast('success', 'Success', id ? 'Camp updated successfully' : 'Camp created successfully');
         closeCampModal();
-        loadCamps();
-
-    } catch (err) {
-        console.error(err);
-        showCampError('Network error. Please try again.');
+        loadCamps(); // Refresh the camps list
+        
+    } catch (error) {
+        console.error('Error saving camp:', error);
+        showCampError(error.message || 'Network error. Please try again.');
     } finally {
-        btn.disabled     = false;
-        text.textContent = id ? 'Save Changes' : 'Register Camp';
+        // Re-enable button and restore text
+        btn.disabled = false;
+        btnText.textContent = originalText;
     }
 }
+
 // ================= APPROVE =================
 async function approveCamp(id) {
+    if (!confirm('Approve this camp request? It will become visible to users.')) return;
+    
     try {
-        const res = await fetch(`${API_BASE}/api/admin/approve-camp/${id}/`, {
-            method: "PATCH"
+        const response = await fetch(`${API_BASE}/api/admin/approve-camp/${id}/`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' }
         });
-
-        if (res.ok) {
+        
+        if (response.ok) {
             showToast('success', 'Approved', 'Camp approved successfully');
             loadCamps();
         } else {
-            showToast('error', 'Failed', 'Could not approve camp');
+            const error = await response.json();
+            showToast('error', 'Failed', error.message || 'Could not approve camp');
         }
-    } catch {
+    } catch (error) {
+        console.error('Error approving camp:', error);
         showToast('error', 'Network Error', 'Failed to connect to server');
     }
 }
 // ================= DELETE =================
 async function rejectCamp(id) {
-    if (!confirm('Are you sure you want to reject this camp?')) return;
-
+    if (!confirm('Reject this camp request? This action cannot be undone.')) return;
+    
     try {
-        const res = await fetch(`${API_BASE}/api/admin/reject-camp/${id}/`, {
-            method: "DELETE"
+        const response = await fetch(`${API_BASE}/api/admin/reject-camp/${id}/`, {
+            method: 'DELETE'
         });
-
-        if (res.ok) {
+        
+        if (response.ok) {
             showToast('success', 'Rejected', 'Camp rejected successfully');
             loadCamps();
         } else {
-            showToast('error', 'Failed', 'Could not reject camp');
+            const error = await response.json();
+            showToast('error', 'Failed', error.message || 'Could not reject camp');
         }
-    } catch {
+    } catch (error) {
+        console.error('Error rejecting camp:', error);
+        showToast('error', 'Network Error', 'Failed to connect to server');
+    }
+}
+
+async function deleteCamp(id) {
+    if (!confirm('Are you sure you want to permanently delete this camp?')) return;
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/donation-camps/${id}/`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            showToast('success', 'Deleted', 'Camp deleted successfully');
+            loadCamps();
+        } else {
+            const error = await response.json();
+            showToast('error', 'Failed', error.message || 'Could not delete camp');
+        }
+    } catch (error) {
+        console.error('Error deleting camp:', error);
         showToast('error', 'Network Error', 'Failed to connect to server');
     }
 }
 // ================= EXPORT CSV =================
 function exportCampsCSV() {
-    if (!allCamps.length) {
+    if (!allCamps || allCamps.length === 0) {
         showToast('warning', 'No Data', 'No camps available to export');
         return;
     }
-
-    const headers = [
-        'Title', 'Hospital', 'Date', 'Start Time',
-        'End Time', 'Location',  'Urgent'
-    ];
-
-    const rows = allCamps.map(c => [
-        `"${(c.title          || '').replace(/"/g, '""')}"`,
-        `"${(c.hospital_name  || '').replace(/"/g, '""')}"`,
-        c.date        || '',
-        c.start_time  || '',
-        c.end_time    || '',
-        `"${(c.location       || '').replace(/"/g, '""')}"`,
-        c.is_urgent ? 'Yes' : 'No'
-    ]);
-
-    const csv  = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    
+    const headers = ['Title', 'Hospital', 'Date', 'Start Time', 'End Time', 'Location', 'Contact', 'Map Link', 'Urgent', 'Status'];
+    
+    const rows = allCamps.map(c => {
+        const today = new Date().toISOString().split('T')[0];
+        const status = c.date >= today ? 'Upcoming' : 'Past';
+        return [
+            `"${(c.title || '').replace(/"/g, '""')}"`,
+            `"${(c.hospital_name || '').replace(/"/g, '""')}"`,
+            c.date || '',
+            c.start_time || '',
+            c.end_time || '',
+            `"${(c.location || '').replace(/"/g, '""')}"`,
+            c.contact_number || '',
+            c.map_link || '',
+            c.is_urgent ? 'Yes' : 'No',
+            status
+        ];
+    });
+    
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-
-    a.href     = url;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    
+    a.href = url;
     a.download = `donation-camps-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
-    showToast('success', 'Exported', 'Camps exported to CSV successfully');
+    
+    showToast('success', 'Exported', `Successfully exported ${allCamps.length} camps`);
 }
 
 // ================= ERROR HELPERS =================
-function showCampError(msg) {
-    const el = document.getElementById('campFormError');
-    if (!el) return;
-    el.textContent = msg;
-    el.classList.remove('hidden');
+function showCampError(message) {
+    const errorDiv = document.getElementById('campFormError');
+    const errorText = document.getElementById('campFormErrorText');
+    
+    if (errorText) errorText.textContent = message;
+    if (errorDiv) errorDiv.classList.remove('hidden');
+    
     // Auto-hide after 5 seconds
-    setTimeout(() => el.classList.add('hidden'), 5000);
+    setTimeout(() => {
+        if (errorDiv) errorDiv.classList.add('hidden');
+    }, 5000);
 }
 
 function hideCampError() {
@@ -5552,135 +5817,141 @@ function hideCampError() {
     </div>
 </div>
 
-<div id="campModal"
-     class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4"
-     onclick="handleCampModalBackdrop(event)">
-
-    <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl"
-         onclick="event.stopPropagation()">
-
-        <!-- HEADER -->
-        <div class="bg-gradient-to-r from-red-600 to-red-500 px-6 py-5 rounded-t-2xl flex justify-between items-center flex-shrink-0">
-            <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                <i class="ri-flag-2-line"></i>
-                <span id="campModalTitle">Create Donation Camp</span>
-            </h3>
-            <button onclick="closeCampModal()"
-                    class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-1.5 transition">
-                <i class="ri-close-line text-xl"></i>
-            </button>
-        </div>
-
-        <!-- BODY (scrollable) -->
-        <div class="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-
-            <!-- Hidden edit ID -->
-            <input type="hidden" id="campEditId" value="" />
-
-            <!-- Title -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Camp Title <span class="text-red-500">*</span>
-                </label>
-                <input id="campTitle"
-                       placeholder="e.g. Annual Blood Donation Drive"
-                       class="w-full border border-gray-300 rounded-lg px-4 py-2.5
-                              focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
+<!-- ================= COMPLETE FIXED CAMP MODAL WITH VISIBLE BUTTONS ================= -->
+<div id="campModal" class="fixed inset-0 z-50 hidden" style="display: none; background: rgba(0, 0, 0, 0.5);">
+    <div class="flex items-center justify-center w-full h-full p-4" onclick="closeCampModal()">
+        <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl" onclick="event.stopPropagation()" style="max-height: 90vh; display: flex; flex-direction: column;">
+            
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-red-600 to-red-500 px-6 py-4 rounded-t-2xl flex justify-between items-center flex-shrink-0">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="ri-flag-2-line"></i>
+                    <span id="campModalTitle">Create Donation Camp</span>
+                </h3>
+                <button onclick="closeCampModal()" class="text-white/80 hover:text-white hover:bg-white/20 rounded-lg p-1.5 transition">
+                    <i class="ri-close-line text-xl"></i>
+                </button>
             </div>
 
-            <!-- Description -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea id="campDescription"
-                          placeholder="Describe the camp event..."
-                          rows="3"
-                          class="w-full border border-gray-300 rounded-lg px-4 py-2.5
-                                 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none"></textarea>
-            </div>
+            <!-- Scrollable Body -->
+            <div class="overflow-y-auto p-6" style="flex: 1;">
+                <input type="hidden" id="campEditId" value="" />
 
-            <!-- Hospital -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Hospital / Organizer <span class="text-red-500">*</span>
-                </label>
-                <input id="campHospital"
-                       placeholder="Organizing hospital or body"
-                       class="w-full border border-gray-300 rounded-lg px-4 py-2.5
-                              focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
-            </div>
-
-            <!-- Date + Times -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Date <span class="text-red-500">*</span>
+                <!-- Camp Title -->
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Camp Title <span class="text-red-500">*</span>
                     </label>
-                    <input id="campDate" type="date"
-                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5
-                                  focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
+                    <input id="campTitle" type="text" 
+                           placeholder="e.g., Annual Blood Donation Drive"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition" />
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Start Time <span class="text-red-500">*</span>
+
+                <!-- Description -->
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                    <textarea id="campDescription" rows="3"
+                              placeholder="Describe the camp event details..."
+                              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none transition"></textarea>
+                </div>
+
+                <!-- Hospital / Organizer -->
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Hospital / Organizer <span class="text-red-500">*</span>
                     </label>
-                    <input id="campStartTime" type="time"
-                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5
-                                  focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
+                    <input id="campHospital" type="text"
+                           placeholder="Organizing hospital or organization name"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition" />
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        End Time <span class="text-red-500">*</span>
+
+                <!-- Date, Start Time, End Time (3 columns) -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Date <span class="text-red-500">*</span>
+                        </label>
+                        <input id="campDate" type="date"
+                               class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Start Time <span class="text-red-500">*</span>
+                        </label>
+                        <input id="campStartTime" type="time"
+                               class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            End Time <span class="text-red-500">*</span>
+                        </label>
+                        <input id="campEndTime" type="time"
+                               class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition" />
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Location <span class="text-red-500">*</span>
                     </label>
-                    <input id="campEndTime" type="time"
-                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5
-                                  focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
+                    <input id="campLocation" type="text"
+                           placeholder="Full address or venue name"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition" />
+                </div>
+
+                <!-- Contact Number and Map Link (2 columns) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Contact Number
+                        </label>
+                        <input id="campContactNumber" type="tel"
+                               placeholder="e.g., 9800000000"
+                               class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Map Link (Optional)
+                        </label>
+                        <input id="campMapLink" type="url"
+                               placeholder="https://maps.google.com/..."
+                               class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition" />
+                    </div>
+                </div>
+
+                <!-- Urgent Toggle -->
+                <div class="mb-5">
+                    <label class="flex items-center gap-3 cursor-pointer select-none p-3 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition">
+                        <input type="checkbox" id="campIsUrgent" class="w-4 h-4 accent-red-600 cursor-pointer" />
+                        <div>
+                            <p class="text-sm font-medium text-gray-800">Mark as Urgent</p>
+                            <p class="text-xs text-gray-500">Camp will be highlighted to users as a priority</p>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Error Message -->
+                <div id="campFormError" class="hidden bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700 flex items-center gap-2">
+                    <i class="ri-error-warning-line flex-shrink-0"></i>
+                    <span id="campFormErrorText"></span>
                 </div>
             </div>
 
-            <!-- Location -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Location <span class="text-red-500">*</span>
-                </label>
-                <input id="campLocation"
-                       placeholder="Full address or venue name"
-                       class="w-full border border-gray-300 rounded-lg px-4 py-2.5
-                              focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" />
+            <!-- ========== FOOTER WITH BUTTONS - FIXED AND VISIBLE ========== -->
+            <div class="border-t border-gray-200 px-6 py-4 rounded-b-2xl flex justify-end gap-3" style="background: #f9fafb; flex-shrink: 0;">
+                <button onclick="closeCampModal()" 
+                        class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-medium transition duration-200 cursor-pointer"
+                        style="background: white;">
+                    Cancel
+                </button>
+                <button id="campSaveBtn" onclick="saveCamp()" 
+                        class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition duration-200 cursor-pointer flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        style="background: #dc2626;">
+                    <i class="ri-save-line"></i>
+                    <span id="campSaveBtnText">Register Camp</span>
+                </button>
             </div>
-            <!-- Urgent -->
-            <label class="flex items-center gap-3 cursor-pointer select-none p-3
-                          bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition">
-                <input type="checkbox" id="campIsUrgent"
-                       class="w-4 h-4 accent-red-600 cursor-pointer" />
-                <div>
-                    <p class="text-sm font-medium text-gray-800">Mark as Urgent</p>
-                    <p class="text-xs text-gray-500">Highlighted to users as a priority camp</p>
-                </div>
-            </label>
-
-            <!-- Error -->
-            <div id="campFormError"
-                 class="hidden text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm flex items-center gap-2">
-                <i class="ri-error-warning-line flex-shrink-0"></i>
-                <span></span>
-            </div>
-
-        </div>
-
-        <!-- FOOTER (always visible) -->
-        <div class="flex-shrink-0 bg-gray-50 border-t border-gray-200 px-6 py-4
-                    flex justify-end gap-3 rounded-b-2xl">
-            <button onclick="closeCampModal()"
-                    class="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg
-                           hover:bg-gray-100 font-medium transition">
-                Cancel
-            </button>
-            <button id="campSaveBtn" onclick="saveCamp()"
-                    class="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700
-                           font-medium transition flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
-                <i class="ri-flag-2-line"></i>
-                <span id="campSaveBtnText">Register Camp</span>
-            </button>
         </div>
     </div>
 </div>

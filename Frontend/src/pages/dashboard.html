@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
 <title>RedDrop Dashboard</title>
 
 <link href="../../dist/output.css" rel="stylesheet" />
@@ -10,6 +10,31 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
+  /* Universal size normalization */
+body {
+  font-size: 16px;
+}
+
+.text-5xl { font-size: 2rem !important; }
+.text-4xl { font-size: 1.8rem !important; }
+.text-3xl { font-size: 1.5rem !important; }
+.text-2xl { font-size: 1.3rem !important; }
+.text-xl { font-size: 1.125rem !important; }
+
+table th, table td {
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+}
+
+.stats-number {
+  font-size: 1.875rem !important;
+}
+
+.btn-primary, button, .btn-secondary {
+  font-size: 0.875rem;
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+}
 .section { display:none; }
 .section.active { display:block; animation: fadeIn 0.3s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -1527,7 +1552,7 @@
   </div>
 </section>
 
-   <!-- Enhanced Open Blood Requests Section -->
+   <!-- Enhanced Open Blood Requests Section - FIXED to use new public API -->
       <section id="openRequests" class="section">
         <div class="bg-white p-8 rounded-3xl shadow-2xl transform hover:shadow-3xl transition-all duration-500 border border-gray-100">
           <h2 class="text-4xl font-bold mb-2 text-gray-800 flex items-center gap-3">
@@ -1535,19 +1560,18 @@
             Open Blood Requests
           </h2>
           <p class="text-gray-600 mb-8 text-lg">
-            Approved blood requests you can help with
+            Approved blood requests waiting for donors
           </p>
 
           <div class="overflow-hidden rounded-2xl border border-gray-200">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
                 <tr>
+                  <th class="px-8 py-5 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Patient Name</th>
                   <th class="px-8 py-5 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Blood Group</th>
                   <th class="px-8 py-5 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Units</th>
                   <th class="px-8 py-5 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Hospital</th>
                   <th class="px-8 py-5 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Urgency</th>
-                  <th class="px-8 py-5 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Location</th>
-                  <th class="px-8 py-5 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Request ID</th>
                   <th class="px-8 py-5 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Action</th>
                 </tr>
               </thead>
@@ -2766,12 +2790,30 @@ async function loadDonationCamps() {
     }
   }
 
-  if (!donationCamps.length) {
-    container.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">No donation camps available right now.</div>`;
+  // Filter out camps whose date has already passed
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // normalize to start of today
+
+  const upcomingCamps = donationCamps.filter(camp => {
+    if (!camp.date) return true; // keep if no date (don't hide unknowns)
+    const campDate = new Date(camp.date);
+    campDate.setHours(0, 0, 0, 0);
+    return campDate >= today; // keep today and future camps
+  });
+
+  if (!upcomingCamps.length) {
+    container.innerHTML = `
+      <div class="col-span-full text-center py-16 text-gray-500">
+        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-campground text-gray-400 text-2xl"></i>
+        </div>
+        <p class="text-xl font-semibold text-gray-600">No Upcoming Camps</p>
+        <p class="text-sm text-gray-400 mt-2">Check back later for new donation camp announcements.</p>
+      </div>`;
     return;
   }
 
-  container.innerHTML = donationCamps.map(camp => {
+  container.innerHTML = upcomingCamps.map(camp => {
     const title        = camp.title || camp.name || 'Donation Camp';
     const hospitalName = camp.hospital_name || camp.organizer || 'RedDrop Partner';
     const timeText     = camp.time || ((camp.start_time || 'TBD') + ' - ' + (camp.end_time || 'TBD'));
@@ -2779,25 +2821,34 @@ async function loadDonationCamps() {
     const bloodTypes   = Array.isArray(camp.bloodTypesNeeded) && camp.bloodTypesNeeded.length
       ? camp.bloodTypesNeeded : ['All Types'];
 
-    // Build optional sections as plain strings first
+    // Check if camp is today — show "Today" badge
+    const campDate = new Date(camp.date);
+    campDate.setHours(0, 0, 0, 0);
+    const isToday = campDate.getTime() === today.getTime();
+
     const contactHTML = camp.contact_number
-      ? '<div class="flex items-center gap-3"><i class="fas fa-phone text-green-600"></i><a href="tel:' + camp.contact_number + '" class="text-green-600 font-semibold hover:underline">' + camp.contact_number + '</a></div>'
+      ? `<div class="flex items-center gap-3"><i class="fas fa-phone text-green-600"></i><a href="tel:${camp.contact_number}" class="text-green-600 font-semibold hover:underline">${camp.contact_number}</a></div>`
       : '';
 
     const mapHTML = camp.map_link
-      ? '<div><a href="' + camp.map_link + '" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:underline font-medium"><i class="fas fa-map"></i> View Location</a></div>'
+      ? `<div><a href="${camp.map_link}" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:underline font-medium"><i class="fas fa-map"></i> View Location</a></div>`
       : '';
 
-    const bloodBadges = bloodTypes.map(function(type) {
-      return '<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">' + type + '</span>';
-    }).join('');
+    const bloodBadges = bloodTypes.map(type =>
+      `<span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">${type}</span>`
+    ).join('');
 
     return `
       <div class="bg-gradient-to-br from-white to-red-50 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border border-red-100 overflow-hidden group">
         <div class="bg-gradient-to-r from-red-600 to-red-700 p-4">
           <div class="flex items-center justify-between">
             <h3 class="text-xl font-bold text-white">${title}</h3>
-            <i class="fas fa-tint text-white text-2xl opacity-80"></i>
+            <div class="flex items-center gap-2">
+              ${isToday
+                ? `<span class="px-2 py-1 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full animate-pulse">TODAY</span>`
+                : ''}
+              <i class="fas fa-tint text-white text-2xl opacity-80"></i>
+            </div>
           </div>
         </div>
         <div class="p-6 space-y-4">
@@ -2868,21 +2919,51 @@ function addCampsPreviewToHome() {
  
   const previewContainer = document.getElementById('campsPreviewContainer');
   if (previewContainer) {
-    previewContainer.innerHTML = donationCamps.slice(0, 3).map(camp => `
-      <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group cursor-pointer" onclick="showSection('donationCamps')">
-        <div class="bg-gradient-to-r from-red-500 to-red-600 p-3">
-          <div class="flex items-center justify-between">
-            <h4 class="font-bold text-white">${camp.title}</h4>
-            <i class="fas fa-tint text-white"></i>
+
+    // Filter out past camps for home preview too
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const upcomingCamps = donationCamps.filter(camp => {
+      if (!camp.date) return true;
+      const campDate = new Date(camp.date);
+      campDate.setHours(0, 0, 0, 0);
+      return campDate >= today;
+    });
+
+    if (!upcomingCamps.length) {
+      previewContainer.innerHTML = `
+        <div class="col-span-full text-center py-8 text-gray-400">
+          <i class="fas fa-campground text-3xl mb-3 opacity-40"></i>
+          <p>No upcoming camps right now</p>
+        </div>`;
+      return;
+    }
+
+    previewContainer.innerHTML = upcomingCamps.slice(0, 3).map(camp => {
+      const campDate = new Date(camp.date);
+      campDate.setHours(0, 0, 0, 0);
+      const isToday = campDate.getTime() === today.getTime();
+
+      return `
+        <div class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden group cursor-pointer" onclick="showSection('donationCamps')">
+          <div class="bg-gradient-to-r from-red-500 to-red-600 p-3">
+            <div class="flex items-center justify-between">
+              <h4 class="font-bold text-white">${camp.title || camp.name}</h4>
+              <div class="flex items-center gap-1">
+                ${isToday ? `<span class="px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full">TODAY</span>` : ''}
+                <i class="fas fa-tint text-white"></i>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="p-4 space-y-2">
-          <p class="text-sm flex items-center gap-2"><i class="fas fa-calendar text-red-500"></i> ${camp.date}</p>
-          <p class="text-sm flex items-center gap-2"><i class="fas fa-map-marker-alt text-red-500"></i> ${camp.location}</p>
-          <p class="text-sm text-gray-600">${camp.time || `${camp.start_time || 'TBD'} - ${camp.end_time || 'TBD'}`}</p>
-          <span class="inline-block mt-2 text-red-600 text-sm font-medium">View Details →</span>
-        </div>
-      </div>`).join('');
+          <div class="p-4 space-y-2">
+            <p class="text-sm flex items-center gap-2"><i class="fas fa-calendar text-red-500"></i> ${camp.date}</p>
+            <p class="text-sm flex items-center gap-2"><i class="fas fa-map-marker-alt text-red-500"></i> ${camp.location}</p>
+            <p class="text-sm text-gray-600">${camp.time || `${camp.start_time || 'TBD'} - ${camp.end_time || 'TBD'}`}</p>
+            <span class="inline-block mt-2 text-red-600 text-sm font-medium">View Details →</span>
+          </div>
+        </div>`;
+    }).join('');
   }
 }
  
@@ -3527,7 +3608,10 @@ async function loadUserCapabilities() {
     _s("profileDonations",  donations.total ?? 0);
     _s("donorScore",        data.donor_score ?? 0);
     _s("profileDonorStatus",data.donor_approved ? "Approved" : "Pending");
-    _s("donorAvailable",    data.donor_approved ? "Yes" : "No");
+   const lastRaw = data.donations?.last_date;
+const daysSince = lastRaw ? Math.floor((Date.now() - new Date(lastRaw)) / 86400000) : null;
+const isEligible = daysSince === null || daysSince >= MIN_GAP_DAYS;
+_s("donorAvailable", data.donor_approved && isEligible ? "Yes" : "No");
  
     // Last donation date
     const lastDonationEl        = document.getElementById("lastDonation");
@@ -3994,35 +4078,155 @@ function showNotification(message, type = "success") {
 // Fetches approved open blood requests visible to donors and renders them
 // in the Open Requests section table.
 // ─────────────────────────────────────────────────────────────────────────────
+// FIXED: loadOpenBloodRequests using the new public API
 async function loadOpenBloodRequests() {
-  if (!token) return;
+  const tbody = document.getElementById("openRequestsBody");
+  const noEl = document.getElementById("noOpenRequests");
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="6" class="px-8 py-12 text-center text-gray-400"><div class="flex flex-col items-center gap-3"><div class="w-12 h-12 border-4 border-red-200 border-t-red-600 rounded-full animate-spin"></div><p class="text-lg">Loading requests...</p></div></td></tr>`;
+
   try {
-    const res  = await fetch(`${API_BASE}/blood_requests/api/open-requests/`, { headers:{Authorization:`Bearer ${token}`} });
-    const data = await res.json();
-    const tbody= document.getElementById("openRequestsBody");
-    const noEl = document.getElementById("noOpenRequests");
- 
+    // Using the public endpoint - no auth required
+    const res = await fetch(`${API_BASE}/blood_requests/api/public-requests/`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    const requests = await res.json();
+    
     tbody.innerHTML = "";
-    if (!data.requests || !data.requests.length) { noEl?.classList.remove("hidden"); return; }
+    
+    if (!requests || requests.length === 0) {
+      noEl?.classList.remove("hidden");
+      return;
+    }
+    
     noEl?.classList.add("hidden");
- 
-    data.requests.forEach(req => {
+    
+    // Urgency badge styling
+    const urgencyStyles = {
+      critical: "bg-gradient-to-r from-red-100 to-red-50 text-red-700 border-red-200",
+      high: "bg-gradient-to-r from-orange-100 to-orange-50 text-orange-700 border-orange-200",
+      medium: "bg-gradient-to-r from-yellow-100 to-yellow-50 text-yellow-700 border-yellow-200",
+      low: "bg-gradient-to-r from-green-100 to-green-50 text-green-700 border-green-200"
+    };
+    
+    requests.forEach(req => {
+      const urgencyClass = urgencyStyles[req.urgency?.toLowerCase()] || urgencyStyles.medium;
       tbody.innerHTML += `
-        <tr class="hover:bg-red-50">
-          <td class="px-6 py-4 font-semibold">${req.blood_type}</td>
-          <td class="px-6 py-4">${req.units_required}</td>
-          <td class="px-6 py-4">${req.hospital}</td>
-          <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">${req.urgency}</span></td>
-          <td class="px-6 py-4">${req.location}</td>
-          <td class="px-6 py-4 font-mono text-sm">#${req.request_id}</td>
-          <td class="px-6 py-4">
-            <button onclick="markInterest(${req.request_id})" class="bg-[var(--brand-red)] hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm">I'm Willing to Donate</button>
+        <tr class="hover:bg-red-50/50 transition-colors duration-200">
+          <td class="px-8 py-5 whitespace-nowrap">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-user text-red-600"></i>
+              </div>
+              <span class="text-sm font-semibold text-gray-900">${escapeHtml(req.patient_name)}</span>
+            </div>
           </td>
-        </tr>`;
+          <td class="px-8 py-5 whitespace-nowrap">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-700">
+              <i class="fas fa-tint mr-1"></i>${req.blood_type}
+            </span>
+          </td>
+          <td class="px-8 py-5 whitespace-nowrap text-sm font-semibold text-gray-900">${req.units} units</td>
+          <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">${escapeHtml(req.hospital_name) || "N/A"}</td>
+          <td class="px-8 py-5 whitespace-nowrap">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${urgencyClass}">
+              <i class="fas fa-exclamation-circle mr-1"></i>${req.urgency?.charAt(0).toUpperCase() + req.urgency?.slice(1) || "Medium"}
+            </span>
+          </td>
+          <td class="px-8 py-5 whitespace-nowrap">
+            <button onclick="openPublicRequestModal('${escapeHtml(req.patient_name)}', '${req.blood_type}', ${req.units}, '${escapeHtml(req.hospital_name)}', '${req.urgency}')" 
+                    class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 shadow hover:shadow-lg transform hover:scale-105 flex items-center gap-2">
+              <i class="fas fa-hand-holding-heart"></i> I Can Help
+            </button>
+          </td>
+        </tr>
+      `;
     });
   } catch (err) {
-    console.error("Failed to load open requests", err);
-    showNotification("Failed to load open requests","error");
+    console.error("Failed to load open requests:", err);
+    tbody.innerHTML = `<tr><td colspan="6" class="px-8 py-12 text-center text-red-400"><i class="fas fa-exclamation-circle text-3xl mb-3 block"></i><p>Failed to load requests. Please try again.</p></td></tr>`;
+  }
+}
+// Helper function - define this BEFORE using it
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
+// FIXED: loadOpenBloodRequests using the new public API
+async function loadOpenBloodRequests() {
+  const tbody = document.getElementById("openRequestsBody");
+  const noEl = document.getElementById("noOpenRequests");
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="6" class="px-8 py-12 text-center text-gray-400"><div class="flex flex-col items-center gap-3"><div class="w-12 h-12 border-4 border-red-200 border-t-red-600 rounded-full animate-spin"></div><p class="text-lg">Loading requests...</p></div></td></tr>`;
+
+  try {
+    // Using the public endpoint - no auth required
+    const res = await fetch(`${API_BASE}/blood_requests/api/public-requests/`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    const requests = await res.json();
+    
+    tbody.innerHTML = "";
+    
+    if (!requests || requests.length === 0) {
+      noEl?.classList.remove("hidden");
+      return;
+    }
+    
+    noEl?.classList.add("hidden");
+    
+    // Urgency badge styling
+    const urgencyStyles = {
+      critical: "bg-gradient-to-r from-red-100 to-red-50 text-red-700 border-red-200",
+      high: "bg-gradient-to-r from-orange-100 to-orange-50 text-orange-700 border-orange-200",
+      medium: "bg-gradient-to-r from-yellow-100 to-yellow-50 text-yellow-700 border-yellow-200",
+      low: "bg-gradient-to-r from-green-100 to-green-50 text-green-700 border-green-200"
+    };
+    
+    requests.forEach(req => {
+      const urgencyClass = urgencyStyles[req.urgency?.toLowerCase()] || urgencyStyles.medium;
+      tbody.innerHTML += `
+        <tr class="hover:bg-red-50/50 transition-colors duration-200">
+          <td class="px-8 py-5 whitespace-nowrap">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-user text-red-600"></i>
+              </div>
+              <span class="text-sm font-semibold text-gray-900">${escapeHtml(req.patient_name)}</span>
+            </div>
+           </td>
+          <td class="px-8 py-5 whitespace-nowrap">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-700">
+              <i class="fas fa-tint mr-1"></i>${req.blood_type}
+            </span>
+           </td>
+          <td class="px-8 py-5 whitespace-nowrap text-sm font-semibold text-gray-900">${req.units} units</td>
+          <td class="px-8 py-5 whitespace-nowrap text-sm text-gray-900">${escapeHtml(req.hospital_name) || "N/A"}</td>
+          <td class="px-8 py-5 whitespace-nowrap">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${urgencyClass}">
+              <i class="fas fa-exclamation-circle mr-1"></i>${req.urgency?.charAt(0).toUpperCase() + req.urgency?.slice(1) || "Medium"}
+            </span>
+           </td>
+          <td class="px-8 py-5 whitespace-nowrap">
+            <button onclick="openPublicRequestModal('${escapeHtml(req.patient_name)}', '${req.blood_type}', ${req.units}, '${escapeHtml(req.hospital_name)}', '${req.urgency}')" 
+                    class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 shadow hover:shadow-lg transform hover:scale-105 flex items-center gap-2">
+              <i class="fas fa-hand-holding-heart"></i> I Can Help
+            </button>
+           </td>
+         </tr>
+      `;
+    });
+  } catch (err) {
+    console.error("Failed to load open requests:", err);
+    tbody.innerHTML = `<tr><td colspan="6" class="px-8 py-12 text-center text-red-400"><i class="fas fa-exclamation-circle text-3xl mb-3 block"></i><p>Failed to load requests. Please try again.</p></td></tr>`;
   }
 }
  
@@ -4053,40 +4257,108 @@ async function loadNotifications() {
  
   const headers = { "Authorization": `Bearer ${tok}` };
   try {
-    const [donorRes, patientRes] = await Promise.allSettled([
+    // Fetch notifications + user capabilities in parallel
+    const [donorRes, patientRes, capRes] = await Promise.allSettled([
       fetch(`${API_BASE}/api/donor/notifications/`, {headers}),
-      fetch(`${API_BASE}/blood_requests/api/patient-notifications/`, {headers})
+      fetch(`${API_BASE}/blood_requests/api/patient-notifications/`, {headers}),
+      fetch(`${API_BASE}/loginsignup/user-capabilities/`, {headers})
     ]);
+
+    // Check donor eligibility from capabilities
+    let isEligible = true;
+    let isDonor = false;
+    if (capRes.status === "fulfilled" && capRes.value.ok) {
+      const capData = await capRes.value.json();
+      isDonor = !!capData.is_donor;
+      const lastRaw = capData?.donations?.last_date;
+      const daysSince = lastRaw
+        ? Math.floor((Date.now() - new Date(lastRaw)) / 86400000)
+        : null;
+      isEligible = daysSince === null || daysSince >= MIN_GAP_DAYS;
+    }
+
     let notifications = [];
-    if (donorRes.status==="fulfilled"  && donorRes.value.ok)  { const d=await donorRes.value.json();  if(Array.isArray(d)) notifications=notifications.concat(d); }
-    if (patientRes.status==="fulfilled"&& patientRes.value.ok){ const d=await patientRes.value.json(); if(Array.isArray(d)) notifications=notifications.concat(d); }
-    notifications.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+    if (donorRes.status === "fulfilled" && donorRes.value.ok) {
+      const d = await donorRes.value.json();
+      if (Array.isArray(d)) notifications = notifications.concat(d);
+    }
+    if (patientRes.status === "fulfilled" && patientRes.value.ok) {
+      const d = await patientRes.value.json();
+      if (Array.isArray(d)) notifications = notifications.concat(d);
+    }
+
+    // Filter out blood request notifications for donors in cooldown
+    if (isDonor && !isEligible) {
+      notifications = notifications.filter(n =>
+        n.type !== "donor_request" && n.type !== "blood_request"
+      );
+    }
+
+    notifications.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
  
     list.innerHTML = "";
-    if (!notifications.length) { list.innerHTML=`<p class="p-4 text-gray-500 text-center">No notifications</p>`; badge?.classList.add("hidden"); return; }
- 
-    const unread = notifications.filter(n=>!n.is_read).length;
-    if (unread>0) { if(badge){badge.textContent=unread; badge.classList.remove("hidden");} }
-    else badge?.classList.add("hidden");
- 
-    notifications.forEach(n => {
-     let action = `markAsReadOnly(${n.id})`;
-if (n.type === "blood_request_approved") {
-    action = `handleApprovedNotificationClick(${n.id})`;
-} else if (n.type==="donor_request"||n.type==="blood_request"||(n.request_id&&n.type!=="donor_accept")) {
-    action = `handleDonorRequestClick(${n.id},${n.request_id})`;
-} else if (n.type==="donor_accept") {
-        const nm=(n.donor_name||"").replace(/'/g,"\\'");
-        const ph=(n.donor_phone||"").replace(/'/g,"\\'");
-        action = `openDonorModal(${n.id},'${nm}','${ph}','${n.distance||""}',${n.is_accepted?"true":"false"})`;
+    if (!notifications.length) {
+      // Show cooldown message for donors in cooldown instead of plain "No notifications"
+      if (isDonor && !isEligible) {
+        list.innerHTML = `
+          <div class="p-5 text-center">
+            <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <i class="fas fa-hourglass-half text-amber-500 text-xl"></i>
+            </div>
+            <p class="font-semibold text-gray-700">You're in cooldown period</p>
+            <p class="text-sm text-gray-500 mt-1">Blood request notifications are paused until you're eligible to donate again.</p>
+          </div>`;
+      } else {
+        list.innerHTML = `<p class="p-4 text-gray-500 text-center">No notifications</p>`;
       }
+      badge?.classList.add("hidden");
+      return;
+    }
+ 
+    const unread = notifications.filter(n => !n.is_read).length;
+    if (unread > 0) {
+      if (badge) { badge.textContent = unread; badge.classList.remove("hidden"); }
+    } else {
+      badge?.classList.add("hidden");
+    }
+ 
+    // Add cooldown banner at top of notification list if donor is in cooldown
+    if (isDonor && !isEligible) {
+      list.innerHTML = `
+        <div class="px-4 py-3 bg-amber-50 border-b border-amber-200 flex items-center gap-3">
+          <i class="fas fa-hourglass-half text-amber-500"></i>
+          <p class="text-xs text-amber-700 font-medium">
+            Blood request notifications are hidden — you're currently in your donation cooldown period.
+          </p>
+        </div>`;
+    }
+
+    notifications.forEach(n => {
+      let action = `markAsReadOnly(${n.id})`;
+      if (n.type === "blood_request_approved") {
+        action = `handleApprovedNotificationClick(${n.id})`;
+      } else if (
+        n.type === "donor_request" ||
+        n.type === "blood_request" ||
+        (n.request_id && n.type !== "donor_accept")
+      ) {
+        action = `handleDonorRequestClick(${n.id},${n.request_id})`;
+      } else if (n.type === "donor_accept") {
+        const nm = (n.donor_name || "").replace(/'/g, "\\'");
+        const ph = (n.donor_phone || "").replace(/'/g, "\\'");
+        action = `openDonorModal(${n.id},'${nm}','${ph}','${n.distance || ""}',${n.is_accepted ? "true" : "false"})`;
+      }
+
       list.innerHTML += `
-        <div class="p-4 border-b cursor-pointer hover:bg-gray-100 ${n.is_read?'opacity-60':'bg-red-50'}" onclick="${action}">
+        <div class="p-4 border-b cursor-pointer hover:bg-gray-100 ${n.is_read ? 'opacity-60' : 'bg-red-50'}" onclick="${action}">
           <p class="font-semibold">${n.title}</p>
           <p class="text-sm text-gray-600">${n.message}</p>
         </div>`;
     });
-  } catch (err) { console.error("Failed to load notifications", err); }
+
+  } catch (err) {
+    console.error("Failed to load notifications", err);
+  }
 }
  
 // ─────────────────────────────────────────────────────────────────────────────
