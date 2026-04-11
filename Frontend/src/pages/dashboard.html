@@ -820,7 +820,7 @@ table th, table td {
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent shimmer"></div>
           
           <h2 class="text-5xl font-bold mb-3 relative z-10 animate-slide-in">
-            Welcome back, <span id="userGreeting" class="text-yellow-300 drop-shadow-lg">User</span> 
+            Welcome back, <span id="userGreeting" class="text-yellow-300 drop-shadow-lg"></span> 
             <span class="inline-block animate-bounce">👋</span>
           </h2>
           <p class="text-red-100 text-xl relative z-10 animate-slide-in" style="animation-delay: 0.1s;">
@@ -899,7 +899,7 @@ table th, table td {
               </div>
             </div>
             
-            <div class="flex gap-4">
+            <!-- <div class="flex gap-4">
               <button onclick="showSection('donationSchedule')" class="bg-white text-green-700 px-8 py-4 rounded-2xl font-bold hover:bg-gray-50 transition-all duration-300 shadow-2xl hover:shadow-3xl transform hover:scale-110 hover:-translate-y-1 flex items-center gap-2 group">
                 <i class="fas fa-calendar-plus group-hover:animate-pulse"></i>
                 <span>Schedule First Donation</span>
@@ -908,7 +908,7 @@ table th, table td {
                 <i class="fas fa-info-circle"></i>
                 <span>Learn More</span>
               </button>
-            </div>
+            </div> -->
           </div>
         </div>
 
@@ -993,7 +993,7 @@ table th, table td {
               </div>
             </button>
 
-            <button id="quickCompatibleBtn" onclick="showSection('compatibleDonors')" class="hidden stats-card p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-purple-500 text-left group relative overflow-hidden">
+            <button id="quickCompatibleBtn" onclick="showSection('allDonors')" class="hidden stats-card p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-purple-500 text-left group relative overflow-hidden">
               <div class="absolute inset-0 bg-gradient-to-r from-purple-500/0 to-purple-500/0 group-hover:from-purple-500/5 group-hover:to-purple-500/0 transition-all duration-500"></div>
               <div class="flex items-center justify-between relative z-10">
                 <div>
@@ -1181,7 +1181,7 @@ table th, table td {
 </h3>
 <p class="text-gray-600 mt-2 text-lg">Registered donors available to help</p>
             </div>
-            <button onclick="showSection('compatibleDonors')" class="text-red-600 hover:text-red-800 font-medium group flex items-center gap-2 text-lg">
+            <button onclick="showSection('allDonors')" class="text-red-600 hover:text-red-800 font-medium group flex items-center gap-2 text-lg">
               View All 
               <i class="fas fa-arrow-right group-hover:translate-x-2 transition-transform duration-300"></i>
             </button>
@@ -1274,7 +1274,7 @@ table th, table td {
           </div>
           
           <div class="mt-8 text-center">
-            <button onclick="showSection('history'); switchHistoryTab('requests'); showRequestTab('donors')"
+            <button onclick="showSection('allDonors')"
         class="bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 px-10 py-4 rounded-xl hover:from-gray-200 hover:to-gray-300 transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:scale-105 inline-flex items-center gap-3 font-medium">
   <i class="fas fa-users text-red-600"></i>
   View All Donors
@@ -3593,8 +3593,49 @@ async function loadUserCapabilities() {
       _s("userStatus",  "Patient");
       return;
     }
- 
-    // Donor UI unlocks
+
+    // ── NEW: Donor registered but NOT yet approved by admin ──────────────────
+    if (!data.donor_approved) {
+      _s("profileRole", "Donor (Pending Approval)");
+      _s("userStatus",  "Donor (Pending)");
+
+      // Hide all donor-only UI
+      document.getElementById("donorNav")?.classList.add("hidden");
+      document.getElementById("donorStatsCard")?.classList.add("hidden");
+      document.getElementById("donorProfile")?.classList.add("hidden");
+      document.getElementById("donorContent")?.classList.add("hidden");
+      document.getElementById("donorBadge")?.classList.add("hidden");
+      document.getElementById("openRequestsNav")?.classList.add("hidden");
+      document.getElementById("openRequestsDesktopNav")?.classList.add("hidden");
+      document.getElementById("openRequestsMobileNav")?.classList.add("hidden");
+
+      // Show a pending approval message inside the donor section
+      const notDonorMsg = document.getElementById("notDonorMsg");
+      if (notDonorMsg) {
+        notDonorMsg.classList.remove("hidden");
+        notDonorMsg.innerHTML = `
+          <div class="flex items-center gap-6 relative z-10">
+            <div class="w-20 h-20 bg-yellow-200 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-hourglass-half text-yellow-600 text-3xl"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-2xl mb-2 text-gray-800">Approval Pending</h4>
+              <p class="text-gray-600 mb-4 text-lg">
+                Your donor registration has been submitted and is currently under review.
+                You will gain full donor access once an admin approves your account.
+              </p>
+              <span class="inline-flex items-center gap-2 px-5 py-2 bg-yellow-100 text-yellow-800
+                           rounded-full text-sm font-semibold border border-yellow-300">
+                <i class="fas fa-clock"></i> Awaiting Admin Approval
+              </span>
+            </div>
+          </div>`;
+      }
+      return;  // ← stop here, do not unlock any donor UI
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // ✅ Only reaches here when is_donor = true AND donor_approved = true
     document.getElementById("donorNav")?.classList.remove("hidden");
     document.getElementById("donorStatsCard")?.classList.remove("hidden");
     document.getElementById("donorProfile")?.classList.remove("hidden");
@@ -3608,10 +3649,11 @@ async function loadUserCapabilities() {
     _s("profileDonations",  donations.total ?? 0);
     _s("donorScore",        data.donor_score ?? 0);
     _s("profileDonorStatus",data.donor_approved ? "Approved" : "Pending");
-   const lastRaw = data.donations?.last_date;
-const daysSince = lastRaw ? Math.floor((Date.now() - new Date(lastRaw)) / 86400000) : null;
-const isEligible = daysSince === null || daysSince >= MIN_GAP_DAYS;
-_s("donorAvailable", data.donor_approved && isEligible ? "Yes" : "No");
+
+    const lastRaw = data.donations?.last_date;
+    const daysSince = lastRaw ? Math.floor((Date.now() - new Date(lastRaw)) / 86400000) : null;
+    const isEligible = daysSince === null || daysSince >= MIN_GAP_DAYS;
+    _s("donorAvailable", data.donor_approved && isEligible ? "Yes" : "No");
  
     // Last donation date
     const lastDonationEl        = document.getElementById("lastDonation");
@@ -4287,26 +4329,33 @@ async function loadNotifications() {
       if (Array.isArray(d)) notifications = notifications.concat(d);
     }
 
-    // Filter out blood request notifications for donors in cooldown
+    // Only hide notifications asking YOU to donate.
+    // Keep your own blood request notifications regardless of cooldown.
     if (isDonor && !isEligible) {
       notifications = notifications.filter(n =>
-        n.type !== "donor_request" && n.type !== "blood_request"
+        n.type !== "donor_request" &&  // hide: someone wants you to donate
+        n.type !== "blood_request"     // hide: general donate-now alerts
+        // KEPT: blood_request_approved → your request was approved by admin
+        // KEPT: donor_accept           → a donor accepted your blood request
       );
     }
 
     notifications.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
  
     list.innerHTML = "";
+
     if (!notifications.length) {
-      // Show cooldown message for donors in cooldown instead of plain "No notifications"
       if (isDonor && !isEligible) {
         list.innerHTML = `
           <div class="p-5 text-center">
             <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
               <i class="fas fa-hourglass-half text-amber-500 text-xl"></i>
             </div>
-            <p class="font-semibold text-gray-700">You're in cooldown period</p>
-            <p class="text-sm text-gray-500 mt-1">Blood request notifications are paused until you're eligible to donate again.</p>
+            <p class="font-semibold text-gray-700">No notifications yet</p>
+            <p class="text-sm text-gray-500 mt-1">
+              Donation request alerts are paused during your cooldown period.
+              You'll still be notified about your own blood requests.
+            </p>
           </div>`;
       } else {
         list.innerHTML = `<p class="p-4 text-gray-500 text-center">No notifications</p>`;
@@ -4322,37 +4371,68 @@ async function loadNotifications() {
       badge?.classList.add("hidden");
     }
  
-    // Add cooldown banner at top of notification list if donor is in cooldown
+    // Cooldown banner only mentions donation alerts are paused
     if (isDonor && !isEligible) {
       list.innerHTML = `
         <div class="px-4 py-3 bg-amber-50 border-b border-amber-200 flex items-center gap-3">
-          <i class="fas fa-hourglass-half text-amber-500"></i>
+          <i class="fas fa-hourglass-half text-amber-500 flex-shrink-0"></i>
           <p class="text-xs text-amber-700 font-medium">
-            Blood request notifications are hidden — you're currently in your donation cooldown period.
+            Donation request alerts paused during cooldown — 
+            your own blood request notifications are still active.
           </p>
         </div>`;
     }
 
     notifications.forEach(n => {
       let action = `markAsReadOnly(${n.id})`;
+
+      // ─── CASE 1: Admin approved YOUR blood request ───────────────────────
+      // Clicking navigates to History → Active Requests tab
       if (n.type === "blood_request_approved") {
         action = `handleApprovedNotificationClick(${n.id})`;
-      } else if (
-        n.type === "donor_request" ||
-        n.type === "blood_request" ||
-        (n.request_id && n.type !== "donor_accept")
-      ) {
-        action = `handleDonorRequestClick(${n.id},${n.request_id})`;
+
+      // ─── CASE 2: A donor accepted YOUR blood request ──────────────────────
+      // Clicking opens the donor details modal showing name, phone, distance
       } else if (n.type === "donor_accept") {
         const nm = (n.donor_name || "").replace(/'/g, "\\'");
         const ph = (n.donor_phone || "").replace(/'/g, "\\'");
         action = `openDonorModal(${n.id},'${nm}','${ph}','${n.distance || ""}',${n.is_accepted ? "true" : "false"})`;
+
+      // ─── CASE 3: Someone needs blood and YOU are the donor ────────────────
+      // Clicking opens the Accept/Decline request modal
+      } else if (
+        n.type === "donor_request" ||
+        n.type === "blood_request"
+      ) {
+        action = `handleDonorRequestClick(${n.id},${n.request_id})`;
       }
 
+      // Icon per notification type
+      const icon =
+        n.type === "blood_request_approved" ? "fa-check-circle text-green-500" :
+        n.type === "donor_accept"           ? "fa-user-check text-blue-500"    :
+        n.type === "donor_request" ||
+        n.type === "blood_request"          ? "fa-heartbeat text-red-500"      :
+                                              "fa-bell text-gray-400";
+
       list.innerHTML += `
-        <div class="p-4 border-b cursor-pointer hover:bg-gray-100 ${n.is_read ? 'opacity-60' : 'bg-red-50'}" onclick="${action}">
-          <p class="font-semibold">${n.title}</p>
-          <p class="text-sm text-gray-600">${n.message}</p>
+        <div
+          class="p-4 border-b cursor-pointer hover:bg-gray-100 transition-colors duration-200 ${n.is_read ? 'opacity-60' : 'bg-red-50'}"
+          onclick="${action}">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5
+              ${n.type === 'blood_request_approved' ? 'bg-green-100' :
+                n.type === 'donor_accept'           ? 'bg-blue-100'  :
+                n.type === 'donor_request' ||
+                n.type === 'blood_request'          ? 'bg-red-100'   : 'bg-gray-100'}">
+              <i class="fas ${icon} text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-sm text-gray-800">${n.title}</p>
+              <p class="text-xs text-gray-500 mt-0.5">${n.message}</p>
+              ${!n.is_read ? `<span class="inline-block mt-1 w-2 h-2 rounded-full bg-red-500"></span>` : ""}
+            </div>
+          </div>
         </div>`;
     });
 
@@ -4489,10 +4569,13 @@ async function openRequestModal(requestId) {
 function closeRequestModal() {
   const modal = document.getElementById("requestModal");
   modal.classList.add("hidden");
-  modal.style.display = "none";  // ✅ explicitly reset
+  modal.style.display = "none";
   selectedRequestId = null;
+  // reset button visibility for next open
+  document.querySelector("#requestModal .btn-accept")?.classList.remove("hidden");
+  document.querySelector("#requestModal .btn-decline")?.classList.remove("hidden");
 }
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────` 
 // acceptRequestFromModal() / declineRequest()
 // acceptRequestFromModal: POSTs acceptance to API; shows success/error toast.
 // declineRequest: POSTs decline to API; closes the modal.
@@ -4524,17 +4607,25 @@ async function declineRequest() {
   if (!selectedRequestId) return;
   const tok = localStorage.getItem("access_token");
   try {
-    const res  = await fetch(`${API_BASE}/api/donor/decline-request/`, {
-      method:"POST", headers:{Authorization:`Bearer ${tok}`,"Content-Type":"application/json"},
-      body:JSON.stringify({request_id:selectedRequestId})
+    const res = await fetch(`${API_BASE}/api/donor/decline-request/`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${tok}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ request_id: selectedRequestId })
     });
     const data = await res.json();
-    showNotification(data.message||"Request declined","warning");
-  } catch(err) { showNotification("Failed to decline request","error"); }
-  closeRequestModal();
-  loadNotifications();
+    if (!res.ok) {
+      showNotification(data.message || "Failed to decline request", "error");
+      return; // ← do NOT close modal on failure
+    }
+    showNotification(data.message || "Request declined", "warning");
+    closeRequestModal();
+    loadNotifications();
+  } catch (err) {
+    console.error("declineRequest error:", err);
+    showNotification("Network error declining request", "error");
+    // do NOT close modal here either
+  }
 }
- 
 // ─────────────────────────────────────────────────────────────────────────────
 // openDonorModal(id, name, phone, distance, isAccepted) / closeDonorModal()
 // Opens the patient-side modal showing which donor accepted their request.
@@ -4675,29 +4766,41 @@ function applyDonationCooldownUI(data) {
  
   document.getElementById("quickScheduleBtn")?.remove();
  
+  // Case 1: Not a donor at all → patient only
   if (!isDonor) {
-    [cooldownAlert,firstDonorAlert,eligibleAlert,progressSection,compatSection,compatChart,quickDonateBtn,quickCompatBtn,openReqNav,openReqDesktop,openReqMobile].forEach(hide);
-    [registerBtn,profileRegBtn,registerMobile].forEach(show);
+    [cooldownAlert, firstDonorAlert, eligibleAlert, progressSection,
+     compatSection, compatChart, quickDonateBtn, quickCompatBtn,
+     openReqNav, openReqDesktop, openReqMobile].forEach(hide);
+    [registerBtn, profileRegBtn, registerMobile].forEach(show);
     return;
   }
  
-  show(quickDonateBtn);
-  [registerBtn,profileRegBtn,registerMobile].forEach(hide);
- 
+  // Case 2: Donor registered but NOT yet approved by admin
+  // → hide everything on home, no donor alerts shown
+  // → the "Awaiting Admin Approval" message is already shown
+  //   inside the Donor section by loadUserCapabilities()
   if (!isApproved) {
-    [cooldownAlert,eligibleAlert,progressSection,compatSection,compatChart,quickCompatBtn,openReqNav,openReqDesktop,openReqMobile].forEach(hide);
-    show(firstDonorAlert);
+    [cooldownAlert, firstDonorAlert, eligibleAlert, progressSection,
+     compatSection, compatChart, quickDonateBtn, quickCompatBtn,
+     openReqNav, openReqDesktop, openReqMobile].forEach(hide);
+    [registerBtn, profileRegBtn, registerMobile].forEach(hide);
     return;
   }
+
+  // Case 3: Approved donor → unlock home page donor UI
+  show(quickDonateBtn);
+  [registerBtn, profileRegBtn, registerMobile].forEach(hide);
+  [openReqNav, openReqDesktop, openReqMobile, quickCompatBtn,
+   compatSection, compatChart].forEach(show);
  
-  [openReqNav,openReqDesktop,openReqMobile,quickCompatBtn,compatSection,compatChart].forEach(show);
- 
+  // Case 3a: Approved but never donated → show first donor alert
   if (!lastRaw) {
-    [cooldownAlert,eligibleAlert,progressSection].forEach(hide);
+    [cooldownAlert, eligibleAlert, progressSection].forEach(hide);
     show(firstDonorAlert);
     return;
   }
  
+  // Case 3b: Has donation history → calculate cooldown
   const daysSince   = Math.floor((Date.now() - new Date(lastRaw)) / 86400000);
   const daysLeft    = Math.max(0, MIN_GAP_DAYS - daysSince);
   const progressPct = Math.min(100, Math.round((daysSince / MIN_GAP_DAYS) * 100));
@@ -4705,10 +4808,12 @@ function applyDonationCooldownUI(data) {
   show(progressSection);
  
   if (daysLeft === 0) {
-    [cooldownAlert,firstDonorAlert].forEach(hide);
+    // Case 3b-i: Eligible to donate now
+    [cooldownAlert, firstDonorAlert].forEach(hide);
     show(eligibleAlert);
   } else {
-    [firstDonorAlert,eligibleAlert].forEach(hide);
+    // Case 3b-ii: Still in cooldown period
+    [firstDonorAlert, eligibleAlert].forEach(hide);
     show(cooldownAlert);
     _setText("daysLeft", daysLeft);
     const bar = document.getElementById("donationProgress");
@@ -4945,7 +5050,7 @@ console.log("[RedDrop] dashboard_script_updated.js loaded.")
 </div>
 <div id="requestModal"
      class="fixed inset-0 bg-black bg-opacity-50 hidden z-50"
-     style="display:none; align-items:center; justify-content:center;">
+     style="align-items:center; justify-content:center;">
   <div class="bg-white rounded-xl p-6 w-[400px]">
 
     <h2 class="text-lg font-bold mb-4">Blood Request</h2>
@@ -5024,18 +5129,18 @@ console.log("[RedDrop] dashboard_script_updated.js loaded.")
     <div class="px-8 py-6 space-y-5 max-h-[70vh] overflow-y-auto">
  
       <!-- Full Name -->
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2">
-          <i class="fas fa-user text-red-500 mr-2"></i>Full Name
-        </label>
-        <input
-          id="editName"
-          type="text"
-          placeholder="Enter your full name"
-          class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-800 font-medium focus:ring-4 focus:ring-red-100 focus:border-red-400 outline-none transition-all duration-200 hover:border-gray-300"
-        />
-      </div>
- 
+      <!-- REMOVE the existing editName input div and REPLACE with: -->
+<div>
+  <label class="block text-sm font-semibold text-gray-700 mb-2">
+    <i class="fas fa-user text-red-500 mr-2"></i>Full Name
+    <span class="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full font-medium">Locked</span>
+  </label>
+  <div class="w-full border-2 border-gray-100 bg-gray-50 rounded-xl px-4 py-3 flex items-center justify-between">
+    <span id="editNameDisplay" class="text-gray-500 font-medium">—</span>
+    <span class="text-xs text-gray-400 flex items-center gap-1"><i class="fas fa-lock text-xs"></i> Read-only</span>
+  </div>
+  <p class="text-xs text-gray-400 mt-1"><i class="fas fa-circle-info mr-1"></i>Contact support to update your name</p>
+</div>
       <!-- Phone Number -->
       <div>
         <label class="block text-sm font-semibold text-gray-700 mb-2">
@@ -5049,26 +5154,20 @@ console.log("[RedDrop] dashboard_script_updated.js loaded.")
         />
       </div>
  
-      <!-- Blood Type -->
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2">
-          <i class="fas fa-tint text-red-500 mr-2"></i>Blood Type
-        </label>
-        <select
-          id="editBloodType"
-          class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-800 font-medium focus:ring-4 focus:ring-red-100 focus:border-red-400 outline-none transition-all duration-200 hover:border-gray-300 bg-white">
-          <option value="">Select blood type</option>
-          <option value="A+">A+</option>
-          <option value="A-">A−</option>
-          <option value="B+">B+</option>
-          <option value="B-">B−</option>
-          <option value="AB+">AB+</option>
-          <option value="AB-">AB−</option>
-          <option value="O+">O+</option>
-          <option value="O-">O−</option>
-        </select>
-      </div>
- 
+      <!-- REMOVE the editBloodType select div and REPLACE with: -->
+<div>
+  <label class="block text-sm font-semibold text-gray-700 mb-2">
+    <i class="fas fa-tint text-red-500 mr-2"></i>Blood Type
+    <span class="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full font-medium">Locked</span>
+  </label>
+  <div class="w-full border-2 border-gray-100 bg-gray-50 rounded-xl px-4 py-3 flex items-center justify-between">
+    <span class="flex items-center gap-2">
+      <span id="editBloodTypeDisplay" class="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full">—</span>
+    </span>
+    <span class="text-xs text-gray-400 flex items-center gap-1"><i class="fas fa-lock text-xs"></i> Read-only</span>
+  </div>
+  <p class="text-xs text-gray-400 mt-1"><i class="fas fa-circle-info mr-1"></i>Blood type can only be set during registration</p>
+</div>
       <!-- District / Location -->
       <div>
         <label class="block text-sm font-semibold text-gray-700 mb-2">

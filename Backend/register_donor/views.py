@@ -110,7 +110,6 @@ def register_donor(request):
             "success": False,
             "message": "Server error"
         }, status=500)
-# ✅ UPDATED: Changed to POST and AllowAny
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def check_donor_approval(request):

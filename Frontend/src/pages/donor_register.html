@@ -266,15 +266,9 @@ border-right:1px solid #e5e7eb;z-index:1000}
 function preview(input, img) {
     input.addEventListener("change", () => {
         const f = input.files[0];
-        if (!f) {
-            img.classList.add("hidden");
-            return;
-        }
+        if (!f) { img.classList.add("hidden"); return; }
         const r = new FileReader();
-        r.onload = e => {
-            img.src = e.target.result;
-            img.classList.remove("hidden");
-        };
+        r.onload = e => { img.src = e.target.result; img.classList.remove("hidden"); };
         r.readAsDataURL(f);
     });
 }
@@ -285,15 +279,241 @@ preview(photo, photoPreview);
 
 /* ================= GLOBAL STATE ================= */
 let approvalInterval = null;
-let redirectTimeout = null;
-let isSubmitting = false;
+let redirectTimeout  = null;
+let isSubmitting     = false;
+
+
+/* ================= VALIDATION HELPERS ================= */
+
+function showError(el, msg) {
+    el.classList.add("border-red-500", "bg-red-50");
+    el.classList.remove("border-gray-300");
+    removeError(el);                          // clear any previous
+    const p = document.createElement("p");
+    p.className = "val-err text-xs text-red-600 mt-1 flex items-center gap-1";
+    p.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>${msg}`;
+    el.parentElement.appendChild(p);
+}
+
+function removeError(el) {
+    el.classList.remove("border-red-500", "bg-red-50");
+    el.parentElement.querySelector(".val-err")?.remove();
+}
+
+function showFileError(inputEl, msg) {
+    inputEl.parentElement.querySelector(".val-err")?.remove();
+    if (!msg) return;
+    const p = document.createElement("p");
+    p.className = "val-err text-xs text-red-600 mt-1 flex items-center gap-1";
+    p.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>${msg}`;
+    inputEl.parentElement.appendChild(p);
+}
+
+function showCheckboxError(checkboxEl, msg) {
+    checkboxEl.closest(".mt-4")?.querySelector(".val-err")?.remove();
+    if (!msg) return;
+    const p = document.createElement("p");
+    p.className = "val-err text-xs text-red-600 mt-1";
+    p.textContent = msg;
+    checkboxEl.closest(".mt-4")?.appendChild(p);
+}
+
+// Live-clear on input/change
+function attachLiveValidation() {
+    document.querySelectorAll("#donorFormContainer input:not([type=checkbox]):not([type=file]), #donorFormContainer select")
+        .forEach(el => {
+            el.addEventListener("input",  () => removeError(el));
+            el.addEventListener("change", () => removeError(el));
+        });
+
+    document.getElementById("citizenship").addEventListener("change", () =>
+        showFileError(document.getElementById("citizenship"), null));
+    document.getElementById("photo").addEventListener("change", () =>
+        showFileError(document.getElementById("photo"), null));
+
+    document.getElementById("terms").addEventListener("change", () =>
+        showCheckboxError(document.getElementById("terms"), null));
+}
+
+
+/* ================= MAIN VALIDATE ================= */
+function validateDonorForm() {
+    let valid = true;
+
+    const val  = id => document.querySelector(`[name="${id}"]`);
+    const valId = id => document.getElementById(id);
+
+    // ── Helpers ──
+    const req = (el, msg) => {
+        if (!el.value.trim()) { showError(el, msg); valid = false; return false; }
+        removeError(el); return true;
+    };
+    const regex = (el, re, msg) => {
+        if (!re.test(el.value.trim())) { showError(el, msg); valid = false; return false; }
+        removeError(el); return true;
+    };
+
+    // ── 1. First Name ──
+    const firstName = val("first_name");
+    if (req(firstName, "First name is required.")) {
+        regex(firstName, /^[A-Za-z\s'.]{2,}$/, "Enter a valid first name (letters only).");
+    }
+
+    // ── 2. Last Name ──
+    const lastName = val("last_name");
+    if (req(lastName, "Last name is required.")) {
+        regex(lastName, /^[A-Za-z\s'.]{1,}$/, "Enter a valid last name (letters only).");
+    }
+
+    // ── 3. Email ──
+    const email = val("email");
+    if (req(email, "Email is required.")) {
+        regex(email, /^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Enter a valid email address.");
+    }
+
+    // ── 4. Phone — Nepal mobile (97/98 + 8 digits) ──
+    const phone = val("phone_number");
+    if (req(phone, "Phone number is required.")) {
+        regex(phone, /^(97|98)\d{8}$/, "Enter a valid 10-digit Nepal mobile number (starts with 97 or 98).");
+    }
+
+    // ── 5. Date of Birth ──
+    const dobEl = valId("dob");
+    if (!dobEl.value) {
+        showError(dobEl, "Date of birth is required.");
+        valid = false;
+    } else {
+        const dob     = new Date(dobEl.value);
+        const today   = new Date();
+        const ageDiff = today.getFullYear() - dob.getFullYear();
+        const had18   = today >= new Date(dob.getFullYear() + 18, dob.getMonth(), dob.getDate());
+        const age     = had18 ? ageDiff : ageDiff - 1;
+
+        if (dob >= today) {
+            showError(dobEl, "Date of birth must be in the past.");
+            valid = false;
+        } else if (age < 18) {
+            showError(dobEl, "You must be at least 18 years old to donate.");
+            valid = false;
+        } else if (age > 65) {
+            showError(dobEl, "Donors must be 65 years old or younger.");
+            valid = false;
+        } else {
+            removeError(dobEl);
+        }
+    }
+
+    // ── 6. Gender ──
+    const gender = val("gender");
+    if (!gender.value) { showError(gender, "Please select a gender."); valid = false; }
+    else removeError(gender);
+
+    // ── 7. Blood Type ──
+    const bloodType = val("blood_type");
+    if (!bloodType.value) { showError(bloodType, "Please select a blood type."); valid = false; }
+    else removeError(bloodType);
+
+    // ── 8. Address ──
+    const address = val("address");
+    if (req(address, "Street address is required.")) {
+        if (address.value.trim().length < 5) {
+            showError(address, "Please enter a complete address.");
+            valid = false;
+        }
+    }
+
+    // ── 9. District ──
+    req(val("district"), "District is required.");
+
+    // ── 10. State ──
+    req(val("state"), "State / Province is required.");
+
+    // ── 11. Zip Code ──
+    const zip = val("zip_code");
+    if (req(zip, "Zip code is required.")) {
+        regex(zip, /^\d{5}$/, "Enter a valid 5-digit zip code.");
+    }
+
+    // ── 12. Emergency Contact Name ──
+    const ecName = val("emergency_contact_name");
+    if (req(ecName, "Emergency contact name is required.")) {
+        regex(ecName, /^[A-Za-z\s'.]{2,}$/, "Enter a valid name (letters only).");
+    }
+
+    // ── 13. Emergency Contact Phone ──
+    const ecPhone = val("emergency_contact_phone");
+    if (req(ecPhone, "Emergency contact phone is required.")) {
+        regex(ecPhone, /^(97|98)\d{8}$/, "Enter a valid 10-digit Nepal mobile number.");
+    }
+
+    // ── 14. Weight (min 50 kg) ──
+    const weightEl = valId("weight");
+    const wVal = parseInt(weightEl.value);
+    if (!weightEl.value) {
+        showError(weightEl, "Weight is required.");
+        valid = false;
+    } else if (isNaN(wVal) || wVal < 50) {
+        showError(weightEl, "Minimum weight is 50 kg to donate.");
+        valid = false;
+    } else if (wVal > 200) {
+        showError(weightEl, "Please enter a realistic weight (max 200 kg).");
+        valid = false;
+    } else {
+        removeError(weightEl);
+    }
+
+    // ── 15. Citizenship file ──
+    const citizenshipEl = valId("citizenship");
+    const cidFile = citizenshipEl.files[0];
+    if (!cidFile) {
+        showFileError(citizenshipEl, "Please upload your citizenship document.");
+        valid = false;
+    } else if (cidFile.size > 5 * 1024 * 1024) {
+        showFileError(citizenshipEl, "File exceeds 5 MB limit.");
+        valid = false;
+    } else {
+        showFileError(citizenshipEl, null);
+    }
+
+    // ── 16. Photo file ──
+    const photoEl = valId("photo");
+    const photoFile = photoEl.files[0];
+    if (!photoFile) {
+        showFileError(photoEl, "Please upload your photo.");
+        valid = false;
+    } else if (photoFile.size > 5 * 1024 * 1024) {
+        showFileError(photoEl, "File exceeds 5 MB limit.");
+        valid = false;
+    } else {
+        showFileError(photoEl, null);
+    }
+
+    // ── 17. Terms checkbox ──
+    const termsEl = valId("terms");
+    if (!termsEl.checked) {
+        showCheckboxError(termsEl, "You must agree to the terms & conditions.");
+        valid = false;
+    } else {
+        showCheckboxError(termsEl, null);
+    }
+
+    return valid;
+}
 
 
 /* ================= PREFILL USER ================= */
 window.addEventListener("DOMContentLoaded", () => {
-    getDonorLocation(); // ask permission early
+    getDonorLocation();
+    attachLiveValidation();
+
     const fullname = localStorage.getItem("fullname");
-    const email = localStorage.getItem("emailaddress");
+    const email    = localStorage.getItem("emailaddress");
 
     if (fullname) {
         const parts = fullname.split(" ");
@@ -303,7 +523,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     if (email) {
         const emailInput = document.querySelector("input[name='email']");
-        emailInput.value = email;
+        emailInput.value    = email;
         emailInput.readOnly = true;
     }
 
@@ -315,55 +535,37 @@ window.addEventListener("DOMContentLoaded", () => {
 
 function getDonorLocation() {
     return new Promise((resolve) => {
-        if (!navigator.geolocation) {
-            resolve(null);
-            return;
-        }
-
+        if (!navigator.geolocation) { resolve(null); return; }
         navigator.geolocation.getCurrentPosition(
-            (position) => {
-                resolve({
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude
-                });
-            },
-            (error) => {
-    console.warn("Location not allowed");
-    resolve(null);
-},
+            pos => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+            ()  => { console.warn("Location not allowed"); resolve(null); },
             { enableHighAccuracy: true, timeout: 10000 }
         );
     });
 }
+
+
 /* ================= REGISTER ================= */
 document.getElementById("registerBtn").addEventListener("click", async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
+
+    // Run validation — stop if any field fails
+    if (!validateDonorForm()) {
+        const firstErr = document.querySelector(".val-err");
+        firstErr?.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+    }
+
     isSubmitting = true;
 
-    const dob = document.getElementById("dob").value;
-    const weight = document.getElementById("weight").value;
-
-    const age = new Date().getFullYear() - new Date(dob).getFullYear();
-    if (age < 18) {
-        alert("Must be 18+ to donate");
-        isSubmitting = false;
-        return;
-    }
-
-    if (parseInt(weight) < 50) {
-        alert("Minimum 50kg required");
-        isSubmitting = false;
-        return;
-    }
-
     const formData = new FormData();
-        const location = await getDonorLocation();
-
+    const location = await getDonorLocation();
     if (location) {
-        formData.append("latitude", location.latitude);
+        formData.append("latitude",  location.latitude);
         formData.append("longitude", location.longitude);
     }
+
     document.querySelectorAll("#donorFormContainer input, #donorFormContainer select")
         .forEach(el => {
             if (!el.name) return;
@@ -382,15 +584,13 @@ document.getElementById("registerBtn").addEventListener("click", async (e) => {
 
     try {
         await fetch("http://localhost:8000/donor/register/", {
-    method: "POST",
-    headers: {
-        "Authorization": `Bearer ${localStorage.getItem("access_token")}`
-    },
-    body: formData
-});
-
+            method: "POST",
+            headers: { "Authorization": `Bearer ${localStorage.getItem("access_token")}` },
+            body: formData
+        });
     } catch (err) {
         console.warn("Submission interrupted", err);
+        isSubmitting = false;
     }
 });
 
@@ -400,7 +600,6 @@ function showWaitingPopup() {
     const modal = document.getElementById("approvalWaiting");
     modal.classList.remove("hidden");
     modal.style.display = "flex";
-
     redirectTimeout = setTimeout(goToDashboard, 5000);
 }
 
@@ -416,14 +615,13 @@ document.getElementById("cancelWaitingBtn").addEventListener("click", () => {
 /* ================= DASHBOARD ================= */
 function goToDashboard() {
     clearInterval(approvalInterval);
-    window.location.href = "index.html"; 
+    window.location.href = "index.html";
 }
 
 
 /* ================= APPROVAL POLLING ================= */
 function startApprovalCheck() {
     if (approvalInterval) return;
-
     const email = document.querySelector("input[name='email']").value;
 
     approvalInterval = setInterval(async () => {
@@ -433,10 +631,8 @@ function startApprovalCheck() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email })
             });
-
             if (!res.ok) return;
             const data = await res.json();
-
             if (data.approved || data.already_approved) {
                 clearInterval(approvalInterval);
                 clearTimeout(redirectTimeout);

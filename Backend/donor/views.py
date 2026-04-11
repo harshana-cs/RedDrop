@@ -426,3 +426,55 @@ def all_donors(request):
         })
  
     return Response({"donors": data, "total": len(data)})
+
+# ===============================
+# DONOR DECLINE BLOOD REQUEST
+# ===============================
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_donor_decline_request(request):
+    donor = Donor.objects.filter(email=request.user.email).first()
+    if not donor:
+        return Response({"error": "Donor not found"}, status=404)
+
+    request_id = request.data.get("request_id")
+    if not request_id:
+        return Response({"error": "Request ID required"}, status=400)
+
+    blood_request = get_object_or_404(BloodRequest, id=request_id)
+
+    # Logic: If a donor declines, we ensure the request is NOT fulfilled 
+    # so it remains visible to other potential donors.
+    blood_request.accepted_donor = None
+    blood_request.fulfilled = False
+    blood_request.save()
+
+    # --- Notifications ---
+    from django.contrib.auth.models import User
+    patient_user = User.objects.filter(
+        username=blood_request.patient.emailaddress
+    ).first()
+
+    # 1. Notify the Patient (Optional, but good for UX)
+    if patient_user:
+        Notification.objects.create(
+            user=patient_user,
+            blood_request=blood_request,
+            title="Donor Declined Request",
+            message=f"A potential donor ({donor.blood_type}) has declined the request. It remains open for others.",
+            type="donor_request_rejected"
+        )
+
+    # 2. System/Admin Log
+    Notification.objects.create(
+        title="Donor Declined Request",
+        message=f"Donor {donor.first_name} declined request #{blood_request.id}",
+        type="donor_request_rejected",
+        blood_request=blood_request
+        # user=None means it's a system/admin log
+    )
+
+    return Response({
+        "success": True, 
+        "message": "You have declined the request. It is now available for other donors."
+    })

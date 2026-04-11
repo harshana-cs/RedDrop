@@ -160,31 +160,38 @@
 <!-- VERIFICATION MODAL -->
 <div id="verifyModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
   <div class="bg-white w-11/12 max-w-md rounded-xl p-6 shadow-xl">
-    
-    <h2 class="text-2xl font-semibold text-gray-900 text-center">
-      Email Verification
-    </h2>
 
-    <p class="text-gray-600 text-sm text-center mt-2">
-      Enter the 6-digit code sent to your email
-    </p>
+    <!-- LOADING STATE -->
+    <div id="verifyLoading" class="text-center py-4">
+      <div class="flex justify-center mb-4">
+        <svg class="animate-spin h-12 w-12 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+        </svg>
+      </div>
+      <h2 class="text-xl font-semibold text-gray-900 mb-2">Sending verification code</h2>
+      <p class="text-gray-500 text-sm mb-4">We're sending a 6-digit code to your email.<br>This usually takes a few seconds.</p>
+      <div class="flex justify-center gap-2">
+        <span class="w-2 h-2 bg-red-600 rounded-full animate-bounce [animation-delay:0s]"></span>
+        <span class="w-2 h-2 bg-red-600 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+        <span class="w-2 h-2 bg-red-600 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+      </div>
+      <p class="text-xs text-gray-400 mt-4">Check your inbox and spam folder</p>
+    </div>
 
-    <input
-      id="verificationCode"
-      type="text"
-      maxlength="6"
-      placeholder="••••••"
-      class="mt-6 w-full text-center text-xl tracking-widest border rounded-lg py-3 focus:ring-red-500 focus:border-red-500"
-    />
+    <!-- CODE INPUT STATE (hidden initially) -->
+    <div id="verifyInput" class="hidden">
+      <h2 class="text-2xl font-semibold text-gray-900 text-center">Email Verification</h2>
+      <p class="text-gray-600 text-sm text-center mt-2">Enter the 6-digit code sent to your email</p>
+      <input id="verificationCode" type="text" maxlength="6" placeholder="••••••"
+        class="mt-6 w-full text-center text-xl tracking-widest border rounded-lg py-3 focus:ring-red-500 focus:border-red-500"/>
+      <button id="verifyCodeBtn"
+        class="mt-6 w-full bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700">
+        Verify Code
+      </button>
+      <p id="verifyError" class="text-red-600 text-sm text-center mt-3 hidden"></p>
+    </div>
 
-    <button
-      id="verifyCodeBtn"
-      class="mt-6 w-full bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700"
-    >
-      Verify Code
-    </button>
-
-    <p id="verifyError" class="text-red-600 text-sm text-center mt-3 hidden"></p>
   </div>
 </div>
 
@@ -236,13 +243,25 @@ window.handleGoogleLogin = async (response) => {
         return;
       }
 
-      // ✅ Store email temporarily for verification
-      window.__verifyEmail = data.email;
+     // ✅ Store email temporarily for verification
+window.__verifyEmail = data.email;
 
-      // ✅ Show verification modal
-      const modal = document.getElementById("verifyModal");
-      modal.classList.remove("hidden");
-      modal.classList.add("flex");
+// ✅ Show modal with LOADING state first
+const modal = document.getElementById("verifyModal");
+const verifyLoading = document.getElementById("verifyLoading");
+const verifyInput = document.getElementById("verifyInput");
+
+verifyLoading.classList.remove("hidden");  // show spinner
+verifyInput.classList.add("hidden");       // hide code input
+
+modal.classList.remove("hidden");
+modal.classList.add("flex");
+
+// ✅ After 4 seconds, switch to code input
+setTimeout(() => {
+  verifyLoading.classList.add("hidden");
+  verifyInput.classList.remove("hidden");
+}, 4000);
     }
 
   } catch (err) {

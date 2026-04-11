@@ -551,7 +551,7 @@
                                     <i class="fas fa-times mr-2"></i>
                                     Cancel
                                 </button>
-                                <button type="button" id="submitBtn" onclick="handleDemoSubmit()"
+                                <button type="button" id="submitBtn"
         class="bg-[var(--brand-red)] hover:bg-[var(--brand-red-dark)] text-white px-8 py-3.5 rounded-xl hover:shadow-lg transition-all duration-200 font-semibold hover:scale-105 flex items-center justify-center space-x-2">
     <i class="fas fa-paper-plane"></i>
     <span>Submit Request for Review</span>
@@ -699,7 +699,178 @@
         "Udayapur": ["Udayapur District Hospital"]
     };
 
-    // NOTIFICATION
+    // ─── VALIDATION HELPERS ───────────────────────────────────────────────────
+
+    function setFieldError(inputEl, message) {
+        if (!inputEl) return;
+        inputEl.classList.add('border-red-500', 'bg-red-50');
+        inputEl.classList.remove('border-gray-300');
+
+        // Remove any existing error for this field
+        const existing = inputEl.parentElement.querySelector('.field-error-msg');
+        if (existing) existing.remove();
+
+        const msg = document.createElement('p');
+        msg.className = 'field-error-msg text-xs text-red-600 mt-1 flex items-center gap-1';
+        msg.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+        inputEl.parentElement.appendChild(msg);
+    }
+
+    function clearFieldError(inputEl) {
+        if (!inputEl) return;
+        inputEl.classList.remove('border-red-500', 'bg-red-50');
+        inputEl.classList.add('border-gray-300');
+        const existing = inputEl.parentElement.querySelector('.field-error-msg');
+        if (existing) existing.remove();
+    }
+
+    function setUrgencyError(show) {
+        const grid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4');
+        const existing = document.getElementById('urgency-error-msg');
+        if (show) {
+            if (!existing) {
+                const msg = document.createElement('p');
+                msg.id = 'urgency-error-msg';
+                msg.className = 'text-xs text-red-600 mt-1 flex items-center gap-1';
+                msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please select an urgency level.';
+                grid?.parentElement.appendChild(msg);
+            }
+        } else {
+            existing?.remove();
+        }
+    }
+
+    function setFileError(fieldId, message) {
+        const statusEl = document.getElementById(fieldId + '-status');
+        const existing = document.getElementById(fieldId + '-error-msg');
+        if (existing) existing.remove();
+        if (message) {
+            const msg = document.createElement('p');
+            msg.id = fieldId + '-error-msg';
+            msg.className = 'text-xs text-red-600 mt-2 flex items-center gap-1';
+            msg.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+            statusEl?.parentElement.appendChild(msg);
+        }
+    }
+
+    // ─── FULL FORM VALIDATION ─────────────────────────────────────────────────
+
+    function validateForm() {
+        let isValid = true;
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+
+        // 1. Blood Group
+        const bloodGroupEl = document.getElementById('bloodGroup');
+        if (!bloodGroupEl.value) {
+            setFieldError(bloodGroupEl, 'Please select a blood group.');
+            isValid = false;
+        } else {
+            clearFieldError(bloodGroupEl);
+        }
+
+        // 2. Units Required
+        const unitsEl = document.getElementById('unitsRequired');
+        const units = parseInt(unitsEl.value);
+        if (!unitsEl.value || isNaN(units) || units < 1 || units > 10) {
+            setFieldError(unitsEl, 'Please enter a number between 1 and 10.');
+            isValid = false;
+        } else {
+            clearFieldError(unitsEl);
+        }
+
+        // 3. Urgency Level
+        const urgency = document.querySelector('input[name="urgency"]:checked')?.value;
+        if (!urgency) {
+            setUrgencyError(true);
+            isValid = false;
+        } else {
+            setUrgencyError(false);
+        }
+
+        // 4. District
+        const districtEl = document.getElementById('districtSelect');
+        if (!districtEl.value) {
+            setFieldError(districtEl, 'Please select a district.');
+            isValid = false;
+        } else {
+            clearFieldError(districtEl);
+        }
+
+        // 5. Hospital
+        const hospitalEl = document.getElementById('hospitalSelect');
+        if (!hospitalEl.value) {
+            setFieldError(hospitalEl, 'Please select a hospital.');
+            isValid = false;
+        } else {
+            clearFieldError(hospitalEl);
+        }
+
+        // 6. Required Date
+        const dateEl = document.getElementById('requiredDate');
+        const selectedDate = dateEl.value ? new Date(dateEl.value) : null;
+        if (!dateEl.value || selectedDate < today) {
+            setFieldError(dateEl, 'Please select today or a future date.');
+            isValid = false;
+        } else {
+            clearFieldError(dateEl);
+        }
+
+        // 7. Reason
+        const reasonEl = document.getElementById('reason');
+        if (!reasonEl.value.trim() || reasonEl.value.trim().length < 10) {
+            setFieldError(reasonEl, 'Please describe the reason (at least 10 characters).');
+            isValid = false;
+        } else {
+            clearFieldError(reasonEl);
+        }
+
+        // 8. Contact Name — letters, spaces, apostrophes, dots only
+        const nameEl = document.getElementById('contactName');
+        if (!nameEl.value.trim() || !/^[A-Za-z\s'.]{2,}$/.test(nameEl.value.trim())) {
+            setFieldError(nameEl, 'Enter a valid name (letters and spaces only).');
+            isValid = false;
+        } else {
+            clearFieldError(nameEl);
+        }
+
+        // 9. Contact Phone — Nepal mobile: 10 digits starting with 97 or 98
+        const phoneEl = document.getElementById('contactPhone');
+        if (!/^(97|98)\d{8}$/.test(phoneEl.value.trim())) {
+            setFieldError(phoneEl, 'Enter a valid 10-digit Nepal mobile number (starts with 97 or 98).');
+            isValid = false;
+        } else {
+            clearFieldError(phoneEl);
+        }
+
+        // 10. Hospital Document
+        const hospitalDoc = document.getElementById('hospitalDoc')?.files[0];
+        if (!hospitalDoc) {
+            setFileError('hospitalDoc', 'Please upload the hospital verification document.');
+            isValid = false;
+        } else if (hospitalDoc.size > 5 * 1024 * 1024) {
+            setFileError('hospitalDoc', 'File size exceeds 5MB limit.');
+            isValid = false;
+        } else {
+            setFileError('hospitalDoc', null);
+        }
+
+        // 11. Doctor's Note
+        const doctorNote = document.getElementById('doctorNote')?.files[0];
+        if (!doctorNote) {
+            setFileError('doctorNote', "Please upload the doctor's note or prescription.");
+            isValid = false;
+        } else if (doctorNote.size > 5 * 1024 * 1024) {
+            setFileError('doctorNote', 'File size exceeds 5MB limit.');
+            isValid = false;
+        } else {
+            setFileError('doctorNote', null);
+        }
+
+        return isValid;
+    }
+
+    // ─── NOTIFICATION ─────────────────────────────────────────────────────────
+
     function showNotification(message, isError = false) {
         const notification = document.getElementById('notification');
         const text = document.getElementById('notificationText');
@@ -712,26 +883,42 @@
         setTimeout(() => notification.classList.add('hidden'), 3000);
     }
 
-    // FILE UPLOAD HANDLER
+    // ─── FILE UPLOAD HANDLER ──────────────────────────────────────────────────
+
     function handleFileUpload(fieldId, input) {
         if (input.files && input.files[0]) {
+            const file = input.files[0];
+
+            // Clear any previous error
+            setFileError(fieldId, null);
+
+            // Validate size immediately on selection
+            if (file.size > 5 * 1024 * 1024) {
+                setFileError(fieldId, 'File size exceeds 5MB limit. Please choose a smaller file.');
+                input.value = ''; // reset input
+                document.getElementById(fieldId + '-status')?.classList.add('hidden');
+                return;
+            }
+
             const status = document.getElementById(fieldId + '-status');
             const nameSpan = document.getElementById(fieldId + '-name');
             if (status && nameSpan) {
-                nameSpan.textContent = input.files[0].name;
+                nameSpan.textContent = file.name;
                 status.classList.remove('hidden');
             }
         }
     }
 
-    // LOGOUT
+    // ─── LOGOUT ───────────────────────────────────────────────────────────────
+
     function logout() {
         localStorage.removeItem("user_email");
         localStorage.removeItem("access_token");
         window.location.href = "login-signup.html";
     }
 
-    // SUCCESS OVERLAY
+    // ─── SUCCESS OVERLAY ──────────────────────────────────────────────────────
+
     function showSuccessOverlay() {
         const form = document.getElementById("bloodRequestForm");
         form.reset();
@@ -786,7 +973,10 @@
         document.getElementById("goToHistoryBtn").onclick = () => window.location.href = "dashboard.html?tab=history";
         document.getElementById("newRequestBtn").onclick = () => document.body.removeChild(overlay);
     }
-async function handleDemoSubmit() {
+
+    // ─── DEMO SUBMIT (fallback) ───────────────────────────────────────────────
+
+    async function handleDemoSubmit() {
         const token = localStorage.getItem("access_token");
         if (!token) { showNotification("You are not logged in!", true); return; }
 
@@ -817,11 +1007,13 @@ async function handleDemoSubmit() {
         showSuccessOverlay();
     }
 
-    // ===================== DOM READY =====================
+    // ─── DOM READY ────────────────────────────────────────────────────────────
+
     document.addEventListener("DOMContentLoaded", function () {
 
         // Blood group compatibility display
         document.getElementById('bloodGroup')?.addEventListener('change', function () {
+            clearFieldError(this);
             const compatible = bloodGroupCompatibility[this.value];
             const compatibleInfo = document.getElementById('compatibleInfo');
             const compatibleList = document.getElementById('compatibleList');
@@ -840,6 +1032,7 @@ async function handleDemoSubmit() {
 
         // District → Hospital dropdown
         document.getElementById("districtSelect")?.addEventListener("change", function () {
+            clearFieldError(this);
             const hospitalDropdown = document.getElementById("hospitalSelect");
             hospitalDropdown.innerHTML = '<option value="">Select Hospital</option>';
             (hospitalsByDistrict[this.value] || []).forEach(h => {
@@ -850,9 +1043,16 @@ async function handleDemoSubmit() {
             const other = document.createElement("option");
             other.value = other.textContent = "Other";
             hospitalDropdown.appendChild(other);
+            // Reset hospital error when district changes
+            clearFieldError(document.getElementById("hospitalSelect"));
         });
 
-        // Radio button styling
+        // Hospital select live clear
+        document.getElementById("hospitalSelect")?.addEventListener("change", function () {
+            if (this.value) clearFieldError(this);
+        });
+
+        // Radio button styling + clear urgency error on select
         document.querySelectorAll('input[name="urgency"]').forEach(radio => {
             radio.addEventListener('change', function () {
                 document.querySelectorAll('input[name="urgency"]').forEach(r => {
@@ -861,6 +1061,14 @@ async function handleDemoSubmit() {
                 });
                 this.closest('label').classList.add('border-red-300', 'bg-red-50');
                 this.closest('label').classList.remove('border-gray-200');
+                setUrgencyError(false);
+            });
+        });
+
+        // Live clear on other inputs
+        ['unitsRequired', 'requiredDate', 'reason', 'contactName', 'contactPhone'].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', function () {
+                clearFieldError(this);
             });
         });
 
@@ -870,77 +1078,70 @@ async function handleDemoSubmit() {
             dateInput.setAttribute("min", new Date().toISOString().split("T")[0]);
         }
 
-        // ========== FORM SUBMIT ==========
-        const form = document.getElementById("bloodRequestForm");
-        if (form) {
-            form.addEventListener("submit", async function (e) {
-                e.preventDefault(); // ← FIRST LINE, always stops reload
+        // ── SUBMIT BUTTON (type="button") wires to validation ──
+        document.getElementById("submitBtn")?.addEventListener("click", async function () {
+            if (!validateForm()) {
+                // Scroll to first error
+                const firstError = document.querySelector('.field-error-msg, #urgency-error-msg, [class*="-error-msg"]');
+                firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                showNotification("Please fix the errors before submitting.", true);
+                return;
+            }
 
-                if (form.dataset.submitting === "true") return;
-                form.dataset.submitting = "true";
+            const form = document.getElementById("bloodRequestForm");
+            if (form.dataset.submitting === "true") return;
+            form.dataset.submitting = "true";
 
-                const token = localStorage.getItem("access_token");
-                if (!token) {
-                    showNotification("You are not logged in!", true);
-                    form.dataset.submitting = "false";
-                    setTimeout(() => window.location.href = "login-signup.html", 1500);
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                showNotification("You are not logged in!", true);
+                form.dataset.submitting = "false";
+                setTimeout(() => window.location.href = "login-signup.html", 1500);
+                return;
+            }
+
+            const urgency     = document.querySelector('input[name="urgency"]:checked')?.value;
+            const hospitalDoc = document.getElementById("hospitalDoc").files[0];
+            const doctorNote  = document.getElementById("doctorNote").files[0];
+
+            const formData = new FormData();
+            formData.append("blood_type",     document.getElementById("bloodGroup").value);
+            formData.append("units_required", document.getElementById("unitsRequired").value);
+            formData.append("district",       document.getElementById("districtSelect").value);
+            formData.append("hospital",       document.getElementById("hospitalSelect").value);
+            formData.append("required_date",  document.getElementById("requiredDate").value);
+            formData.append("reason",         document.getElementById("reason").value);
+            formData.append("contact_name",   document.getElementById("contactName").value);
+            formData.append("contact_phone",  document.getElementById("contactPhone").value);
+            formData.append("urgency",        urgency);
+            formData.append("hospital_doc",   hospitalDoc);
+            formData.append("doctor_note",    doctorNote);
+
+            try {
+                showNotification("Submitting request...");
+
+                const response = await fetch("http://127.0.0.1:8000/blood_requests/api/create/", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${token}` },
+                    body: formData
+                });
+
+                if (response.ok || response.status === 201) {
+                    showSuccessOverlay();
                     return;
                 }
 
-                const urgency = document.querySelector('input[name="urgency"]:checked')?.value;
-                if (!urgency) {
-                    showNotification("Please select urgency level", true);
-                    form.dataset.submitting = "false";
-                    return;
-                }
+                let data = {};
+                try { data = await response.json(); } catch (_) {}
+                showNotification(data.message || "Submission failed.", true);
+                form.dataset.submitting = "false";
 
-                const hospitalDoc = document.getElementById("hospitalDoc")?.files[0];
-                const doctorNote  = document.getElementById("doctorNote")?.files[0];
-                if (!hospitalDoc || !doctorNote) {
-                    showNotification("Please upload required documents", true);
-                    form.dataset.submitting = "false";
-                    return;
-                }
-
-                const formData = new FormData();
-                formData.append("blood_type",     document.getElementById("bloodGroup").value);
-                formData.append("units_required", document.getElementById("unitsRequired").value);
-                formData.append("district",       document.getElementById("districtSelect").value);
-                formData.append("hospital",       document.getElementById("hospitalSelect").value);
-                formData.append("required_date",  document.getElementById("requiredDate").value);
-                formData.append("reason",         document.getElementById("reason").value);
-                formData.append("contact_name",   document.getElementById("contactName").value);
-                formData.append("contact_phone",  document.getElementById("contactPhone").value);
-                formData.append("urgency",        urgency);
-                formData.append("hospital_doc",   hospitalDoc);
-                formData.append("doctor_note",    doctorNote);
-
-                try {
-                    showNotification("Submitting request...");
-
-                    const response = await fetch("http://127.0.0.1:8000/blood_requests/api/create/", {
-                        method: "POST",
-                        headers: { "Authorization": `Bearer ${token}` },
-                        body: formData
-                    });
-
-                    if (response.ok || response.status === 201) {
-                        showSuccessOverlay(); // ✅ show modal on success
-                        return;
-                    }
-
-                    let data = {};
-                    try { data = await response.json(); } catch (_) {}
-                    showNotification(data.message || "Submission failed", true);
-                    form.dataset.submitting = "false";
-
-                } catch (err) {
-                    console.error("Fetch error:", err);
-                    showNotification("Network error or server unavailable.", true);
-                    form.dataset.submitting = "false";
-                }
-            });
-        }
+            } catch (err) {
+                console.error("Fetch error:", err);
+                showNotification("Network error or server unavailable.", true);
+                form.dataset.submitting = "false";
+            }
+        });
     });
 </script>
 </body>

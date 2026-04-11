@@ -2050,12 +2050,31 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
     <script>
         function timeAgo(dateStr) {
     if (!dateStr) return '—';
-    const date = new Date(dateStr);
+
+    let date;
+
+    // Date-only string like "2026-04-06" — no time info from backend
+    // Parse as LOCAL midnight to avoid UTC offset shifting the day
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        const [year, month, day] = dateStr.split('-').map(Number);
+        date = new Date(year, month - 1, day); // local midnight, no UTC shift
+    } else {
+        // Has time info — normalize space to T and add Z if no timezone
+        let normalized = dateStr.replace(' ', 'T');
+        if (!normalized.endsWith('Z') && !normalized.includes('+')) {
+            normalized += 'Z';
+        }
+        date = new Date(normalized);
+    }
+
     if (isNaN(date)) return dateStr;
 
     const seconds = Math.floor((new Date() - date) / 1000);
 
-    if (seconds < 10)  return 'Just now';
+    // Negative means future date (like your 2026-04-07 entry)
+    if (seconds < 0)   return 'Scheduled';
+
+    if (seconds < 30)  return 'Just now';
     if (seconds < 60)  return `${seconds} seconds ago`;
 
     const minutes = Math.floor(seconds / 60);

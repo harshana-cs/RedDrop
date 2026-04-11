@@ -339,78 +339,74 @@
   </section>
 
   <!-- Camp Registration Modal -->
-  <div id="campModal" class="fixed inset-0 hidden items-center justify-center z-[1000] modal-overlay">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 animate-slide-in">
-      <div class="bg-[#B91C1C] text-white rounded-t-2xl px-6 py-4 flex justify-between items-center">
-        <h3 class="text-2xl font-bold">Register Donation Camp</h3>
-        <button onclick="closeCampModal()" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+<div id="campModal" class="fixed inset-0 hidden items-center justify-center z-[1000] modal-overlay">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 animate-slide-in flex flex-col max-h-[90vh]">
+    <div class="bg-[#B91C1C] text-white rounded-t-2xl px-6 py-4 flex justify-between items-center flex-shrink-0">
+      <h3 class="text-2xl font-bold">Register Donation Camp</h3>
+      <button onclick="closeCampModal()" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+    </div>
+    <form id="campRegistrationForm" class="overflow-y-auto flex-1 p-6 space-y-4">
+      <div>
+        <label class="block text-gray-700 font-semibold mb-2">Camp Title *</label>
+        <input type="text" id="campTitle" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
       </div>
-      <form id="campRegistrationForm" class="p-6 space-y-4">
+      
+      <div>
+        <label class="block text-gray-700 font-semibold mb-2">Description</label>
+        <textarea id="campDescription" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]"></textarea>
+      </div>
+      
+      <div>
+        <label class="block text-gray-700 font-semibold mb-2">Hospital/Organization Name *</label>
+        <input type="text" id="campHospital" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+      </div>
+      
+      <div>
+        <label class="block text-gray-700 font-semibold mb-2">Location *</label>
+        <input type="text" id="campLocation" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-gray-700 font-semibold mb-2">Camp Title *</label>
-          <input type="text" id="campTitle" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+          <label class="block text-gray-700 font-semibold mb-2">Date *</label>
+          <input type="date" id="campDate" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
         </div>
-        
         <div>
-          <label class="block text-gray-700 font-semibold mb-2">Description</label>
-          <textarea id="campDescription" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]"></textarea>
+          <label class="block text-gray-700 font-semibold mb-2">Start Time *</label>
+          <input type="time" id="campStartTime" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
         </div>
-        
-        <div>
-          <label class="block text-gray-700 font-semibold mb-2">Hospital/Organization Name *</label>
-          <input type="text" id="campHospital" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
-        </div>
-        
-        <div>
-          <label class="block text-gray-700 font-semibold mb-2">Location *</label>
-          <input type="text" id="campLocation" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
-        </div>
-        
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-gray-700 font-semibold mb-2">Date *</label>
-            <input type="date" id="campDate" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
-          </div>
-          <div>
-            <label class="block text-gray-700 font-semibold mb-2">Start Time *</label>
-            <input type="time" id="campStartTime" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-gray-700 font-semibold mb-2">End Time *</label>
           <input type="time" id="campEndTime" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
         </div>
-        <!-- 📞 Contact Number -->
-<div>
-  <label class="block text-gray-700 font-semibold mb-2">Contact Number *</label>
-  <input type="text" id="campContact" required
-    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
-</div>
-
-</div>
-
-<!-- 🗺 Map Link -->
-<div>
-  <label class="block text-gray-700 font-semibold mb-2">Google Map Link</label>
-  <input type="url" id="campMapLink"
-    placeholder="https://maps.google.com/?q=..."
-    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
-</div>
-        <div class="flex items-center">
-          <input type="checkbox" id="campUrgent" class="w-4 h-4 text-[#B91C1C] focus:ring-[#B91C1C]">
-          <label class="ml-2 text-gray-700">Mark as Urgent (requires immediate attention)</label>
+        <div>
+          <label class="block text-gray-700 font-semibold mb-2">Contact Number *</label>
+          <input type="text" id="campContact" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
         </div>
-        
-        <div id="campFormMessage" class="hidden p-3 rounded-lg text-sm"></div>
-        
-        <div class="flex gap-3 pt-4">
-          <button type="button" onclick="closeCampModal()" class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">Cancel</button>
-          <button type="submit" class="flex-1 bg-[#B91C1C] text-white px-4 py-2 rounded-lg hover:bg-[#991B1B] transition font-semibold">Submit for Approval</button>
-        </div>
-      </form>
-    </div>
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-2">Google Map Link</label>
+        <input type="url" id="campMapLink" placeholder="https://maps.google.com/?q=..." class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+      </div>
+
+      <div class="flex items-center">
+        <input type="checkbox" id="campUrgent" class="w-4 h-4 text-[#B91C1C] focus:ring-[#B91C1C]">
+        <label class="ml-2 text-gray-700">Mark as Urgent (requires immediate attention)</label>
+      </div>
+      
+      <div id="campFormMessage" class="hidden p-3 rounded-lg text-sm"></div>
+      
+      <div class="flex gap-3 pt-4">
+        <button type="button" onclick="closeCampModal()" class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+        <button type="submit" class="flex-1 bg-[#B91C1C] text-white px-4 py-2 rounded-lg hover:bg-[#991B1B] transition font-semibold">Submit for Approval</button>
+      </div>
+    </form>
   </div>
+</div>
 
   <!-- Blood Requests Section -->
   <section id="bloodRequests" class="py-24 bg-white">
@@ -449,7 +445,7 @@
     <div class="container mx-auto px-6">
       <div class="flex flex-col md:flex-row justify-between items-center">
         <div class="mb-8 md:mb-0"><div class="flex items-center space-x-3 mb-4"><div class="w-12 h-12 bg-white rounded-full flex items-center justify-center"><i class="fas fa-tint text-[#B91C1C] text-2xl"></i></div><h2 class="text-3xl font-bold">RedDrop</h2></div><p class="text-white/80 max-w-md">Connecting hearts through blood donation.<br>Every drop counts, every donor matters.</p><div class="flex space-x-4 mt-6"><a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-facebook-f"></i></a><a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-twitter"></i></a><a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-instagram"></i></a><a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-linkedin-in"></i></a></div></div>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-10"><div><h4 class="font-bold text-lg mb-4">Quick Links</h4><ul class="space-y-2"><li><a href="#why" class="text-white/80 hover:text-white transition">Why Donate</a></li><li><a href="#work" class="text-white/80 hover:text-white transition">Our Impact</a></li><li><a href="#stories" class="text-white/80 hover:text-white transition">Success Stories</a></li></ul></div><div><h4 class="font-bold text-lg mb-4">Resources</h4><ul class="space-y-2"><li><a href="#" class="text-white/80 hover:text-white transition">Donor Guide</a></li><li><a href="#" class="text-white/80 hover:text-white transition">Blood Safety</a></li><li><a href="hospital-login.html" class="text-white/80 hover:text-white transition">Hospital Portal</a></li></ul></div><div><h4 class="font-bold text-lg mb-4">Contact</h4><ul class="space-y-2"><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-phone"></i><span>+977-1-1234567</span></li><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-envelope"></i><span>help@reddrop.org</span></li><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-map-marker-alt"></i><span>Kathmandu, Nepal</span></li></ul></div></div>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-10"><div><h4 class="font-bold text-lg mb-4">Quick Links</h4><ul class="space-y-2"><li><a href="#why" class="text-white/80 hover:text-white transition">Why Donate</a></li><li><a href="#work" class="text-white/80 hover:text-white transition">Our Impact</a></li><li><a href="#stories" class="text-white/80 hover:text-white transition">Success Stories</a></li></ul></div><div><h4 class="font-bold text-lg mb-4">Resources</h4><ul class="space-y-2"><li><a href="#" class="text-white/80 hover:text-white transition">Donor Guide</a></li><li><a href="#" class="text-white/80 hover:text-white transition">Blood Safety</a></li><li><a href="hospital-login.html" class="text-white/80 hover:text-white transition">Hospital Portal</a></li></ul></div><div><h4 class="font-bold text-lg mb-4">Contact</h4><ul class="space-y-2"><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-phone"></i><span>+977-1-1234567</span></li><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-envelope"></i><span>rdrop7214@gmail.com</span></li><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-map-marker-alt"></i><span>Kathmandu, Nepal</span></li></ul></div></div>
       </div>
       <div class="border-t border-white/20 mt-10 pt-8 text-center"><p class="text-white/70">&copy; 2025 RedDrop | Digital Blood Bank. All Rights Reserved.</p><p class="text-white/60 text-sm mt-2">Made with <i class="fas fa-heart text-red-300"></i> for Nepal</p></div>
     </div>

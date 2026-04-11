@@ -32,5 +32,6 @@ urlpatterns = [
 ),
     path("approved-donors-basic/", approved_donors_basic_view),
     path("api/all-donors/",  all_donors),
+    path("decline-request/", api_donor_accept_request),  # Reusing the same view for declining, just with different logic inside
 
 ]
