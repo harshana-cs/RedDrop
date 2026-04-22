@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count
-# from Backend import hospital
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -19,6 +18,7 @@ from math import radians, sin, cos, sqrt, atan2
 from .models import HospitalLocation
 from adminpanel.models import Notification
 from .utils import get_coordinates_from_osm
+from rest_framework import status
 
 from .models import HospitalLocation
 
@@ -55,6 +55,7 @@ BLOOD_COMPATIBILITY = {
     "AB-": ["AB-", "AB+"],
     "AB+": ["AB+"],
 }
+
 # =========================================================
 # API – PATIENT DASHBOARD & HISTORY
 # =========================================================
@@ -83,7 +84,7 @@ def api_user_requests(request):
             "units_required": r.units_required,
             "urgency": r.urgency,
             "district": r.district,
-            "hospital_name": r.hospital_location.name if r.hospital_location else None,  # ✅ FIXED
+            "hospital_name": r.hospital_location.name if r.hospital_location else None,
             "status": r.status,
             "created_at": r.created_at,
             "donation_date": r.donation_date,
@@ -130,76 +131,167 @@ def api_user_requests(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def api_create_request(request):
+    """
+    Create a new blood request.
+    Returns JSON response with 201 status.
+    Does NOT redirect - returns JSON only.
+    """
+    print("\n" + "="*60)
+    print("🔵 API CREATE REQUEST STARTED")
+    print("="*60)
+    
     print("DATA  :", dict(request.data))
     print("FILES :", request.FILES)
+    
     try:
+        # ========================================
+        # STEP 1: Get Patient
+        # ========================================
+        print("\n📍 STEP 1: Getting patient...")
         patient = Patient.objects.filter(
             emailaddress=request.user.username
         ).first()
-
+ 
         if not patient:
-            return Response({"success": False, "message": "Patient not found"}, status=403)
-
+            print("❌ Patient not found")
+            return Response(
+                {"success": False, "message": "Patient not found"},
+                status=403
+            )
+        
+        print(f"✅ Patient found: {patient.fullname}")
+ 
+        # ========================================
+        # STEP 2: Get Hospital & District
+        # ========================================
+        print("\n📍 STEP 2: Getting hospital and district...")
         hospital_name = request.data.get("hospital")
         district      = request.data.get("district")
-
+ 
         if not hospital_name or not district:
-            return Response({"message": "Hospital and district are required"}, status=400)
-
+            print(f"❌ Missing: hospital={hospital_name}, district={district}")
+            return Response(
+                {"message": "Hospital and district are required"},
+                status=400
+            )
+        
+        print(f"✅ Hospital: {hospital_name}, District: {district}")
+ 
+        # ========================================
+        # STEP 3: Get or Create Hospital Location
+        # ========================================
+        print("\n📍 STEP 3: Getting hospital location...")
         hospital_location = HospitalLocation.objects.filter(
             name=hospital_name, district=district
         ).first()
-
+ 
         if not hospital_location:
-            print("Calling OSM...")
-            try:
-                lat, lon = get_coordinates_from_osm(hospital_name, district)
-                print(f"OSM result: {lat}, {lon}")
-            except Exception as e:
-                print(f"OSM FAILED: {e}")
-                lat, lon = None, None
-
+            print("   Hospital location not found, creating...")
             hospital_location = HospitalLocation.objects.create(
-                name=hospital_name, district=district,
-                latitude=lat, longitude=lon
+                name=hospital_name, 
+                district=district,
+                latitude=None, 
+                longitude=None
             )
-
-        print("Running serializer...")
+            print(f"✅ Created hospital location ID: {hospital_location.id}")
+            
+            # Background geocoding (async)
+            import threading
+            def geocode_later(loc_id, name, district):
+                try:
+                    from .utils import get_coordinates_from_osm
+                    lat, lon = get_coordinates_from_osm(name, district)
+                    HospitalLocation.objects.filter(id=loc_id).update(
+                        latitude=lat, longitude=lon
+                    )
+                    print(f"✅ Geocoded later: {lat}, {lon}")
+                except Exception as e:
+                    print(f"⚠️ Background OSM failed: {e}")
+            
+            threading.Thread(
+                target=geocode_later,
+                args=(hospital_location.id, hospital_name, district),
+                daemon=True
+            ).start()
+        else:
+            print(f"✅ Hospital location found ID: {hospital_location.id}")
+ 
+        # ========================================
+        # STEP 4: Validate Data with Serializer
+        # ========================================
+        print("\n📍 STEP 4: Running serializer...")
         serializer = BloodRequestSerializer(data=request.data)
-
-        print("Validating...")
+ 
+        print("   Validating serializer...")
         if not serializer.is_valid():
-            print("ERRORS:", serializer.errors)
+            print(f"❌ Serializer errors: {serializer.errors}")
             return Response(serializer.errors, status=400)
-
-        print("Saving...")
+        
+        print("✅ Serializer validation passed")
+ 
+        # ========================================
+        # STEP 5: Save Blood Request
+        # ========================================
+        print("\n📍 STEP 5: Saving blood request to database...")
         blood_request = serializer.save(
             patient=patient,
             hospital_location=hospital_location,
         )
-        print("Saved! ID:", blood_request.id)
-
+        print(f"✅ Blood request saved! ID: {blood_request.id}")
+        print(f"   Blood Type: {blood_request.blood_type}")
+        print(f"   Units: {blood_request.units_required}")
+        print(f"   Status: {blood_request.status}")
+ 
+        # ========================================
+        # STEP 6: Create Notification
+        # ========================================
+        print("\n📍 STEP 6: Creating notification...")
         try:
-            Notification.objects.create(
+            notification = Notification.objects.create(
                 title="New Blood Request",
                 message=f"{patient.fullname} requested {blood_request.blood_type} blood at {hospital_name}",
                 type="blood_request",
                 blood_request=blood_request,
-                user=None,
+                user=request.user,
                 hospital=None,
             )
-            print("Notification created.")
+            print(f"✅ Notification created ID: {notification.id}")
         except Exception as e:
-            print(f"Notification failed (non-fatal): {e}")
-
-        return Response({"success": True, "message": "Blood request submitted successfully"}, status=201)
-
+            print(f"⚠️ Notification failed (non-fatal): {e}")
+ 
+        # ========================================
+        # STEP 7: Return JSON Response (NOT redirect!)
+        # ========================================
+        print("\n📍 STEP 7: Preparing response...")
+        response_data = {
+            "success": True,
+            "message": "Blood request submitted successfully",
+            "id": blood_request.id,
+            "status": "pending_review",
+            "blood_type": blood_request.blood_type,
+            "hospital": hospital_name
+        }
+        print(f"✅ Response data: {response_data}")
+        print(f"\n🟢 About to return HTTP 201 (Created)")
+        print("="*60)
+        
+        # ✅ THIS IS THE CORRECT RETURN - NO REDIRECT!
+        return Response(response_data, status=status.HTTP_201_CREATED)
+ 
     except Exception as e:
+        print(f"\n❌ EXCEPTION CAUGHT: {str(e)}")
         import traceback
         traceback.print_exc()
-        return Response({"message": str(e)}, status=500)
+        print("="*60)
+        return Response(
+            {"message": str(e)},
+            status=500
+        )
+    
+    # This line should NEVER be reached
+    print("🔴 CODE REACHED END - THIS SHOULD NOT HAPPEN!")
 # =========================================================
-# API – PATIENT CONFIRM RECEIPT (ONLY CONFIRMATION)
+# API – PATIENT CONFIRM RECEIPT
 # =========================================================
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -227,14 +319,12 @@ def api_patient_confirm_receipt(request, request_id):
     # 🔐 Generate OTP
     otp = str(random.randint(1000, 9999))
 
-    # ✅ Store OTP (NO TIME EXPIRY)
     blood_request.patient_confirmed = True
     blood_request.fulfilled = False
     blood_request.otp = otp
-    blood_request.otp_expires_at = None   # 🔥 IMPORTANT
+    blood_request.otp_expires_at = None
     blood_request.save()
 
-    # ✅ Create / update confirmation
     DonationConfirmation.objects.update_or_create(
         request=blood_request,
         defaults={
@@ -247,7 +337,6 @@ def api_patient_confirm_receipt(request, request_id):
         "success": True,
         "confirmation_code": otp
     })
-
 
 
 # =========================================================
@@ -278,6 +367,8 @@ def api_patient_approved_request(request):
         "blood_type": approved_request.blood_type,
         "district": approved_request.district
     })
+
+
 def normalize_district(text):
     if not text:
         return ""
@@ -293,6 +384,8 @@ def normalize_district(text):
         text = text.replace(word, "")
 
     return text.strip()
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def api_compatible_donors_for_patient(request):
@@ -374,6 +467,7 @@ def api_compatible_donors_for_patient(request):
         "donors": matched_donors[:5]
     })
 
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def public_blood_requests(request):
@@ -381,7 +475,7 @@ def public_blood_requests(request):
     requests = (
         BloodRequest.objects
         .filter(status="pending")
-        .select_related("patient")   # optimize query
+        .select_related("patient")
     )
 
     data = []
@@ -402,14 +496,16 @@ def public_blood_requests(request):
 
     return Response(data)
 
+
 from donor.models import Donation
 from datetime import timedelta
 from django.utils import timezone
 
 MIN_GAP_DAYS = 56
 
-def is_donor_eligible(donor):
 
+def is_donor_eligible(donor):
+    """Check if donor is eligible to donate (keeps existing logic)"""
     last_donation = (
         Donation.objects
         .filter(donor=donor, status="verified")
@@ -425,41 +521,63 @@ def is_donor_eligible(donor):
     return timezone.now().date() >= next_allowed
 
 
+# CHANGE TO:
+def get_compatible_donors(blood_type):
+    return [                       # ✅ uses module-level dict directly
+        donor_blood
+        for donor_blood, receivers in BLOOD_COMPATIBILITY.items()
+        if blood_type in receivers
+    ]
+
 
 from django.core.mail import send_mail
 from django.conf import settings
-def send_donor_alert(donor, blood_request, distance):
 
-    subject = "Urgent Blood Donation Needed Near You"
 
-    message = f"""
-Hello {donor.first_name},
+# ✅ UPDATED send_donor_alert (LOCATION 10) — now accepts optional tier param
+def send_donor_alert(donor, blood_request, distance, tier=None):
+    """Send SMS + Email alert to a donor, with optional tier info."""
 
-A blood donation request has been approved near your location.
+    # ✅ SMS — keep under 160 chars
+    sms_message = (
+        f"🩸 {blood_request.blood_type} blood needed {round(distance, 1)}km away. "
+        f"Please login & donate. - RedDrop"
+    )
 
-Blood Group Needed: {blood_request.blood_type}
-Hospital: {blood_request.hospital_location.name}
-District: {blood_request.district}
+    if donor.phone_number:
+        from adminpanel.views import send_sms
+        send_sms(donor.phone_number, sms_message)
 
-Distance from you: {round(distance,2)} km
+    # ✅ Build tier text for subject
+    tier_text = f" (Tier {tier['tier']})" if tier else ""
 
-If you are willing to donate, please contact the patient:
+    subject = f"🩸 URGENT: {blood_request.blood_type} blood needed near you{tier_text}"
 
-Contact Person: {blood_request.contact_name}
-Phone: {blood_request.contact_phone}
+    message = f"""Hi {donor.first_name},
 
-Thank you for being a life saver ❤️
+{blood_request.blood_type} blood is urgently needed near you.
 
-RedDrop Blood Donation System
-"""
+Hospital : {blood_request.hospital_location.name if blood_request.hospital_location else 'N/A'}
+District : {blood_request.district}
+Distance : {round(distance, 1)} km
+Contact  : {blood_request.contact_phone}
+Required By : {blood_request.required_date.strftime('%Y-%m-%d') if blood_request.required_date else 'ASAP'}
+
+Please login to donate:
+http://localhost:5500/donor_dashboard.html
+
+Your help saves lives ❤️
+— RedDrop Team"""
 
     send_mail(
         subject,
         message,
-        settings.DEFAULT_FROM_EMAIL,
+        settings.EMAIL_HOST_USER,
         [donor.email],
         fail_silently=True
     )
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def api_patient_notifications(request):
@@ -475,7 +593,7 @@ def api_patient_notifications(request):
     for n in notifications:
         donor = None
         distance = None
-        blood_request = n.blood_request  # ✅ use local variable
+        blood_request = n.blood_request
 
         if blood_request and blood_request.accepted_donor:
             donor = blood_request.accepted_donor
@@ -501,20 +619,42 @@ def api_patient_notifications(request):
             "donor_name": f"{donor.first_name} {donor.last_name}".strip() if donor else None,
             "donor_phone": donor.phone_number if donor else None,
             "distance": round(distance, 2) if distance else None,
-            # ✅ fulfilled=True means donor accepted
             "is_accepted": blood_request.fulfilled if blood_request else False,
         })
 
     return Response(data)
 
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def api_request_status(request, request_id):
     blood_request = get_object_or_404(BloodRequest, id=request_id)
+    
+    donor_data = None
+    if blood_request.accepted_donor:
+        d = blood_request.accepted_donor
+        distance = None
+        if (d.latitude and d.longitude and
+            blood_request.hospital_location and
+            blood_request.hospital_location.latitude):
+            distance = haversine(
+                blood_request.hospital_location.latitude,
+                blood_request.hospital_location.longitude,
+                d.latitude,
+                d.longitude
+            )
+        donor_data = {
+            "name": f"{d.first_name} {d.last_name}".strip(),
+            "blood_type": d.blood_type,
+            "phone": d.phone_number,
+            "distance_km": round(distance, 2) if distance else None,
+        }
+
     return Response({
         "request_id": blood_request.id,
         "status": blood_request.status,
         "fulfilled": blood_request.fulfilled,
         "blood_type": blood_request.blood_type,
         "hospital": blood_request.hospital_location.name if blood_request.hospital_location else None,
+        "accepted_donor": donor_data,   # ✅ added
     })

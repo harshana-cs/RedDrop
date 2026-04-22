@@ -218,5 +218,71 @@ load_dotenv()
 ADMIN_SECRET_KEY = os.getenv("ADMIN_SECRET_KEY")
 
 # Sparrow SMS
-SMS_TOKEN = "v2_xRmgUORNX8vY8GJeLaAVzAmJDFG.Ocow"
+SMS_TOKEN = os.getenv("SMS_TOKEN")
 SMS_FROM = "Demo"  
+# =======================================================================
+# LOCATION 7: settings.py — ADD THIS ENTIRE BLOCK at the bottom
+# =======================================================================
+
+# ================= CELERY CONFIGURATION =================
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Kathmandu'
+CELERY_ENABLE_UTC = True
+
+# Task time limits
+CELERY_TASK_TIME_LIMIT = 30 * 60      # 30 minutes hard limit
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes soft limit
+
+# For development/testing — run tasks synchronously without Redis/Celery:
+# CELERY_ALWAYS_EAGER = True
+# CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+
+# ================= BLOOD BANK CONFIG =================
+BLOOD_BANK_CONTACT = "+977-1-4428888"
+BLOOD_BANK_EMAIL = "bloodbank@hospital.com"
+
+# ================= LOGGING =================
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'adminpanel': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'celery': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'celery_tasks': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}
+# settings.py
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',  # hides broken pipe (it's a WARNING level)
+            'propagate': False,
+        },
+    },
+}

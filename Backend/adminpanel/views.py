@@ -27,10 +27,16 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from .models import HospitalAuditLog, Notification
+# ✅ NEW IMPORTS for tiered notification system (LOCATION 8)
+import logging
+# from celery_tasks import orchestrate_tiered_notification
+# ✅ NEW IMPORTS for escalation tracking endpoints (LOCATION 9)
+from .models import BloodRequestEscalation, NotificationLog
 import random
 import requests
 # Add this with your other imports at the top
 from blood_requests.views import is_donor_eligible
+from celery_task import orchestrate_tiered_notification
 # Add this near the top of adminpanel/views.py
 BLOOD_COMPATIBILITY = {
     "O-": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
@@ -42,6 +48,9 @@ BLOOD_COMPATIBILITY = {
     "AB-": ["AB-", "AB+"],
     "AB+": ["AB+"],
 }
+
+# ✅ NEW: Logger instance (LOCATION 8)
+logger = logging.getLogger(__name__)
 
 # ================= HELPER =================
 def fetch_hospital_coordinates(hospital_name):
@@ -210,6 +219,7 @@ def admin_pending_donor_registrations(request):
     })
 
 
+# ================= APPROVE BLOOD REQUEST (MODIFIED - LOCATION 1) =================
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def admin_approve_blood_request(request, request_id):
@@ -231,7 +241,8 @@ def admin_approve_blood_request(request, request_id):
     blood_request.patient_confirmed = False
     blood_request.fulfilled = False
     blood_request.save()
-    # ✅ Notify the patient that their request was approved
+
+    # ✅ NOTIFY PATIENT that their request was approved
     if blood_request.patient:
         patient_user = User.objects.filter(
             username=blood_request.patient.emailaddress
@@ -245,7 +256,7 @@ def admin_approve_blood_request(request, request_id):
                 message=(
                     f"Your blood request for {blood_request.blood_type} blood at "
                     f"{blood_request.hospital_location.name if blood_request.hospital_location else 'the hospital'} "
-                    f"has been approved by admin. Please wait while we find eligible donors near you."
+                    f"has been approved by admin. Searching for donors..."
                 ),
                 type="blood_request_approved_by_admin"
             )
@@ -253,118 +264,21 @@ def admin_approve_blood_request(request, request_id):
         else:
             print(f"⚠️ No Django User found for patient: {blood_request.patient.emailaddress}")
 
-    hospital = blood_request.hospital_location
+    # 🔴 START TIERED NOTIFICATION SYSTEM (LOCATION 1)
+    logger.info(f"🚀 Starting tiered notification for request #{blood_request.id}")
 
-    # ✅ FIX 1: If hospital has no coordinates, try to fetch them now
-    if hospital and (not hospital.latitude or not hospital.longitude):
-        lat, lon = fetch_hospital_coordinates(hospital.name)
-        if lat and lon:
-            hospital.latitude = lat
-            hospital.longitude = lon
-            hospital.save()
-            print(f"✅ Fetched coordinates for {hospital.name}: {lat}, {lon}")
-        else:
-            print(f"❌ Could not fetch coordinates for hospital: {hospital.name}")
+    # Option A: Using Celery (RECOMMENDED for production)
+    orchestrate_tiered_notification.delay(blood_request.id)
 
-    if hospital and hospital.latitude and hospital.longitude:
-        compatible_groups = [
-            donor_blood
-            for donor_blood, receivers in BLOOD_COMPATIBILITY.items()
-            if blood_request.blood_type in receivers
-        ]
-
-        # ✅ FIX 2: Removed latitude/longitude filter to catch ALL approved donors
-        # We'll check distance manually and skip donors with no coords
-        donors = Donor.objects.filter(
-            is_approved=True,
-            blood_type__in=compatible_groups,
-        )
-
-        # ✅ FIX 3: Safe patient exclusion (patient could be None)
-        if blood_request.patient:
-            donors = donors.exclude(email=blood_request.patient.emailaddress)
-
-        print(f"=== APPROVAL DEBUG for Request #{blood_request.id} ===")
-        print(f"Hospital: {hospital.name} | lat: {hospital.latitude} | lon: {hospital.longitude}")
-        print(f"Compatible blood groups: {compatible_groups}")
-        print(f"Total approved compatible donors: {donors.count()}")
-
-        alerted_count = 0
-
-        for donor in donors:
-
-            # ✅ FIX 4: Skip donors with no coordinates but log it
-            if not donor.latitude or not donor.longitude:
-                print(f"  ⚠️ Donor {donor.email} has no coordinates — skipping")
-                continue
-
-            # ✅ skip donors in cooldown period
-            if not is_donor_eligible(donor):
-                print(f"  ⏳ Donor {donor.email} is in cooldown — skipping")
-                continue
-
-            distance = haversine(
-                hospital.latitude,
-                hospital.longitude,
-                donor.latitude,
-                donor.longitude
-            )
-
-            print(f"  Donor: {donor.email} | blood: {donor.blood_type} | distance: {round(distance, 2)} km")
-
-            if distance <= 15:
-                print(f"  ✅ Sending alert to {donor.email}")
-
-                # ✅ FIX 5: Wrap send_donor_alert in try/except so one failure
-                # doesn't stop other donors from being notified
-                try:
-                    send_donor_alert(donor, blood_request, distance)
-                    alerted_count += 1
-                except Exception as e:
-                    print(f"  ❌ Alert failed for {donor.email}: {e}")
-
-                donor_user = User.objects.filter(email__iexact=donor.email).first()
-                if donor_user:
-                    already_notified = Notification.objects.filter(
-                        user=donor_user,
-                        blood_request=blood_request,
-                        type="blood_request"
-                    ).exists()
-
-                    if not already_notified:
-                        Notification.objects.create(
-                            user=donor_user,
-                            blood_request=blood_request,
-                            title="Blood Donation Needed",
-                            message=(
-                                f"{blood_request.blood_type} blood needed at "
-                                f"{hospital.name} ({round(distance, 1)} km away). "
-                                f"Can you donate?"
-                            ),
-                            type="blood_request"
-                        )
-                else:
-                    print(f"  ⚠️ No Django User found for donor email: {donor.email}")
-
-        print(f"=== Total donors alerted: {alerted_count} ===")
-
-    else:
-        print(f"❌ Hospital missing or has no coordinates — NO donors alerted!")
-
-    # ✅ Admin-only log
-    Notification.objects.create(
-        title="Blood Request Approved",
-        message=(
-            f"Request #{blood_request.id} for {blood_request.blood_type} at "
-            f"{hospital.name if hospital else 'Unknown'} approved"
-        ),
-        type="blood_request"
-    )
+    # Option B: Synchronous fallback (uncomment for testing without Celery)
+    # result = orchestrate_tiered_notification(blood_request.id)
 
     return Response({
         "success": True,
-        "message": "Blood request approved successfully"
+        "message": "Blood request approved. Tiered notifications started."
     })
+
+
 # ================= REJECT BLOOD REQUEST =================
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -784,6 +698,7 @@ def get_date_range(request):
     days = int(days) if days and days.isdigit() else 7
     start = now - timedelta(days=days)
     return start, now
+
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def api_blood_type_distribution(request):
@@ -1216,8 +1131,6 @@ def _serialize_camp(camp):
         "location": camp.location,
         "is_urgent": camp.is_urgent,
         "is_past": camp.date < today,
-
-        # 🔥 ADD THESE TWO (THIS FIXES YOUR PROBLEM)
         "is_approved": camp.is_approved,
         "created_by": camp.created_by,
         "contact_number": camp.contact_number or "",   
@@ -1225,7 +1138,6 @@ def _serialize_camp(camp):
     }
 
 
-# ================= DONATION CAMPS: LIST + CREATE =================
 # ================= DONATION CAMPS: LIST + CREATE =================
 @api_view(["GET", "POST"])
 @permission_classes([AllowAny])
@@ -1244,7 +1156,6 @@ def admin_donation_camps(request):
     end_time   = request.data.get("end_time")
     location   = request.data.get("location", "").strip()
 
-    # ✅ NEW FIELDS
     contact_number = request.data.get("contact_number", "").strip()
     map_link       = request.data.get("map_link", "").strip()
 
@@ -1270,8 +1181,8 @@ def admin_donation_camps(request):
         start_time=start_time,
         end_time=end_time,
         location=location,
-        contact_number=contact_number,   # ✅ NEW
-        map_link=map_link,               # ✅ NEW
+        contact_number=contact_number,
+        map_link=map_link,
         is_urgent=bool(request.data.get("is_urgent", False)),
         is_approved=False,
         created_by="admin"
@@ -1289,6 +1200,8 @@ def admin_donation_camps(request):
         pass
 
     return Response(_serialize_camp(camp), status=status.HTTP_201_CREATED)
+
+
 # ================= DONATION CAMPS: DETAIL + UPDATE + DELETE =================
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
 @permission_classes([AllowAny])
@@ -1317,11 +1230,8 @@ def admin_donation_camp_detail(request, camp_id):
         camp.start_time    = data.get("start_time")
         camp.end_time      = data.get("end_time")
         camp.location      = data.get("location", "").strip()
-
-        # ✅ NEW
         camp.contact_number = data.get("contact_number", "")
         camp.map_link       = data.get("map_link", "")
-
         camp.is_urgent     = bool(data.get("is_urgent", False))
 
         camp.save()
@@ -1338,7 +1248,6 @@ def admin_donation_camp_detail(request, camp_id):
         if "end_time" in data: camp.end_time = data["end_time"]
         if "location" in data: camp.location = data["location"].strip()
 
-        # ✅ NEW
         if "contact_number" in data:
             camp.contact_number = data["contact_number"]
 
@@ -1397,7 +1306,8 @@ def admin_all_hospitals_stock(request):
 
     return Response(result)
 
-# ================= PARTNER CREATE (FIXED) =================
+
+# ================= PARTNER CREATE =================
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def create_camp_by_partner(request):
@@ -1410,11 +1320,8 @@ def create_camp_by_partner(request):
         start_time=request.data.get("start_time"),
         end_time=request.data.get("end_time"),
         location=request.data.get("location"),
-
-        # ✅ ADD THESE
         contact_number=request.data.get("contact_number"),
         map_link=request.data.get("map_link"),
-
         is_urgent=request.data.get("is_urgent", False),
         is_approved=False,
         created_by="corporate"
@@ -1428,6 +1335,7 @@ def create_camp_by_partner(request):
 
     return Response({"success": True})
 
+
 @api_view(["PATCH"])
 @permission_classes([AllowAny])
 def approve_camp(request, camp_id):
@@ -1439,6 +1347,7 @@ def approve_camp(request, camp_id):
         return Response({"success": True, "message": "Camp approved"})
     except DonationCamp.DoesNotExist:
         return Response({"success": False, "message": "Not found"}, status=404)
+
     
 @api_view(["DELETE"])
 @permission_classes([AllowAny])
@@ -1450,6 +1359,499 @@ def reject_camp(request, camp_id):
         return Response({"success": True, "message": "Camp rejected"})
     except DonationCamp.DoesNotExist:
         return Response({"success": False}, status=404)
-    
 
-    
+
+# ================= ESCALATION STATUS (LOCATION 9) =================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def admin_escalation_status(request, request_id):
+    """Get current escalation status for a blood request"""
+    try:
+        escalation = BloodRequestEscalation.objects.get(blood_request_id=request_id)
+        return Response({
+            "request_id": request_id,
+            "status": "escalating" if not escalation.completed_at else "completed",
+            "tier_1": {
+                "completed": escalation.tier_1_completed is not None,
+                "donors_notified": escalation.tier_1_donor_count
+            },
+            "tier_2": {
+                "completed": escalation.tier_2_completed is not None,
+                "donors_notified": escalation.tier_2_donor_count
+            },
+            "tier_3": {
+                "completed": escalation.tier_3_completed is not None,
+                "donors_notified": escalation.tier_3_donor_count
+            },
+            "tier_4": {
+                "completed": escalation.tier_4_completed is not None,
+                "donors_notified": escalation.tier_4_donor_count
+            },
+            "stock_check": {
+                "completed": escalation.blood_bank_checked is not None,
+                "blood_bank_units": escalation.blood_bank_units,
+                "hospital_stock": escalation.hospital_stock_details
+            },
+            "total_donors_alerted": escalation.total_donors_alerted,
+            "completed_at": escalation.completed_at
+        })
+    except BloodRequestEscalation.DoesNotExist:
+        return Response({"error": "Escalation not found"}, status=404)
+
+
+# ================= NOTIFICATION LOGS (LOCATION 9) =================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def admin_notification_logs(request, request_id):
+    """Get all notifications sent for a blood request"""
+    logs = NotificationLog.objects.filter(
+        blood_request_id=request_id
+    ).order_by("-sent_at")
+
+    data = []
+    for log in logs:
+        data.append({
+            "id": log.id,
+            "donor": log.donor.email if log.donor else "System",
+            "tier": log.tier,
+            "distance_km": log.distance_km,
+            "type": log.notification_type,
+            "status": log.status,
+            "sent_at": log.sent_at,
+            "error": log.error_message
+        })
+    return Response(data)
+
+
+# ===============================================================
+# ADD THESE VIEWS TO adminpanel/views.py
+# Import requirements already exist in your views.py
+# Just paste these functions at the bottom
+# ===============================================================
+
+from django.db.models import Count, Q, Avg
+from django.db.models.functions import TruncDate, TruncMonth, TruncWeek
+from datetime import timedelta
+from django.utils import timezone
+from collections import defaultdict
+
+
+# ─────────────────────────────────────────────
+# HELPER (already exists in your views.py)
+# def get_date_range(request): ...  ← reuse it
+# ─────────────────────────────────────────────
+
+
+# ===============================================================
+# 1. DONATION TRENDS OVER TIME
+# GET /api/admin/analytics/donation-trends/
+# ===============================================================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def analytics_donation_trends(request):
+    start, end = get_date_range(request)
+    delta = (end - start).days
+
+    labels, completed, approved, pending, rejected = [], [], [], [], []
+
+    if delta <= 30:
+        cursor = start.date()
+        while cursor <= end.date():
+            qs = BloodRequest.objects.filter(created_at__date=cursor)
+            labels.append(cursor.strftime("%d %b"))
+            completed.append(qs.filter(status="completed").count())
+            approved.append(qs.filter(status="approved").count())
+            pending.append(qs.filter(status="pending").count())
+            rejected.append(qs.filter(status="rejected").count())
+            cursor += timedelta(days=1)
+
+    elif delta <= 90:
+        cursor = start
+        while cursor < end:
+            week_end = min(cursor + timedelta(days=7), end)
+            qs = BloodRequest.objects.filter(created_at__gte=cursor, created_at__lt=week_end)
+            labels.append(cursor.strftime("%d %b"))
+            completed.append(qs.filter(status="completed").count())
+            approved.append(qs.filter(status="approved").count())
+            pending.append(qs.filter(status="pending").count())
+            rejected.append(qs.filter(status="rejected").count())
+            cursor = week_end
+    else:
+        from dateutil.relativedelta import relativedelta
+        months = max(1, delta // 30)
+        now_dt = timezone.now()
+        for i in range(months - 1, -1, -1):
+            ms = (now_dt.replace(day=1) - relativedelta(months=i))
+            me = ms + relativedelta(months=1)
+            if ms < start: ms = start
+            if me > end:   me = end
+            qs = BloodRequest.objects.filter(created_at__gte=ms, created_at__lt=me)
+            labels.append(ms.strftime("%b %Y"))
+            completed.append(qs.filter(status="completed").count())
+            approved.append(qs.filter(status="approved").count())
+            pending.append(qs.filter(status="pending").count())
+            rejected.append(qs.filter(status="rejected").count())
+
+    total = sum(completed) + sum(approved) + sum(pending) + sum(rejected)
+    fulfillment_rate = round((sum(completed) / total * 100), 1) if total else 0
+
+    return Response({
+        "labels": labels,
+        "completed": completed,
+        "approved": approved,
+        "pending": pending,
+        "rejected": rejected,
+        "summary": {
+            "total": total,
+            "completed": sum(completed),
+            "fulfillment_rate": fulfillment_rate,
+        }
+    })
+
+
+# ===============================================================
+# 2. BLOOD TYPE DEMAND VS SUPPLY
+# GET /api/admin/analytics/demand-supply/
+# ===============================================================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def analytics_demand_supply(request):
+    start, end = get_date_range(request)
+
+    BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+
+    demand = {}
+    for bt in BLOOD_TYPES:
+        demand[bt] = BloodRequest.objects.filter(
+            blood_type=bt,
+            created_at__gte=start,
+            created_at__lte=end
+        ).count()
+
+    # Supply from BloodStock (bank = hospital is None)
+    from blood_stock.models import BloodStock
+    supply = {}
+    for bt in BLOOD_TYPES:
+        stock = BloodStock.objects.filter(blood_type=bt).aggregate(
+            total=Count("id")
+        )
+        units = BloodStock.objects.filter(blood_type=bt).values_list("units", flat=True)
+        supply[bt] = sum(units)
+
+    # fulfilled = completed requests per blood type
+    fulfilled = {}
+    for bt in BLOOD_TYPES:
+        fulfilled[bt] = BloodRequest.objects.filter(
+            blood_type=bt,
+            status="completed",
+            created_at__gte=start,
+            created_at__lte=end
+        ).count()
+
+    return Response({
+        "labels": BLOOD_TYPES,
+        "demand":    [demand.get(bt, 0)    for bt in BLOOD_TYPES],
+        "supply":    [supply.get(bt, 0)    for bt in BLOOD_TYPES],
+        "fulfilled": [fulfilled.get(bt, 0) for bt in BLOOD_TYPES],
+    })
+
+
+# ===============================================================
+# 3. HOSPITAL PERFORMANCE STATS
+# GET /api/admin/analytics/hospital-performance/
+# ===============================================================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def analytics_hospital_performance(request):
+    start, end = get_date_range(request)
+
+    hospitals = Hospital.objects.filter(is_active=True).prefetch_related("profile")
+
+    data = []
+    for h in hospitals:
+        requests_qs = BloodRequest.objects.filter(
+            hospital_location__name=h.name,
+            created_at__gte=start,
+            created_at__lte=end
+        )
+        total = requests_qs.count()
+        completed = requests_qs.filter(status="completed").count()
+        pending = requests_qs.filter(status="pending").count()
+        approved = requests_qs.filter(status="approved").count()
+        rejected = requests_qs.filter(status="rejected").count()
+
+        rate = round((completed / total * 100), 1) if total else 0
+
+        from blood_stock.models import BloodStock
+        stock_units = BloodStock.objects.filter(hospital=h).values_list("units", flat=True)
+        total_stock = sum(stock_units)
+
+        data.append({
+            "hospital": h.name,
+            "district": h.profile.district if hasattr(h, "profile") else "—",
+            "total_requests": total,
+            "completed": completed,
+            "pending": pending,
+            "approved": approved,
+            "rejected": rejected,
+            "fulfillment_rate": rate,
+            "total_stock": total_stock,
+        })
+
+    # Sort by total requests desc
+    data.sort(key=lambda x: x["total_requests"], reverse=True)
+
+    return Response({
+        "hospitals": data,
+        "summary": {
+            "total_hospitals": len(data),
+            "avg_fulfillment": round(
+                sum(d["fulfillment_rate"] for d in data) / len(data), 1
+            ) if data else 0,
+        }
+    })
+
+
+# ===============================================================
+# 4. DONOR ACTIVITY & RETENTION
+# GET /api/admin/analytics/donor-activity/
+# ===============================================================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def analytics_donor_activity(request):
+    start, end = get_date_range(request)
+
+    # New donors registered in period
+    new_donors = Donor.objects.filter(
+        created_on__gte=start,
+        created_on__lte=end
+    ).count()
+
+    # Approved donors
+    approved_donors = Donor.objects.filter(is_approved=True).count()
+    pending_donors  = Donor.objects.filter(is_approved=False, is_profile_completed=True).count()
+
+    # Blood type breakdown of donors
+    bt_breakdown = (
+        Donor.objects.filter(is_approved=True)
+        .values("blood_type")
+        .annotate(count=Count("id"))
+        .order_by("blood_type")
+    )
+
+    # Active donors (accepted at least one request in period)
+    active_donors = BloodRequest.objects.filter(
+        status__in=["completed", "approved"],
+        created_at__gte=start,
+        created_at__lte=end,
+        accepted_donor__isnull=False
+    ).values("accepted_donor").distinct().count()
+
+    # Trend: new donors per period bucket
+    delta = (end - start).days
+    trend_labels, trend_counts = [], []
+
+    if delta <= 30:
+        cursor = start.date()
+        while cursor <= end.date():
+            trend_labels.append(cursor.strftime("%d %b"))
+            trend_counts.append(
+                Donor.objects.filter(created_on__date=cursor).count()
+            )
+            cursor += timedelta(days=1)
+    else:
+        from dateutil.relativedelta import relativedelta
+        cursor = start
+        while cursor < end:
+            week_end = min(cursor + timedelta(days=7), end)
+            trend_labels.append(cursor.strftime("%d %b"))
+            trend_counts.append(
+                Donor.objects.filter(
+                    created_on__gte=cursor,
+                    created_on__lt=week_end
+                ).count()
+            )
+            cursor = week_end
+
+    return Response({
+        "summary": {
+            "total_approved": approved_donors,
+            "pending":        pending_donors,
+            "new_in_period":  new_donors,
+            "active_donors":  active_donors,
+        },
+        "blood_type_breakdown": {
+            "labels": [d["blood_type"] for d in bt_breakdown],
+            "values": [d["count"]      for d in bt_breakdown],
+        },
+        "trend": {
+            "labels": trend_labels,
+            "values": trend_counts,
+        }
+    })
+
+
+# ===============================================================
+# 5. REQUEST FULFILLMENT RATES
+# GET /api/admin/analytics/fulfillment/
+# ===============================================================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def analytics_fulfillment(request):
+    start, end = get_date_range(request)
+
+    qs = BloodRequest.objects.filter(created_at__gte=start, created_at__lte=end)
+
+    total     = qs.count()
+    completed = qs.filter(status="completed").count()
+    approved  = qs.filter(status="approved").count()
+    pending   = qs.filter(status="pending").count()
+    rejected  = qs.filter(status="rejected").count()
+
+    rate = round((completed / total * 100), 1) if total else 0
+
+    # By urgency
+    urgency_data = (
+        qs.values("urgency")
+        .annotate(
+            total=Count("id"),
+            done=Count("id", filter=Q(status="completed"))
+        )
+        .order_by("urgency")
+    )
+
+    # By blood type
+    bt_data = (
+        qs.values("blood_type")
+        .annotate(
+            total=Count("id"),
+            done=Count("id", filter=Q(status="completed"))
+        )
+        .order_by("blood_type")
+    )
+
+    # Funnel
+    return Response({
+        "summary": {
+            "total":     total,
+            "completed": completed,
+            "approved":  approved,
+            "pending":   pending,
+            "rejected":  rejected,
+            "rate":      rate,
+        },
+        "by_urgency": [
+            {
+                "urgency": d["urgency"] or "Unknown",
+                "total":   d["total"],
+                "completed": d["done"],
+                "rate": round(d["done"] / d["total"] * 100, 1) if d["total"] else 0
+            }
+            for d in urgency_data
+        ],
+        "by_blood_type": [
+            {
+                "blood_type": d["blood_type"],
+                "total":      d["total"],
+                "completed":  d["done"],
+                "rate": round(d["done"] / d["total"] * 100, 1) if d["total"] else 0
+            }
+            for d in bt_data
+        ],
+    })
+
+
+# ===============================================================
+# 6. GEOGRAPHIC / DISTRICT BREAKDOWN
+# GET /api/admin/analytics/geographic/
+# ===============================================================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def analytics_geographic(request):
+    start, end = get_date_range(request)
+
+    # Requests by district
+    district_requests = (
+        BloodRequest.objects
+        .filter(created_at__gte=start, created_at__lte=end)
+        .exclude(district__isnull=True)
+        .exclude(district__exact="")
+        .values("district")
+        .annotate(
+            total=Count("id"),
+            completed=Count("id", filter=Q(status="completed")),
+            pending=Count("id",   filter=Q(status="pending")),
+        )
+        .order_by("-total")[:15]
+    )
+
+    # Donors by district (city field)
+    donor_districts = (
+        Donor.objects.filter(is_approved=True)
+        .exclude(city__isnull=True)
+        .exclude(city__exact="")
+        .values("city")
+        .annotate(count=Count("id"))
+        .order_by("-count")[:15]
+    )
+
+    return Response({
+        "requests_by_district": [
+            {
+                "district":  d["district"],
+                "total":     d["total"],
+                "completed": d["completed"],
+                "pending":   d["pending"],
+                "rate": round(d["completed"] / d["total"] * 100, 1) if d["total"] else 0
+            }
+            for d in district_requests
+        ],
+        "donors_by_district": [
+            {"district": d["city"], "count": d["count"]}
+            for d in donor_districts
+        ],
+    })
+
+
+# ===============================================================
+# 7. KPI SUMMARY (single endpoint for top cards)
+# GET /api/admin/analytics/kpi/
+# ===============================================================
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def analytics_kpi(request):
+    start, end = get_date_range(request)
+
+    # Previous period for delta calculation
+    delta_days = (end - start).days
+    prev_start = start - timedelta(days=delta_days)
+    prev_end   = start
+
+    def pct_change(current, previous):
+        if previous == 0:
+            return 100 if current > 0 else 0
+        return round(((current - previous) / previous) * 100, 1)
+
+    # Current period
+    cur_requests  = BloodRequest.objects.filter(created_at__gte=start, created_at__lte=end).count()
+    cur_completed = BloodRequest.objects.filter(created_at__gte=start, created_at__lte=end, status="completed").count()
+    cur_donors    = Donor.objects.filter(created_on__gte=start, created_on__lte=end).count()
+    cur_hospitals = Hospital.objects.filter(created_at__gte=start, created_at__lte=end).count()
+
+    # Previous period
+    prev_requests  = BloodRequest.objects.filter(created_at__gte=prev_start, created_at__lte=prev_end).count()
+    prev_completed = BloodRequest.objects.filter(created_at__gte=prev_start, created_at__lte=prev_end, status="completed").count()
+    prev_donors    = Donor.objects.filter(created_on__gte=prev_start, created_on__lte=prev_end).count()
+    prev_hospitals = Hospital.objects.filter(created_at__gte=prev_start, created_at__lte=prev_end).count()
+
+    rate     = round(cur_completed / cur_requests * 100, 1) if cur_requests else 0
+    prev_rate= round(prev_completed / prev_requests * 100, 1) if prev_requests else 0
+
+    return Response({
+        "total_requests":    {"value": cur_requests,  "change": pct_change(cur_requests,  prev_requests)},
+        "completed":         {"value": cur_completed, "change": pct_change(cur_completed, prev_completed)},
+        "new_donors":        {"value": cur_donors,    "change": pct_change(cur_donors,    prev_donors)},
+        "new_hospitals":     {"value": cur_hospitals, "change": pct_change(cur_hospitals, prev_hospitals)},
+        "fulfillment_rate":  {"value": rate,           "change": pct_change(rate, prev_rate)},
+        "total_approved_donors": Donor.objects.filter(is_approved=True).count(),
+    })

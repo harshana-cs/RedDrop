@@ -27,3 +27,19 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+from django.urls import path
+from adminpanel.views import admin_escalation_status, admin_notification_logs
+ 
+# Add these two paths to your existing urlpatterns list:
+urlpatterns_to_add = [
+    path(
+        'api/escalation/<int:request_id>/status/',
+        admin_escalation_status,
+        name='escalation_status'
+    ),
+    path(
+        'api/escalation/<int:request_id>/logs/',
+        admin_notification_logs,
+        name='notification_logs'
+    ),
+]

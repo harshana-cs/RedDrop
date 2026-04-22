@@ -103,3 +103,122 @@ class HospitalAuditLog(models.Model):
         if self.hospital:
             return f"{self.hospital.name} - {self.action}"
         return f"System Log - {self.action}"
+    
+"""
+=======================================================================
+LOCATION 2: adminpanel/models.py — ADD THESE TWO NEW MODELS
+=======================================================================
+Paste the two classes below at the BOTTOM of your existing
+adminpanel/models.py file (after all your current models).
+
+Then run:
+    python manage.py makemigrations
+    python manage.py migrate
+=======================================================================
+"""
+
+from django.db import models
+from blood_requests.models import BloodRequest
+from register_donor.models import Donor
+from hospital.models import Hospital
+
+
+class NotificationLog(models.Model):
+    """Track all notifications sent for auditing"""
+
+    TIER_CHOICES = [
+        ('tier_1', 'Tier 1 (0-5km)'),
+        ('tier_2', 'Tier 2 (5-15km)'),
+        ('tier_3', 'Tier 3 (15-30km)'),
+        ('tier_4', 'Tier 4 (30km+)'),
+    ]
+
+    blood_request = models.ForeignKey(
+        BloodRequest,
+        on_delete=models.CASCADE,
+        related_name='notification_logs'
+    )
+    donor = models.ForeignKey(
+        Donor,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+    tier = models.CharField(max_length=10, choices=TIER_CHOICES)
+    distance_km = models.FloatField()
+    notification_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('sms', 'SMS'),
+            ('email', 'Email'),
+        ]
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('sent', 'Sent'),
+            ('failed', 'Failed'),
+        ],
+        default='sent'
+    )
+    sent_at = models.DateTimeField(auto_now_add=True)
+    error_message = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-sent_at']
+
+    def __str__(self):
+        return f"[{self.tier}] {self.notification_type} → {self.donor.email if self.donor else 'System'} ({self.status})"
+
+
+class BloodRequestEscalation(models.Model):
+    """Track escalation timeline for each blood request"""
+
+    blood_request = models.OneToOneField(
+        BloodRequest,
+        on_delete=models.CASCADE,
+        related_name='escalation'
+    )
+    hospital = models.ForeignKey(
+        Hospital,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    # Tier 1: 0–5 km
+    tier_1_started = models.DateTimeField(null=True, blank=True)
+    tier_1_completed = models.DateTimeField(null=True, blank=True)
+    tier_1_donor_count = models.IntegerField(default=0)
+
+    # Tier 2: 5–15 km
+    tier_2_started = models.DateTimeField(null=True, blank=True)
+    tier_2_completed = models.DateTimeField(null=True, blank=True)
+    tier_2_donor_count = models.IntegerField(default=0)
+
+    # Tier 3: 15–30 km
+    tier_3_started = models.DateTimeField(null=True, blank=True)
+    tier_3_completed = models.DateTimeField(null=True, blank=True)
+    tier_3_donor_count = models.IntegerField(default=0)
+
+    # Tier 4: 30 km+
+    tier_4_started = models.DateTimeField(null=True, blank=True)
+    tier_4_completed = models.DateTimeField(null=True, blank=True)
+    tier_4_donor_count = models.IntegerField(default=0)
+
+    # Blood bank / hospital stock check
+    blood_bank_checked = models.DateTimeField(null=True, blank=True)
+    blood_bank_stock_found = models.BooleanField(default=False)
+    blood_bank_units = models.IntegerField(default=0)
+
+    hospital_stock_checked = models.DateTimeField(null=True, blank=True)
+    hospital_stock_found = models.BooleanField(default=False)
+    hospital_stock_details = models.JSONField(default=dict, blank=True)
+
+    # Overall
+    completed_at = models.DateTimeField(null=True, blank=True)
+    total_donors_alerted = models.IntegerField(default=0)
+    success = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Escalation for Request #{self.blood_request_id}"

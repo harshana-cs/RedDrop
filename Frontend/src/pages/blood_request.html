@@ -10,6 +10,206 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
+    
+/* ── Blood Request Flow Modal ───────────────────────────────────────── */
+@keyframes brf-slide-up {
+  from { opacity: 0; transform: translateY(32px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+@keyframes brf-pulse-ring {
+  0%   { transform: scale(1);   opacity: .6; }
+  70%  { transform: scale(1.8); opacity: 0; }
+  100% { transform: scale(1);   opacity: 0; }
+}
+@keyframes brf-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes brf-fill {
+  from { width: 0%; }
+}
+@keyframes brf-heartbeat {
+  0%, 100% { transform: scale(1); }
+  14%       { transform: scale(1.18); }
+  28%       { transform: scale(1); }
+  42%       { transform: scale(1.12); }
+  70%       { transform: scale(1); }
+}
+@keyframes brf-check-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes brf-step-pop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  60%  { transform: scale(1.12); }
+  100% { transform: scale(1); opacity: 1; }
+}
+ 
+.brf-backdrop {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,.58);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.brf-card {
+  background: #fff;
+  border-radius: 24px;
+  width: 100%; max-width: 520px;
+  overflow: hidden;
+  animation: brf-slide-up .45s cubic-bezier(.22,1,.36,1) both;
+  box-shadow: 0 32px 80px rgba(0,0,0,.22);
+}
+.brf-header {
+  position: relative; padding: 2.5rem 2rem 1.5rem;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.brf-icon-wrap {
+  position: relative; width: 80px; height: 80px; margin-bottom: 1.25rem;
+}
+.brf-icon-ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  animation: brf-pulse-ring 2.2s ease-out infinite;
+}
+.brf-icon-circle {
+  position: absolute; inset: 8px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.brf-title {
+  font-size: 1.35rem; font-weight: 700; color: #111;
+  margin: 0 0 .35rem; letter-spacing: -.02em;
+}
+.brf-sub {
+  font-size: .9rem; color: #666; margin: 0; line-height: 1.5;
+  max-width: 340px;
+}
+ 
+/* ── Tier Track ─────────────────────────────────────────────────────── */
+.brf-tier-track {
+  padding: 1.25rem 1.75rem 0;
+}
+.brf-tier-label {
+  font-size: .72rem; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: #999; margin-bottom: .6rem;
+}
+.brf-tiers {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 6px;
+}
+.brf-tier {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+}
+.brf-tier-dot {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .72rem; font-weight: 700;
+  transition: all .4s ease;
+}
+.brf-tier-dot.idle     { background: #f0f0f0; color: #aaa; }
+.brf-tier-dot.active   { background: #B91C1C; color: #fff;
+                          animation: brf-step-pop .4s ease both,
+                                     brf-heartbeat 1.8s ease-in-out .6s infinite; }
+.brf-tier-dot.done     { background: #16a34a; color: #fff;
+                          animation: brf-step-pop .3s ease both; }
+.brf-tier-name {
+  font-size: .68rem; color: #888; text-align: center; line-height: 1.2;
+}
+ 
+/* ── Progress bar ───────────────────────────────────────────────────── */
+.brf-progress-wrap { padding: .85rem 1.75rem 0; }
+.brf-progress-row  { display: flex; justify-content: space-between;
+                      font-size: .78rem; color: #888; margin-bottom: .4rem; }
+.brf-progress-bg   { height: 7px; background: #f0f0f0; border-radius: 99px; overflow: hidden; }
+.brf-progress-fill {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, #B91C1C, #ef4444);
+  animation: brf-fill .9s cubic-bezier(.22,1,.36,1) both;
+  transition: width .6s ease;
+}
+ 
+/* ── Stats row ──────────────────────────────────────────────────────── */
+.brf-stats {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 8px; padding: 1rem 1.75rem 0;
+}
+.brf-stat {
+  background: #fafafa; border: 1px solid #f0f0f0;
+  border-radius: 12px; padding: .7rem .5rem;
+  text-align: center;
+}
+.brf-stat-val { font-size: 1.15rem; font-weight: 700; color: #111; }
+.brf-stat-lbl { font-size: .68rem; color: #999; margin-top: 2px; }
+ 
+/* ── Donor card ─────────────────────────────────────────────────────── */
+.brf-donor-card {
+  margin: 1rem 1.75rem 0;
+  background: linear-gradient(135deg,#fff5f5,#fff);
+  border: 1.5px solid #fca5a5; border-radius: 16px;
+  padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem;
+}
+.brf-donor-avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: #B91C1C; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: 700; flex-shrink: 0;
+}
+.brf-donor-name  { font-weight: 700; font-size: .95rem; color: #111; }
+.brf-donor-meta  { font-size: .78rem; color: #666; margin-top: 2px; }
+.brf-donor-badge {
+  margin-left: auto; background: #16a34a; color: #fff;
+  font-size: .7rem; font-weight: 700; padding: .25rem .65rem;
+  border-radius: 99px; white-space: nowrap;
+}
+ 
+/* ── Spinning search indicator ──────────────────────────────────────── */
+.brf-spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 3px solid #fee2e2; border-top-color: #B91C1C;
+  animation: brf-spin .9s linear infinite;
+  margin: .5rem auto 0;
+}
+ 
+/* ── SVG checkmark ──────────────────────────────────────────────────── */
+.brf-check { stroke: #fff; stroke-width: 3; stroke-linecap: round;
+             stroke-linejoin: round; fill: none;
+             stroke-dasharray: 40; stroke-dashoffset: 40;
+             animation: brf-check-draw .5s .15s ease forwards; }
+ 
+/* ── Footer actions ─────────────────────────────────────────────────── */
+.brf-actions {
+  display: flex; gap: 10px;
+  padding: 1.5rem 1.75rem 1.75rem;
+}
+.brf-btn-primary {
+  flex: 1; padding: .8rem; border-radius: 12px; border: none; cursor: pointer;
+  background: #B91C1C; color: #fff; font-weight: 700; font-size: .9rem;
+  transition: background .2s, transform .1s;
+}
+.brf-btn-primary:hover { background: #991B1B; }
+.brf-btn-primary:active { transform: scale(.97); }
+.brf-btn-ghost {
+  flex: 1; padding: .8rem; border-radius: 12px; cursor: pointer;
+  background: #f5f5f5; color: #444; font-weight: 600; font-size: .9rem;
+  border: none; transition: background .2s;
+}
+.brf-btn-ghost:hover { background: #eee; }
+ 
+/* ── Stage header colours ───────────────────────────────────────────── */
+.brf-stage-submitted .brf-header { background: linear-gradient(160deg,#fff7ed,#fff); }
+.brf-stage-approved  .brf-header { background: linear-gradient(160deg,#f0fdf4,#fff); }
+.brf-stage-searching .brf-header { background: linear-gradient(160deg,#fff1f2,#fff); }
+.brf-stage-found     .brf-header { background: linear-gradient(160deg,#f0fdf4,#fff); }
+ 
+/* ── Shimmer skeleton ───────────────────────────────────────────────── */
+@keyframes brf-shimmer {
+  from { background-position: -600px 0; }
+  to   { background-position: 600px 0; }
+}
+.brf-skeleton {
+  border-radius: 8px; height: 14px;
+  background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
+  background-size: 600px 100%;
+  animation: brf-shimmer 1.4s infinite;
+}
+
+ 
 :root {
   --brand-red: #B91C1C;
   --brand-red-dark: #991B1B;
@@ -101,50 +301,11 @@
     </nav>
   </header>
 
-<div class="min-h-screen flex pt-16">
-
-<!-- ================= SIDEBAR ================= -->
-<!-- Sidebar -->
-<aside class="w-60 bg-white shadow-lg fixed inset-y-0 left-0 z-10">
-
-  <div class="h-20 border-b"></div>
-
-  <nav class="px-4 py-6 space-y-2">
-
-    <a href="dashboard.html"
-       class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[var(--brand-red-light)]">
-      <i class="fas fa-home text-[var(--brand-red)]"></i>
-      Dashboard
-    </a>
-
-    <a href="blood_request.html"
-       class="w-full flex items-center gap-4 px-4 py-3 rounded-xl
-              bg-[var(--brand-red-light)] text-[var(--brand-red)] font-semibold">
-      <i class="fas fa-plus-circle text-[var(--brand-red)]"></i>
-      Request Blood
-    </a>
-
-   
-
-    <a href="dashboard.html?tab=history"
-       class="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-[var(--brand-red-light)]">
-      <i class="fas fa-history text-[var(--brand-red)]"></i>
-      History
-    </a>
+<div class="min-h-screen flex pt-16 w-full">
 
 
-  </nav>
-
-  <div class="px-4 py-6 border-t absolute bottom-0 w-full">
-    <button onclick="logout()"
-      class="w-full bg-gray-900 text-white py-2 rounded-xl hover:bg-gray-800">
-      Logout
-    </button>
-  </div>
-</aside>
-        <!-- Main Content -->
-        <!-- Main Content -->
-<main class="ml-60 pt-8 px-8 w-[calc(100%-15rem)] animate-fade-in">
+<!-- Main Content -->
+<main class="w-full pt-8 px-4 sm:px-6 md:px-8 animate-fade-in">
   
   <!-- FULL-WIDTH CONTENT WRAPPER -->
   <div class="space-y-10">
@@ -196,7 +357,7 @@
                             </div>
                         </div>
                     </div>
-                    <form id="bloodRequestForm"class="p-8 space-y-8">
+                    <form id="bloodRequestForm" class="p-8 space-y-8" onsubmit="return false;">
                         <!-- Blood Group and Units -->
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <div class="space-y-3">
@@ -603,383 +764,359 @@
             <span id="notificationText" class="font-medium"></span>
         </div>
     </div>
-
+<!-- Blood Request Flow Modal -->
+<div id="brfModal" class="brf-backdrop" style="display:none" onclick="brfBackdropClick(event)">
+    <div id="brfCard" class="brf-card"></div>
+</div>
    <script>
-    // BLOOD GROUP COMPATIBILITY
-    const bloodGroupCompatibility = {
-        'A+': ['A+', 'A-', 'O+', 'O-'],
-        'A-': ['A-', 'O-'],
-        'B+': ['B+', 'B-', 'O+', 'O-'],
-        'B-': ['B-', 'O-'],
-        'AB+': ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
-        'AB-': ['A-', 'B-', 'AB-', 'O-'],
-        'O+': ['O+', 'O-'],
-        'O-': ['O-']
-    };
+   
+// ============================================================
+// BLOOD GROUP COMPATIBILITY
+// ============================================================
+const bloodGroupCompatibility = {
+    'A+': ['A+', 'A-', 'O+', 'O-'],
+    'A-': ['A-', 'O-'],
+    'B+': ['B+', 'B-', 'O+', 'O-'],
+    'B-': ['B-', 'O-'],
+    'AB+': ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+    'AB-': ['A-', 'B-', 'AB-', 'O-'],
+    'O+': ['O+', 'O-'],
+    'O-': ['O-']
+};
 
-    // HOSPITALS BY DISTRICT DATA
-    const hospitalsByDistrict = {
-        "Achham": ["Bayalpata Hospital"],
-        "Arghakhanchi": ["Arghakhanchi District Hospital"],
-        "Baglung": ["Baglung District Hospital", "Dhaulagiri Zonal Hospital"],
-        "Baitadi": ["Baitadi District Hospital"],
-        "Bajhang": ["Bajhang District Hospital"],
-        "Bajura": ["Bajura District Hospital"],
-        "Banke": ["Nepalgunj Medical College", "Bheri Hospital"],
-        "Bara": ["Kalaiya Hospital"],
-        "Bardiya": ["Bardiya District Hospital"],
-        "Bhaktapur": ["Bhaktapur Hospital", "Korea Nepal Friendship Hospital", "Nagarik Hospital"],
-        "Bhojpur": ["Bhojpur District Hospital"],
-        "Chitwan": ["Bharatpur Hospital", "Chitwan Medical College", "B.P. Koirala Memorial Cancer Hospital"],
-        "Dadeldhura": ["Dadeldhura Hospital"],
-        "Dailekh": ["Dailekh District Hospital"],
-        "Dang": ["Rapti Provincial Hospital"],
-        "Darchula": ["Darchula District Hospital"],
-        "Dhading": ["Dhading Hospital"],
-        "Dhankuta": ["Dhankuta Hospital"],
-        "Dhanusha": ["Janakpur Zonal Hospital", "Janaki Medical College"],
-        "Dolakha": ["Dolakha District Hospital"],
-        "Dolpa": ["Dolpa District Hospital"],
-        "Doti": ["Doti District Hospital"],
-        "Eastern Rukum": ["Rukum East District Hospital"],
-        "Gorkha": ["Gorkha District Hospital"],
-        "Gulmi": ["Gulmi District Hospital"],
-        "Humla": ["Humla District Hospital"],
-        "Ilam": ["Ilam District Hospital"],
-        "Jajarkot": ["Jajarkot District Hospital"],
-        "Jhapa": ["Mechi Zonal Hospital", "B&C Hospital", "Birta City Hospital"],
-        "Jumla": ["Karnali Academy of Health Sciences"],
-        "Kailali": ["Seti Provincial Hospital"],
-        "Kalikot": ["Kalikot District Hospital"],
-        "Kanchanpur": ["Mahakali Hospital"],
-        "Kapilvastu": ["Kapilvastu District Hospital"],
-        "Kaski": ["Gandaki Medical College", "Fewa City Hospital", "Manipal Teaching Hospital", "Western Regional Hospital"],
-        "Kathmandu": [
-            "Bir Hospital", "Teaching Hospital", "Grande International Hospital",
-            "Norvic International Hospital", "Civil Hospital", "Nepal Medical College",
-            "Nepal Korea Friendship Hospital", "HAMS Hospital", "Mulpani Nagar Hospital",
-            "Nepal Orthopaedic Hospital", "Shankarapur Hospital", "Om Hospital & Research Centre",
-            "Medicare Hospital"
-        ],
-        "Kavrepalanchok": ["Dhulikhel Hospital"],
-        "Khotang": ["Khotang District Hospital"],
-        "Lalitpur": ["Patan Hospital", "B&B Hospital", "Alka Hospital", "Nepal Mediciti Hospital"],
-        "Lamjung": ["Lamjung District Hospital"],
-        "Mahottari": ["Jaleshwar Hospital"],
-        "Makwanpur": ["Hetauda Hospital"],
-        "Manang": ["Manang District Hospital"],
-        "Morang": ["Koshi Hospital", "Birat Medical College", "Nobel Medical College"],
-        "Mugu": ["Mugu District Hospital"],
-        "Mustang": ["Mustang District Hospital"],
-        "Myagdi": ["Myagdi District Hospital"],
-        "Nawalpur": ["Nawalpur District Hospital"],
-        "Nuwakot": ["Trishuli District Hospital"],
-        "Okhaldhunga": ["Okhaldhunga Community Hospital"],
-        "Palpa": ["Lumbini Medical College"],
-        "Panchthar": ["Panchthar District Hospital"],
-        "Parbat": ["Parbat District Hospital"],
-        "Parsa": ["Narayani Hospital"],
-        "Pyuthan": ["Pyuthan District Hospital"],
-        "Ramechhap": ["Ramechhap District Hospital"],
-        "Rasuwa": ["Rasuwa District Hospital"],
-        "Rautahat": ["Gaur Hospital"],
-        "Rolpa": ["Rolpa District Hospital"],
-        "Rupandehi": ["Universal College Hospital", "Lumbini Provincial Hospital", "Crimson Hospital"],
-        "Salyan": ["Salyan District Hospital"],
-        "Sindhuli": ["Sindhuli District Hospital"],
-        "Sindhupalchok": ["Sindhupalchok District Hospital"],
-        "Siraha": ["Siraha District Hospital"],
-        "Solukhumbu": ["Solukhumbu District Hospital"],
-        "Sunsari": ["Dharan B.P. Koirala Institute of Health Sciences"],
-        "Surkhet": ["Birendranagar Provincial Hospital"],
-        "Syangja": ["Syangja District Hospital"],
-        "Tanahun": ["Damauli District Hospital"],
-        "Taplejung": ["Taplejung District Hospital"],
-        "Terhathum": ["Terhathum District Hospital"],
-        "Udayapur": ["Udayapur District Hospital"]
-    };
+// ============================================================
+// HOSPITALS BY DISTRICT DATA
+// ============================================================
+const hospitalsByDistrict = {
+    "Achham": ["Bayalpata Hospital"],
+    "Arghakhanchi": ["Arghakhanchi District Hospital"],
+    "Baglung": ["Baglung District Hospital", "Dhaulagiri Zonal Hospital"],
+    "Baitadi": ["Baitadi District Hospital"],
+    "Bajhang": ["Bajhang District Hospital"],
+    "Bajura": ["Bajura District Hospital"],
+    "Banke": ["Nepalgunj Medical College", "Bheri Hospital"],
+    "Bara": ["Kalaiya Hospital"],
+    "Bardiya": ["Bardiya District Hospital"],
+    "Bhaktapur": ["Bhaktapur Hospital", "Korea Nepal Friendship Hospital", "Nagarik Hospital"],
+    "Bhojpur": ["Bhojpur District Hospital"],
+    "Chitwan": ["Bharatpur Hospital", "Chitwan Medical College", "B.P. Koirala Memorial Cancer Hospital"],
+    "Dadeldhura": ["Dadeldhura Hospital"],
+    "Dailekh": ["Dailekh District Hospital"],
+    "Dang": ["Rapti Provincial Hospital"],
+    "Darchula": ["Darchula District Hospital"],
+    "Dhading": ["Dhading Hospital"],
+    "Dhankuta": ["Dhankuta Hospital"],
+    "Dhanusha": ["Janakpur Zonal Hospital", "Janaki Medical College"],
+    "Dolakha": ["Dolakha District Hospital"],
+    "Dolpa": ["Dolpa District Hospital"],
+    "Doti": ["Doti District Hospital"],
+    "Eastern Rukum": ["Rukum East District Hospital"],
+    "Gorkha": ["Gorkha District Hospital"],
+    "Gulmi": ["Gulmi District Hospital"],
+    "Humla": ["Humla District Hospital"],
+    "Ilam": ["Ilam District Hospital"],
+    "Jajarkot": ["Jajarkot District Hospital"],
+    "Jhapa": ["Mechi Zonal Hospital", "B&C Hospital", "Birta City Hospital"],
+    "Jumla": ["Karnali Academy of Health Sciences"],
+    "Kailali": ["Seti Provincial Hospital"],
+    "Kalikot": ["Kalikot District Hospital"],
+    "Kanchanpur": ["Mahakali Hospital"],
+    "Kapilvastu": ["Kapilvastu District Hospital"],
+    "Kaski": ["Gandaki Medical College", "Fewa City Hospital", "Manipal Teaching Hospital", "Western Regional Hospital"],
+    "Kathmandu": [
+        "Bir Hospital", "Teaching Hospital", "Grande International Hospital",
+        "Norvic International Hospital", "Civil Hospital", "Nepal Medical College",
+        "Nepal Korea Friendship Hospital", "HAMS Hospital", "Mulpani Nagar Hospital",
+        "Nepal Orthopaedic Hospital", "Shankarapur Hospital", "Om Hospital & Research Centre",
+        "Medicare Hospital"
+    ],
+    "Kavrepalanchok": ["Dhulikhel Hospital"],
+    "Khotang": ["Khotang District Hospital"],
+    "Lalitpur": ["Patan Hospital", "B&B Hospital", "Alka Hospital", "Nepal Mediciti Hospital"],
+    "Lamjung": ["Lamjung District Hospital"],
+    "Mahottari": ["Jaleshwar Hospital"],
+    "Makwanpur": ["Hetauda Hospital"],
+    "Manang": ["Manang District Hospital"],
+    "Morang": ["Koshi Hospital", "Birat Medical College", "Nobel Medical College"],
+    "Mugu": ["Mugu District Hospital"],
+    "Mustang": ["Mustang District Hospital"],
+    "Myagdi": ["Myagdi District Hospital"],
+    "Nawalpur": ["Nawalpur District Hospital"],
+    "Nuwakot": ["Trishuli District Hospital"],
+    "Okhaldhunga": ["Okhaldhunga Community Hospital"],
+    "Palpa": ["Lumbini Medical College"],
+    "Panchthar": ["Panchthar District Hospital"],
+    "Parbat": ["Parbat District Hospital"],
+    "Parsa": ["Narayani Hospital"],
+    "Pyuthan": ["Pyuthan District Hospital"],
+    "Ramechhap": ["Ramechhap District Hospital"],
+    "Rasuwa": ["Rasuwa District Hospital"],
+    "Rautahat": ["Gaur Hospital"],
+    "Rolpa": ["Rolpa District Hospital"],
+    "Rupandehi": ["Universal College Hospital", "Lumbini Provincial Hospital", "Crimson Hospital"],
+    "Salyan": ["Salyan District Hospital"],
+    "Sindhuli": ["Sindhuli District Hospital"],
+    "Sindhupalchok": ["Sindhupalchok District Hospital"],
+    "Siraha": ["Siraha District Hospital"],
+    "Solukhumbu": ["Solukhumbu District Hospital"],
+    "Sunsari": ["Dharan B.P. Koirala Institute of Health Sciences"],
+    "Surkhet": ["Birendranagar Provincial Hospital"],
+    "Syangja": ["Syangja District Hospital"],
+    "Tanahun": ["Damauli District Hospital"],
+    "Taplejung": ["Taplejung District Hospital"],
+    "Terhathum": ["Terhathum District Hospital"],
+    "Udayapur": ["Udayapur District Hospital"]
+};
 
-    // ─── VALIDATION HELPERS ───────────────────────────────────────────────────
+// ============================================================
+// VALIDATION HELPERS
+// ============================================================
 
-    function setFieldError(inputEl, message) {
-        if (!inputEl) return;
-        inputEl.classList.add('border-red-500', 'bg-red-50');
-        inputEl.classList.remove('border-gray-300');
+function setFieldError(inputEl, message) {
+    if (!inputEl) return;
+    inputEl.classList.add('border-red-500', 'bg-red-50');
+    inputEl.classList.remove('border-gray-300');
+    const existing = inputEl.parentElement.querySelector('.field-error-msg');
+    if (existing) existing.remove();
+    const msg = document.createElement('p');
+    msg.className = 'field-error-msg text-xs text-red-600 mt-1 flex items-center gap-1';
+    msg.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+    inputEl.parentElement.appendChild(msg);
+}
 
-        // Remove any existing error for this field
-        const existing = inputEl.parentElement.querySelector('.field-error-msg');
-        if (existing) existing.remove();
+function clearFieldError(inputEl) {
+    if (!inputEl) return;
+    inputEl.classList.remove('border-red-500', 'bg-red-50');
+    inputEl.classList.add('border-gray-300');
+    const existing = inputEl.parentElement.querySelector('.field-error-msg');
+    if (existing) existing.remove();
+}
 
-        const msg = document.createElement('p');
-        msg.className = 'field-error-msg text-xs text-red-600 mt-1 flex items-center gap-1';
-        msg.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
-        inputEl.parentElement.appendChild(msg);
-    }
-
-    function clearFieldError(inputEl) {
-        if (!inputEl) return;
-        inputEl.classList.remove('border-red-500', 'bg-red-50');
-        inputEl.classList.add('border-gray-300');
-        const existing = inputEl.parentElement.querySelector('.field-error-msg');
-        if (existing) existing.remove();
-    }
-
-    function setUrgencyError(show) {
-        const grid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4');
-        const existing = document.getElementById('urgency-error-msg');
-        if (show) {
-            if (!existing) {
-                const msg = document.createElement('p');
-                msg.id = 'urgency-error-msg';
-                msg.className = 'text-xs text-red-600 mt-1 flex items-center gap-1';
-                msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please select an urgency level.';
-                grid?.parentElement.appendChild(msg);
-            }
-        } else {
-            existing?.remove();
-        }
-    }
-
-    function setFileError(fieldId, message) {
-        const statusEl = document.getElementById(fieldId + '-status');
-        const existing = document.getElementById(fieldId + '-error-msg');
-        if (existing) existing.remove();
-        if (message) {
+function setUrgencyError(show) {
+    const grid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4');
+    const existing = document.getElementById('urgency-error-msg');
+    if (show) {
+        if (!existing) {
             const msg = document.createElement('p');
-            msg.id = fieldId + '-error-msg';
-            msg.className = 'text-xs text-red-600 mt-2 flex items-center gap-1';
-            msg.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
-            statusEl?.parentElement.appendChild(msg);
+            msg.id = 'urgency-error-msg';
+            msg.className = 'text-xs text-red-600 mt-1 flex items-center gap-1';
+            msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please select an urgency level.';
+            grid?.parentElement.appendChild(msg);
+        }
+    } else {
+        existing?.remove();
+    }
+}
+
+function setFileError(fieldId, message) {
+    const statusEl = document.getElementById(fieldId + '-status');
+    const existing = document.getElementById(fieldId + '-error-msg');
+    if (existing) existing.remove();
+    if (message) {
+        const msg = document.createElement('p');
+        msg.id = fieldId + '-error-msg';
+        msg.className = 'text-xs text-red-600 mt-2 flex items-center gap-1';
+        msg.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+        statusEl?.parentElement.appendChild(msg);
+    }
+}
+
+// ============================================================
+// FULL FORM VALIDATION
+// ============================================================
+
+function validateForm() {
+    let isValid = true;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+
+    const bloodGroupEl = document.getElementById('bloodGroup');
+    if (!bloodGroupEl.value) {
+        setFieldError(bloodGroupEl, 'Please select a blood group.');
+        isValid = false;
+    } else { clearFieldError(bloodGroupEl); }
+
+    const unitsEl = document.getElementById('unitsRequired');
+    const units = parseInt(unitsEl.value);
+    if (!unitsEl.value || isNaN(units) || units < 1 || units > 10) {
+        setFieldError(unitsEl, 'Please enter a number between 1 and 10.');
+        isValid = false;
+    } else { clearFieldError(unitsEl); }
+
+    const urgency = document.querySelector('input[name="urgency"]:checked')?.value;
+    if (!urgency) { setUrgencyError(true); isValid = false; }
+    else { setUrgencyError(false); }
+
+    const districtEl = document.getElementById('districtSelect');
+    if (!districtEl.value) {
+        setFieldError(districtEl, 'Please select a district.');
+        isValid = false;
+    } else { clearFieldError(districtEl); }
+
+    const hospitalEl = document.getElementById('hospitalSelect');
+    if (!hospitalEl.value) {
+        setFieldError(hospitalEl, 'Please select a hospital.');
+        isValid = false;
+    } else { clearFieldError(hospitalEl); }
+
+    const dateEl = document.getElementById('requiredDate');
+    const selectedDate = dateEl.value ? new Date(dateEl.value) : null;
+    if (!dateEl.value || selectedDate < today) {
+        setFieldError(dateEl, 'Please select today or a future date.');
+        isValid = false;
+    } else { clearFieldError(dateEl); }
+
+    const reasonEl = document.getElementById('reason');
+    if (!reasonEl.value.trim() || reasonEl.value.trim().length < 10) {
+        setFieldError(reasonEl, 'Please describe the reason (at least 10 characters).');
+        isValid = false;
+    } else { clearFieldError(reasonEl); }
+
+    const nameEl = document.getElementById('contactName');
+    if (!nameEl.value.trim() || !/^[A-Za-z\s'.]{2,}$/.test(nameEl.value.trim())) {
+        setFieldError(nameEl, 'Enter a valid name (letters and spaces only).');
+        isValid = false;
+    } else { clearFieldError(nameEl); }
+
+    const phoneEl = document.getElementById('contactPhone');
+    if (!/^(97|98)\d{8}$/.test(phoneEl.value.trim())) {
+        setFieldError(phoneEl, 'Enter a valid 10-digit Nepal mobile number (starts with 97 or 98).');
+        isValid = false;
+    } else { clearFieldError(phoneEl); }
+
+    const hospitalDoc = document.getElementById('hospitalDoc')?.files[0];
+    if (!hospitalDoc) {
+        setFileError('hospitalDoc', 'Please upload the hospital verification document.');
+        isValid = false;
+    } else if (hospitalDoc.size > 5 * 1024 * 1024) {
+        setFileError('hospitalDoc', 'File size exceeds 5MB limit.');
+        isValid = false;
+    } else { setFileError('hospitalDoc', null); }
+
+    const doctorNote = document.getElementById('doctorNote')?.files[0];
+    if (!doctorNote) {
+        setFileError('doctorNote', "Please upload the doctor's note or prescription.");
+        isValid = false;
+    } else if (doctorNote.size > 5 * 1024 * 1024) {
+        setFileError('doctorNote', 'File size exceeds 5MB limit.');
+        isValid = false;
+    } else { setFileError('doctorNote', null); }
+
+    return isValid;
+}
+
+// ============================================================
+// NOTIFICATION TOAST
+// ============================================================
+
+function showNotification(message, isError = false) {
+    const notification = document.getElementById('notification');
+    const text = document.getElementById('notificationText');
+    const inner = notification?.querySelector('div');
+    if (!notification || !text) return;
+    text.textContent = message;
+    inner.className = isError
+        ? 'bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3'
+        : 'bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3';
+    notification.classList.remove('hidden');
+    setTimeout(() => notification.classList.add('hidden'), 3000);
+}
+
+// ============================================================
+// FILE UPLOAD HANDLER
+// ============================================================
+
+function handleFileUpload(fieldId, input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        setFileError(fieldId, null);
+        if (file.size > 5 * 1024 * 1024) {
+            setFileError(fieldId, 'File size exceeds 5MB limit. Please choose a smaller file.');
+            input.value = '';
+            document.getElementById(fieldId + '-status')?.classList.add('hidden');
+            return;
+        }
+        const status = document.getElementById(fieldId + '-status');
+        const nameSpan = document.getElementById(fieldId + '-name');
+        if (status && nameSpan) {
+            nameSpan.textContent = file.name;
+            status.classList.remove('hidden');
         }
     }
+}
 
-    // ─── FULL FORM VALIDATION ─────────────────────────────────────────────────
+// ============================================================
+// FIXED: Submit Button Handler - NO PAGE RELOAD
+// ============================================================
 
-    function validateForm() {
-        let isValid = true;
-        const today = new Date(); today.setHours(0, 0, 0, 0);
+document.addEventListener("DOMContentLoaded", function () {
+    // ADD THIS ⬇️
+    const districtSelect = document.getElementById("districtSelect");
+    const hospitalSelect = document.getElementById("hospitalSelect");
+    
+    if (districtSelect && hospitalSelect) {
+        districtSelect.addEventListener("change", function () {
+            const hospitals = hospitalsByDistrict[this.value] || [];
+            hospitalSelect.innerHTML = '<option value="">Select Hospital</option>';
+            
+            hospitals.forEach(h => {
+                const opt = document.createElement("option");
+                opt.value = h;
+                opt.textContent = h;
+                hospitalSelect.appendChild(opt);
+            });
+            
+            const other = document.createElement("option");
+            other.value = "Other";
+            other.textContent = "Other";
+            hospitalSelect.appendChild(other);
+        });
+    }
+    const submitBtn = document.getElementById("submitBtn");
+    const form = document.getElementById("bloodRequestForm");
 
-        // 1. Blood Group
-        const bloodGroupEl = document.getElementById('bloodGroup');
-        if (!bloodGroupEl.value) {
-            setFieldError(bloodGroupEl, 'Please select a blood group.');
-            isValid = false;
-        } else {
-            clearFieldError(bloodGroupEl);
-        }
-
-        // 2. Units Required
-        const unitsEl = document.getElementById('unitsRequired');
-        const units = parseInt(unitsEl.value);
-        if (!unitsEl.value || isNaN(units) || units < 1 || units > 10) {
-            setFieldError(unitsEl, 'Please enter a number between 1 and 10.');
-            isValid = false;
-        } else {
-            clearFieldError(unitsEl);
-        }
-
-        // 3. Urgency Level
-        const urgency = document.querySelector('input[name="urgency"]:checked')?.value;
-        if (!urgency) {
-            setUrgencyError(true);
-            isValid = false;
-        } else {
-            setUrgencyError(false);
-        }
-
-        // 4. District
-        const districtEl = document.getElementById('districtSelect');
-        if (!districtEl.value) {
-            setFieldError(districtEl, 'Please select a district.');
-            isValid = false;
-        } else {
-            clearFieldError(districtEl);
-        }
-
-        // 5. Hospital
-        const hospitalEl = document.getElementById('hospitalSelect');
-        if (!hospitalEl.value) {
-            setFieldError(hospitalEl, 'Please select a hospital.');
-            isValid = false;
-        } else {
-            clearFieldError(hospitalEl);
-        }
-
-        // 6. Required Date
-        const dateEl = document.getElementById('requiredDate');
-        const selectedDate = dateEl.value ? new Date(dateEl.value) : null;
-        if (!dateEl.value || selectedDate < today) {
-            setFieldError(dateEl, 'Please select today or a future date.');
-            isValid = false;
-        } else {
-            clearFieldError(dateEl);
-        }
-
-        // 7. Reason
-        const reasonEl = document.getElementById('reason');
-        if (!reasonEl.value.trim() || reasonEl.value.trim().length < 10) {
-            setFieldError(reasonEl, 'Please describe the reason (at least 10 characters).');
-            isValid = false;
-        } else {
-            clearFieldError(reasonEl);
-        }
-
-        // 8. Contact Name — letters, spaces, apostrophes, dots only
-        const nameEl = document.getElementById('contactName');
-        if (!nameEl.value.trim() || !/^[A-Za-z\s'.]{2,}$/.test(nameEl.value.trim())) {
-            setFieldError(nameEl, 'Enter a valid name (letters and spaces only).');
-            isValid = false;
-        } else {
-            clearFieldError(nameEl);
-        }
-
-        // 9. Contact Phone — Nepal mobile: 10 digits starting with 97 or 98
-        const phoneEl = document.getElementById('contactPhone');
-        if (!/^(97|98)\d{8}$/.test(phoneEl.value.trim())) {
-            setFieldError(phoneEl, 'Enter a valid 10-digit Nepal mobile number (starts with 97 or 98).');
-            isValid = false;
-        } else {
-            clearFieldError(phoneEl);
-        }
-
-        // 10. Hospital Document
-        const hospitalDoc = document.getElementById('hospitalDoc')?.files[0];
-        if (!hospitalDoc) {
-            setFileError('hospitalDoc', 'Please upload the hospital verification document.');
-            isValid = false;
-        } else if (hospitalDoc.size > 5 * 1024 * 1024) {
-            setFileError('hospitalDoc', 'File size exceeds 5MB limit.');
-            isValid = false;
-        } else {
-            setFileError('hospitalDoc', null);
-        }
-
-        // 11. Doctor's Note
-        const doctorNote = document.getElementById('doctorNote')?.files[0];
-        if (!doctorNote) {
-            setFileError('doctorNote', "Please upload the doctor's note or prescription.");
-            isValid = false;
-        } else if (doctorNote.size > 5 * 1024 * 1024) {
-            setFileError('doctorNote', 'File size exceeds 5MB limit.');
-            isValid = false;
-        } else {
-            setFileError('doctorNote', null);
-        }
-
-        return isValid;
+    if (!submitBtn || !form) {
+        console.error("Submit button or form not found");
+        return;
     }
 
-    // ─── NOTIFICATION ─────────────────────────────────────────────────────────
+    // Remove duplicate listeners
+    submitBtn.replaceWith(submitBtn.cloneNode(true));
+    const newSubmitBtn = document.getElementById("submitBtn");
 
-    function showNotification(message, isError = false) {
-        const notification = document.getElementById('notification');
-        const text = document.getElementById('notificationText');
-        const inner = notification.querySelector('div');
-        if (text) text.textContent = message;
-        inner.className = isError
-            ? 'bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3'
-            : 'bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3';
-        notification.classList.remove('hidden');
-        setTimeout(() => notification.classList.add('hidden'), 3000);
-    }
+    newSubmitBtn.addEventListener("click", async function (e) {
+        // CRITICAL: Always prevent default
+        e.preventDefault();
+        e.stopPropagation();
 
-    // ─── FILE UPLOAD HANDLER ──────────────────────────────────────────────────
-
-    function handleFileUpload(fieldId, input) {
-        if (input.files && input.files[0]) {
-            const file = input.files[0];
-
-            // Clear any previous error
-            setFileError(fieldId, null);
-
-            // Validate size immediately on selection
-            if (file.size > 5 * 1024 * 1024) {
-                setFileError(fieldId, 'File size exceeds 5MB limit. Please choose a smaller file.');
-                input.value = ''; // reset input
-                document.getElementById(fieldId + '-status')?.classList.add('hidden');
-                return;
-            }
-
-            const status = document.getElementById(fieldId + '-status');
-            const nameSpan = document.getElementById(fieldId + '-name');
-            if (status && nameSpan) {
-                nameSpan.textContent = file.name;
-                status.classList.remove('hidden');
-            }
+        // Prevent duplicate submissions
+        if (form.dataset.submitting === "true") {
+            console.log("Already submitting...");
+            return;
         }
-    }
 
-    // ─── LOGOUT ───────────────────────────────────────────────────────────────
+        // Validate
+        if (!validateForm()) {
+            const firstError = document.querySelector('.field-error-msg, #urgency-error-msg');
+            firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            showNotification("Please fix the errors before submitting.", true);
+            return;
+        }
 
-    function logout() {
-        localStorage.removeItem("user_email");
-        localStorage.removeItem("access_token");
-        window.location.href = "login-signup.html";
-    }
-
-    // ─── SUCCESS OVERLAY ──────────────────────────────────────────────────────
-
-    function showSuccessOverlay() {
-        const form = document.getElementById("bloodRequestForm");
-        form.reset();
-        document.getElementById("hospitalDoc-status")?.classList.add("hidden");
-        document.getElementById("doctorNote-status")?.classList.add("hidden");
-        form.dataset.submitting = "false";
-
-        const overlay = document.createElement("div");
-        overlay.style.cssText = `
-            position:fixed;inset:0;background:rgba(0,0,0,0.6);
-            display:flex;align-items:center;justify-content:center;z-index:9999;
-        `;
-        overlay.innerHTML = `
-            <div style="background:#fff;border-radius:16px;padding:40px;
-                        max-width:440px;width:90%;text-align:center;">
-                <div style="width:72px;height:72px;background:#dcfce7;border-radius:50%;
-                            display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
-                         stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                </div>
-                <h2 style="font-size:22px;font-weight:600;color:#111;margin:0 0 10px;">
-                    Request Submitted!
-                </h2>
-                <p style="font-size:15px;color:#555;margin:0 0 16px;line-height:1.6;">
-                    Your blood request is now <strong>pending admin review</strong>.<br>
-                    You will be notified once it is approved.
-                </p>
-                <div style="background:#fef9c3;border:1px solid #fde047;border-radius:10px;
-                            padding:12px 16px;margin:0 0 24px;text-align:left;">
-                    <p style="font-size:13px;color:#713f12;margin:0;line-height:1.5;">
-                        ⏳ Once approved, eligible donors near your hospital will be notified automatically.
-                    </p>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:10px;">
-                    <button id="goToHistoryBtn"
-                            style="background:#B91C1C;color:#fff;border:none;padding:13px;
-                                   border-radius:10px;font-size:15px;font-weight:600;
-                                   cursor:pointer;width:100%;">
-                        View My Requests
-                    </button>
-                    <button id="newRequestBtn"
-                            style="background:#f3f4f6;color:#374151;border:none;padding:11px;
-                                   border-radius:10px;font-size:14px;cursor:pointer;width:100%;">
-                        Submit Another Request
-                    </button>
-                </div>
-            </div>`;
-
-        document.body.appendChild(overlay);
-        document.getElementById("goToHistoryBtn").onclick = () => window.location.href = "dashboard.html?tab=history";
-        document.getElementById("newRequestBtn").onclick = () => document.body.removeChild(overlay);
-    }
-
-    // ─── DEMO SUBMIT (fallback) ───────────────────────────────────────────────
-
-    async function handleDemoSubmit() {
+        // Check authentication
         const token = localStorage.getItem("access_token");
-        if (!token) { showNotification("You are not logged in!", true); return; }
+        if (!token) {
+            showNotification("You must be logged in to request blood.", true);
+            window.location.href = "login.html";
+            return;
+        }
 
+        // Lock form
+        form.dataset.submitting = "true";
+        const originalBtnHTML = newSubmitBtn.innerHTML;
+        newSubmitBtn.disabled = true;
+        newSubmitBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i><span>Processing...</span>`;
+
+        // Collect form data
         const formData = new FormData();
         formData.append("blood_type",     document.getElementById("bloodGroup").value);
         formData.append("units_required", document.getElementById("unitsRequired").value);
@@ -989,160 +1126,480 @@
         formData.append("reason",         document.getElementById("reason").value);
         formData.append("contact_name",   document.getElementById("contactName").value);
         formData.append("contact_phone",  document.getElementById("contactPhone").value);
+        formData.append("urgency",        document.querySelector('input[name="urgency"]:checked')?.value || "Normal");
 
-        const urgency     = document.querySelector('input[name="urgency"]:checked')?.value;
-        const hospitalDoc = document.getElementById("hospitalDoc")?.files[0];
-        const doctorNote  = document.getElementById("doctorNote")?.files[0];
+        const hDoc = document.getElementById("hospitalDoc")?.files[0];
+        const dNote = document.getElementById("doctorNote")?.files[0];
+        if (hDoc) formData.append("hospital_doc", hDoc);
+        if (dNote) formData.append("doctor_note", dNote);
 
-        if (urgency)     formData.append("urgency",      urgency);
-        if (hospitalDoc) formData.append("hospital_doc", hospitalDoc);
-        if (doctorNote)  formData.append("doctor_note",  doctorNote);
+        showNotification("Sending your request...");
 
-        fetch("http://127.0.0.1:8000/blood_requests/api/create/", {
-            method: "POST",
-            headers: { "Authorization": `Bearer ${token}` },
-            body: formData
-        }).catch(() => {});
+        try {
+            const response = await fetch("http://127.0.0.1:8000/blood_requests/api/create/", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                },
+                body: formData
+            });
 
-        showSuccessOverlay();
-    }
+            if (response.ok) {
+    console.log("✅ API returned 201!");
+    console.log("Response JSON:", await response.json());
+    
+    form.reset();
+    document.getElementById("hospitalDoc-status")?.classList.add("hidden");
+    document.getElementById("doctorNote-status")?.classList.add("hidden");
 
-    // ─── DOM READY ────────────────────────────────────────────────────────────
-
-    document.addEventListener("DOMContentLoaded", function () {
-
-        // Blood group compatibility display
-        document.getElementById('bloodGroup')?.addEventListener('change', function () {
-            clearFieldError(this);
-            const compatible = bloodGroupCompatibility[this.value];
-            const compatibleInfo = document.getElementById('compatibleInfo');
-            const compatibleList = document.getElementById('compatibleList');
-            if (compatible) {
-                compatibleList.innerHTML = compatible.map(bg =>
-                    `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                    ${bg === this.value ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">
-                        <i class="fas fa-tint mr-1"></i>${bg}
-                    </span>`
-                ).join('');
-                compatibleInfo.classList.remove('hidden');
-            } else {
-                compatibleInfo.classList.add('hidden');
+    console.log("✅ Showing success overlay NOW");
+    showSuccessOverlay();
+    console.log("✅ Success overlay shown");
+    
+    console.log("✅ All done - should NOT reload");
+    return; // STOP HERE
+} else {
+                let errorMsg = "Submission failed. Please try again.";
+                try {
+                    const data = await response.json();
+                    errorMsg = data.message || data.detail || errorMsg;
+                } catch (_) {}
+                
+                showNotification(errorMsg, true);
             }
-        });
-
-        // District → Hospital dropdown
-        document.getElementById("districtSelect")?.addEventListener("change", function () {
-            clearFieldError(this);
-            const hospitalDropdown = document.getElementById("hospitalSelect");
-            hospitalDropdown.innerHTML = '<option value="">Select Hospital</option>';
-            (hospitalsByDistrict[this.value] || []).forEach(h => {
-                const opt = document.createElement("option");
-                opt.value = opt.textContent = h;
-                hospitalDropdown.appendChild(opt);
-            });
-            const other = document.createElement("option");
-            other.value = other.textContent = "Other";
-            hospitalDropdown.appendChild(other);
-            // Reset hospital error when district changes
-            clearFieldError(document.getElementById("hospitalSelect"));
-        });
-
-        // Hospital select live clear
-        document.getElementById("hospitalSelect")?.addEventListener("change", function () {
-            if (this.value) clearFieldError(this);
-        });
-
-        // Radio button styling + clear urgency error on select
-        document.querySelectorAll('input[name="urgency"]').forEach(radio => {
-            radio.addEventListener('change', function () {
-                document.querySelectorAll('input[name="urgency"]').forEach(r => {
-                    r.closest('label').classList.remove('border-red-300', 'bg-red-50');
-                    r.closest('label').classList.add('border-gray-200');
-                });
-                this.closest('label').classList.add('border-red-300', 'bg-red-50');
-                this.closest('label').classList.remove('border-gray-200');
-                setUrgencyError(false);
-            });
-        });
-
-        // Live clear on other inputs
-        ['unitsRequired', 'requiredDate', 'reason', 'contactName', 'contactPhone'].forEach(id => {
-            document.getElementById(id)?.addEventListener('input', function () {
-                clearFieldError(this);
-            });
-        });
-
-        // Disable past dates
-        const dateInput = document.getElementById("requiredDate");
-        if (dateInput) {
-            dateInput.setAttribute("min", new Date().toISOString().split("T")[0]);
+        } catch (err) {
+            console.error("Network error:", err);
+            showNotification("Network error. Please check your connection and try again.", true);
+        } finally {
+            // Always unlock button
+            form.dataset.submitting = "false";
+            newSubmitBtn.disabled = false;
+            newSubmitBtn.innerHTML = originalBtnHTML;
         }
-
-        // ── SUBMIT BUTTON (type="button") wires to validation ──
-        document.getElementById("submitBtn")?.addEventListener("click", async function () {
-            if (!validateForm()) {
-                // Scroll to first error
-                const firstError = document.querySelector('.field-error-msg, #urgency-error-msg, [class*="-error-msg"]');
-                firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                showNotification("Please fix the errors before submitting.", true);
-                return;
-            }
-
-            const form = document.getElementById("bloodRequestForm");
-            if (form.dataset.submitting === "true") return;
-            form.dataset.submitting = "true";
-
-            const token = localStorage.getItem("access_token");
-            if (!token) {
-                showNotification("You are not logged in!", true);
-                form.dataset.submitting = "false";
-                setTimeout(() => window.location.href = "login-signup.html", 1500);
-                return;
-            }
-
-            const urgency     = document.querySelector('input[name="urgency"]:checked')?.value;
-            const hospitalDoc = document.getElementById("hospitalDoc").files[0];
-            const doctorNote  = document.getElementById("doctorNote").files[0];
-
-            const formData = new FormData();
-            formData.append("blood_type",     document.getElementById("bloodGroup").value);
-            formData.append("units_required", document.getElementById("unitsRequired").value);
-            formData.append("district",       document.getElementById("districtSelect").value);
-            formData.append("hospital",       document.getElementById("hospitalSelect").value);
-            formData.append("required_date",  document.getElementById("requiredDate").value);
-            formData.append("reason",         document.getElementById("reason").value);
-            formData.append("contact_name",   document.getElementById("contactName").value);
-            formData.append("contact_phone",  document.getElementById("contactPhone").value);
-            formData.append("urgency",        urgency);
-            formData.append("hospital_doc",   hospitalDoc);
-            formData.append("doctor_note",    doctorNote);
-
-            try {
-                showNotification("Submitting request...");
-
-                const response = await fetch("http://127.0.0.1:8000/blood_requests/api/create/", {
-                    method: "POST",
-                    headers: { "Authorization": `Bearer ${token}` },
-                    body: formData
-                });
-
-                if (response.ok || response.status === 201) {
-                    showSuccessOverlay();
-                    return;
-                }
-
-                let data = {};
-                try { data = await response.json(); } catch (_) {}
-                showNotification(data.message || "Submission failed.", true);
-                form.dataset.submitting = "false";
-
-            } catch (err) {
-                console.error("Fetch error:", err);
-                showNotification("Network error or server unavailable.", true);
-                form.dataset.submitting = "false";
-            }
-        });
     });
+});
+
+// ============================================================
+// NEW SUCCESS OVERLAY - Does NOT reload the page
+// ============================================================
+
+function showSuccessOverlay() {
+    const overlay = document.createElement("div");
+    overlay.id = "successOverlay";
+    overlay.style.cssText = `
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    `;
+    
+    overlay.innerHTML = `
+        <div style="
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 440px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        ">
+            <div style="
+                width: 72px;
+                height: 72px;
+                background: #dcfce7;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 20px;
+            ">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+                     stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            
+            <h2 style="
+                font-size: 22px;
+                font-weight: 600;
+                color: #111;
+                margin: 0 0 10px;
+            ">Request Submitted Successfully!</h2>
+            
+            <p style="
+                font-size: 15px;
+                color: #666;
+                margin: 0 0 24px;
+                line-height: 1.6;
+            ">
+                Your blood request is <strong style="color: #16a34a;">pending admin review</strong>.<br>
+                <span style="font-size: 13px; color: #999;">We'll notify you once it's approved.</span>
+            </p>
+            
+            <div style="
+                background: #f0fdf4;
+                border: 1px solid #86efac;
+                border-radius: 10px;
+                padding: 12px;
+                margin-bottom: 20px;
+                font-size: 13px;
+                color: #166534;
+            ">
+                ⏱ <strong>Typical wait:</strong> 30 minutes during business hours
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button id="viewHistoryBtn" style="
+                    background: linear-gradient(135deg, #B91C1C, #991B1B);
+                    color: white;
+                    border: none;
+                    padding: 13px;
+                    border-radius: 10px;
+                    font-size: 15px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    width: 100%;
+                ">View My Requests</button>
+                <button id="closeSuccessBtn" style="
+                    background: #f3f4f6;
+                    color: #374151;
+                    border: none;
+                    padding: 11px;
+                    border-radius: 10px;
+                    font-size: 14px;
+                    cursor: pointer;
+                    width: 100%;
+                ">Close</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    document.getElementById("viewHistoryBtn").addEventListener("click", () => {
+        document.body.removeChild(overlay);
+        window.location.href = "dashboard.html?tab=history";
+    });
+
+    document.getElementById("closeSuccessBtn").addEventListener("click", () => {
+        document.body.removeChild(overlay);
+    });
+}
+// ============================================================
+// BLOOD REQUEST FLOW MODAL (unchanged)
+// ============================================================
+
+const BRF = {
+    stage: null,
+    tierData: { t1: 0, t2: 0, t3: 0, t4: 0, currentTier: 0, total: 0 },
+    donorData: null,
+    requestId: null,
+    pollTimer: null,
+};
+
+function showBloodRequestFlow(stage, payload = {}) {
+    BRF.stage = stage;
+    if (payload.requestId) BRF.requestId = payload.requestId;
+    const modal = document.getElementById('brfModal');
+    const card  = document.getElementById('brfCard');
+    card.className = `brf-card brf-stage-${stage}`;
+    card.innerHTML = brfRender(stage, payload);
+    modal.style.display = 'flex';
+    if (stage === 'approved' || stage === 'searching') {
+        brfStartPolling();
+    }
+}
+
+function brfClose() {
+    document.getElementById('brfModal').style.display = 'none';
+    brfStopPolling();
+}
+
+function brfBackdropClick(e) {
+    if (e.target.id === 'brfModal' && (BRF.stage === 'found' || BRF.stage === 'submitted')) {
+        brfClose();
+    }
+}
+
+function brfRender(stage, payload) {
+    switch (stage) {
+        case 'submitted': return brfSubmitted();
+        case 'approved':  return brfApproved(payload);
+        case 'searching': return brfSearching(payload);
+        case 'found':     return brfFound(payload);
+        default: return '';
+    }
+}
+
+function brfSubmitted() {
+    return `
+    <div class="brf-header">
+      <div class="brf-icon-wrap">
+        <div class="brf-icon-ring" style="background:rgba(251,146,60,.18)"></div>
+        <div class="brf-icon-circle" style="background:#f97316">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="brf-title">Request submitted!</h2>
+      <p class="brf-sub">Your blood request is now in the queue for admin review. You'll be notified the moment it's approved.</p>
+    </div>
+    <div style="padding:0 1.75rem">
+      <div style="display:flex;flex-direction:column;gap:0">
+        ${brfStep('done',   '1', 'Request submitted',  'Received by the system')}
+        ${brfStep('active', '2', 'Admin review',        'An admin will verify your documents')}
+        ${brfStep('idle',   '3', 'Searching donors',    'Nearby compatible donors alerted')}
+        ${brfStep('idle',   '4', 'Donor matched',       'Confirmation & OTP exchange')}
+      </div>
+    </div>
+    <div style="margin:1.25rem 1.75rem 0;padding:.9rem 1rem;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;font-size:.82rem;color:#92400e;line-height:1.5">
+      <strong style="color:#78350f">⏱ Typical wait:</strong> Admin reviews usually complete within 30 minutes during business hours.
+    </div>
+    <div class="brf-actions">
+      <button class="brf-btn-ghost" onclick="brfGoToDashboard()">View dashboard</button>
+      <button class="brf-btn-primary" onclick="brfClose()">Got it</button>
+    </div>`;
+}
+
+function brfApproved(payload) {
+    return `
+    <div class="brf-header">
+      <div class="brf-icon-wrap">
+        <div class="brf-icon-ring" style="background:rgba(22,163,74,.2)"></div>
+        <div class="brf-icon-circle" style="background:#16a34a">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <polyline class="brf-check" points="5,13 10,18 19,7"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="brf-title">Request approved ✓</h2>
+      <p class="brf-sub">Your request has been verified. We are now searching for compatible donors near the hospital.</p>
+    </div>
+    <div style="padding:0 1.75rem">
+      ${brfStep('done',   '1', 'Request submitted', 'Received by the system')}
+      ${brfStep('done',   '2', 'Admin approved',    'Documents verified')}
+      ${brfStep('active', '3', 'Searching donors',  'Tiered alert system active')}
+      ${brfStep('idle',   '4', 'Donor matched',     'Confirmation & OTP exchange')}
+    </div>
+    <div class="brf-tier-track">
+      <div class="brf-tier-label">Donor search radius</div>
+      <div class="brf-tiers">
+        ${brfTierDot(1, 'active', '0–5',  'km')}
+        ${brfTierDot(2, 'idle',   '5–15', 'km')}
+        ${brfTierDot(3, 'idle',   '15–30','km')}
+        ${brfTierDot(4, 'idle',   '30+',  'km')}
+      </div>
+    </div>
+    <div style="padding:.5rem 1.75rem 0;text-align:center">
+      <div class="brf-spinner"></div>
+      <p style="font-size:.78rem;color:#999;margin:.5rem 0 0">Scanning Tier 1 — donors within 5 km…</p>
+    </div>
+    <div class="brf-actions" style="padding-top:1rem">
+      <button class="brf-btn-ghost" onclick="brfGoToDashboard()">Go to dashboard</button>
+      <button class="brf-btn-primary" style="opacity:.4;pointer-events:none">Waiting for donor…</button>
+    </div>`;
+}
+
+function brfSearching(payload = {}) {
+    const { currentTier = 1, t1 = 0, t2 = 0, t3 = 0, t4 = 0, total = 0 } = payload;
+    const tierLabels = ['0–5 km','5–15 km','15–30 km','30+ km'];
+    const pct = Math.min(100, Math.round((currentTier / 4) * 100));
+    return `
+    <div class="brf-header">
+      <div class="brf-icon-wrap">
+        <div class="brf-icon-ring" style="background:rgba(185,28,28,.15)"></div>
+        <div class="brf-icon-circle" style="background:#B91C1C">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="brf-title">Searching for donors</h2>
+      <p class="brf-sub">Our tiered system is alerting compatible donors by proximity — closest first.</p>
+    </div>
+    <div class="brf-tier-track">
+      <div class="brf-tier-label">Search radius progress</div>
+      <div class="brf-tiers">
+        ${[1,2,3,4].map(t => brfTierDot(t,
+            t < currentTier ? 'done' : t === currentTier ? 'active' : 'idle',
+            ['0–5','5–15','15–30','30+'][t-1], 'km'
+        )).join('')}
+      </div>
+    </div>
+    <div class="brf-progress-wrap">
+      <div class="brf-progress-row">
+        <span>Scanning Tier ${currentTier} — ${tierLabels[currentTier-1]}</span>
+        <span>${pct}%</span>
+      </div>
+      <div class="brf-progress-bg">
+        <div class="brf-progress-fill" style="width:${pct}%"></div>
+      </div>
+    </div>
+    <div class="brf-stats">
+      <div class="brf-stat"><div class="brf-stat-val">${t1+t2+t3+t4}</div><div class="brf-stat-lbl">Donors alerted</div></div>
+      <div class="brf-stat"><div class="brf-stat-val">${currentTier}/4</div><div class="brf-stat-lbl">Tiers active</div></div>
+      <div class="brf-stat"><div class="brf-stat-val">${total > 0 ? total : '—'}</div><div class="brf-stat-lbl">Compatible found</div></div>
+    </div>
+    <div style="padding:.7rem 1.75rem 0;text-align:center">
+      <div class="brf-spinner"></div>
+      <p style="font-size:.78rem;color:#999;margin:.45rem 0 0">We'll notify you instantly when a donor responds.</p>
+    </div>
+    <div class="brf-actions" style="padding-top:1rem">
+      <button class="brf-btn-ghost" onclick="brfGoToDashboard()">Go to dashboard</button>
+      <button class="brf-btn-primary" style="opacity:.4;pointer-events:none">Awaiting response…</button>
+    </div>`;
+}
+
+function brfFound(payload = {}) {
+    const { donorName = 'A donor', donorBlood = '—', donorPhone = '—', distanceKm = null } = payload;
+    const initials = donorName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    const dist = distanceKm ? `${Math.round(distanceKm)} km away` : 'Nearby';
+    return `
+    <div class="brf-header">
+      <div class="brf-icon-wrap">
+        <div class="brf-icon-ring" style="background:rgba(22,163,74,.2)"></div>
+        <div class="brf-icon-circle" style="background:#16a34a">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="brf-title">Donor found! 🎉</h2>
+      <p class="brf-sub">A compatible donor has accepted your request.</p>
+    </div>
+    <div class="brf-donor-card">
+      <div class="brf-donor-avatar">${initials}</div>
+      <div>
+        <div class="brf-donor-name">${donorName}</div>
+        <div class="brf-donor-meta">
+          <span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:99px;font-size:.72rem;font-weight:700;margin-right:6px">${donorBlood}</span>
+          ${dist}
+        </div>
+        ${donorPhone !== '—' ? `<div class="brf-donor-meta" style="margin-top:4px">📞 ${donorPhone}</div>` : ''}
+      </div>
+      <div class="brf-donor-badge">✓ Accepted</div>
+    </div>
+    <div style="padding:1rem 1.75rem 0">
+      ${brfStep('done',   '1', 'Request submitted', 'Received by the system')}
+      ${brfStep('done',   '2', 'Admin approved',    'Documents verified')}
+      ${brfStep('done',   '3', 'Donor alerted',     'Compatible donor notified')}
+      ${brfStep('active', '4', 'Awaiting OTP',      'Patient confirms receipt → OTP → donor')}
+    </div>
+    <div style="margin:1rem 1.75rem 0;padding:.85rem 1rem;background:#f0fdf4;border:1px solid #86efac;border-radius:12px;font-size:.82rem;color:#14532d;line-height:1.5">
+      <strong>Next step:</strong> Once you receive the blood, tap <em>Confirm Receipt</em> in your active requests.
+    </div>
+    <div class="brf-actions">
+      <button class="brf-btn-ghost" onclick="brfClose()">Close</button>
+      <button class="brf-btn-primary" onclick="brfGoToHistory()">View my requests</button>
+    </div>`;
+}
+
+function brfStep(state, num, label, sub) {
+    const colors   = { done: '#16a34a', active: '#B91C1C', idle: '#d1d5db' };
+    const c = colors[state];
+    const icon = state === 'done'
+        ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="5,13 10,18 19,7"/></svg>`
+        : state === 'active'
+        ? `<div style="width:8px;height:8px;border-radius:50%;background:#fff;animation:brf-heartbeat 1.4s ease-in-out infinite"></div>`
+        : num;
+    return `
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:.6rem 0">
+      <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+        <div style="width:32px;height:32px;border-radius:50%;background:${c};display:flex;align-items:center;justify-content:center;
+          font-size:.75rem;font-weight:700;color:${state==='idle'?'#9ca3af':'#fff'};
+          ${state==='active'?'box-shadow:0 0 0 4px rgba(185,28,28,.15)':''}">
+          ${icon}
+        </div>
+      </div>
+      <div style="padding:.3rem 0">
+        <div style="font-size:.88rem;font-weight:600;color:${state==='idle'?'#9ca3af':'#111'}">${label}</div>
+        <div style="font-size:.76rem;color:${state==='idle'?'#d1d5db':'#888'};margin-top:2px">${sub}</div>
+      </div>
+    </div>`;
+}
+
+function brfTierDot(num, state, range, unit) {
+    return `
+    <div class="brf-tier">
+      <div class="brf-tier-dot ${state}">T${num}</div>
+      <div class="brf-tier-name">${range}<br>${unit}</div>
+    </div>`;
+}
+
+function brfGoToDashboard() {
+    brfClose();
+    if (typeof showSection === 'function') showSection('home');
+    else window.location.href = 'dashboard.html';
+}
+
+function brfGoToHistory() {
+    brfClose();
+    if (typeof showSection === 'function') {
+        showSection('history');
+        if (typeof switchHistoryTab === 'function') switchHistoryTab('requests');
+        if (typeof showRequestTab === 'function') showRequestTab('active');
+    } else {
+        window.location.href = 'dashboard.html?tab=history';
+    }
+}
+
+function brfStartPolling() {
+    brfStopPolling();
+    if (!BRF.requestId) return;
+    BRF.pollTimer = setInterval(brfPollEscalation, 8000);
+    brfPollEscalation();
+}
+
+function brfStopPolling() {
+    if (BRF.pollTimer) { clearInterval(BRF.pollTimer); BRF.pollTimer = null; }
+}
+
+async function brfPollEscalation() {
+    if (!BRF.requestId) return;
+    const tok = localStorage.getItem('access_token');
+    try {
+        const statusRes = await fetch(
+            `http://127.0.0.1:8000/blood_requests/api/request-status/${BRF.requestId}/`,
+            { headers: { Authorization: `Bearer ${tok}` } }
+        );
+        const statusData = await statusRes.json();
+        if (statusData.fulfilled && statusData.accepted_donor) {
+            brfStopPolling();
+            const d = statusData.accepted_donor;
+            showBloodRequestFlow('found', {
+                donorName:  d.name  || 'A compatible donor',
+                donorBlood: d.blood_type || '—',
+                donorPhone: d.phone  || '—',
+                distanceKm: d.distance_km || null,
+            });
+            return;
+        }
+        const escRes = await fetch(
+            `http://127.0.0.1:8000/api/escalation/${BRF.requestId}/status/`,
+            { headers: { Authorization: `Bearer ${tok}` } }
+        );
+        if (!escRes.ok) return;
+        const esc = await escRes.json();
+        const t1 = esc.tier_1?.donors_notified || 0;
+        const t2 = esc.tier_2?.donors_notified || 0;
+        const t3 = esc.tier_3?.donors_notified || 0;
+        const t4 = esc.tier_4?.donors_notified || 0;
+        let currentTier = 1;
+        if (esc.tier_4?.completed) currentTier = 4;
+        else if (esc.tier_3?.completed) currentTier = 4;
+        else if (esc.tier_2?.completed) currentTier = 3;
+        else if (esc.tier_1?.completed) currentTier = 2;
+        showBloodRequestFlow('searching', { currentTier, t1, t2, t3, t4, total: t1+t2+t3+t4 });
+    } catch (err) {
+        console.warn('[BRF] poll failed:', err);
+    }
+}
+
 </script>
+
 </body>
 </html>

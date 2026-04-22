@@ -9,12 +9,364 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* ── Inventory section: neutralize nested .page wrapper ── */
+/* ── Inventory section: neutralize nested .page wrapper ── */
 #inventorySection .page {
     max-width: 100%;
     margin: 0;
     padding: 0;
+}
+
+/* ══════════════════════════════════════════
+   ENHANCED INVENTORY STYLES
+══════════════════════════════════════════ */
+#inventorySection {
+  font-family: var(--font-sans);
+}
+
+/* Summary strip upgrade */
+#inventorySection .scard {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s;
+  padding: 1.1rem 1.25rem 1rem;
+}
+#inventorySection .scard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border2);
+}
+#inventorySection .scard-val {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-top: 8px;
+}
+#inventorySection .scard-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-top: 6px;
+}
+#inventorySection .scard-accent {
+  height: 4px;
+  border-radius: 16px 16px 0 0;
+}
+
+/* Tab bar upgrade */
+#inventorySection .tabs {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 3px;
+  box-shadow: var(--shadow-sm);
+}
+#inventorySection .tab {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 9px;
+  padding: 7px 16px;
+  color: var(--text3);
+  letter-spacing: .01em;
+  transition: all .15s;
+}
+#inventorySection .tab.active {
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(226,75,74,.3);
+}
+#inventorySection .tab:hover:not(.active) {
+  background: var(--surface2);
+  color: var(--text2);
+}
+
+/* Filter bar upgrade */
+#inventorySection .filter-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: .85rem 1.1rem;
+  box-shadow: var(--shadow-sm);
+  gap: 10px;
+}
+#inventorySection .filter-bar select,
+#inventorySection .filter-bar input[type="text"] {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text);
+  transition: border-color .15s, box-shadow .15s;
+}
+#inventorySection .filter-bar select:focus,
+#inventorySection .filter-bar input:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(226,75,74,.1);
+  outline: none;
+}
+
+/* Chart cards upgrade */
+#inventorySection .card {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  padding: 1.25rem 1.4rem;
+  transition: box-shadow .2s, border-color .2s;
+}
+#inventorySection .card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border2);
+}
+#inventorySection .card-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -.2px;
+  color: var(--text);
+}
+#inventorySection .card-sub {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 3px;
+  font-weight: 500;
+}
+
+/* Table card upgrade */
+#inventorySection .table-card {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+#inventorySection .table-hd {
+  padding: 1rem 1.4rem;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, #fafaf8 0%, #f5f3ee 100%);
+}
+#inventorySection .table-hd-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -.2px;
+}
+#inventorySection table {
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+#inventorySection th {
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--text3);
+  background: linear-gradient(135deg, #f8f7f4 0%, #f2f0eb 100%);
+  padding: .65rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+#inventorySection td {
+  padding: .75rem 1rem;
+  border-top: 1px solid rgba(0,0,0,.04);
+  vertical-align: middle;
+}
+#inventorySection tr:hover td {
+  background: #faf9f7;
+}
+
+/* Blood type badge upgrade */
+#inventorySection .bt-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  background: var(--red-light);
+  color: var(--red-dark);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+}
+
+/* Pill badges upgrade */
+#inventorySection .pill {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: .02em;
+}
+
+/* Units value upgrade */
+#inventorySection .units-val {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  min-width: 32px;
+}
+
+/* Bar cell upgrade */
+#inventorySection .bar-track {
+  width: 80px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface2);
+}
+#inventorySection .bar-fill {
+  height: 6px;
+  border-radius: 3px;
+}
+
+/* Alert upgrade */
+#inventorySection .alert {
+  border-radius: 12px;
+  background: linear-gradient(135deg, #FEF2F2 0%, #FCEBEB 100%);
+  border: 1px solid #F7C1C1;
+  box-shadow: var(--shadow-sm);
+}
+#inventorySection .alert p {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Hospital accordion upgrade */
+#inventorySection .hosp-block {
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 8px;
+  transition: box-shadow .2s, border-color .2s;
+}
+#inventorySection .hosp-block:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border2);
+}
+#inventorySection .hosp-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -.2px;
+}
+#inventorySection .hosp-meta {
+  font-size: 11.5px;
+  color: var(--text3);
+  font-weight: 500;
+  margin-top: 2px;
+}
+#inventorySection .hosp-total {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+#inventorySection .mini-val {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+}
+#inventorySection .mini-bt {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+}
+#inventorySection .mini-st {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+
+/* Button upgrade */
+#inventorySection .btn {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 9px;
+  padding: 7px 14px;
+  letter-spacing: -.1px;
+  transition: all .15s;
+  box-shadow: var(--shadow-sm);
+}
+#inventorySection .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+#inventorySection .btn-primary {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--red);
+  box-shadow: 0 2px 8px rgba(226,75,74,.3);
+}
+#inventorySection .btn-primary:hover {
+  background: #d43b3a;
+  box-shadow: 0 4px 14px rgba(226,75,74,.4);
+}
+
+/* Page header upgrade */
+#inventorySection .page-header h1 {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.5px;
+}
+#inventorySection .page-header p {
+  font-size: 13px;
+  color: var(--text2);
+  font-weight: 500;
+}
+
+/* Empty state */
+#inventorySection .empty-state {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text3);
+  font-weight: 500;
+}
+
+/* Movements table */
+#inventorySection #movementsTable td,
+#inventorySection #movementsTable th {
+  font-family: var(--font-sans);
+}
+
+/* Donut legend */
+#inventorySection .leg {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+#inventorySection .legend {
+  gap: 8px;
+}
+
+/* Row count */
+#inventorySection .row-count {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text3);
+}
+
+/* Modal upgrades */
+#inventorySection #addStockOverlay > div,
+#inventorySection #adjustOverlay > div {
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
 }
         /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,32 +389,37 @@
   --teal:      #1D9E75;
   --teal-lt:   #E1F5EE;
   --teal-dk:   #085041;
- 
-  --bg:        #F6F5F2;
+
+  --bg:        #F4F3F0;
   --surface:   #FFFFFF;
-  --surface2:  #F1EFE8;
-  --border:    rgba(0,0,0,.08);
-  --border2:   rgba(0,0,0,.14);
-  --text:      #1A1A18;
-  --text2:     #5A5A55;
-  --text3:     #9A9A94;
- 
+  --surface2:  #F0EEE8;
+  --border:    rgba(0,0,0,.07);
+  --border2:   rgba(0,0,0,.13);
+  --text:      #18181A;
+  --text2:     #52524E;
+  --text3:     #96968F;
+
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-xl: 20px;
- 
-  --font-sans: 'DM Sans', system-ui, sans-serif;
-  --font-mono: 'DM Mono', monospace;
+
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.05);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,.10), 0 4px 8px rgba(0,0,0,.06);
 }
- 
+
 body {
   font-family: var(--font-sans);
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.55;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
  
 /* ── Layout ── */
@@ -416,6 +773,37 @@ th.sort-desc::after { content: ' ↓'; color: var(--red); }
 .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: #cbd5e0 #f1f1f1;
+}
+/* ── Global sidebar & header font unification ── */
+.fixed-sidebar,
+.main-content header,
+nav button,
+.main-content h1,
+.main-content h3,
+.main-content p {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+/* Sidebar nav button active state */
+nav button.bg-red-50 {
+  font-weight: 700;
+}
+nav button span:last-child {
+  font-weight: 600;
+  letter-spacing: -.1px;
+}
+
+/* Header title */
+#page-title {
+  font-weight: 800;
+  letter-spacing: -.4px;
+}
+
+/* Overview stat cards */
+.main-content .text-3xl {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  letter-spacing: -1px;
 }
         /* Fixed sidebar styles - CORRECTED */
         .fixed-sidebar {
@@ -1937,24 +2325,863 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
             </div>
         </div>
     </div>
-</div>  
-</div>              <!-- ================= ANALYTICS ================= -->
-                <div id="analyticsSection" class="hidden">
-                    <div class="mb-6">
-                        <h3 class="text-2xl font-bold text-gray-900">Analytics Dashboard</h3>
-                        <p class="text-gray-600">System-wide statistics and insights</p>
-                    </div>
-                    
-                    <!-- Analytics content would go here -->
-                    <div class="text-center py-12 bg-white rounded-xl border border-gray-200">
-                        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="ri-bar-chart-line text-3xl text-gray-400"></i>
-                        </div>
-                        <h4 class="text-lg font-semibold text-gray-700 mb-2">Analytics Coming Soon</h4>
-                        <p class="text-gray-500">Detailed analytics and reports will be available in the next update.</p>
-                    </div>
-                </div>
+</div>
+</div>  <!--
+  ============================================================
+  ANALYTICS SECTION — replace the existing #analyticsSection
+  div in your admin_dashboard.html with this entire block
+  ============================================================
+-->
+ 
+<div id="analyticsSection" class="hidden">
+ 
 
+<style>
+/* ── Analytics Design System ── */
+/* ══════════════════════════════════════════
+   ANALYTICS DESIGN SYSTEM — Unified with dashboard
+══════════════════════════════════════════ */
+.an {
+  --red:       #E24B4A;
+  --red-2:     #c73c3b;
+  --red-glow:  rgba(226,75,74,.15);
+  --gold:      #F5A623;
+  --teal:      #1BCCAA;
+  --blue:      #4E8CF5;
+  --purple:    #9B72F5;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F3F0;
+  --surface-3: #EEECEA;
+  --border:    rgba(0,0,0,.07);
+  --border-2:  rgba(0,0,0,.13);
+  --text:      #18181A;
+  --text-2:    #52524E;
+  --text-3:    #96968F;
+  --radius:    16px;
+  --shadow:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,.10), 0 4px 8px rgba(0,0,0,.06);
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Page header ── */
+.an h2 {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.5px;
+}
+
+/* ── Date range bar ── */
+.an-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius);
+  padding: .9rem 1.3rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+}
+.an-bar-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+.an-presets {
+  display: flex;
+  gap: 2px;
+  background: var(--surface-3);
+  border-radius: 10px;
+  padding: 3px;
+}
+.an-preset {
+  padding: 5px 13px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-3);
+  font-family: 'Plus Jakarta Sans', inherit;
+  transition: all .15s;
+  letter-spacing: -.1px;
+}
+.an-preset.active {
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(226,75,74,.3);
+}
+.an-preset:not(.active):hover {
+  color: var(--text);
+  background: rgba(0,0,0,.06);
+}
+.an-date-input {
+  font-size: 12px;
+  font-family: 'Plus Jakarta Sans', inherit;
+  font-weight: 500;
+  padding: 6px 11px;
+  border: 1px solid var(--border-2);
+  border-radius: 9px;
+  background: var(--surface-2);
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.an-date-input:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(226,75,74,.1);
+}
+.an-apply {
+  padding: 7px 16px;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', inherit;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 8px rgba(226,75,74,.3);
+  letter-spacing: -.1px;
+}
+.an-apply:hover {
+  background: var(--red-2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(226,75,74,.4);
+}
+
+/* ── KPI strip ── */
+.an-kpis {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0,1fr));
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+.an-kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.25rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: border-color .15s, box-shadow .2s, transform .2s;
+  cursor: default;
+}
+.an-kpi:hover {
+  border-color: var(--border-2);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+.an-kpi-accent {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 4px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.an-kpi-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  margin-bottom: .7rem;
+}
+.an-kpi-val {
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -1.5px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.an-kpi-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  margin-top: 5px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.an-kpi-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-top: 6px;
+  font-family: 'Plus Jakarta Sans', inherit;
+}
+.delta-up   { background: #DCFCE7; color: #166534; }
+.delta-down { background: #FEE2E2; color: #991B1B; }
+.delta-flat { background: var(--surface-3); color: var(--text-3); }
+
+/* ── Section tabs ── */
+.an-tabs {
+  display: flex;
+  gap: 3px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 4px;
+  width: fit-content;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+}
+.an-tab {
+  padding: 7px 17px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-3);
+  font-family: 'Plus Jakarta Sans', inherit;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: -.1px;
+}
+.an-tab.active {
+  background: var(--red);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(226,75,74,.3);
+}
+.an-tab:not(.active):hover {
+  color: var(--text-2);
+  background: var(--surface-3);
+}
+
+/* ── Chart cards ── */
+.an-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.5rem;
+  box-shadow: var(--shadow);
+  transition: box-shadow .2s, border-color .2s;
+}
+.an-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-2);
+}
+.an-card-hd {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.1rem;
+}
+.an-card-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -.3px;
+  color: var(--text);
+}
+.an-card-sub {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-3);
+  margin-top: 3px;
+}
+
+/* ── Table inside card ── */
+.an-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+.an-table th {
+  padding: .55rem .9rem;
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-3);
+  background: var(--surface-2);
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.an-table td {
+  padding: .7rem .9rem;
+  border-top: 1px solid var(--border);
+  vertical-align: middle;
+}
+.an-table tr:hover td {
+  background: #faf9f7;
+}
+
+/* ── Progress bar ── */
+.an-prog-track {
+  width: 100%;
+  height: 6px;
+  background: var(--surface-3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.an-prog-fill {
+  height: 6px;
+  border-radius: 3px;
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── Blood type badge ── */
+.bt-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  background: #FEE2E2;
+  color: #991B1B;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
+}
+
+/* ── Loader ── */
+.an-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--text-3);
+  gap: .75rem;
+}
+.an-spin {
+  width: 26px;
+  height: 26px;
+  border: 3px solid #FECACA;
+  border-top-color: var(--red);
+  border-radius: 50%;
+  animation: an-spin .7s linear infinite;
+}
+@keyframes an-spin { to { transform: rotate(360deg); } }
+
+/* ── Fulfillment funnel ── */
+.funnel-bar {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 40px;
+  width: 100%;
+  background: var(--surface-3);
+  margin-bottom: 7px;
+}
+.funnel-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  font-family: 'Plus Jakarta Sans', inherit;
+  transition: width .7s cubic-bezier(.4,0,.2,1);
+  border-radius: 8px;
+}
+.funnel-label {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-2);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── District bars ── */
+.dist-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.dist-name {
+  width: 110px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+.dist-track {
+  flex: 1;
+  height: 6px;
+  background: var(--surface-3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.dist-fill {
+  height: 6px;
+  border-radius: 3px;
+  transition: width .6s;
+}
+.dist-num {
+  width: 32px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-2);
+  flex-shrink: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .an-kpis { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 600px) {
+  .an-kpis { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Fade-in animation ── */
+@keyframes an-fade {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.an-fade { animation: an-fade .4s cubic-bezier(.4,0,.2,1) both; }
+.an-fade:nth-child(1){animation-delay:.05s}
+.an-fade:nth-child(2){animation-delay:.10s}
+.an-fade:nth-child(3){animation-delay:.15s}
+.an-fade:nth-child(4){animation-delay:.20s}
+.an-fade:nth-child(5){animation-delay:.25s}
+</style>
+ 
+<div class="an space-y-0">
+ 
+  <!-- ── Page Header ── -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h2 style="font-size:22px;font-weight:700;letter-spacing:-.4px;">Analytics Dashboard</h2>
+      <p style="font-size:13px;color:var(--text-3);margin-top:3px;">
+        System-wide performance insights &amp; trends
+      </p>
+    </div>
+    <button onclick="anExportReport()"
+            class="an-apply" style="padding:8px 16px;font-size:13px;">
+      <i class="ri-download-line"></i> Export Report
+    </button>
+  </div>
+ 
+  <!-- ── Date Range Bar ── -->
+  <div class="an-bar">
+    <span class="an-bar-label">Period</span>
+    <div class="an-presets" id="anPresets">
+      <button class="an-preset active" onclick="anSetPreset(7,this)">7d</button>
+      <button class="an-preset"        onclick="anSetPreset(30,this)">30d</button>
+      <button class="an-preset"        onclick="anSetPreset(90,this)">90d</button>
+      <button class="an-preset"        onclick="anSetPreset(180,this)">6m</button>
+      <button class="an-preset"        onclick="anSetPreset(365,this)">1y</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <input type="date" id="anFrom" class="an-date-input" onchange="anCustomRange()">
+      <span style="font-size:12px;color:var(--text-3)">→</span>
+      <input type="date" id="anTo"   class="an-date-input" onchange="anCustomRange()">
+    </div>
+    <button class="an-apply" onclick="anRefreshAll()">
+      <i class="ri-refresh-line"></i> Apply
+    </button>
+    <span id="anPeriodLabel"
+          style="margin-left:auto;font-size:12px;color:var(--text-3);font-style:italic">
+      Last 7 days
+    </span>
+  </div>
+ 
+  <!-- ── KPI Strip ── -->
+  <div class="an-kpis" id="anKpis">
+    <!-- filled by JS -->
+    <div class="an-kpi an-fade"><div class="an-loader"><div class="an-spin"></div></div></div>
+    <div class="an-kpi an-fade"><div class="an-loader"><div class="an-spin"></div></div></div>
+    <div class="an-kpi an-fade"><div class="an-loader"><div class="an-spin"></div></div></div>
+    <div class="an-kpi an-fade"><div class="an-loader"><div class="an-spin"></div></div></div>
+    <div class="an-kpi an-fade"><div class="an-loader"><div class="an-spin"></div></div></div>
+  </div>
+ 
+  <!-- ── Section Tabs ── -->
+  <div class="an-tabs">
+    <button class="an-tab active" onclick="anShowSection('trends',this)">
+      <i class="ri-line-chart-line"></i> Trends
+    </button>
+    <button class="an-tab" onclick="anShowSection('supply',this)">
+      <i class="ri-drop-line"></i> Demand vs Supply
+    </button>
+    <button class="an-tab" onclick="anShowSection('hospitals',this)">
+      <i class="ri-hospital-line"></i> Hospitals
+    </button>
+    <button class="an-tab" onclick="anShowSection('donors',this)">
+      <i class="ri-user-heart-line"></i> Donors
+    </button>
+    <button class="an-tab" onclick="anShowSection('fulfillment',this)">
+      <i class="ri-check-double-line"></i> Fulfillment
+    </button>
+    <button class="an-tab" onclick="anShowSection('geo',this)">
+      <i class="ri-map-pin-line"></i> Geographic
+    </button>
+  </div>
+ 
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- TRENDS SECTION                                         -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="an-trends" class="space-y-5 an-section">
+ 
+    <!-- Big line/bar chart -->
+    <div class="an-card">
+      <div class="an-card-hd">
+        <div>
+          <div class="an-card-title">Donation Trends Over Time</div>
+          <div class="an-card-sub" id="trendsChartSub">Blood requests by status</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <!-- chart type toggle -->
+          <div style="display:flex;background:var(--surface-3);border-radius:7px;padding:3px;gap:2px;">
+            <button onclick="anTrendsType('bar')"  id="trBtn-bar"
+                    style="padding:5px 10px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:var(--red);color:#fff;font-family:inherit;">
+              <i class="ri-bar-chart-line"></i>
+            </button>
+            <button onclick="anTrendsType('line')" id="trBtn-line"
+                    style="padding:5px 10px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;background:transparent;color:var(--text-3);font-family:inherit;">
+              <i class="ri-line-chart-line"></i>
+            </button>
+          </div>
+          <!-- status filter -->
+          <select id="trendsStatusFilter" onchange="anRenderTrends()"
+                  style="font-size:12px;font-weight:600;padding:6px 12px;border:1px solid var(--border-2);border-radius:9px;background:var(--surface-2);font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--text);outline:none;cursor:pointer;">
+            <option value="all">All Statuses</option>
+            <option value="completed">Completed</option>
+            <option value="approved">Approved</option>
+            <option value="pending">Pending</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <div id="trendsLoader" class="an-spin" style="display:none;"></div>
+        </div>
+      </div>
+      <!-- Summary pills -->
+      <div id="trendsSummaryPills" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem;"></div>
+      <div style="height:280px;position:relative;">
+        <canvas id="trendsChart"></canvas>
+      </div>
+    </div>
+ 
+  </div><!-- /trends -->
+ 
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- DEMAND VS SUPPLY                                       -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="an-supply" class="space-y-5 an-section" style="display:none;">
+ 
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+ 
+      <!-- Grouped bar: demand vs supply -->
+      <div class="an-card">
+        <div class="an-card-hd">
+          <div>
+            <div class="an-card-title">Demand vs Supply by Blood Type</div>
+            <div class="an-card-sub">Requests made vs current units in stock</div>
+          </div>
+          <div id="supplyLoader" class="an-spin" style="display:none;"></div>
+        </div>
+        <div style="height:260px;"><canvas id="supplyChart"></canvas></div>
+      </div>
+ 
+      <!-- Fulfillment donut per blood type -->
+      <div class="an-card">
+        <div class="an-card-hd">
+          <div>
+            <div class="an-card-title">Fulfillment by Blood Type</div>
+            <div class="an-card-sub">Completed vs total requests</div>
+          </div>
+        </div>
+        <div style="height:260px;"><canvas id="supplyFulfillChart"></canvas></div>
+      </div>
+    </div>
+ 
+    <!-- Detailed table -->
+    <div class="an-card">
+      <div class="an-card-hd">
+        <div class="an-card-title">Blood Type Detail</div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="an-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Demand (requests)</th>
+              <th>Supply (units)</th>
+              <th>Fulfilled</th>
+              <th>Gap</th>
+              <th>Coverage</th>
+            </tr>
+          </thead>
+          <tbody id="supplyTable"></tbody>
+        </table>
+      </div>
+    </div>
+ 
+  </div><!-- /supply -->
+ 
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- HOSPITALS                                              -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="an-hospitals" class="space-y-5 an-section" style="display:none;">
+ 
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+ 
+      <!-- Top hospitals bar chart -->
+      <div class="an-card">
+        <div class="an-card-hd">
+          <div>
+            <div class="an-card-title">Top Hospitals by Requests</div>
+            <div class="an-card-sub">Total blood requests per hospital</div>
+          </div>
+          <div id="hospChartLoader" class="an-spin" style="display:none;"></div>
+        </div>
+        <div style="height:260px;"><canvas id="hospRequestChart"></canvas></div>
+      </div>
+ 
+      <!-- Fulfillment rate horizontal bar -->
+      <div class="an-card">
+        <div class="an-card-hd">
+          <div>
+            <div class="an-card-title">Fulfillment Rate by Hospital</div>
+            <div class="an-card-sub">% of requests successfully completed</div>
+          </div>
+        </div>
+        <div style="height:260px;"><canvas id="hospFulfillChart"></canvas></div>
+      </div>
+    </div>
+ 
+    <!-- Hospital table -->
+    <div class="an-card">
+      <div class="an-card-hd">
+        <div class="an-card-title">Hospital Performance Table</div>
+        <button onclick="anExportHospitals()"
+                style="font-size:12px;padding:5px 12px;border:1px solid var(--border-2);
+                       border-radius:7px;background:var(--surface-2);cursor:pointer;
+                       font-family:inherit;display:flex;align-items:center;gap:5px;">
+          <i class="ri-download-line"></i> CSV
+        </button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="an-table">
+          <thead>
+            <tr>
+              <th>Hospital</th>
+              <th>District</th>
+              <th>Total Requests</th>
+              <th>Completed</th>
+              <th>Pending</th>
+              <th>Rejected</th>
+              <th>Fulfillment Rate</th>
+              <th>Stock (units)</th>
+            </tr>
+          </thead>
+          <tbody id="hospTable"></tbody>
+        </table>
+      </div>
+    </div>
+ 
+  </div><!-- /hospitals -->
+ 
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- DONORS                                                 -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="an-donors" class="space-y-5 an-section" style="display:none;">
+ 
+    <!-- 3 summary cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="donorSummaryCards">
+      <div class="an-card an-fade" style="text-align:center;padding:1.5rem;">
+        <div style="font-size:40px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--red);" id="donorTotalApproved">—</div>
+        <div style="font-size:13px;color:var(--text-3);margin-top:6px;">Approved Donors</div>
+      </div>
+      <div class="an-card an-fade" style="text-align:center;padding:1.5rem;">
+        <div style="font-size:40px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--teal);" id="donorNewPeriod">—</div>
+        <div style="font-size:13px;color:var(--text-3);margin-top:6px;">New in Period</div>
+      </div>
+      <div class="an-card an-fade" style="text-align:center;padding:1.5rem;">
+        <div style="font-size:40px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--blue);" id="donorActive">—</div>
+        <div style="font-size:13px;color:var(--text-3);margin-top:6px;">Active Donors</div>
+      </div>
+    </div>
+ 
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+ 
+      <!-- New donor trend -->
+      <div class="an-card">
+        <div class="an-card-hd">
+          <div>
+            <div class="an-card-title">New Donor Registrations</div>
+            <div class="an-card-sub">Over selected period</div>
+          </div>
+          <div id="donorTrendLoader" class="an-spin" style="display:none;"></div>
+        </div>
+        <div style="height:220px;"><canvas id="donorTrendChart"></canvas></div>
+      </div>
+ 
+      <!-- Blood type breakdown donut -->
+      <div class="an-card">
+        <div class="an-card-hd">
+          <div>
+            <div class="an-card-title">Donor Blood Type Breakdown</div>
+            <div class="an-card-sub">Approved donors by blood type</div>
+          </div>
+        </div>
+        <div style="height:220px;"><canvas id="donorBTChart"></canvas></div>
+      </div>
+    </div>
+ 
+  </div><!-- /donors -->
+ 
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- FULFILLMENT                                            -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="an-fulfillment" class="space-y-5 an-section" style="display:none;">
+ 
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+ 
+      <!-- Funnel card -->
+      <div class="an-card">
+        <div class="an-card-hd">
+          <div>
+            <div class="an-card-title">Request Funnel</div>
+            <div class="an-card-sub" id="funnelSub">All statuses</div>
+          </div>
+          <div id="fulfillLoader" class="an-spin" style="display:none;"></div>
+        </div>
+        <div id="funnelViz" style="padding:.5rem 0;"></div>
+      </div>
+ 
+      <!-- Donut -->
+      <div class="an-card">
+        <div class="an-card-hd">
+          <div>
+            <div class="an-card-title">Status Distribution</div>
+            <div class="an-card-sub">Proportion of each outcome</div>
+          </div>
+        </div>
+        <div style="height:220px;"><canvas id="fulfillDonut"></canvas></div>
+      </div>
+    </div>
+ 
+    <!-- By urgency -->
+    <div class="an-card">
+      <div class="an-card-hd">
+        <div class="an-card-title">Fulfillment by Urgency</div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="an-table">
+          <thead>
+            <tr>
+              <th>Urgency</th>
+              <th>Total</th>
+              <th>Completed</th>
+              <th>Rate</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
+          <tbody id="urgencyTable"></tbody>
+        </table>
+      </div>
+    </div>
+ 
+    <!-- By blood type -->
+    <div class="an-card">
+      <div class="an-card-hd">
+        <div class="an-card-title">Fulfillment by Blood Type</div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="an-table">
+          <thead>
+            <tr>
+              <th>Blood Type</th>
+              <th>Total</th>
+              <th>Completed</th>
+              <th>Rate</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
+          <tbody id="btFulfillTable"></tbody>
+        </table>
+      </div>
+    </div>
+ 
+  </div><!-- /fulfillment -->
+ 
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- GEOGRAPHIC                                             -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="an-geo" class="space-y-5 an-section" style="display:none;">
+ 
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+ 
+      <!-- Requests by district bar -->
+      <div class="an-card">
+        <div class="an-card-hd">
+          <div>
+            <div class="an-card-title">Blood Requests by District</div>
+            <div class="an-card-sub">Top 15 districts</div>
+          </div>
+          <div id="geoLoader" class="an-spin" style="display:none;"></div>
+        </div>
+        <div style="height:320px;"><canvas id="geoRequestChart"></canvas></div>
+      </div>
+ 
+      <!-- Donors by district -->
+      <div class="an-card">
+        <div class="an-card-hd">
+          <div>
+            <div class="an-card-title">Approved Donors by District</div>
+            <div class="an-card-sub">Distribution of donor pool</div>
+          </div>
+        </div>
+        <div style="height:320px;"><canvas id="geoDonorChart"></canvas></div>
+      </div>
+    </div>
+ 
+    <!-- District detail table -->
+    <div class="an-card">
+      <div class="an-card-hd">
+        <div class="an-card-title">District Detail</div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="an-table">
+          <thead>
+            <tr>
+              <th>District</th>
+              <th>Total Requests</th>
+              <th>Completed</th>
+              <th>Pending</th>
+              <th>Fulfillment Rate</th>
+              <th>Visual</th>
+            </tr>
+          </thead>
+          <tbody id="geoTable"></tbody>
+        </table>
+      </div>
+    </div>
+ 
+  </div><!-- /geo -->
+ 
+</div><!-- .an -->
+</div><!-- #analyticsSection -->
                 
  
     <!-- ... analytics section ends ... -->
@@ -2239,6 +3466,7 @@ if (tabName === 'users') {
 if (tabName === 'inventory') {
     loadInventory();
 }
+if (tabName === 'analytics') initAnalytics();
                 if (tabName === 'overview') initializeCharts();
                 if (tabName === 'audit') {
     loadAuditLogs();  
@@ -5795,6 +7023,765 @@ function showCampError(message) {
 function hideCampError() {
     const el = document.getElementById('campFormError');
     if (el) el.classList.add('hidden');
+}
+
+// ── STATE ──────────────────────────────────────────────────
+const AN = {
+  preset:  7,
+  from:    null,
+  to:      null,
+  section: 'trends',
+  // chart instances
+  charts: {},
+  // cached data
+  data: {}
+};
+ 
+// ── COLORS ─────────────────────────────────────────────────
+const AN_COLORS = {
+  completed: '#1BCCAA',
+  approved:  '#4E8CF5',
+  pending:   '#F5A623',
+  rejected:  '#E24B4A',
+  bt: {
+    'A+':'#E24B4A','A-':'#D85A30','B+':'#1BCCAA','B-':'#17A88A',
+    'AB+':'#9B72F5','AB-':'#7A56D4','O+':'#4E8CF5','O-':'#3570D4'
+  },
+  palette: ['#E24B4A','#4E8CF5','#1BCCAA','#F5A623',
+            '#9B72F5','#FF6B9D','#2DD4BF','#F97316']
+};
+ 
+// ── DATE HELPERS ───────────────────────────────────────────
+function anBuildQuery() {
+  if (AN.from && AN.to) return `?from=${AN.from}&to=${AN.to}`;
+  return `?days=${AN.preset}`;
+}
+ 
+function anSetPreset(days, btn) {
+  AN.preset = days;
+  AN.from = AN.to = null;
+  document.getElementById('anFrom').value = '';
+  document.getElementById('anTo').value   = '';
+  document.querySelectorAll('.an-preset').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const map = {7:'Last 7 days',30:'Last 30 days',90:'Last 90 days',
+               180:'Last 6 months',365:'Last year'};
+  document.getElementById('anPeriodLabel').textContent = map[days] || `Last ${days} days`;
+  anRefreshAll();
+}
+ 
+function anCustomRange() {
+  const f = document.getElementById('anFrom').value;
+  const t = document.getElementById('anTo').value;
+  if (f && t && f <= t) {
+    AN.from = f; AN.to = t; AN.preset = null;
+    document.querySelectorAll('.an-preset').forEach(b => b.classList.remove('active'));
+    document.getElementById('anPeriodLabel').textContent = `${f} → ${t}`;
+  }
+}
+ 
+// ── SECTION TABS ───────────────────────────────────────────
+function anShowSection(name, btn) {
+  AN.section = name;
+  document.querySelectorAll('.an-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.an-section').forEach(s => s.style.display = 'none');
+  document.getElementById(`an-${name}`).style.display = '';
+  anLoadSection(name);
+}
+ 
+// ── REFRESH ALL ────────────────────────────────────────────
+async function anRefreshAll() {
+  await anLoadKPIs();
+  anLoadSection(AN.section);
+}
+ 
+async function anLoadSection(name) {
+  const loaders = {
+    trends:      anLoadTrends,
+    supply:      anLoadSupply,
+    hospitals:   anLoadHospitals,
+    donors:      anLoadDonors,
+    fulfillment: anLoadFulfillment,
+    geo:         anLoadGeo,
+  };
+  if (loaders[name]) await loaders[name]();
+}
+ 
+// ── KPI STRIP ──────────────────────────────────────────────
+async function anLoadKPIs() {
+  try {
+    const res  = await fetch(`${API_BASE}/api/admin/analytics/kpi/${anBuildQuery()}`);
+    const data = await res.json();
+ 
+    const kpiDefs = [
+      { key:'total_requests',   label:'Total Requests',   icon:'ri-heart-pulse-line', color:'#E24B4A', bg:'#FEE2E2' },
+      { key:'completed',        label:'Completed',         icon:'ri-check-double-line',color:'#1BCCAA', bg:'#DCFCE7' },
+      { key:'new_donors',       label:'New Donors',        icon:'ri-user-heart-line',  color:'#4E8CF5', bg:'#DBEAFE' },
+      { key:'fulfillment_rate', label:'Fulfillment Rate',  icon:'ri-percent-line',     color:'#F5A623', bg:'#FEF3C7',
+        suffix:'%' },
+      { key:'total_approved_donors', label:'Total Donors', icon:'ri-team-line',        color:'#9B72F5', bg:'#F3E8FF',
+        noChange: true },
+    ];
+ 
+    const container = document.getElementById('anKpis');
+    container.innerHTML = '';
+ 
+    kpiDefs.forEach((def, i) => {
+      const entry  = data[def.key] || {value: 0, change: 0};
+      const val    = def.key === 'total_approved_donors' ? data[def.key] : entry.value;
+      const change = entry.change || 0;
+      const suffix = def.suffix || '';
+ 
+      let deltaHtml = '';
+      if (!def.noChange) {
+        const cls = change > 0 ? 'delta-up' : change < 0 ? 'delta-down' : 'delta-flat';
+        const arrow = change > 0 ? '↑' : change < 0 ? '↓' : '→';
+        deltaHtml = `<span class="an-kpi-delta ${cls}">${arrow} ${Math.abs(change)}%</span>`;
+      }
+ 
+      container.innerHTML += `
+        <div class="an-kpi an-fade" style="animation-delay:${i*0.05}s">
+          <div class="an-kpi-accent" style="background:${def.color}"></div>
+          <div class="an-kpi-icon" style="background:${def.bg};color:${def.color};">
+            <i class="${def.icon}"></i>
+          </div>
+          <div class="an-kpi-val" style="color:${def.color}">
+            ${typeof val === 'number' ? val.toLocaleString() : val}${suffix}
+          </div>
+          <div class="an-kpi-lbl">${def.label}</div>
+          ${deltaHtml}
+        </div>`;
+    });
+  } catch (e) {
+    console.error('KPI load error:', e);
+  }
+}
+ 
+// ── TRENDS ─────────────────────────────────────────────────
+let _trendsData = null;
+let _trendsType = 'bar';
+ 
+async function anLoadTrends() {
+  const loader = document.getElementById('trendsLoader');
+  if (loader) loader.style.display = 'block';
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/analytics/donation-trends/${anBuildQuery()}`);
+    _trendsData = await res.json();
+    anRenderTrends();
+    // Summary pills
+    const s = _trendsData.summary || {};
+    const pills = document.getElementById('trendsSummaryPills');
+    if (pills) {
+      pills.innerHTML = [
+        {l:'Total',     v:s.total,           c:'#555'},
+        {l:'Completed', v:s.completed,       c:AN_COLORS.completed},
+        {l:'Rate',      v:s.fulfillment_rate+'%', c:AN_COLORS.approved},
+      ].map(p => `
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;
+                     background:#F1EFE8;border-radius:20px;font-size:12px;font-weight:600;
+                     color:${p.c}">
+          ${p.l}: ${p.v}
+        </span>`).join('');
+    }
+  } catch(e) { console.error(e); }
+  finally { if (loader) loader.style.display = 'none'; }
+}
+ 
+function anTrendsType(type) {
+  _trendsType = type;
+  ['bar','line'].forEach(t => {
+    const b = document.getElementById(`trBtn-${t}`);
+    if (b) {
+      b.style.background = t === type ? 'var(--red)' : 'transparent';
+      b.style.color      = t === type ? '#fff' : 'var(--text-3)';
+    }
+  });
+  anRenderTrends();
+}
+ 
+function anRenderTrends() {
+  if (!_trendsData) return;
+  const filter = document.getElementById('trendsStatusFilter')?.value || 'all';
+  const ctx    = document.getElementById('trendsChart').getContext('2d');
+ 
+  const ALL_DS = [
+    { key:'completed', label:'Completed', color: AN_COLORS.completed },
+    { key:'approved',  label:'Approved',  color: AN_COLORS.approved  },
+    { key:'pending',   label:'Pending',   color: AN_COLORS.pending   },
+    { key:'rejected',  label:'Rejected',  color: AN_COLORS.rejected  },
+  ];
+ 
+  const datasets = (filter === 'all' ? ALL_DS : ALL_DS.filter(d => d.key === filter))
+    .map(d => {
+      const isLine = _trendsType === 'line';
+      return {
+        label:           d.label,
+        data:            _trendsData[d.key] || [],
+        backgroundColor: isLine ? d.color + '20' : d.color,
+        borderColor:     d.color,
+        borderWidth:     isLine ? 2 : 0,
+        borderRadius:    isLine ? 0 : 5,
+        fill:            isLine,
+        tension:         0.4,
+        pointRadius:     isLine ? 3 : 0,
+        pointHoverRadius:isLine ? 5 : 0,
+      };
+    });
+ 
+  if (AN.charts.trends) AN.charts.trends.destroy();
+  AN.charts.trends = new Chart(ctx, {
+    type: _trendsType,
+    data: { labels: _trendsData.labels || [], datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation:  { duration: 400 },
+      interaction:{ mode:'index', intersect:false },
+      plugins: {
+        legend: { position:'top', labels:{ boxWidth:10, font:{size:11} } },
+        tooltip: {
+          callbacks: {
+            footer: items => `Total: ${items.reduce((s,i)=>s+i.parsed.y,0)}`
+          }
+        }
+      },
+      scales: {
+        y: { beginAtZero:true, ticks:{stepSize:1}, grid:{color:'#f3f4f6'} },
+        x: { grid:{display:false} }
+      }
+    }
+  });
+}
+ 
+// ── DEMAND VS SUPPLY ───────────────────────────────────────
+let _supplyData = null;
+ 
+async function anLoadSupply() {
+  const loader = document.getElementById('supplyLoader');
+  if (loader) loader.style.display = 'block';
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/analytics/demand-supply/${anBuildQuery()}`);
+    _supplyData = await res.json();
+    anRenderSupply();
+  } catch(e) { console.error(e); }
+  finally { if (loader) loader.style.display = 'none'; }
+}
+ 
+function anRenderSupply() {
+  if (!_supplyData) return;
+  const { labels, demand, supply, fulfilled } = _supplyData;
+ 
+  // Grouped bar
+  if (AN.charts.supply) AN.charts.supply.destroy();
+  AN.charts.supply = new Chart(
+    document.getElementById('supplyChart').getContext('2d'),
+    {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label:'Demand (requests)', data:demand,   backgroundColor:'#E24B4A',  borderRadius:4, borderWidth:0 },
+          { label:'Supply (units)',    data:supply,   backgroundColor:'#1BCCAA',  borderRadius:4, borderWidth:0 },
+          { label:'Fulfilled',         data:fulfilled,backgroundColor:'#4E8CF5',  borderRadius:4, borderWidth:0 },
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        animation:{duration:400},
+        plugins:{ legend:{ position:'top', labels:{ boxWidth:10, font:{size:11} } } },
+        scales:{
+          y:{ beginAtZero:true, ticks:{stepSize:1}, grid:{color:'#f3f4f6'} },
+          x:{ grid:{display:false} }
+        }
+      }
+    }
+  );
+ 
+  // Fulfillment donut (% fulfilled per type)
+  const fulfillRates = labels.map((_, i) =>
+    demand[i] ? Math.round(fulfilled[i] / demand[i] * 100) : 0
+  );
+  if (AN.charts.supplyFulfill) AN.charts.supplyFulfill.destroy();
+  AN.charts.supplyFulfill = new Chart(
+    document.getElementById('supplyFulfillChart').getContext('2d'),
+    {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{
+          data: demand,
+          backgroundColor: labels.map(bt => AN_COLORS.bt[bt] || '#ccc'),
+          borderWidth: 2, borderColor:'#fff'
+        }]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false, cutout:'60%',
+        plugins:{
+          legend:{ position:'bottom', labels:{ boxWidth:10, font:{size:11} } },
+          tooltip:{
+            callbacks:{
+              label: ctx => ` ${ctx.label}: ${ctx.raw} requests (${fulfillRates[ctx.dataIndex]}% fulfilled)`
+            }
+          }
+        }
+      }
+    }
+  );
+ 
+  // Table
+  const tb = document.getElementById('supplyTable');
+  tb.innerHTML = labels.map((bt, i) => {
+    const gap  = supply[i] - demand[i];
+    const gapColor = gap >= 0 ? '#166534' : '#991B1B';
+    const gapBg    = gap >= 0 ? '#DCFCE7' : '#FEE2E2';
+    const cov  = demand[i] ? Math.round(supply[i] / demand[i] * 100) : 100;
+    const covColor = cov >= 80 ? '#1BCCAA' : cov >= 50 ? '#F5A623' : '#E24B4A';
+    return `<tr>
+      <td><span class="bt-chip">${bt}</span></td>
+      <td style="font-family:'JetBrains Mono',mono;font-weight:600;">${demand[i]}</td>
+      <td style="font-family:'JetBrains Mono',mono;font-weight:600;">${supply[i]}</td>
+      <td style="font-family:'JetBrains Mono',mono;font-weight:600;color:${AN_COLORS.completed};">${fulfilled[i]}</td>
+      <td><span style="padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;
+                       background:${gapBg};color:${gapColor};">
+        ${gap >= 0 ? '+' : ''}${gap}
+      </span></td>
+      <td style="min-width:100px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="an-prog-track" style="flex:1;">
+            <div class="an-prog-fill"
+                 style="width:${Math.min(cov,100)}%;background:${covColor};"></div>
+          </div>
+          <span style="font-size:11px;font-weight:600;color:${covColor};width:36px;text-align:right;">
+            ${cov}%
+          </span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+ 
+// ── HOSPITALS ──────────────────────────────────────────────
+let _hospData = null;
+ 
+async function anLoadHospitals() {
+  const loader = document.getElementById('hospChartLoader');
+  if (loader) loader.style.display = 'block';
+  try {
+    const res  = await fetch(`${API_BASE}/api/admin/analytics/hospital-performance/${anBuildQuery()}`);
+    _hospData  = await res.json();
+    anRenderHospitals();
+  } catch(e) { console.error(e); }
+  finally { if (loader) loader.style.display = 'none'; }
+}
+ 
+function anRenderHospitals() {
+  if (!_hospData) return;
+  const hosp = _hospData.hospitals || [];
+  const top10 = hosp.slice(0, 10);
+ 
+  // Bar chart: total requests
+  if (AN.charts.hospRequest) AN.charts.hospRequest.destroy();
+  AN.charts.hospRequest = new Chart(
+    document.getElementById('hospRequestChart').getContext('2d'),
+    {
+      type: 'bar',
+      data: {
+        labels: top10.map(h => h.hospital),
+        datasets: [
+          { label:'Total',     data:top10.map(h=>h.total_requests), backgroundColor:'#4E8CF5', borderRadius:4 },
+          { label:'Completed', data:top10.map(h=>h.completed),      backgroundColor:'#1BCCAA', borderRadius:4 },
+          { label:'Pending',   data:top10.map(h=>h.pending),        backgroundColor:'#F5A623', borderRadius:4 },
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        animation:{duration:400},
+        plugins:{ legend:{ position:'top', labels:{ boxWidth:10, font:{size:10} } } },
+        scales:{
+          y:{ beginAtZero:true, ticks:{stepSize:1}, grid:{color:'#f3f4f6'} },
+          x:{ ticks:{ maxRotation:40, font:{size:10} }, grid:{display:false} }
+        }
+      }
+    }
+  );
+ 
+  // Horizontal bar: fulfillment rate
+  if (AN.charts.hospFulfill) AN.charts.hospFulfill.destroy();
+  AN.charts.hospFulfill = new Chart(
+    document.getElementById('hospFulfillChart').getContext('2d'),
+    {
+      type: 'bar',
+      data: {
+        labels: top10.map(h => h.hospital),
+        datasets: [{
+          label:'Fulfillment %',
+          data: top10.map(h => h.fulfillment_rate),
+          backgroundColor: top10.map(h =>
+            h.fulfillment_rate >= 70 ? '#1BCCAA' :
+            h.fulfillment_rate >= 40 ? '#F5A623' : '#E24B4A'
+          ),
+          borderRadius: 4
+        }]
+      },
+      options:{
+        indexAxis:'y',
+        responsive:true, maintainAspectRatio:false,
+        animation:{duration:400},
+        plugins:{ legend:{display:false} },
+        scales:{
+          x:{ beginAtZero:true, max:100, ticks:{callback:v=>v+'%'}, grid:{color:'#f3f4f6'} },
+          y:{ ticks:{ font:{size:10} }, grid:{display:false} }
+        }
+      }
+    }
+  );
+ 
+  // Table
+  const tb = document.getElementById('hospTable');
+  tb.innerHTML = hosp.map(h => {
+    const rateColor = h.fulfillment_rate >= 70 ? '#1BCCAA' :
+                      h.fulfillment_rate >= 40 ? '#F5A623' : '#E24B4A';
+    return `<tr>
+      <td><span style="font-weight:600;">${h.hospital}</span></td>
+      <td style="color:var(--text-3);">${h.district || '—'}</td>
+      <td style="font-family:'JetBrains Mono',mono;font-weight:600;">${h.total_requests}</td>
+      <td style="color:#1BCCAA;font-weight:600;">${h.completed}</td>
+      <td style="color:#F5A623;font-weight:600;">${h.pending}</td>
+      <td style="color:#E24B4A;font-weight:600;">${h.rejected}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="an-prog-track" style="width:70px;">
+            <div class="an-prog-fill"
+                 style="width:${h.fulfillment_rate}%;background:${rateColor};"></div>
+          </div>
+          <span style="font-size:12px;font-weight:700;color:${rateColor};
+                       font-family:'JetBrains Mono',mono;">
+            ${h.fulfillment_rate}%
+          </span>
+        </div>
+      </td>
+      <td style="font-family:'JetBrains Mono',mono;">${h.total_stock}</td>
+    </tr>`;
+  }).join('');
+}
+ 
+// ── DONORS ─────────────────────────────────────────────────
+let _donorData = null;
+ 
+async function anLoadDonors() {
+  const loader = document.getElementById('donorTrendLoader');
+  if (loader) loader.style.display = 'block';
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/analytics/donor-activity/${anBuildQuery()}`);
+    _donorData = await res.json();
+    anRenderDonors();
+  } catch(e) { console.error(e); }
+  finally { if (loader) loader.style.display = 'none'; }
+}
+ 
+function anRenderDonors() {
+  if (!_donorData) return;
+  const s = _donorData.summary || {};
+ 
+  // Summary cards
+  document.getElementById('donorTotalApproved').textContent = s.total_approved || 0;
+  document.getElementById('donorNewPeriod').textContent     = s.new_in_period  || 0;
+  document.getElementById('donorActive').textContent        = s.active_donors  || 0;
+ 
+  // Trend line
+  const tr = _donorData.trend || {};
+  if (AN.charts.donorTrend) AN.charts.donorTrend.destroy();
+  AN.charts.donorTrend = new Chart(
+    document.getElementById('donorTrendChart').getContext('2d'),
+    {
+      type: 'line',
+      data: {
+        labels: tr.labels || [],
+        datasets: [{
+          label: 'New Donors',
+          data: tr.values || [],
+          borderColor: '#1BCCAA', backgroundColor: '#1BCCAA20',
+          borderWidth:2, fill:true, tension:0.4,
+          pointRadius:3, pointHoverRadius:5
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, animation:{duration:400},
+        plugins:{ legend:{display:false} },
+        scales:{
+          y:{ beginAtZero:true, ticks:{stepSize:1}, grid:{color:'#f3f4f6'} },
+          x:{ grid:{display:false} }
+        }
+      }
+    }
+  );
+ 
+  // Blood type doughnut
+  const bt = _donorData.blood_type_breakdown || {};
+  if (AN.charts.donorBT) AN.charts.donorBT.destroy();
+  AN.charts.donorBT = new Chart(
+    document.getElementById('donorBTChart').getContext('2d'),
+    {
+      type: 'doughnut',
+      data: {
+        labels: bt.labels || [],
+        datasets: [{
+          data: bt.values || [],
+          backgroundColor: (bt.labels || []).map(l => AN_COLORS.bt[l] || '#ccc'),
+          borderWidth:2, borderColor:'#fff'
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'60%',
+        plugins:{
+          legend:{ position:'bottom', labels:{ boxWidth:10, font:{size:11} } }
+        }
+      }
+    }
+  );
+}
+ 
+// ── FULFILLMENT ─────────────────────────────────────────────
+let _fulfillData = null;
+ 
+async function anLoadFulfillment() {
+  const loader = document.getElementById('fulfillLoader');
+  if (loader) loader.style.display = 'block';
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/analytics/fulfillment/${anBuildQuery()}`);
+    _fulfillData = await res.json();
+    anRenderFulfillment();
+  } catch(e) { console.error(e); }
+  finally { if (loader) loader.style.display = 'none'; }
+}
+ 
+function anRenderFulfillment() {
+  if (!_fulfillData) return;
+  const s = _fulfillData.summary || {};
+ 
+  // Funnel
+  const funnel = document.getElementById('funnelViz');
+  const total  = s.total || 1;
+  const steps  = [
+    { label:'Total Requests',     val:s.total,     color:'#4E8CF5' },
+    { label:'Approved',           val:s.approved,  color:'#9B72F5' },
+    { label:'Completed (Fulfilled)',val:s.completed,color:'#1BCCAA' },
+    { label:'Pending',            val:s.pending,   color:'#F5A623' },
+    { label:'Rejected',           val:s.rejected,  color:'#E24B4A' },
+  ];
+  funnel.innerHTML = steps.map(step => {
+    const pct = Math.round((step.val / total) * 100);
+    return `
+      <div class="funnel-bar">
+        <div class="funnel-fill" style="width:${pct}%;background:${step.color};">
+          ${pct > 10 ? step.label : ''}
+        </div>
+        <span class="funnel-label">${step.val}</span>
+      </div>`;
+  }).join('');
+  document.getElementById('funnelSub').textContent =
+    `${s.total} total · ${s.rate}% fulfillment rate`;
+ 
+  // Donut
+  if (AN.charts.fulfillDonut) AN.charts.fulfillDonut.destroy();
+  AN.charts.fulfillDonut = new Chart(
+    document.getElementById('fulfillDonut').getContext('2d'),
+    {
+      type:'doughnut',
+      data:{
+        labels:['Completed','Approved','Pending','Rejected'],
+        datasets:[{
+          data:[s.completed,s.approved,s.pending,s.rejected],
+          backgroundColor:['#1BCCAA','#4E8CF5','#F5A623','#E24B4A'],
+          borderWidth:2, borderColor:'#fff'
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'60%',
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{size:11} } } }
+      }
+    }
+  );
+ 
+  // Urgency table
+  const urgTb = document.getElementById('urgencyTable');
+  urgTb.innerHTML = (_fulfillData.by_urgency || []).map(u => {
+    const c = u.rate >= 70 ? '#1BCCAA' : u.rate >= 40 ? '#F5A623' : '#E24B4A';
+    return `<tr>
+      <td><span style="font-weight:600;">${u.urgency}</span></td>
+      <td style="font-family:'JetBrains Mono',mono;">${u.total}</td>
+      <td style="color:#1BCCAA;font-weight:600;">${u.completed}</td>
+      <td style="color:${c};font-weight:700;font-family:'JetBrains Mono',mono;">${u.rate}%</td>
+      <td style="min-width:120px;">
+        <div class="an-prog-track">
+          <div class="an-prog-fill" style="width:${u.rate}%;background:${c};"></div>
+        </div>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-3);padding:1.5rem;">No data</td></tr>';
+ 
+  // Blood type table
+  const btTb = document.getElementById('btFulfillTable');
+  btTb.innerHTML = (_fulfillData.by_blood_type || []).map(b => {
+    const c = b.rate >= 70 ? '#1BCCAA' : b.rate >= 40 ? '#F5A623' : '#E24B4A';
+    return `<tr>
+      <td><span class="bt-chip">${b.blood_type}</span></td>
+      <td style="font-family:'JetBrains Mono',mono;">${b.total}</td>
+      <td style="color:#1BCCAA;font-weight:600;">${b.completed}</td>
+      <td style="color:${c};font-weight:700;font-family:'JetBrains Mono',mono;">${b.rate}%</td>
+      <td style="min-width:120px;">
+        <div class="an-prog-track">
+          <div class="an-prog-fill" style="width:${b.rate}%;background:${c};"></div>
+        </div>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-3);padding:1.5rem;">No data</td></tr>';
+}
+ 
+// ── GEOGRAPHIC ─────────────────────────────────────────────
+let _geoData = null;
+ 
+async function anLoadGeo() {
+  const loader = document.getElementById('geoLoader');
+  if (loader) loader.style.display = 'block';
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/analytics/geographic/${anBuildQuery()}`);
+    _geoData  = await res.json();
+    anRenderGeo();
+  } catch(e) { console.error(e); }
+  finally { if (loader) loader.style.display = 'none'; }
+}
+ 
+function anRenderGeo() {
+  if (!_geoData) return;
+  const reqs  = _geoData.requests_by_district || [];
+  const dons  = _geoData.donors_by_district   || [];
+ 
+  // Requests horizontal bar
+  if (AN.charts.geoRequest) AN.charts.geoRequest.destroy();
+  AN.charts.geoRequest = new Chart(
+    document.getElementById('geoRequestChart').getContext('2d'),
+    {
+      type: 'bar',
+      data: {
+        labels: reqs.map(d => d.district),
+        datasets:[
+          { label:'Total',     data:reqs.map(d=>d.total),     backgroundColor:'#4E8CF5', borderRadius:4 },
+          { label:'Completed', data:reqs.map(d=>d.completed), backgroundColor:'#1BCCAA', borderRadius:4 },
+          { label:'Pending',   data:reqs.map(d=>d.pending),   backgroundColor:'#F5A623', borderRadius:4 },
+        ]
+      },
+      options:{
+        indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        animation:{duration:400},
+        plugins:{ legend:{ position:'top', labels:{ boxWidth:10, font:{size:10} } } },
+        scales:{
+          x:{ beginAtZero:true, ticks:{stepSize:1}, grid:{color:'#f3f4f6'} },
+          y:{ ticks:{ font:{size:10} }, grid:{display:false} }
+        }
+      }
+    }
+  );
+ 
+  // Donors doughnut
+  if (AN.charts.geoDonor) AN.charts.geoDonor.destroy();
+  AN.charts.geoDonor = new Chart(
+    document.getElementById('geoDonorChart').getContext('2d'),
+    {
+      type:'doughnut',
+      data:{
+        labels: dons.map(d => d.district),
+        datasets:[{
+          data: dons.map(d => d.count),
+          backgroundColor: AN_COLORS.palette,
+          borderWidth:2, borderColor:'#fff'
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'55%',
+        plugins:{ legend:{ position:'right', labels:{ boxWidth:10, font:{size:10} } } }
+      }
+    }
+  );
+ 
+  // Table
+  const tb = document.getElementById('geoTable');
+  const maxTotal = Math.max(...reqs.map(d=>d.total), 1);
+  tb.innerHTML = reqs.map(d => {
+    const c = d.rate >= 70 ? '#1BCCAA' : d.rate >= 40 ? '#F5A623' : '#E24B4A';
+    return `<tr>
+      <td><span style="font-weight:600;">${d.district}</span></td>
+      <td style="font-family:'JetBrains Mono',mono;font-weight:600;">${d.total}</td>
+      <td style="color:#1BCCAA;font-weight:600;">${d.completed}</td>
+      <td style="color:#F5A623;font-weight:600;">${d.pending}</td>
+      <td style="color:${c};font-weight:700;font-family:'JetBrains Mono',mono;">${d.rate}%</td>
+      <td style="min-width:140px;">
+        <div class="an-prog-track">
+          <div class="an-prog-fill"
+               style="width:${Math.round(d.total/maxTotal*100)}%;background:#4E8CF5;"></div>
+        </div>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:1.5rem;">No data</td></tr>';
+}
+ 
+// ── EXPORTS ────────────────────────────────────────────────
+function anExportReport() {
+  const rows = [];
+  rows.push(['RedDrop Analytics Report', '', '', '']);
+  rows.push(['Generated', new Date().toLocaleString(), '', '']);
+  rows.push(['Period', document.getElementById('anPeriodLabel').textContent, '', '']);
+  rows.push(['', '', '', '']);
+ 
+  if (_hospData?.hospitals) {
+    rows.push(['HOSPITAL PERFORMANCE', '', '', '']);
+    rows.push(['Hospital','Total Requests','Completed','Fulfillment Rate']);
+    _hospData.hospitals.forEach(h => rows.push([h.hospital, h.total_requests, h.completed, h.fulfillment_rate + '%']));
+    rows.push(['','','','']);
+  }
+  if (_supplyData) {
+    rows.push(['DEMAND VS SUPPLY', '', '', '']);
+    rows.push(['Blood Type','Demand','Supply','Fulfilled']);
+    _supplyData.labels.forEach((bt, i) =>
+      rows.push([bt, _supplyData.demand[i], _supplyData.supply[i], _supplyData.fulfilled[i]]));
+    rows.push(['','','','']);
+  }
+  if (_geoData?.requests_by_district) {
+    rows.push(['GEOGRAPHIC BREAKDOWN', '', '', '']);
+    rows.push(['District','Total','Completed','Rate']);
+    _geoData.requests_by_district.forEach(d => rows.push([d.district,d.total,d.completed,d.rate+'%']));
+  }
+ 
+  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([csv], {type:'text/csv'})),
+    download: `reddrop-analytics-${new Date().toISOString().split('T')[0]}.csv`
+  });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+ 
+function anExportHospitals() {
+  if (!_hospData?.hospitals) return;
+  const hdr = ['Hospital','District','Total','Completed','Pending','Rejected','Rate','Stock'];
+  const rows = _hospData.hospitals.map(h =>
+    [h.hospital,h.district,h.total_requests,h.completed,h.pending,h.rejected,h.fulfillment_rate+'%',h.total_stock]
+  );
+  const csv = [hdr, ...rows].map(r => r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([csv], {type:'text/csv'})),
+    download: `hospital-performance-${new Date().toISOString().split('T')[0]}.csv`
+  });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+ 
+// ── INIT (called when analytics tab is clicked) ─────────────
+async function initAnalytics() {
+  // Set default date range inputs
+  const today = new Date();
+  const week  = new Date(today); week.setDate(today.getDate() - 7);
+  document.getElementById('anTo').value   = today.toISOString().split('T')[0];
+  document.getElementById('anFrom').value = week.toISOString().split('T')[0];
+  await anRefreshAll();
 }
     </script>
 <!-- User Detail Modal - FIXED VERSION with proper scrolling -->

@@ -10,6 +10,208 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
+
+/* ── Blood Request Flow Modal ───────────────────────────────────────── */
+@keyframes brf-slide-up {
+  from { opacity: 0; transform: translateY(32px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+@keyframes brf-pulse-ring {
+  0%   { transform: scale(1);   opacity: .6; }
+  70%  { transform: scale(1.8); opacity: 0; }
+  100% { transform: scale(1);   opacity: 0; }
+}
+@keyframes brf-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes brf-fill {
+  from { width: 0%; }
+}
+@keyframes brf-heartbeat {
+  0%, 100% { transform: scale(1); }
+  14%       { transform: scale(1.18); }
+  28%       { transform: scale(1); }
+  42%       { transform: scale(1.12); }
+  70%       { transform: scale(1); }
+}
+@keyframes brf-check-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes brf-step-pop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  60%  { transform: scale(1.12); }
+  100% { transform: scale(1); opacity: 1; }
+}
+ 
+.brf-backdrop {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,.58);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.brf-card {
+  background: #fff;
+  border-radius: 24px;
+  width: 100%; max-width: 520px;
+  overflow: hidden;
+  animation: brf-slide-up .45s cubic-bezier(.22,1,.36,1) both;
+  box-shadow: 0 32px 80px rgba(0,0,0,.22);
+}
+.brf-header {
+  position: relative; padding: 2.5rem 2rem 1.5rem;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.brf-icon-wrap {
+  position: relative; width: 80px; height: 80px; margin-bottom: 1.25rem;
+}
+.brf-icon-ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  animation: brf-pulse-ring 2.2s ease-out infinite;
+}
+.brf-icon-circle {
+  position: absolute; inset: 8px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.brf-title {
+  font-size: 1.35rem; font-weight: 700; color: #111;
+  margin: 0 0 .35rem; letter-spacing: -.02em;
+}
+.brf-sub {
+  font-size: .9rem; color: #666; margin: 0; line-height: 1.5;
+  max-width: 340px;
+}
+ 
+/* ── Tier Track ─────────────────────────────────────────────────────── */
+.brf-tier-track {
+  padding: 1.25rem 1.75rem 0;
+}
+.brf-tier-label {
+  font-size: .72rem; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: #999; margin-bottom: .6rem;
+}
+.brf-tiers {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 6px;
+}
+.brf-tier {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+}
+.brf-tier-dot {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .72rem; font-weight: 700;
+  transition: all .4s ease;
+}
+.brf-tier-dot.idle     { background: #f0f0f0; color: #aaa; }
+.brf-tier-dot.active   { background: #B91C1C; color: #fff;
+                          animation: brf-step-pop .4s ease both,
+                                     brf-heartbeat 1.8s ease-in-out .6s infinite; }
+.brf-tier-dot.done     { background: #16a34a; color: #fff;
+                          animation: brf-step-pop .3s ease both; }
+.brf-tier-name {
+  font-size: .68rem; color: #888; text-align: center; line-height: 1.2;
+}
+ 
+/* ── Progress bar ───────────────────────────────────────────────────── */
+.brf-progress-wrap { padding: .85rem 1.75rem 0; }
+.brf-progress-row  { display: flex; justify-content: space-between;
+                      font-size: .78rem; color: #888; margin-bottom: .4rem; }
+.brf-progress-bg   { height: 7px; background: #f0f0f0; border-radius: 99px; overflow: hidden; }
+.brf-progress-fill {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, #B91C1C, #ef4444);
+  animation: brf-fill .9s cubic-bezier(.22,1,.36,1) both;
+  transition: width .6s ease;
+}
+ 
+/* ── Stats row ──────────────────────────────────────────────────────── */
+.brf-stats {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 8px; padding: 1rem 1.75rem 0;
+}
+.brf-stat {
+  background: #fafafa; border: 1px solid #f0f0f0;
+  border-radius: 12px; padding: .7rem .5rem;
+  text-align: center;
+}
+.brf-stat-val { font-size: 1.15rem; font-weight: 700; color: #111; }
+.brf-stat-lbl { font-size: .68rem; color: #999; margin-top: 2px; }
+ 
+/* ── Donor card ─────────────────────────────────────────────────────── */
+.brf-donor-card {
+  margin: 1rem 1.75rem 0;
+  background: linear-gradient(135deg,#fff5f5,#fff);
+  border: 1.5px solid #fca5a5; border-radius: 16px;
+  padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1rem;
+}
+.brf-donor-avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: #B91C1C; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: 700; flex-shrink: 0;
+}
+.brf-donor-name  { font-weight: 700; font-size: .95rem; color: #111; }
+.brf-donor-meta  { font-size: .78rem; color: #666; margin-top: 2px; }
+.brf-donor-badge {
+  margin-left: auto; background: #16a34a; color: #fff;
+  font-size: .7rem; font-weight: 700; padding: .25rem .65rem;
+  border-radius: 99px; white-space: nowrap;
+}
+ 
+/* ── Spinning search indicator ──────────────────────────────────────── */
+.brf-spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 3px solid #fee2e2; border-top-color: #B91C1C;
+  animation: brf-spin .9s linear infinite;
+  margin: .5rem auto 0;
+}
+ 
+/* ── SVG checkmark ──────────────────────────────────────────────────── */
+.brf-check { stroke: #fff; stroke-width: 3; stroke-linecap: round;
+             stroke-linejoin: round; fill: none;
+             stroke-dasharray: 40; stroke-dashoffset: 40;
+             animation: brf-check-draw .5s .15s ease forwards; }
+ 
+/* ── Footer actions ─────────────────────────────────────────────────── */
+.brf-actions {
+  display: flex; gap: 10px;
+  padding: 1.5rem 1.75rem 1.75rem;
+}
+.brf-btn-primary {
+  flex: 1; padding: .8rem; border-radius: 12px; border: none; cursor: pointer;
+  background: #B91C1C; color: #fff; font-weight: 700; font-size: .9rem;
+  transition: background .2s, transform .1s;
+}
+.brf-btn-primary:hover { background: #991B1B; }
+.brf-btn-primary:active { transform: scale(.97); }
+.brf-btn-ghost {
+  flex: 1; padding: .8rem; border-radius: 12px; cursor: pointer;
+  background: #f5f5f5; color: #444; font-weight: 600; font-size: .9rem;
+  border: none; transition: background .2s;
+}
+.brf-btn-ghost:hover { background: #eee; }
+ 
+/* ── Stage header colours ───────────────────────────────────────────── */
+.brf-stage-submitted .brf-header { background: linear-gradient(160deg,#fff7ed,#fff); }
+.brf-stage-approved  .brf-header { background: linear-gradient(160deg,#f0fdf4,#fff); }
+.brf-stage-searching .brf-header { background: linear-gradient(160deg,#fff1f2,#fff); }
+.brf-stage-found     .brf-header { background: linear-gradient(160deg,#f0fdf4,#fff); }
+.brf-stage-bank-searching .brf-header { background: linear-gradient(160deg,#eff6ff,#fff); }
+.brf-stage-bank-found .brf-header { background: linear-gradient(160deg,#ecfeff,#fff); }
+ 
+/* ── Shimmer skeleton ───────────────────────────────────────────────── */
+@keyframes brf-shimmer {
+  from { background-position: -600px 0; }
+  to   { background-position: 600px 0; }
+}
+.brf-skeleton {
+  border-radius: 8px; height: 14px;
+  background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
+  background-size: 600px 100%;
+  animation: brf-shimmer 1.4s infinite;
+}
+
+ 
   /* Universal size normalization */
 body {
   font-size: 16px;
@@ -3054,7 +3256,7 @@ function showSection(id) {
   target.classList.add('active');
  
   switch (id) {
-    case 'home':          loadUserCapabilities(); break;
+    case 'home':          loadUserCapabilities(); loadDashboard(); break;
     case 'profile':       loadUserCapabilities(); break;
     case 'allDonors':     loadAllDonors();        break;
     case 'history':
@@ -3148,7 +3350,9 @@ async function loadDashboard() {
     }
  
     const requests = data.data;
- 
+
+    await syncBloodRequestFlow(requests);
+
     if (data.stats) {
       const { total, pending, approved, completed } = data.stats;
       const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val ?? 0; };
@@ -5023,6 +5227,655 @@ document.addEventListener("DOMContentLoaded", function() {
 });
  
 console.log("[RedDrop] dashboard_script_updated.js loaded.")
+
+/* ─── State ──────────────────────────────────────────────────────────── */
+const BRF = {
+  stage: null,
+  tierData: { t1: 0, t2: 0, t3: 0, t4: 0, currentTier: 0, total: 0 },
+  donorData: null,
+  requestId: null,
+  pollTimer: null,
+  lastAutoKey: null,
+};
+ 
+/* ─── Entry points ───────────────────────────────────────────────────── */
+ 
+/**
+ * showBloodRequestFlow(stage, payload)
+ *
+ * stage      : 'submitted' | 'approved' | 'searching' | 'found' | 'bank-searching' | 'bank-found'
+ * payload    : optional data object
+ *
+ * Call from:
+ *   submitBloodRequest()  → showBloodRequestFlow('submitted')
+ *   notification click    → showBloodRequestFlow('approved', { requestId })
+ *   poll callback         → showBloodRequestFlow('searching', tierData)
+ *   donor accepted notif  → showBloodRequestFlow('found', donorData)
+ *   stock fallback        → showBloodRequestFlow('bank-found', bankData)
+ */
+function showBloodRequestFlow(stage, payload = {}) {
+  BRF.stage = stage;
+  if (payload.requestId) BRF.requestId = payload.requestId;
+ 
+  const modal = document.getElementById('brfModal');
+  const card  = document.getElementById('brfCard');
+ 
+  card.className = `brf-card brf-stage-${stage}`;
+  card.innerHTML = brfRender(stage, payload);
+  modal.style.display = 'flex';
+ 
+  /* Auto-start polling while donor / stock search is still in progress */
+  if (stage === 'approved' || stage === 'searching' || stage === 'bank-searching') {
+    brfStartPolling();
+  }
+}
+ 
+function brfClose() {
+  document.getElementById('brfModal').style.display = 'none';
+  brfStopPolling();
+}
+ 
+function brfBackdropClick(e) {
+  /* Only close on backdrop, not card — unless stage is a terminal state */
+  if (e.target.id === 'brfModal' && ['submitted', 'found', 'bank-found'].includes(BRF.stage)) {
+    brfClose();
+  }
+}
+ 
+/* ─── Render ─────────────────────────────────────────────────────────── */
+function brfRender(stage, payload) {
+  switch (stage) {
+    case 'submitted': return brfSubmitted();
+    case 'approved':  return brfApproved(payload);
+    case 'searching': return brfSearching(payload);
+    case 'found':     return brfFound(payload);
+    case 'bank-searching': return brfBankSearching(payload);
+    case 'bank-found': return brfBankFound(payload);
+    default: return '';
+  }
+}
+ 
+/* Stage 1 — Submitted, awaiting admin review */
+function brfSubmitted() {
+  return `
+    <div class="brf-header">
+      <div class="brf-icon-wrap">
+        <div class="brf-icon-ring" style="background:rgba(251,146,60,.18)"></div>
+        <div class="brf-icon-circle" style="background:#f97316">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="brf-title">Request submitted!</h2>
+      <p class="brf-sub">Your blood request is now in the queue for admin review. You'll be notified the moment it's approved.</p>
+    </div>
+ 
+    <!-- Steps timeline -->
+    <div style="padding:0 1.75rem">
+      <div style="display:flex;flex-direction:column;gap:0">
+        ${brfStep('done',   '1', 'Request submitted',      'Received by the system')}
+        ${brfStep('active', '2', 'Admin review',           'An admin will verify your documents')}
+        ${brfStep('idle',   '3', 'Searching donors',       'Nearby compatible donors alerted')}
+        ${brfStep('idle',   '4', 'Donor matched',          'Confirmation & OTP exchange')}
+      </div>
+    </div>
+ 
+    <!-- Info box -->
+    <div style="margin:1.25rem 1.75rem 0;padding:.9rem 1rem;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;font-size:.82rem;color:#92400e;line-height:1.5">
+      <strong style="color:#78350f">⏱ Typical wait:</strong> Admin reviews usually complete within 30 minutes during business hours.
+    </div>
+ 
+    <div class="brf-actions">
+      <button class="brf-btn-ghost" onclick="brfGoToDashboard()">View dashboard</button>
+      <button class="brf-btn-primary" onclick="brfClose()">Got it</button>
+    </div>`;
+}
+ 
+/* Stage 2 — Admin approved, about to start search */
+function brfApproved(payload) {
+  return `
+    <div class="brf-header">
+      <div class="brf-icon-wrap">
+        <div class="brf-icon-ring" style="background:rgba(22,163,74,.2)"></div>
+        <div class="brf-icon-circle" style="background:#16a34a">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <polyline class="brf-check" points="5,13 10,18 19,7"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="brf-title">Request approved ✓</h2>
+      <p class="brf-sub">Your request has been verified by an admin. We are now searching for compatible donors near the hospital.</p>
+    </div>
+ 
+    <!-- Steps timeline -->
+    <div style="padding:0 1.75rem">
+      ${brfStep('done',   '1', 'Request submitted',      'Received by the system')}
+      ${brfStep('done',   '2', 'Admin approved',         'Documents verified')}
+      ${brfStep('active', '3', 'Searching donors',       'Tiered alert system active')}
+      ${brfStep('idle',   '4', 'Donor matched',          'Confirmation & OTP exchange')}
+    </div>
+ 
+    <!-- Tier track (all idle at start) -->
+    <div class="brf-tier-track">
+      <div class="brf-tier-label">Donor search radius</div>
+      <div class="brf-tiers">
+        ${brfTierDot(1, 'active', '0–5', 'km')}
+        ${brfTierDot(2, 'idle',   '5–15','km')}
+        ${brfTierDot(3, 'idle',   '15–30','km')}
+        ${brfTierDot(4, 'idle',   '30+', 'km')}
+      </div>
+    </div>
+ 
+    <div style="padding:.5rem 1.75rem 0;text-align:center">
+      <div class="brf-spinner"></div>
+      <p style="font-size:.78rem;color:#999;margin:.5rem 0 0">Scanning Tier 1 — donors within 5 km…</p>
+    </div>
+ 
+    <div class="brf-actions" style="padding-top:1rem">
+      <button class="brf-btn-ghost" onclick="brfGoToDashboard()">Go to dashboard</button>
+      <button class="brf-btn-primary" style="opacity:.4;pointer-events:none">Waiting for donor…</button>
+    </div>`;
+}
+ 
+/* Stage 3 — Active search (updated with live tier progress) */
+function brfSearching(payload = {}) {
+  const { currentTier = 1, t1 = 0, t2 = 0, t3 = 0, t4 = 0, total = 0 } = payload;
+  const tierLabels = ['0–5 km','5–15 km','15–30 km','30+ km'];
+  const pct = Math.min(100, Math.round((currentTier / 4) * 100));
+ 
+  return `
+    <div class="brf-header">
+      <div class="brf-icon-wrap">
+        <div class="brf-icon-ring" style="background:rgba(185,28,28,.15)"></div>
+        <div class="brf-icon-circle" style="background:#B91C1C">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="brf-title">Searching for donors</h2>
+      <p class="brf-sub">Our tiered system is alerting compatible donors by proximity — closest first.</p>
+    </div>
+ 
+    <!-- Tier dots -->
+    <div class="brf-tier-track">
+      <div class="brf-tier-label">Search radius progress</div>
+      <div class="brf-tiers">
+        ${[1,2,3,4].map(t =>
+          brfTierDot(t,
+            t < currentTier  ? 'done'
+          : t === currentTier ? 'active' : 'idle',
+            ['0–5','5–15','15–30','30+'][t-1], 'km')
+        ).join('')}
+      </div>
+    </div>
+ 
+    <!-- Progress bar -->
+    <div class="brf-progress-wrap">
+      <div class="brf-progress-row">
+        <span>Scanning Tier ${currentTier} — ${tierLabels[currentTier-1]}</span>
+        <span>${pct}%</span>
+      </div>
+      <div class="brf-progress-bg">
+        <div class="brf-progress-fill" style="width:${pct}%"></div>
+      </div>
+    </div>
+ 
+    <!-- Stats -->
+    <div class="brf-stats">
+      <div class="brf-stat"><div class="brf-stat-val">${t1 + t2 + t3 + t4}</div><div class="brf-stat-lbl">Donors alerted</div></div>
+      <div class="brf-stat"><div class="brf-stat-val">${currentTier}/4</div><div class="brf-stat-lbl">Tiers active</div></div>
+      <div class="brf-stat"><div class="brf-stat-val">${total > 0 ? total : '—'}</div><div class="brf-stat-lbl">Compatible found</div></div>
+    </div>
+ 
+    <div style="padding:.7rem 1.75rem 0;text-align:center">
+      <div class="brf-spinner"></div>
+      <p style="font-size:.78rem;color:#999;margin:.45rem 0 0">This may take a few minutes — we'll notify you instantly when a donor responds.</p>
+    </div>
+ 
+    <div class="brf-actions" style="padding-top:1rem">
+      <button class="brf-btn-ghost" onclick="brfGoToDashboard()">Go to dashboard</button>
+      <button class="brf-btn-primary" style="opacity:.4;pointer-events:none">Awaiting response…</button>
+    </div>`;
+}
+ 
+/* Stage 4 — Donor found & accepted */
+function brfFound(payload = {}) {
+  const { donorName = 'A donor', donorBlood = '—', donorPhone = '—', distanceKm = null } = payload;
+  const initials = donorName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  const dist = distanceKm ? `${Math.round(distanceKm)} km away` : 'Nearby';
+ 
+  return `
+    <div class="brf-header">
+      <div class="brf-icon-wrap">
+        <div class="brf-icon-ring" style="background:rgba(22,163,74,.2)"></div>
+        <div class="brf-icon-circle" style="background:#16a34a">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="brf-title">Donor found! 🎉</h2>
+      <p class="brf-sub">A compatible donor has accepted your request. Contact them below or wait for them to reach the hospital.</p>
+    </div>
+ 
+    <!-- Donor card -->
+    <div class="brf-donor-card">
+      <div class="brf-donor-avatar">${initials}</div>
+      <div>
+        <div class="brf-donor-name">${donorName}</div>
+        <div class="brf-donor-meta">
+          <span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:99px;font-size:.72rem;font-weight:700;margin-right:6px">${donorBlood}</span>
+          ${dist}
+        </div>
+        ${donorPhone !== '—' ? `<div class="brf-donor-meta" style="margin-top:4px">📞 ${donorPhone}</div>` : ''}
+      </div>
+      <div class="brf-donor-badge">✓ Accepted</div>
+    </div>
+ 
+    <!-- Steps (all complete) -->
+    <div style="padding:1rem 1.75rem 0">
+      ${brfStep('done','1','Request submitted','Received by the system')}
+      ${brfStep('done','2','Admin approved','Documents verified')}
+      ${brfStep('done','3','Donor alerted','Compatible donor notified')}
+      ${brfStep('active','4','Awaiting OTP','Patient confirms receipt → OTP → donor')}
+    </div>
+ 
+    <div style="margin:1rem 1.75rem 0;padding:.85rem 1rem;background:#f0fdf4;border:1px solid #86efac;border-radius:12px;font-size:.82rem;color:#14532d;line-height:1.5">
+      <strong>Next step:</strong> Once you receive the blood, tap <em>Confirm Receipt</em> in your active requests to generate an OTP for the donor.
+    </div>
+ 
+    <div class="brf-actions">
+      <button class="brf-btn-ghost" onclick="brfClose()">Close</button>
+      <button class="brf-btn-primary" onclick="brfGoToHistory()">View my requests</button>
+    </div>`;
+}
+
+/* Stage 5 — No donor response yet, checking blood bank + hospital stock */
+function brfBankSearching(payload = {}) {
+  const { totalDonorsAlerted = 0 } = payload;
+
+  return `
+    <div class="brf-header">
+      <div class="brf-icon-wrap">
+        <div class="brf-icon-ring" style="background:rgba(37,99,235,.16)"></div>
+        <div class="brf-icon-circle" style="background:#2563eb">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 21h18"/><path d="M5 21V7l8-4 6 4v14"/><path d="M9 9h.01"/><path d="M9 12h.01"/><path d="M9 15h.01"/><path d="M15 9h.01"/><path d="M15 12h.01"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="brf-title">No donor yet, checking blood banks</h2>
+      <p class="brf-sub">All nearby donor tiers have been alerted. We are now checking central blood bank stock and nearby hospitals for available units.</p>
+    </div>
+
+    <div style="padding:0 1.75rem">
+      ${brfStep('done','1','Request submitted','Received by the system')}
+      ${brfStep('done','2','Admin approved','Documents verified')}
+      ${brfStep('done','3','Donor search completed',`${totalDonorsAlerted} donor alerts sent`)}
+      ${brfStep('active','4','Searching blood banks','Checking central blood bank and hospital stock')}
+    </div>
+
+    <div class="brf-stats">
+      <div class="brf-stat"><div class="brf-stat-val">${totalDonorsAlerted}</div><div class="brf-stat-lbl">Donors alerted</div></div>
+      <div class="brf-stat"><div class="brf-stat-val">4/4</div><div class="brf-stat-lbl">Tiers finished</div></div>
+      <div class="brf-stat"><div class="brf-stat-val">Live</div><div class="brf-stat-lbl">Stock check</div></div>
+    </div>
+
+    <div style="padding:.7rem 1.75rem 0;text-align:center">
+      <div class="brf-spinner"></div>
+      <p style="font-size:.78rem;color:#999;margin:.45rem 0 0">We will update this screen as soon as stock is confirmed in a blood bank or hospital.</p>
+    </div>
+
+    <div class="brf-actions" style="padding-top:1rem">
+      <button class="brf-btn-ghost" onclick="brfGoToDashboard()">Go to dashboard</button>
+      <button class="brf-btn-primary" style="opacity:.4;pointer-events:none">Checking stock...</button>
+    </div>`;
+}
+
+/* Stage 6 — Stock found in blood bank / hospital */
+function brfBankFound(payload = {}) {
+  const sources = Array.isArray(payload.sources) ? payload.sources : [];
+  const totalUnits = payload.totalUnits ?? sources.reduce((sum, source) => sum + (source.units || 0), 0);
+  const sourceHtml = sources.length
+    ? sources.map(source => `
+        <div class="brf-donor-card" style="margin-top:.75rem;border-color:${source.kind === 'bank' ? '#93c5fd' : '#67e8f9'};background:linear-gradient(135deg,${source.kind === 'bank' ? '#eff6ff,#fff' : '#ecfeff,#fff'});">
+          <div class="brf-donor-avatar" style="background:${source.kind === 'bank' ? '#2563eb' : '#0891b2'}">
+            <i class="fas ${source.kind === 'bank' ? 'fa-building-columns' : 'fa-hospital'}"></i>
+          </div>
+          <div style="flex:1">
+            <div class="brf-donor-name">${source.name}</div>
+            <div class="brf-donor-meta">${source.units} unit${source.units === 1 ? '' : 's'} available${source.bloodType ? ` • ${source.bloodType}` : ''}</div>
+            <div class="brf-donor-meta" style="margin-top:4px">${source.location || 'Location available from dashboard'}</div>
+          </div>
+          <div class="brf-donor-badge" style="background:${source.kind === 'bank' ? '#2563eb' : '#0891b2'}">Stock Ready</div>
+        </div>
+      `).join('')
+    : `<div style="margin:1rem 1.75rem 0;padding:.9rem 1rem;background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;font-size:.82rem;color:#1d4ed8;line-height:1.5">Stock has been found and is being prepared for your request.</div>`;
+
+  return `
+    <div class="brf-header">
+      <div class="brf-icon-wrap">
+        <div class="brf-icon-ring" style="background:rgba(8,145,178,.18)"></div>
+        <div class="brf-icon-circle" style="background:#0891b2">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 21h18"/><path d="M5 21V7l8-4 6 4v14"/><path d="M12 11v6"/><path d="M9 14h6"/>
+          </svg>
+        </div>
+      </div>
+      <h2 class="brf-title">Blood stock found</h2>
+      <p class="brf-sub">Compatible stock is available through the blood bank network. Please coordinate with the listed source below.</p>
+    </div>
+
+    <div style="padding:0 1.75rem">
+      ${brfStep('done','1','Request submitted','Received by the system')}
+      ${brfStep('done','2','Admin approved','Documents verified')}
+      ${brfStep('done','3','Donor search completed','No donor confirmed yet')}
+      ${brfStep('done','4','Stock located',`${totalUnits} total unit${totalUnits === 1 ? '' : 's'} available`)}
+    </div>
+
+    <div class="brf-stats">
+      <div class="brf-stat"><div class="brf-stat-val">${sources.length || 1}</div><div class="brf-stat-lbl">Sources found</div></div>
+      <div class="brf-stat"><div class="brf-stat-val">${totalUnits}</div><div class="brf-stat-lbl">Units available</div></div>
+      <div class="brf-stat"><div class="brf-stat-val">${payload.bloodType || '—'}</div><div class="brf-stat-lbl">Blood type</div></div>
+    </div>
+
+    ${sourceHtml}
+
+    <div style="margin:1rem 1.75rem 0;padding:.85rem 1rem;background:#ecfeff;border:1px solid #a5f3fc;border-radius:12px;font-size:.82rem;color:#0f766e;line-height:1.5">
+      <strong>Next step:</strong> Contact the hospital / blood bank and mention your request so the available stock can be reserved for you.
+    </div>
+
+    <div class="brf-actions">
+      <button class="brf-btn-ghost" onclick="brfClose()">Close</button>
+      <button class="brf-btn-primary" onclick="brfGoToHistory()">View my requests</button>
+    </div>`;
+}
+ 
+/* ─── Helper sub-components ─────────────────────────────────────────── */
+function brfStep(state, num, label, sub) {
+  const colors = { done: '#16a34a', active: '#B91C1C', idle: '#d1d5db' };
+  const bgColors = { done: '#f0fdf4', active: '#fff1f2', idle: '#f9fafb' };
+  const c = colors[state];
+  const bg = bgColors[state];
+  const icon = state === 'done'
+    ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="5,13 10,18 19,7"/></svg>`
+    : state === 'active'
+    ? `<div style="width:8px;height:8px;border-radius:50%;background:#fff;animation:brf-heartbeat 1.4s ease-in-out infinite"></div>`
+    : num;
+ 
+  return `
+    <div style="display:flex;align-items:flex-start;gap:12px;padding:.6rem 0;position:relative">
+      <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+        <div style="width:32px;height:32px;border-radius:50%;background:${c};display:flex;align-items:center;justify-content:center;
+          font-size:.75rem;font-weight:700;color:${state==='idle'?'#9ca3af':'#fff'};
+          ${state==='active'?'box-shadow:0 0 0 4px rgba(185,28,28,.15)':''}">
+          ${icon}
+        </div>
+        ${/* vertical connector, skip for last */ ''}
+      </div>
+      <div style="padding:.3rem 0">
+        <div style="font-size:.88rem;font-weight:600;color:${state==='idle'?'#9ca3af':'#111'}">${label}</div>
+        <div style="font-size:.76rem;color:${state==='idle'?'#d1d5db':'#888'};margin-top:2px">${sub}</div>
+      </div>
+    </div>`;
+}
+ 
+function brfTierDot(num, state, range, unit) {
+  const stateMap = { idle: 'idle', active: 'active', done: 'done' };
+  return `
+    <div class="brf-tier">
+      <div class="brf-tier-dot ${stateMap[state]}">T${num}</div>
+      <div class="brf-tier-name">${range}<br>${unit}</div>
+    </div>`;
+}
+
+function brfAllDonorTiersCompleted(esc = {}) {
+  return [esc.tier_1, esc.tier_2, esc.tier_3, esc.tier_4].every(tier => !!tier?.completed);
+}
+
+function brfBuildStockSources(esc = {}, statusData = {}) {
+  const sources = [];
+  const bloodType = statusData?.blood_type || '—';
+  const bankUnits = Number(esc?.stock_check?.blood_bank_units || 0);
+
+  if (bankUnits > 0) {
+    sources.push({
+      kind: 'bank',
+      name: 'Central Blood Bank',
+      units: bankUnits,
+      bloodType,
+      location: 'Central stock pool',
+    });
+  }
+
+  const hospitalStock = esc?.stock_check?.hospital_stock || {};
+  Object.entries(hospitalStock).forEach(([name, details]) => {
+    const units = Number(details?.units || 0);
+    if (units > 0) {
+      sources.push({
+        kind: 'hospital',
+        name,
+        units,
+        bloodType,
+        location: details?.district || 'Hospital stock available',
+      });
+    }
+  });
+
+  return sources;
+}
+
+function brfAutoShow(stage, payload = {}, autoKey = null) {
+  const key = autoKey || `${stage}-${payload.requestId || 'none'}`;
+  if (BRF.lastAutoKey === key) {
+    if (stage === 'approved' || stage === 'searching' || stage === 'bank-searching') {
+      brfStartPolling();
+    }
+    return;
+  }
+  BRF.lastAutoKey = key;
+  showBloodRequestFlow(stage, payload);
+}
+
+async function syncBloodRequestFlow(requests = []) {
+  const activeRequest = Array.isArray(requests)
+    ? requests.find(req => ['pending', 'approved'].includes(req.status))
+    : null;
+
+  if (!activeRequest?.id) return;
+
+  if (activeRequest.status === 'pending') {
+    brfAutoShow('submitted', { requestId: activeRequest.id }, `submitted-${activeRequest.id}`);
+    return;
+  }
+
+  try {
+    const [statusRes, escRes] = await Promise.all([
+      fetch(`${API_BASE}/blood_requests/api/request-status/${activeRequest.id}/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }),
+      fetch(`${API_BASE}/api/escalation/${activeRequest.id}/status/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+    ]);
+
+    const statusData = statusRes.ok ? await statusRes.json() : null;
+    const esc = escRes.ok ? await escRes.json() : null;
+
+    if (statusData?.fulfilled && statusData?.accepted_donor) {
+      const donor = statusData.accepted_donor;
+      brfAutoShow('found', {
+        requestId: activeRequest.id,
+        donorName: donor.name || 'A compatible donor',
+        donorBlood: donor.blood_type || '—',
+        donorPhone: donor.phone || '—',
+        distanceKm: donor.distance_km || null,
+      }, `found-${activeRequest.id}-${donor.name || 'donor'}-${donor.phone || 'none'}`);
+      return;
+    }
+
+    if (!esc) {
+      brfAutoShow('approved', { requestId: activeRequest.id }, `approved-${activeRequest.id}`);
+      return;
+    }
+
+    const stockSources = brfBuildStockSources(esc, statusData);
+    const tierCounts = {
+      t1: esc.tier_1?.donors_notified || 0,
+      t2: esc.tier_2?.donors_notified || 0,
+      t3: esc.tier_3?.donors_notified || 0,
+      t4: esc.tier_4?.donors_notified || 0,
+    };
+
+    let currentTier = 1;
+    if (esc.tier_4?.completed) currentTier = 4;
+    else if (esc.tier_3?.completed) currentTier = 4;
+    else if (esc.tier_2?.completed) currentTier = 3;
+    else if (esc.tier_1?.completed) currentTier = 2;
+
+    if (stockSources.length > 0) {
+      const totalUnits = stockSources.reduce((sum, source) => sum + (source.units || 0), 0);
+      brfAutoShow('bank-found', {
+        requestId: activeRequest.id,
+        bloodType: statusData?.blood_type || activeRequest.blood_type,
+        totalUnits,
+        sources: stockSources,
+      }, `bank-found-${activeRequest.id}-${totalUnits}-${stockSources.length}`);
+      return;
+    }
+
+    if (brfAllDonorTiersCompleted(esc)) {
+      brfAutoShow('bank-searching', {
+        requestId: activeRequest.id,
+        totalDonorsAlerted: esc.total_donors_alerted || (tierCounts.t1 + tierCounts.t2 + tierCounts.t3 + tierCounts.t4),
+      }, `bank-searching-${activeRequest.id}-${esc.total_donors_alerted || 0}-${!!esc?.stock_check?.completed}`);
+      return;
+    }
+
+    if ((esc.total_donors_alerted || 0) > 0 || [tierCounts.t1, tierCounts.t2, tierCounts.t3, tierCounts.t4].some(Boolean)) {
+      brfAutoShow('searching', {
+        requestId: activeRequest.id,
+        currentTier,
+        ...tierCounts,
+        total: tierCounts.t1 + tierCounts.t2 + tierCounts.t3 + tierCounts.t4,
+      }, `searching-${activeRequest.id}-${currentTier}-${tierCounts.t1}-${tierCounts.t2}-${tierCounts.t3}-${tierCounts.t4}`);
+      return;
+    }
+
+    brfAutoShow('approved', { requestId: activeRequest.id }, `approved-${activeRequest.id}`);
+  } catch (err) {
+    console.warn('[BRF] sync failed:', err);
+    brfAutoShow('approved', { requestId: activeRequest.id }, `approved-${activeRequest.id}`);
+  }
+}
+ 
+/* ─── Navigation helpers ─────────────────────────────────────────────── */
+function brfGoToDashboard() {
+  brfClose();
+  /* Works in both files: dashboard.html will have showSection, blood_request.html redirects */
+  if (typeof showSection === 'function') {
+    showSection('home');
+  } else {
+    window.location.href = 'dashboard.html';
+  }
+}
+ 
+function brfGoToHistory() {
+  brfClose();
+  if (typeof showSection === 'function') {
+    showSection('history');
+    if (typeof switchHistoryTab === 'function') switchHistoryTab('requests');
+    if (typeof showRequestTab === 'function') showRequestTab('active');
+  } else {
+    window.location.href = 'dashboard.html?tab=history';
+  }
+}
+ 
+/* ─── Polling (dashboard.html only) ────────────────────────────────── */
+function brfStartPolling() {
+  brfStopPolling();
+  if (!BRF.requestId) return;
+  BRF.pollTimer = setInterval(brfPollEscalation, 8000);
+  brfPollEscalation(); /* immediate first call */
+}
+ 
+function brfStopPolling() {
+  if (BRF.pollTimer) { clearInterval(BRF.pollTimer); BRF.pollTimer = null; }
+}
+ 
+async function brfPollEscalation() {
+  if (!BRF.requestId) return;
+  const tok = localStorage.getItem('access_token');
+  try {
+    /* Check if donor already accepted */
+    const statusRes = await fetch(
+      `http://127.0.0.1:8000/blood_requests/api/request-status/${BRF.requestId}/`,
+      { headers: { Authorization: `Bearer ${tok}` } }
+    );
+    const statusData = await statusRes.json();
+ 
+    if (statusData.fulfilled && statusData.accepted_donor) {
+      brfStopPolling();
+      const d = statusData.accepted_donor;
+      showBloodRequestFlow('found', {
+        requestId: BRF.requestId,
+        donorName:  d.name  || 'A compatible donor',
+        donorBlood: d.blood_type || '—',
+        donorPhone: d.phone  || '—',
+        distanceKm: d.distance_km || null,
+      });
+      return;
+    }
+ 
+    /* Check tier escalation progress */
+    const escRes = await fetch(
+      `http://127.0.0.1:8000/api/escalation/${BRF.requestId}/status/`,
+      { headers: { Authorization: `Bearer ${tok}` } }
+    );
+    if (!escRes.ok) return;
+    const esc = await escRes.json();
+ 
+    const t1 = esc.tier_1?.donors_notified || 0;
+    const t2 = esc.tier_2?.donors_notified || 0;
+    const t3 = esc.tier_3?.donors_notified || 0;
+    const t4 = esc.tier_4?.donors_notified || 0;
+    const stockSources = brfBuildStockSources(esc, statusData);
+
+    let currentTier = 1;
+    if (esc.tier_4?.completed) currentTier = 4;
+    else if (esc.tier_3?.completed) currentTier = 4;
+    else if (esc.tier_2?.completed) currentTier = 3;
+    else if (esc.tier_1?.completed) currentTier = 2;
+
+    if (stockSources.length > 0) {
+      brfStopPolling();
+      showBloodRequestFlow('bank-found', {
+        requestId: BRF.requestId,
+        bloodType: statusData?.blood_type || '—',
+        totalUnits: stockSources.reduce((sum, source) => sum + (source.units || 0), 0),
+        sources: stockSources,
+      });
+      return;
+    }
+
+    if (brfAllDonorTiersCompleted(esc)) {
+      showBloodRequestFlow('bank-searching', {
+        requestId: BRF.requestId,
+        totalDonorsAlerted: esc.total_donors_alerted || (t1 + t2 + t3 + t4),
+      });
+      return;
+    }
+
+    showBloodRequestFlow('searching', { currentTier, t1, t2, t3, t4, total: t1+t2+t3+t4 });
+
+  } catch (err) {
+    console.warn('[BRF] poll failed:', err);
+  }
+}
+ 
+
 </script>
 <!-- PATIENT OTP VIEW MODAL -->
 <div id="patientOtpModal"
@@ -5217,6 +6070,10 @@ console.log("[RedDrop] dashboard_script_updated.js loaded.")
     </div>
  
   </div>
+</div>
+<!-- Blood Request Flow Modal -->
+<div id="brfModal" class="brf-backdrop" style="display:none;" onclick="brfBackdropClick(event)">
+  <div class="brf-card" id="brfCard"></div>
 </div>
 </body>
 </html>

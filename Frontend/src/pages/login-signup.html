@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>RedDrop | Login</title>
 
   <!-- Tailwind CSS CDN -->
@@ -23,6 +23,31 @@
             "hlb-bg": "#FFF5F5",
             "hlb-lightRed": "#FEE2E2",
             "hlb-darkRed": "#991B1B",
+            "primary": "#DC2626",
+            "primary-dark": "#7F1D1D",
+          },
+          backgroundImage: {
+            "gradient-red": "linear-gradient(135deg, #DC2626 0%, #991B1B 100%)",
+            "gradient-subtle": "linear-gradient(135deg, #FEF2F2 0%, #FFF5F5 100%)",
+          },
+          boxShadow: {
+            "card": "0 10px 30px rgba(0, 0, 0, 0.1)",
+            "card-hover": "0 20px 40px rgba(0, 0, 0, 0.15)",
+            "input": "0 2px 8px rgba(0, 0, 0, 0.05)",
+          },
+          animation: {
+            "fade-in": "fadeIn 0.6s ease-in-out",
+            "slide-up": "slideUp 0.6s ease-out",
+          },
+          keyframes: {
+            fadeIn: {
+              "0%": { opacity: "0" },
+              "100%": { opacity: "1" },
+            },
+            slideUp: {
+              "0%": { transform: "translateY(20px)", opacity: "0" },
+              "100%": { transform: "translateY(0)", opacity: "1" },
+            },
           },
         },
       },
@@ -30,56 +55,169 @@
   </script>
 
   <style>
-    .input { @apply w-full border px-3 py-2 rounded-md focus:ring-red-500 focus:border-red-500; }
-    /* .signupRole input:checked + span { @apply text-red-600 font-semibold; } */
+    /* Responsive font sizes */
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+    }
+
+    @media (max-width: 640px) {
+      html { font-size: 14px; }
+      .text-5xl { font-size: 1.875rem !important; }
+      .text-4xl { font-size: 1.5rem !important; }
+      .text-3xl { font-size: 1.25rem !important; }
+      .text-2xl { font-size: 1.125rem !important; }
+      .text-xl { font-size: 1rem !important; }
+    }
+
+    @media (max-width: 768px) {
+      html { font-size: 15px; }
+    }
+
+    /* Custom input styling */
+    .input {
+      @apply w-full px-4 py-3 rounded-lg border border-gray-200 bg-white text-gray-800 placeholder-gray-400 transition-all duration-300 shadow-input;
+      @apply focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 focus:border-transparent;
+      @apply hover:border-gray-300;
+      font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    .input:disabled {
+      @apply bg-gray-50 text-gray-500 cursor-not-allowed;
+    }
+
+    /* Smooth transitions */
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Mobile-friendly button */
+    button {
+      min-height: 44px; /* iOS touch target */
+    }
+
+    /* Prevent zoom on input focus */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"],
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      0% { transform: translateY(20px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    .animate-slide-up {
+      animation: slideUp 0.6s ease-out;
+    }
   </style>
 </head>
 
-<body class="min-h-screen bg-hlb-bg text-gray-800 font-sans flex items-center justify-center p-6">
+<body class="min-h-screen bg-gradient-subtle text-gray-800 font-sans flex items-center justify-center p-2 sm:p-4 md:p-6 lg:p-8">
 
-<div class="w-full max-w-4xl bg-white shadow-xl rounded-2xl overflow-hidden grid md:grid-cols-2">
+<!-- Main Container -->
+<div class="w-full max-w-5xl bg-white shadow-card rounded-lg sm:rounded-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-0 animate-fade-in">
 
-  <!-- LEFT PANEL -->
-  <div class="bg-red-600 text-white p-10 flex flex-col justify-between">
-    <div>
-      <h1 class="text-4xl font-bold">RedDrop</h1>
-      <p class="mt-4 text-lg opacity-90">Manage blood donations & requests efficiently.</p>
+  <!-- LEFT PANEL - Hidden on mobile, visible on tablet/desktop -->
+  <div class="hidden md:flex bg-gradient-red text-white p-6 sm:p-8 md:p-10 lg:p-12 flex-col justify-between relative overflow-hidden">
+    <!-- Decorative circles -->
+    <div class="absolute -top-20 -right-20 w-40 h-40 bg-white opacity-5 rounded-full"></div>
+    <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-white opacity-5 rounded-full"></div>
+
+    <div class="relative z-10">
+      <div class="inline-block bg-white bg-opacity-20 px-3 py-1 sm:px-4 sm:py-2 rounded-full mb-3 sm:mb-4">
+        <span class="text-xs sm:text-sm font-semibold">Blood Donation Network</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold mt-2 leading-tight">RedDrop</h1>
+      <p class="mt-3 sm:mt-4 text-base sm:text-lg text-white text-opacity-90">Save lives. Donate blood. Build community.</p>
     </div>
 
-    <div class="space-y-4 mt-10">
-      <div class="flex items-center space-x-3"><i class="ri-shield-check-line text-2xl"></i><p>Secure & Private</p></div>
-      <div class="flex items-center space-x-3"><i class="ri-time-line text-2xl"></i><p>24/7 Access</p></div>
-      <div class="flex items-center space-x-3"><i class="ri-team-line text-2xl"></i><p>Community Driven</p></div>
+    <div class="relative z-10 space-y-3 sm:space-y-4 mt-8 sm:mt-10 md:mt-12">
+      <div class="flex items-start space-x-3 group">
+        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white bg-opacity-20 flex items-center justify-center flex-shrink-0 group-hover:bg-opacity-30 transition-all">
+          <i class="ri-shield-check-line text-lg sm:text-xl"></i>
+        </div>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Secure & Private</p>
+          <p class="text-xs sm:text-sm text-white text-opacity-75 mt-1">Your data is encrypted</p>
+        </div>
+      </div>
+      <div class="flex items-start space-x-3 group">
+        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white bg-opacity-20 flex items-center justify-center flex-shrink-0 group-hover:bg-opacity-30 transition-all">
+          <i class="ri-time-line text-lg sm:text-xl"></i>
+        </div>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">24/7 Access</p>
+          <p class="text-xs sm:text-sm text-white text-opacity-75 mt-1">Anytime, anywhere</p>
+        </div>
+      </div>
+      <div class="flex items-start space-x-3 group">
+        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white bg-opacity-20 flex items-center justify-center flex-shrink-0 group-hover:bg-opacity-30 transition-all">
+          <i class="ri-team-line text-lg sm:text-xl"></i>
+        </div>
+        <div>
+          <p class="font-semibold text-sm sm:text-base">Community Driven</p>
+          <p class="text-xs sm:text-sm text-white text-opacity-75 mt-1">Join thousands</p>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- RIGHT PANEL -->
-  <div class="p-10">
+  <!-- RIGHT PANEL - Form Area -->
+  <div class="p-4 sm:p-6 md:p-8 lg:p-12 flex flex-col justify-center">
 
     <!-- LOGIN SECTION -->
-    <div id="loginSection" class="space-y-8">
-      <h2 class="text-3xl font-semibold text-gray-900">Welcome Back</h2>
-      <p class="text-gray-600">Sign in to access your account</p>
+    <div id="loginSection" class="space-y-6 sm:space-y-8 animate-slide-up">
+      <div>
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Welcome Back</h2>
+        <p class="mt-2 sm:mt-3 text-sm sm:text-base text-gray-600">Sign in to your account</p>
+      </div>
 
       <!-- LOGIN FORM -->
-      <form id="loginForm" class="space-y-6">
-        <div>
-          <label class="text-sm text-gray-700">Email Address</label>
+      <form id="loginForm" class="space-y-4 sm:space-y-6">
+        <div class="space-y-1 sm:space-y-2">
+          <label class="text-xs sm:text-sm font-semibold text-gray-700">Email Address</label>
           <input id="loginEmail" type="email" placeholder="you@example.com" class="input" required>
         </div>
 
-        <div>
-          <label class="text-sm text-gray-700">Password</label>
+        <div class="space-y-1 sm:space-y-2">
+          <label class="text-xs sm:text-sm font-semibold text-gray-700">Password</label>
           <input id="loginPassword" type="password" placeholder="Enter password" class="input" required>
         </div>
 
-        <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-xl font-medium hover:bg-red-700">
-          Sign In
+        <button type="submit" class="w-full bg-gradient-red text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-red-300 text-sm sm:text-base">
+          <span class="flex items-center justify-center">
+            <i class="ri-login-box-line mr-2"></i> Sign In
+          </span>
         </button>
       </form>
 
+      <!-- DIVIDER -->
+      <div class="relative">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-200"></div>
+        </div>
+        <div class="relative flex justify-center text-xs sm:text-sm">
+          <span class="px-3 bg-white text-gray-600 font-medium">Or continue with</span>
+        </div>
+      </div>
+
       <!-- GOOGLE LOGIN BUTTON -->
-      <div class="mt-4">
+      <div class="mt-4 flex justify-center">
         <div id="g_id_onload"
           data-client_id="320231613519-n8ppnf9bof8r6js60el89rar1mvtl8lo.apps.googleusercontent.com"
           data-callback="handleGoogleLogin"
@@ -89,44 +227,74 @@
         <div class="g_id_signin" data-type="standard" data-size="large"></div>
       </div>
 
-      <p class="text-center text-sm mt-4">
+      <p class="text-center text-xs sm:text-sm text-gray-600">
         Don't have an account?
-        <button type="button" onclick="toggleForm('signup')" class="text-red-600 font-medium hover:underline">Sign up here</button>
+        <button type="button" onclick="toggleForm('signup')" class="font-semibold text-red-600 hover:text-red-700 hover:underline transition-colors">Sign up</button>
       </p>
     </div>
 
     <!-- SIGNUP SECTION -->
-    <div id="signupSection" class="hidden space-y-8">
-      <h2 class="text-3xl font-semibold text-gray-900">Create Account</h2>
-
-     <p class="text-sm text-gray-600">
-  One account lets you <strong>request blood</strong> and <strong>donate blood</strong> anytime.
-</p>
-
+    <div id="signupSection" class="hidden space-y-6 sm:space-y-8 animate-slide-up">
+      <div>
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">Create Account</h2>
+        <p class="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-600">
+          One account for <span class="font-semibold text-red-600">requesting</span> and <span class="font-semibold text-red-600">donating</span>
+        </p>
+      </div>
 
       <!-- SIGNUP FORM -->
-      <form id="signupForm" class="space-y-5">
-        <input id="fullname" type="text" placeholder="Full Name" class="input" required>
-        <input id="emailaddress" type="email" placeholder="Email Address" class="input" required>
-        <input id="phonenumber" type="tel" placeholder="Phone Number" class="input" required>
-        <input id="password" type="password" placeholder="Password" class="input" required>
-        <input id="confirmpassword" type="password" placeholder="Confirm Password" class="input" required>
+      <form id="signupForm" class="space-y-4 sm:space-y-5">
+        <div class="space-y-1 sm:space-y-2">
+          <label class="text-xs sm:text-sm font-semibold text-gray-700">Full Name</label>
+          <input id="fullname" type="text" placeholder="John Doe" class="input" required>
+        </div>
+        <div class="space-y-1 sm:space-y-2">
+          <label class="text-xs sm:text-sm font-semibold text-gray-700">Email</label>
+          <input id="emailaddress" type="email" placeholder="you@example.com" class="input" required>
+        </div>
+        <div class="space-y-1 sm:space-y-2">
+          <label class="text-xs sm:text-sm font-semibold text-gray-700">Phone Number</label>
+          <input id="phonenumber" type="tel" placeholder="+1 (555) 000-0000" class="input" required>
+        </div>
+        <div class="space-y-1 sm:space-y-2">
+          <label class="text-xs sm:text-sm font-semibold text-gray-700">Password</label>
+          <input id="password" type="password" placeholder="Create a strong password" class="input" required>
+        </div>
+        <div class="space-y-1 sm:space-y-2">
+          <label class="text-xs sm:text-sm font-semibold text-gray-700">Confirm Password</label>
+          <input id="confirmpassword" type="password" placeholder="Confirm password" class="input" required>
+        </div>
 
-        <label class="flex items-center"><input type="checkbox" class="mr-2" required> I agree to Terms</label>
+        <label class="flex items-start space-x-2 sm:space-x-3 py-2 cursor-pointer group">
+          <input type="checkbox" class="w-4 h-4 sm:w-5 sm:h-5 accent-red-600 rounded cursor-pointer mt-1" required>
+          <span class="text-xs sm:text-sm text-gray-700 group-hover:text-gray-900">I agree to <a href="#" class="text-red-600 font-semibold hover:underline">Terms & Conditions</a></span>
+        </label>
 
-        <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-xl font-medium hover:bg-red-700">
-          Create Account
+        <button type="submit" class="w-full bg-gradient-red text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-red-300 mt-4 sm:mt-6 text-sm sm:text-base">
+          <span class="flex items-center justify-center">
+            <i class="ri-user-add-line mr-2"></i> Create Account
+          </span>
         </button>
       </form>
 
+      <!-- DIVIDER -->
+      <div class="relative">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-200"></div>
+        </div>
+        <div class="relative flex justify-center text-xs sm:text-sm">
+          <span class="px-3 bg-white text-gray-600 font-medium">Or sign up with</span>
+        </div>
+      </div>
+
       <!-- GOOGLE SIGNUP -->
-      <div class="mt-4">
+      <div class="flex justify-center">
         <div class="g_id_signin" data-size="large"></div>
       </div>
 
-      <p class="text-center text-sm mt-4">
+      <p class="text-center text-xs sm:text-sm text-gray-600">
         Already have an account?
-        <button type="button" onclick="toggleForm('login')" class="text-red-600 font-medium hover:underline">Login here</button>
+        <button type="button" onclick="toggleForm('login')" class="font-semibold text-red-600 hover:text-red-700 hover:underline transition-colors">Login</button>
       </p>
     </div>
 
@@ -134,62 +302,69 @@
 </div>
 
 <!-- PRIORITY MODAL -->
-<div id="priorityModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
-  <div class="bg-white w-11/12 max-w-md rounded-xl p-6 shadow-xl text-center">
-    <h2 class="text-2xl font-semibold text-gray-900">
+<div id="priorityModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden items-center justify-center z-50 p-3 sm:p-4">
+  <div class="bg-white w-full max-w-md rounded-lg sm:rounded-2xl p-6 sm:p-8 shadow-card-hover text-center transform transition-all duration-300 animate-slide-up">
+    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+      <i class="ri-heart-pulse-line text-xl sm:text-2xl text-red-600"></i>
+    </div>
+
+    <h2 class="text-xl sm:text-3xl font-bold text-gray-900">
       Need Blood Urgently?
     </h2>
 
-    <p class="text-gray-600 mt-2">
-      If this is an emergency, you can request blood immediately.
+    <p class="text-gray-600 mt-2 sm:mt-3 text-xs sm:text-sm leading-relaxed">
+      If this is an emergency, request blood immediately and our network will respond.
     </p>
 
-    <div class="mt-6 space-y-4">
-      <button id="urgentBtn"
-              class="w-full bg-red-600 text-white py-3 rounded-lg text-lg font-medium hover:bg-red-700">
-        Request Blood
+    <div class="mt-6 sm:mt-8 space-y-2 sm:space-y-3">
+      <button id="urgentBtn" class="w-full bg-gradient-red text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-red-300 flex items-center justify-center text-sm sm:text-base">
+        <i class="ri-alert-line mr-2"></i> Request Blood Now
       </button>
 
-      <button id="skipBtn"
-              class="w-full border border-gray-300 py-3 rounded-lg text-lg font-medium hover:bg-gray-100">
+      <button id="skipBtn" class="w-full border-2 border-gray-200 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-all duration-300 hover:bg-gray-50 hover:border-gray-300 active:scale-95 focus:outline-none focus:ring-4 focus:ring-gray-300 text-sm sm:text-base">
         Skip to Dashboard
       </button>
     </div>
   </div>
 </div>
+
 <!-- VERIFICATION MODAL -->
-<div id="verifyModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
-  <div class="bg-white w-11/12 max-w-md rounded-xl p-6 shadow-xl">
+<div id="verifyModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm hidden items-center justify-center z-50 p-3 sm:p-4">
+  <div class="bg-white w-full max-w-md rounded-lg sm:rounded-2xl p-6 sm:p-8 shadow-card-hover">
 
     <!-- LOADING STATE -->
-    <div id="verifyLoading" class="text-center py-4">
-      <div class="flex justify-center mb-4">
-        <svg class="animate-spin h-12 w-12 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-        </svg>
+    <div id="verifyLoading" class="text-center py-6 sm:py-8">
+      <div class="flex justify-center mb-4 sm:mb-6">
+        <div class="w-14 h-14 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center">
+          <svg class="animate-spin h-7 w-7 sm:h-8 sm:w-8 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+          </svg>
+        </div>
       </div>
-      <h2 class="text-xl font-semibold text-gray-900 mb-2">Sending verification code</h2>
-      <p class="text-gray-500 text-sm mb-4">We're sending a 6-digit code to your email.<br>This usually takes a few seconds.</p>
+      <h2 class="text-lg sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-3">Sending verification code</h2>
+      <p class="text-gray-600 text-xs sm:text-sm mb-4 sm:mb-6 leading-relaxed">We're sending a 6-digit code to your email.<br><span class="text-xs text-gray-500">Takes a few seconds.</span></p>
       <div class="flex justify-center gap-2">
-        <span class="w-2 h-2 bg-red-600 rounded-full animate-bounce [animation-delay:0s]"></span>
-        <span class="w-2 h-2 bg-red-600 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-        <span class="w-2 h-2 bg-red-600 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+        <span class="w-2 h-2 sm:w-3 sm:h-3 bg-red-600 rounded-full animate-bounce [animation-delay:0s]"></span>
+        <span class="w-2 h-2 sm:w-3 sm:h-3 bg-red-600 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+        <span class="w-2 h-2 sm:w-3 sm:h-3 bg-red-600 rounded-full animate-bounce [animation-delay:0.4s]"></span>
       </div>
-      <p class="text-xs text-gray-400 mt-4">Check your inbox and spam folder</p>
+      <p class="text-xs text-gray-500 mt-4 sm:mt-6">Check inbox and spam folder</p>
     </div>
 
-    <!-- CODE INPUT STATE (hidden initially) -->
-    <div id="verifyInput" class="hidden">
-      <h2 class="text-2xl font-semibold text-gray-900 text-center">Email Verification</h2>
-      <p class="text-gray-600 text-sm text-center mt-2">Enter the 6-digit code sent to your email</p>
-      <input id="verificationCode" type="text" maxlength="6" placeholder="••••••"
-        class="mt-6 w-full text-center text-xl tracking-widest border rounded-lg py-3 focus:ring-red-500 focus:border-red-500"/>
-      <button id="verifyCodeBtn"
-        class="mt-6 w-full bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700">
+    <!-- CODE INPUT STATE -->
+    <div id="verifyInput" class="hidden text-center">
+      <div class="w-14 h-14 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+        <i class="ri-mail-check-line text-xl sm:text-2xl text-green-600"></i>
+      </div>
+      <h2 class="text-lg sm:text-2xl font-bold text-gray-900">Email Verification</h2>
+      <p class="text-gray-600 text-xs sm:text-sm mt-2 sm:mt-3">Enter the 6-digit code</p>
+      <input id="verificationCode" type="text" maxlength="6" placeholder="000000"
+        class="mt-4 sm:mt-6 w-full text-center text-2xl sm:text-3xl tracking-[0.5em] font-semibold border-2 border-gray-200 rounded-lg sm:rounded-xl py-3 sm:py-4 text-gray-800 placeholder-gray-300 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-red-300 focus:border-red-600" autocomplete="off"/>
+      <button id="verifyCodeBtn" class="mt-4 sm:mt-6 w-full bg-gradient-red text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-red-300 text-sm sm:text-base">
         Verify Code
       </button>
-      <p id="verifyError" class="text-red-600 text-sm text-center mt-3 hidden"></p>
+      <p id="verifyError" class="text-red-600 text-xs sm:text-sm text-center mt-3 sm:mt-4 hidden font-medium"></p>
     </div>
 
   </div>
@@ -197,19 +372,18 @@
 
 <!-- JAVASCRIPT -->
 <script>
-/* ---------------- TOGGLE LOGIN / SIGNUP ---------------- */
+/* Toggle Login/Signup */
 function toggleForm(form) {
   document.getElementById("loginSection").classList.toggle("hidden", form === "signup");
   document.getElementById("signupSection").classList.toggle("hidden", form === "login");
 }
 
-/* ---------------- GOOGLE LOGIN / SIGNUP ---------------- */
+/* Google Login/Signup */
 window.handleGoogleLogin = async (response) => {
   const isLogin = !document.getElementById("loginSection").classList.contains("hidden");
 
   try {
     if (isLogin) {
-      /* -------- GOOGLE LOGIN -------- */
       const res = await fetch("http://localhost:8000/loginsignup/google_login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -230,7 +404,6 @@ window.handleGoogleLogin = async (response) => {
       window.location.href = "dashboard.html";
 
     } else {
-      /* -------- GOOGLE SIGNUP -------- */
       const res = await fetch("http://localhost:8000/loginsignup/google_signup/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -243,25 +416,22 @@ window.handleGoogleLogin = async (response) => {
         return;
       }
 
-     // ✅ Store email temporarily for verification
-window.__verifyEmail = data.email;
+      window.__verifyEmail = data.email;
 
-// ✅ Show modal with LOADING state first
-const modal = document.getElementById("verifyModal");
-const verifyLoading = document.getElementById("verifyLoading");
-const verifyInput = document.getElementById("verifyInput");
+      const modal = document.getElementById("verifyModal");
+      const verifyLoading = document.getElementById("verifyLoading");
+      const verifyInput = document.getElementById("verifyInput");
 
-verifyLoading.classList.remove("hidden");  // show spinner
-verifyInput.classList.add("hidden");       // hide code input
+      verifyLoading.classList.remove("hidden");
+      verifyInput.classList.add("hidden");
 
-modal.classList.remove("hidden");
-modal.classList.add("flex");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
 
-// ✅ After 4 seconds, switch to code input
-setTimeout(() => {
-  verifyLoading.classList.add("hidden");
-  verifyInput.classList.remove("hidden");
-}, 4000);
+      setTimeout(() => {
+        verifyLoading.classList.add("hidden");
+        verifyInput.classList.remove("hidden");
+      }, 4000);
     }
 
   } catch (err) {
@@ -301,7 +471,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // 🔐 AUTO LOGIN AFTER VERIFICATION
       localStorage.setItem("emailaddress", data.email);
       localStorage.setItem("fullname", data.fullname);
       localStorage.setItem("access_token", data.tokens.access);
@@ -320,10 +489,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-
-
-
-/* ---------------- MANUAL SIGNUP ---------------- */
+/* Manual Signup */
 document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -352,7 +518,7 @@ document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
   }
 });
 
-/* ---------------- MANUAL LOGIN ---------------- */
+/* Manual Login */
 document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -384,9 +550,6 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
   }
 });
 </script>
-
-
-
 
 </body>
 </html>
