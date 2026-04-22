@@ -9,6 +9,7 @@ import logging
 from celery import shared_task
 from django.db.models import Q
 from django.utils import timezone
+from django.conf import settings
 from math import radians, sin, cos, sqrt, atan2
 
 logger = logging.getLogger(__name__)
@@ -17,6 +18,18 @@ logger = logging.getLogger(__name__)
 TIER_2_DELAY_SECONDS = 60
 TIER_3_DELAY_SECONDS = 60
 TIER_4_DELAY_SECONDS = 60
+
+
+def _queue_or_run_now(task, *, args=None, countdown=0):
+    """
+    Dispatch a task asynchronously in normal environments.
+    In DEBUG/local development, run immediately to avoid Redis/Celery dependency.
+    """
+    task_args = list(args or [])
+    if getattr(settings, "DEBUG", False):
+        task.run(*task_args)
+        return
+    task.apply_async(args=task_args, countdown=countdown)
 
 # ─── Distance helper ───────────────────────────────────────────────────
 def haversine(lat1, lon1, lat2, lon2):
@@ -86,10 +99,13 @@ def orchestrate_tiered_notification(self, blood_request_id):
     logger.info(f"🚀 Orchestrating tiered notification for request #{blood_request_id}")
 
     # Fire Tier 1 immediately; subsequent tiers are chained with countdown delays
-    notify_tier_1.delay(blood_request_id)
+    _queue_or_run_now(notify_tier_1, args=[blood_request_id])
 
     # 24h follow-up reminder to requester (best-effort)
-    follow_up_patient_24h.apply_async(args=[blood_request_id], countdown=24 * 60 * 60)
+    try:
+        follow_up_patient_24h.apply_async(args=[blood_request_id], countdown=24 * 60 * 60)
+    except Exception as exc:
+        logger.warning(f"Could not schedule 24h follow-up for request #{blood_request_id}: {exc}")
 
 
 # =======================================================================
@@ -107,7 +123,11 @@ def notify_tier_1(self, blood_request_id):
     logger.info(f"✅ Tier 1 done — {count} donors notified for request #{blood_request_id}")
 
     # Chain Tier 2 after 1 minute
-    notify_tier_2.apply_async(args=[blood_request_id], countdown=TIER_2_DELAY_SECONDS)
+    _queue_or_run_now(
+        notify_tier_2,
+        args=[blood_request_id],
+        countdown=TIER_2_DELAY_SECONDS,
+    )
 
 
 # =======================================================================
@@ -136,10 +156,14 @@ def notify_tier_2(self, blood_request_id):
     logger.info(f"✅ Tier 2 done — {count} donors notified for request #{blood_request_id}")
 
     # Run stock check in parallel
-    check_blood_stock.apply_async(args=[blood_request_id], countdown=0)
+    _queue_or_run_now(check_blood_stock, args=[blood_request_id], countdown=0)
 
     # Chain Tier 3 after 1 minute
-    notify_tier_3.apply_async(args=[blood_request_id], countdown=TIER_3_DELAY_SECONDS)
+    _queue_or_run_now(
+        notify_tier_3,
+        args=[blood_request_id],
+        countdown=TIER_3_DELAY_SECONDS,
+    )
 
 
 # =======================================================================
@@ -167,7 +191,11 @@ def notify_tier_3(self, blood_request_id):
     logger.info(f"✅ Tier 3 done — {count} donors notified for request #{blood_request_id}")
 
     # Chain Tier 4 after 1 minute
-    notify_tier_4.apply_async(args=[blood_request_id], countdown=TIER_4_DELAY_SECONDS)
+    _queue_or_run_now(
+        notify_tier_4,
+        args=[blood_request_id],
+        countdown=TIER_4_DELAY_SECONDS,
+    )
 
 
 # =======================================================================
@@ -205,7 +233,7 @@ def notify_tier_4(self, blood_request_id):
 
     # Finalize outcome after the full donor tier scan (and stock check) completes.
     # Gives stock check some time to finish if it’s still running.
-    finalize_escalation.apply_async(args=[blood_request_id], countdown=30)
+    _queue_or_run_now(finalize_escalation, args=[blood_request_id], countdown=30)
 
 
 # =======================================================================
