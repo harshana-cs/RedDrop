@@ -83,7 +83,7 @@ def send_sms(phone_number, message):
     """Send SMS via Sparrow SMS Nepal"""
     try:
         response = requests.post(
-    "http://api.sparrowsms.com/v2/sms/",
+    "https://app.bharosasms.com/api/v1/sms/send/",
     data={
         "token": settings.SMS_TOKEN.strip(),
         "from": settings.SMS_FROM.strip(),

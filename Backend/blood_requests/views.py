@@ -537,6 +537,10 @@ from django.conf import settings
 # ✅ UPDATED send_donor_alert (LOCATION 10) — now accepts optional tier param
 def send_donor_alert(donor, blood_request, distance, tier=None):
     """Send SMS + Email alert to a donor, with optional tier info."""
+    result = {
+        "sms_sent": False,
+        "email_sent": False,
+    }
 
     # ✅ SMS — keep under 160 chars
     sms_message = (
@@ -546,7 +550,7 @@ def send_donor_alert(donor, blood_request, distance, tier=None):
 
     if donor.phone_number:
         from adminpanel.views import send_sms
-        send_sms(donor.phone_number, sms_message)
+        result["sms_sent"] = send_sms(donor.phone_number, sms_message)
 
     # ✅ Build tier text for subject
     tier_text = f" (Tier {tier['tier']})" if tier else ""
@@ -569,13 +573,17 @@ http://localhost:5500/donor_dashboard.html
 Your help saves lives ❤️
 — RedDrop Team"""
 
-    send_mail(
-        subject,
-        message,
-        settings.EMAIL_HOST_USER,
-        [donor.email],
-        fail_silently=True
-    )
+    if donor.email:
+        sent_count = send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            [donor.email],
+            fail_silently=True
+        )
+        result["email_sent"] = sent_count > 0
+
+    return result
 
 
 @api_view(["GET"])

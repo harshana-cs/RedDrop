@@ -7,6 +7,7 @@
 
 import logging
 from celery import shared_task
+from django.db.models import Q
 from django.utils import timezone
 from math import radians, sin, cos, sqrt, atan2
 
@@ -50,7 +51,29 @@ def orchestrate_tiered_notification(self, blood_request_id):
 
     hospital = blood_request.hospital_location
 
-    if not hospital or not hospital.latitude or not hospital.longitude:
+    if not hospital:
+        logger.warning(f"⚠️ No hospital coordinates for request #{blood_request_id} — skipping")
+        return
+
+    if not hospital.latitude or not hospital.longitude:
+        try:
+            from blood_requests.utils import get_coordinates_from_osm
+
+            lat, lon = get_coordinates_from_osm(hospital.name, hospital.district)
+            if lat and lon:
+                hospital.latitude = lat
+                hospital.longitude = lon
+                hospital.save(update_fields=["latitude", "longitude"])
+                logger.info(
+                    f"📍 Hospital geocoded for request #{blood_request_id}: "
+                    f"{hospital.name} ({lat}, {lon})"
+                )
+        except Exception as exc:
+            logger.warning(
+                f"⚠️ Failed to geocode hospital for request #{blood_request_id}: {exc}"
+            )
+
+    if not hospital.latitude or not hospital.longitude:
         logger.warning(f"⚠️ No hospital coordinates for request #{blood_request_id} — skipping")
         return
 
@@ -385,6 +408,154 @@ def _notify_tier(blood_request_id, tier_label, min_km, max_km):
             f'{tier_label}_completed',
             f'{tier_label}_donor_count',
             'total_donors_alerted'
+        ])
+
+    return alerted_count
+
+
+def _notify_tier(blood_request_id, tier_label, min_km, max_km):
+    """
+    Query eligible donors in [min_km, max_km) range and send alerts.
+    This later definition intentionally overrides the older helper above.
+    """
+    from blood_requests.models import BloodRequest
+    from blood_requests.views import is_donor_eligible, get_compatible_donors, send_donor_alert
+    from register_donor.models import Donor
+    from adminpanel.models import BloodRequestEscalation, NotificationLog, Notification
+    from django.contrib.auth.models import User
+
+    try:
+        blood_request = BloodRequest.objects.get(id=blood_request_id)
+    except BloodRequest.DoesNotExist:
+        return 0
+
+    hospital = blood_request.hospital_location
+    if not hospital or not hospital.latitude or not hospital.longitude:
+        logger.warning(f"No hospital coords for request #{blood_request_id}")
+        return 0
+
+    compatible_groups = get_compatible_donors(blood_request.blood_type)
+    donors = Donor.objects.filter(
+        is_approved=True,
+        blood_type__in=compatible_groups,
+    )
+
+    if blood_request.patient:
+        donors = donors.exclude(email=blood_request.patient.emailaddress)
+
+    alerted_count = 0
+
+    try:
+        escalation = BloodRequestEscalation.objects.get(blood_request=blood_request)
+        setattr(escalation, f"{tier_label}_started", timezone.now())
+        escalation.save(update_fields=[f"{tier_label}_started"])
+    except BloodRequestEscalation.DoesNotExist:
+        escalation = None
+
+    for donor in donors:
+        if not donor.latitude or not donor.longitude:
+            continue
+
+        if not is_donor_eligible(donor):
+            logger.debug(f"Donor {donor.email} in cooldown - skipping")
+            continue
+
+        distance = haversine(
+            hospital.latitude, hospital.longitude,
+            donor.latitude, donor.longitude
+        )
+
+        if distance < min_km:
+            continue
+        if max_km is not None and distance >= max_km:
+            continue
+
+        logger.info(
+            f"[{tier_label}] Alerting {donor.email} | "
+            f"{donor.blood_type} | {round(distance, 2)} km"
+        )
+
+        tier_info = {"tier": tier_label.replace("tier_", "")}
+        channel_success = False
+
+        try:
+            alert_result = send_donor_alert(donor, blood_request, distance, tier=tier_info)
+            sms_sent = bool(alert_result.get("sms_sent"))
+            email_sent = bool(alert_result.get("email_sent"))
+
+            if donor.phone_number:
+                NotificationLog.objects.create(
+                    blood_request=blood_request,
+                    donor=donor,
+                    tier=tier_label,
+                    distance_km=round(distance, 2),
+                    notification_type="sms",
+                    status="sent" if sms_sent else "failed",
+                    error_message="" if sms_sent else "SMS send returned unsuccessful status"
+                )
+
+            if donor.email:
+                NotificationLog.objects.create(
+                    blood_request=blood_request,
+                    donor=donor,
+                    tier=tier_label,
+                    distance_km=round(distance, 2),
+                    notification_type="email",
+                    status="sent" if email_sent else "failed",
+                    error_message="" if email_sent else "Email send returned unsuccessful status"
+                )
+
+            channel_success = sms_sent or email_sent
+        except Exception as exc:
+            logger.error(f"Alert failed for {donor.email}: {exc}")
+            NotificationLog.objects.create(
+                blood_request=blood_request,
+                donor=donor,
+                tier=tier_label,
+                distance_km=round(distance, 2),
+                notification_type="email",
+                status="failed",
+                error_message=str(exc)
+            )
+
+        donor_user = User.objects.filter(
+            Q(email__iexact=donor.email) | Q(username__iexact=donor.email)
+        ).first()
+
+        if donor_user:
+            already_notified = Notification.objects.filter(
+                user=donor_user,
+                blood_request=blood_request,
+                type="blood_request"
+            ).exists()
+
+            if not already_notified:
+                Notification.objects.create(
+                    user=donor_user,
+                    blood_request=blood_request,
+                    title="Blood Donation Needed",
+                    message=(
+                        f"{blood_request.blood_type} blood needed at "
+                        f"{hospital.name} ({round(distance, 1)} km away). "
+                        f"Can you donate?"
+                    ),
+                    type="blood_request"
+                )
+                channel_success = True
+        else:
+            logger.warning(f"No Django user found for donor {donor.email}")
+
+        if channel_success:
+            alerted_count += 1
+
+    if escalation:
+        setattr(escalation, f"{tier_label}_completed", timezone.now())
+        setattr(escalation, f"{tier_label}_donor_count", alerted_count)
+        escalation.total_donors_alerted = escalation.total_donors_alerted + alerted_count
+        escalation.save(update_fields=[
+            f"{tier_label}_completed",
+            f"{tier_label}_donor_count",
+            "total_donors_alerted"
         ])
 
     return alerted_count
