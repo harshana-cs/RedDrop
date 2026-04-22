@@ -104,6 +104,7 @@ class BloodRequest(models.Model):
     otp_expires_at = models.DateTimeField(null=True, blank=True)
 
     donation_date = models.DateTimeField(null=True, blank=True)
+    approved_at = models.DateTimeField(null=True, blank=True, db_index=True)
 
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     # status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending', db_index=True)

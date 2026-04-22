@@ -19,6 +19,7 @@ from .models import HospitalLocation
 from adminpanel.models import Notification
 from .utils import get_coordinates_from_osm
 from rest_framework import status
+from .notifications import is_donor_eligible, get_compatible_donors, send_donor_alert
 
 from .models import HospitalLocation
 
@@ -86,6 +87,9 @@ def api_user_requests(request):
             "district": r.district,
             "hospital_name": r.hospital_location.name if r.hospital_location else None,
             "status": r.status,
+            "fulfilled": r.fulfilled,
+            "patient_confirmed": r.patient_confirmed,
+            "accepted_donor_id": r.accepted_donor_id,
             "created_at": r.created_at,
             "donation_date": r.donation_date,
         })
@@ -316,22 +320,53 @@ def api_patient_confirm_receipt(request, request_id):
             status=400
         )
 
+    if not blood_request.accepted_donor:
+        return Response(
+            {"success": False, "message": "No donor has accepted this request yet."},
+            status=400,
+        )
+
     # 🔐 Generate OTP
     otp = str(random.randint(1000, 9999))
 
     blood_request.patient_confirmed = True
-    blood_request.fulfilled = False
     blood_request.otp = otp
-    blood_request.otp_expires_at = None
+    blood_request.otp_expires_at = timezone.now() + timedelta(hours=24)
     blood_request.save()
 
     DonationConfirmation.objects.update_or_create(
         request=blood_request,
         defaults={
+            "donor": blood_request.accepted_donor,
             "patient_confirmed": True,
             "donor_confirmed": False
         }
     )
+
+    # Email OTP to the accepted donor (in addition to showing it to the patient)
+    try:
+        from django.core.mail import send_mail
+        from django.conf import settings
+
+        donor = blood_request.accepted_donor
+        if donor and donor.email:
+            send_mail(
+                subject="RedDrop: Donation OTP (Complete verification)",
+                message=(
+                    f"Hi {donor.first_name},\n\n"
+                    f"The patient confirmed receipt for request #{blood_request.id}.\n"
+                    f"Your OTP to verify the donation is: {otp}\n\n"
+                    f"This OTP expires in 24 hours.\n"
+                    f"Open your donor dashboard and enter the OTP to complete verification.\n\n"
+                    f"— RedDrop Team"
+                ),
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[donor.email],
+                fail_silently=True,
+            )
+    except Exception:
+        # Non-fatal: patient still sees OTP in UI
+        pass
 
     return Response({
         "success": True,
@@ -417,11 +452,7 @@ def api_compatible_donors_for_patient(request):
 
     required_blood = blood_request.blood_type
 
-    compatible_donor_bloods = [
-        donor_blood
-        for donor_blood, receivers in BLOOD_COMPATIBILITY.items()
-        if required_blood in receivers
-    ]
+    compatible_donor_bloods = get_compatible_donors(required_blood)
 
     donors_qs = Donor.objects.filter(
         is_approved=True,
@@ -474,7 +505,7 @@ def public_blood_requests(request):
 
     requests = (
         BloodRequest.objects
-        .filter(status="pending")
+        .filter(status="approved", fulfilled=False)
         .select_related("patient")
     )
 
@@ -495,95 +526,6 @@ def public_blood_requests(request):
         })
 
     return Response(data)
-
-
-from donor.models import Donation
-from datetime import timedelta
-from django.utils import timezone
-
-MIN_GAP_DAYS = 56
-
-
-def is_donor_eligible(donor):
-    """Check if donor is eligible to donate (keeps existing logic)"""
-    last_donation = (
-        Donation.objects
-        .filter(donor=donor, status="verified")
-        .order_by("-date")
-        .first()
-    )
-
-    if not last_donation:
-        return True
-
-    next_allowed = last_donation.date + timedelta(days=MIN_GAP_DAYS)
-
-    return timezone.now().date() >= next_allowed
-
-
-# CHANGE TO:
-def get_compatible_donors(blood_type):
-    return [                       # ✅ uses module-level dict directly
-        donor_blood
-        for donor_blood, receivers in BLOOD_COMPATIBILITY.items()
-        if blood_type in receivers
-    ]
-
-
-from django.core.mail import send_mail
-from django.conf import settings
-
-
-# ✅ UPDATED send_donor_alert (LOCATION 10) — now accepts optional tier param
-def send_donor_alert(donor, blood_request, distance, tier=None):
-    """Send SMS + Email alert to a donor, with optional tier info."""
-    result = {
-        "sms_sent": False,
-        "email_sent": False,
-    }
-
-    # ✅ SMS — keep under 160 chars
-    sms_message = (
-        f"🩸 {blood_request.blood_type} blood needed {round(distance, 1)}km away. "
-        f"Please login & donate. - RedDrop"
-    )
-
-    if donor.phone_number:
-        from adminpanel.views import send_sms
-        result["sms_sent"] = send_sms(donor.phone_number, sms_message)
-
-    # ✅ Build tier text for subject
-    tier_text = f" (Tier {tier['tier']})" if tier else ""
-
-    subject = f"🩸 URGENT: {blood_request.blood_type} blood needed near you{tier_text}"
-
-    message = f"""Hi {donor.first_name},
-
-{blood_request.blood_type} blood is urgently needed near you.
-
-Hospital : {blood_request.hospital_location.name if blood_request.hospital_location else 'N/A'}
-District : {blood_request.district}
-Distance : {round(distance, 1)} km
-Contact  : {blood_request.contact_phone}
-Required By : {blood_request.required_date.strftime('%Y-%m-%d') if blood_request.required_date else 'ASAP'}
-
-Please login to donate:
-http://localhost:5500/donor_dashboard.html
-
-Your help saves lives ❤️
-— RedDrop Team"""
-
-    if donor.email:
-        sent_count = send_mail(
-            subject,
-            message,
-            settings.EMAIL_HOST_USER,
-            [donor.email],
-            fail_silently=True
-        )
-        result["email_sent"] = sent_count > 0
-
-    return result
 
 
 @api_view(["GET"])
@@ -631,6 +573,76 @@ def api_patient_notifications(request):
         })
 
     return Response(data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_patient_notification_mark_read(request, notification_id):
+    Notification.objects.filter(id=notification_id, user=request.user).update(is_read=True)
+    return Response({"success": True})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_patient_notifications_mark_all_read(request):
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return Response({"success": True})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_patient_confirm_bank_fulfillment(request, request_id):
+    """
+    Completion path when the blood bank / hospital stock route was used.
+    Only allowed when stock has been found in escalation tracking.
+    """
+    patient = Patient.objects.filter(emailaddress=request.user.username).first()
+    if not patient:
+        return Response({"success": False, "message": "Patient not found"}, status=403)
+
+    blood_request = get_object_or_404(
+        BloodRequest,
+        id=request_id,
+        patient=patient,
+        status="approved",
+    )
+
+    from adminpanel.models import BloodRequestEscalation
+
+    esc = BloodRequestEscalation.objects.filter(blood_request=blood_request).first()
+    has_stock = bool(
+        esc
+        and (
+            (esc.blood_bank_units or 0) > 0
+            or bool(esc.hospital_stock_details)
+        )
+    )
+    if not has_stock:
+        return Response(
+            {"success": False, "message": "No blood bank / hospital stock has been confirmed for this request yet."},
+            status=400,
+        )
+
+    blood_request.status = "completed"
+    blood_request.donation_date = timezone.now()
+    blood_request.fulfilled = True
+    blood_request.patient_confirmed = True
+    blood_request.otp = None
+    blood_request.otp_expires_at = None
+    blood_request.save()
+
+    # Admin/system log entry
+    try:
+        Notification.objects.create(
+            title="Request Completed (Blood Bank)",
+            message=f"Request #{blood_request.id} completed via blood bank / hospital stock.",
+            type="request_completed",
+            blood_request=blood_request,
+        )
+    except Exception:
+        pass
+
+    return Response({"success": True, "message": "Request marked as completed."})
 
 
 @api_view(["GET"])

@@ -8,7 +8,7 @@ from django.utils.timezone import datetime, now
 from .models import DonationCamp
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from blood_requests.models import BloodRequest
 from hospital.models import Hospital, HospitalProfile, HospitalApplication
@@ -35,8 +35,9 @@ from .models import BloodRequestEscalation, NotificationLog
 import random
 import requests
 # Add this with your other imports at the top
-from blood_requests.views import is_donor_eligible
+from blood_requests.notifications import is_donor_eligible
 from celery_task import orchestrate_tiered_notification
+from .sms import send_sms
 # Add this near the top of adminpanel/views.py
 BLOOD_COMPATIBILITY = {
     "O-": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
@@ -77,27 +78,6 @@ def haversine(lat1, lon1, lat2, lon2):
     a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
-
-
-def send_sms(phone_number, message):
-    """Send SMS via Sparrow SMS Nepal"""
-    try:
-        response = requests.post(
-    "https://app.bharosasms.com/api/v1/sms/send/",
-    data={
-        "token": settings.SMS_TOKEN.strip(),
-        "from": settings.SMS_FROM.strip(),
-        "to": str(phone_number).strip(),
-        "text": message,
-    },
-    timeout=5
-)
-        result = response.json()
-        print(f"SMS to {phone_number}: {result}")
-        return result.get("response_code") == 200
-    except Exception as e:
-        print(f"SMS failed for {phone_number}: {e}")
-        return False
 
 
 def send_donor_alert(donor, blood_request, distance):
@@ -240,6 +220,7 @@ def admin_approve_blood_request(request, request_id):
     blood_request.status = "approved"
     blood_request.patient_confirmed = False
     blood_request.fulfilled = False
+    blood_request.approved_at = timezone.now()
     blood_request.save()
 
     # ✅ NOTIFY PATIENT that their request was approved
@@ -261,6 +242,24 @@ def admin_approve_blood_request(request, request_id):
                 type="blood_request_approved_by_admin"
             )
             print(f"✅ Patient notification sent to {blood_request.patient.emailaddress}")
+
+            # Email patient as well (best-effort)
+            if blood_request.patient and getattr(blood_request.patient, "emailaddress", None):
+                try:
+                    send_mail(
+                        subject="RedDrop: Your blood request was approved",
+                        message=(
+                            f"Hi {blood_request.patient.fullname},\n\n"
+                            f"Your blood request for {blood_request.blood_type} blood has been approved.\n"
+                            f"We are now searching for compatible donors.\n\n"
+                            f"— RedDrop Team"
+                        ),
+                        from_email=settings.EMAIL_HOST_USER,
+                        recipient_list=[blood_request.patient.emailaddress],
+                        fail_silently=True,
+                    )
+                except Exception:
+                    pass
         else:
             print(f"⚠️ No Django User found for patient: {blood_request.patient.emailaddress}")
 
@@ -299,10 +298,43 @@ def admin_reject_blood_request(request, request_id):
 
     blood_request.save()
 
+    # Notify patient (in-app + email) when applicable
+    if blood_request.patient:
+        patient_user = User.objects.filter(username=blood_request.patient.emailaddress).first()
+        if patient_user:
+            Notification.objects.create(
+                user=patient_user,
+                blood_request=blood_request,
+                title="Blood Request Rejected by Admin",
+                message=(
+                    f"Your blood request for {blood_request.blood_type} was rejected by admin."
+                    + (f" Reason: {reason}" if reason else "")
+                ),
+                type="blood_request_rejected_by_admin",
+            )
+        try:
+            send_mail(
+                subject="RedDrop: Your blood request was rejected",
+                message=(
+                    f"Hi {blood_request.patient.fullname},\n\n"
+                    f"Your blood request for {blood_request.blood_type} was rejected by admin."
+                    + (f"\nReason: {reason}\n\n" if reason else "\n\n")
+                    + "If you believe this is a mistake, please resubmit with correct documents.\n\n"
+                    + "— RedDrop Team"
+                ),
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[blood_request.patient.emailaddress],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
+
+    # Admin/system log
     Notification.objects.create(
         title="Request Rejected",
         message=f"Request #{blood_request.id} was rejected",
-        type="alert"
+        type="alert",
+        blood_request=blood_request,
     )
 
     return Response({
@@ -1363,11 +1395,19 @@ def reject_camp(request, camp_id):
 
 # ================= ESCALATION STATUS (LOCATION 9) =================
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def admin_escalation_status(request, request_id):
     """Get current escalation status for a blood request"""
     try:
         escalation = BloodRequestEscalation.objects.get(blood_request_id=request_id)
+
+        # Access control: staff can view any; patients can view their own request only.
+        blood_request = escalation.blood_request
+        if not (getattr(request.user, "is_staff", False) or getattr(request.user, "is_superuser", False)):
+            patient_email = getattr(getattr(blood_request, "patient", None), "emailaddress", None)
+            if not patient_email or request.user.username != patient_email:
+                return Response({"error": "Forbidden"}, status=403)
+
         return Response({
             "request_id": request_id,
             "status": "escalating" if not escalation.completed_at else "completed",
@@ -1401,9 +1441,20 @@ def admin_escalation_status(request, request_id):
 
 # ================= NOTIFICATION LOGS (LOCATION 9) =================
 @api_view(["GET"])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def admin_notification_logs(request, request_id):
     """Get all notifications sent for a blood request"""
+    # Access control mirrors escalation status endpoint
+    try:
+        escalation = BloodRequestEscalation.objects.get(blood_request_id=request_id)
+        blood_request = escalation.blood_request
+        if not (getattr(request.user, "is_staff", False) or getattr(request.user, "is_superuser", False)):
+            patient_email = getattr(getattr(blood_request, "patient", None), "emailaddress", None)
+            if not patient_email or request.user.username != patient_email:
+                return Response({"error": "Forbidden"}, status=403)
+    except BloodRequestEscalation.DoesNotExist:
+        return Response({"error": "Escalation not found"}, status=404)
+
     logs = NotificationLog.objects.filter(
         blood_request_id=request_id
     ).order_by("-sent_at")

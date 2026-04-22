@@ -88,6 +88,9 @@ def orchestrate_tiered_notification(self, blood_request_id):
     # Fire Tier 1 immediately; subsequent tiers are chained with countdown delays
     notify_tier_1.delay(blood_request_id)
 
+    # 24h follow-up reminder to requester (best-effort)
+    follow_up_patient_24h.apply_async(args=[blood_request_id], countdown=24 * 60 * 60)
+
 
 # =======================================================================
 # TASK 2: notify_tier_1  —  0–5 km donors
@@ -200,6 +203,10 @@ def notify_tier_4(self, blood_request_id):
     except BloodRequestEscalation.DoesNotExist:
         pass
 
+    # Finalize outcome after the full donor tier scan (and stock check) completes.
+    # Gives stock check some time to finish if it’s still running.
+    finalize_escalation.apply_async(args=[blood_request_id], countdown=30)
+
 
 # =======================================================================
 # TASK 6: check_blood_stock
@@ -280,146 +287,13 @@ def check_blood_stock(self, blood_request_id):
 def _notify_tier(blood_request_id, tier_label, min_km, max_km):
     """
     Query eligible donors in [min_km, max_km) range and send alerts.
-    Updates BloodRequestEscalation with counts.
-    Returns the number of donors alerted in this tier.
     """
     from blood_requests.models import BloodRequest
-    from blood_requests.views import is_donor_eligible, get_compatible_donors, send_donor_alert
-    from register_donor.models import Donor
-    from adminpanel.models import BloodRequestEscalation, NotificationLog
-    from django.contrib.auth.models import User
-    from adminpanel.models import Notification
-
-    try:
-        blood_request = BloodRequest.objects.get(id=blood_request_id)
-    except BloodRequest.DoesNotExist:
-        return 0
-
-    hospital = blood_request.hospital_location
-    if not hospital or not hospital.latitude or not hospital.longitude:
-        logger.warning(f"⚠️ No hospital coords for request #{blood_request_id}")
-        return 0
-
-    # Get compatible donor blood types
-    compatible_groups = get_compatible_donors(blood_request.blood_type)
-
-    donors = Donor.objects.filter(
-        is_approved=True,
-        blood_type__in=compatible_groups,
+    from blood_requests.notifications import (
+        is_donor_eligible,
+        get_compatible_donors,
+        send_donor_alert,
     )
-
-    # Exclude the patient
-    if blood_request.patient:
-        donors = donors.exclude(email=blood_request.patient.emailaddress)
-
-    alerted_count = 0
-
-    # Update escalation start time for this tier
-    try:
-        escalation = BloodRequestEscalation.objects.get(blood_request=blood_request)
-        setattr(escalation, f'{tier_label}_started', timezone.now())
-        escalation.save(update_fields=[f'{tier_label}_started'])
-    except BloodRequestEscalation.DoesNotExist:
-        escalation = None
-
-    for donor in donors:
-        if not donor.latitude or not donor.longitude:
-            continue
-
-        if not is_donor_eligible(donor):
-            logger.debug(f"  ⏳ Donor {donor.email} in cooldown — skipping")
-            continue
-
-        distance = haversine(
-            hospital.latitude, hospital.longitude,
-            donor.latitude, donor.longitude
-        )
-
-        # Filter by tier distance range
-        if distance < min_km:
-            continue
-        if max_km is not None and distance >= max_km:
-            continue
-
-        logger.info(
-            f"  [{tier_label}] Alerting {donor.email} | "
-            f"{donor.blood_type} | {round(distance, 2)} km"
-        )
-
-        tier_info = {"tier": tier_label.replace("tier_", "")}
-
-        # ── Send alert (SMS + email) ─────────────────────────────────
-        try:
-            send_donor_alert(donor, blood_request, distance, tier=tier_info)
-
-            NotificationLog.objects.create(
-                blood_request=blood_request,
-                donor=donor,
-                tier=tier_label,
-                distance_km=round(distance, 2),
-                notification_type='email',
-                status='sent'
-            )
-
-            alerted_count += 1
-
-        except Exception as e:
-            logger.error(f"  ❌ Alert failed for {donor.email}: {e}")
-            NotificationLog.objects.create(
-                blood_request=blood_request,
-                donor=donor,
-                tier=tier_label,
-                distance_km=round(distance, 2),
-                notification_type='email',
-                status='failed',
-                error_message=str(e)
-            )
-
-        # ── In-app notification for donor ────────────────────────────
-        donor_user = User.objects.filter(email__iexact=donor.email).first()
-        if donor_user:
-            already_notified = Notification.objects.filter(
-                user=donor_user,
-                blood_request=blood_request,
-                type="blood_request"
-            ).exists()
-
-            if not already_notified:
-                Notification.objects.create(
-                    user=donor_user,
-                    blood_request=blood_request,
-                    title="Blood Donation Needed",
-                    message=(
-                        f"{blood_request.blood_type} blood needed at "
-                        f"{hospital.name} ({round(distance, 1)} km away). "
-                        f"Can you donate?"
-                    ),
-                    type="blood_request"
-                )
-
-    # ── Update escalation completion stats ───────────────────────────
-    if escalation:
-        setattr(escalation, f'{tier_label}_completed', timezone.now())
-        setattr(escalation, f'{tier_label}_donor_count', alerted_count)
-        escalation.total_donors_alerted = (
-            escalation.total_donors_alerted + alerted_count
-        )
-        escalation.save(update_fields=[
-            f'{tier_label}_completed',
-            f'{tier_label}_donor_count',
-            'total_donors_alerted'
-        ])
-
-    return alerted_count
-
-
-def _notify_tier(blood_request_id, tier_label, min_km, max_km):
-    """
-    Query eligible donors in [min_km, max_km) range and send alerts.
-    This later definition intentionally overrides the older helper above.
-    """
-    from blood_requests.models import BloodRequest
-    from blood_requests.views import is_donor_eligible, get_compatible_donors, send_donor_alert
     from register_donor.models import Donor
     from adminpanel.models import BloodRequestEscalation, NotificationLog, Notification
     from django.contrib.auth.models import User
@@ -559,3 +433,171 @@ def _notify_tier(blood_request_id, tier_label, min_km, max_km):
         ])
 
     return alerted_count
+
+
+# =======================================================================
+# TASK 7: finalize_escalation
+# Determines final outcome after donor tiers + stock check.
+# =======================================================================
+@shared_task(bind=True, max_retries=2)
+def finalize_escalation(self, blood_request_id):
+    from django.contrib.auth.models import User
+    from django.conf import settings
+    from django.core.mail import send_mail
+
+    from adminpanel.models import BloodRequestEscalation, Notification
+    from blood_requests.models import BloodRequest
+
+    blood_request = BloodRequest.objects.filter(id=blood_request_id).select_related("patient", "hospital_location").first()
+    if not blood_request:
+        return
+
+    escalation = BloodRequestEscalation.objects.filter(blood_request=blood_request).first()
+    if not escalation:
+        return
+
+    # If already completed (donor OTP or bank confirmation), mark success and stop.
+    if blood_request.status == "completed":
+        escalation.success = True
+        if not escalation.completed_at:
+            escalation.completed_at = timezone.now()
+        escalation.save(update_fields=["success", "completed_at"])
+        return
+
+    # Donor accepted (still awaiting patient OTP flow)
+    if blood_request.fulfilled and blood_request.accepted_donor_id:
+        escalation.success = True
+        if not escalation.completed_at:
+            escalation.completed_at = timezone.now()
+        escalation.save(update_fields=["success", "completed_at"])
+        return
+
+    # Stock available path
+    stock_found = bool((escalation.blood_bank_units or 0) > 0 or escalation.hospital_stock_details)
+    if stock_found:
+        escalation.success = True
+        if not escalation.completed_at:
+            escalation.completed_at = timezone.now()
+        escalation.save(update_fields=["success", "completed_at"])
+
+        if blood_request.patient:
+            patient_user = User.objects.filter(username=blood_request.patient.emailaddress).first()
+            if patient_user and not Notification.objects.filter(
+                user=patient_user, blood_request=blood_request, type="blood_bank_found"
+            ).exists():
+                Notification.objects.create(
+                    user=patient_user,
+                    blood_request=blood_request,
+                    title="Blood Stock Found",
+                    message="Blood stock was found via blood bank / nearby hospitals. Please check the dashboard for details and confirm once received.",
+                    type="blood_bank_found",
+                )
+        return
+
+    # No donor + no stock -> urgent failure path
+    escalation.success = False
+    if not escalation.completed_at:
+        escalation.completed_at = timezone.now()
+    escalation.save(update_fields=["success", "completed_at"])
+
+    # Admin/system notification
+    Notification.objects.create(
+        title="Urgent: No donor or stock found",
+        message=(
+            f"Request #{blood_request.id} ({blood_request.blood_type}) could not be matched to a donor and no stock was found."
+        ),
+        type="system_alert",
+        blood_request=blood_request,
+    )
+
+    # Patient notification + email (best-effort)
+    if blood_request.patient:
+        patient_user = User.objects.filter(username=blood_request.patient.emailaddress).first()
+        if patient_user and not Notification.objects.filter(
+            user=patient_user, blood_request=blood_request, type="blood_request_failed"
+        ).exists():
+            Notification.objects.create(
+                user=patient_user,
+                blood_request=blood_request,
+                title="We could not arrange blood yet",
+                message=(
+                    "We alerted nearby donors and checked available stock, but we could not arrange blood at this time. "
+                    "Please contact the hospital directly for emergency alternatives."
+                ),
+                type="blood_request_failed",
+            )
+
+        try:
+            send_mail(
+                subject="RedDrop: We could not arrange blood yet",
+                message=(
+                    f"Hi {blood_request.patient.fullname},\n\n"
+                    f"We alerted donors and checked available stock for your request #{blood_request.id} ({blood_request.blood_type}), "
+                    f"but we could not arrange blood at this time.\n\n"
+                    f"Please contact the hospital directly for immediate support.\n\n"
+                    f"— RedDrop Team"
+                ),
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[blood_request.patient.emailaddress],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
+
+
+# =======================================================================
+# TASK 8: follow_up_patient_24h
+# Reminder to patient to confirm whether blood was received.
+# =======================================================================
+@shared_task(bind=True, max_retries=1)
+def follow_up_patient_24h(self, blood_request_id):
+    from django.contrib.auth.models import User
+    from django.conf import settings
+    from django.core.mail import send_mail
+
+    from adminpanel.models import Notification
+    from blood_requests.models import BloodRequest
+
+    blood_request = BloodRequest.objects.filter(id=blood_request_id).select_related("patient").first()
+    if not blood_request or not blood_request.patient:
+        return
+
+    # Stop if already completed
+    if blood_request.status == "completed":
+        return
+
+    patient_user = User.objects.filter(username=blood_request.patient.emailaddress).first()
+    if not patient_user:
+        return
+
+    if Notification.objects.filter(
+        user=patient_user, blood_request=blood_request, type="follow_up_24h"
+    ).exists():
+        return
+
+    Notification.objects.create(
+        user=patient_user,
+        blood_request=blood_request,
+        title="Follow up: Did you receive the blood?",
+        message=(
+            "It has been 24 hours since your request was approved. "
+            "If you have received the blood, please confirm in your dashboard. If not, keep this request active."
+        ),
+        type="follow_up_24h",
+    )
+
+    try:
+        send_mail(
+            subject="RedDrop: Follow-up on your blood request",
+            message=(
+                f"Hi {blood_request.patient.fullname},\n\n"
+                "Did you receive the blood?\n"
+                "If yes, please open your dashboard and confirm receipt.\n\n"
+                "— RedDrop Team"
+            ),
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[blood_request.patient.emailaddress],
+            fail_silently=True,
+        )
+    except Exception:
+        pass

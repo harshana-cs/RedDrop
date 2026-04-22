@@ -123,7 +123,7 @@ def api_pending_confirmations(request):
         "request_id": c.request.id,
         "blood_type": c.request.blood_type,
         "district": c.request.district,
-        "hospital": c.request.hospital,
+        "hospital": c.request.hospital_location.name if c.request.hospital_location else None,
     } for c in confirmations]
 
     return Response(data)
@@ -184,7 +184,7 @@ def api_donor_confirm(request):
     # ✅ CREATE DONATION HISTORY
     Donation.objects.create(
         donor=donor,
-        hospital=blood_request.hospital_location,
+        hospital=blood_request.hospital_location.name if blood_request.hospital_location else "",
         blood_type=blood_request.blood_type,
         date=timezone.now().date(),
         status="verified",
@@ -198,7 +198,7 @@ def api_donor_confirm(request):
     Notification.objects.create(
     title="Request Completed",
     message=f"Request #{blood_request.id} completed successfully",
-    type="completed"
+    type="request_completed"
 )
     blood_request.otp = None           
     blood_request.otp_expires_at = None
@@ -350,7 +350,19 @@ def api_donor_notifications(request):
         for n in notifications
     ])
 
-from .models import Donor
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_donor_notification_mark_read(request, notification_id):
+    Notification.objects.filter(id=notification_id, user=request.user).update(is_read=True)
+    return Response({"success": True})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_donor_notifications_mark_all_read(request):
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return Response({"success": True})
 
 def get_approved_donors_basic():
     donors = Donor.objects.filter(is_approved=True)
@@ -451,9 +463,9 @@ def api_donor_decline_request(request):
 
     # --- Notifications ---
     from django.contrib.auth.models import User
-    patient_user = User.objects.filter(
-        username=blood_request.patient.emailaddress
-    ).first()
+    patient_user = None
+    if blood_request.patient:
+        patient_user = User.objects.filter(username=blood_request.patient.emailaddress).first()
 
     # 1. Notify the Patient (Optional, but good for UX)
     if patient_user:

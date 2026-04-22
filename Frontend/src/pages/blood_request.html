@@ -1145,20 +1145,17 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             if (response.ok) {
-    console.log("✅ API returned 201!");
-    console.log("Response JSON:", await response.json());
-    
-    form.reset();
-    document.getElementById("hospitalDoc-status")?.classList.add("hidden");
-    document.getElementById("doctorNote-status")?.classList.add("hidden");
+                const payload = await response.json();
+                console.log("✅ API returned 201!", payload);
 
-    console.log("✅ Showing success overlay NOW");
-    showSuccessOverlay();
-    console.log("✅ Success overlay shown");
-    
-    console.log("✅ All done - should NOT reload");
-    return; // STOP HERE
-} else {
+                form.reset();
+                document.getElementById("hospitalDoc-status")?.classList.add("hidden");
+                document.getElementById("doctorNote-status")?.classList.add("hidden");
+
+                // Show request flow modal (submitted → awaiting admin review)
+                showBloodRequestFlow("submitted", { requestId: payload?.id });
+                return; // STOP HERE
+            } else {
                 let errorMsg = "Submission failed. Please try again.";
                 try {
                     const data = await response.json();

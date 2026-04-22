@@ -26,13 +26,22 @@ from hospital.models import Hospital
 class Notification(models.Model):
 
     TYPE_CHOICES = [
+        ("alert", "Alert"),
+        ("system_alert", "System Alert"),
+        ("camp", "Camp"),
         ("blood_request", "Blood Request"),
         ("blood_request_approved_by_admin", "Blood Request Approved by Admin"),
+        ("blood_request_rejected_by_admin", "Blood Request Rejected by Admin"),
+        ("blood_request_failed", "Blood Request Failed"),
+        ("blood_bank_found", "Blood Bank Found"),
+        ("follow_up_24h", "24h Follow-up"),
         ("donor_registration", "Donor Registration"),
         ("hospital_registration", "Hospital Registration"),
         ("blood_request_approved", "Blood Request Approved"),
         ("donor_request", "Donor Request"),
         ("donor_accept", "Donor Accepted"),
+        ("donor_request_rejected", "Donor Declined"),
+        ("request_completed", "Request Completed"),
     ]
 
     title = models.CharField(max_length=255)
