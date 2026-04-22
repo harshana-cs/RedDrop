@@ -12,6 +12,11 @@ from math import radians, sin, cos, sqrt, atan2
 
 logger = logging.getLogger(__name__)
 
+# Keep the full tier escalation within 5 minutes total.
+TIER_2_DELAY_SECONDS = 60
+TIER_3_DELAY_SECONDS = 60
+TIER_4_DELAY_SECONDS = 60
+
 # ─── Distance helper ───────────────────────────────────────────────────
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371
@@ -66,7 +71,7 @@ def orchestrate_tiered_notification(self, blood_request_id):
 # =======================================================================
 @shared_task(bind=True, max_retries=3)
 def notify_tier_1(self, blood_request_id):
-    """Notify donors within 0–5 km. Chains to Tier 2 after 10 minutes."""
+    """Notify donors within 0–5 km. Chains to Tier 2 after 1 minute."""
     count = _notify_tier(
         blood_request_id=blood_request_id,
         tier_label='tier_1',
@@ -75,8 +80,8 @@ def notify_tier_1(self, blood_request_id):
     )
     logger.info(f"✅ Tier 1 done — {count} donors notified for request #{blood_request_id}")
 
-    # Chain Tier 2 after 10 minutes (600 seconds)
-    notify_tier_2.apply_async(args=[blood_request_id], countdown=600)
+    # Chain Tier 2 after 1 minute
+    notify_tier_2.apply_async(args=[blood_request_id], countdown=TIER_2_DELAY_SECONDS)
 
 
 # =======================================================================
@@ -107,8 +112,8 @@ def notify_tier_2(self, blood_request_id):
     # Run stock check in parallel
     check_blood_stock.apply_async(args=[blood_request_id], countdown=0)
 
-    # Chain Tier 3 after 15 minutes
-    notify_tier_3.apply_async(args=[blood_request_id], countdown=900)
+    # Chain Tier 3 after 1 minute
+    notify_tier_3.apply_async(args=[blood_request_id], countdown=TIER_3_DELAY_SECONDS)
 
 
 # =======================================================================
@@ -116,7 +121,7 @@ def notify_tier_2(self, blood_request_id):
 # =======================================================================
 @shared_task(bind=True, max_retries=3)
 def notify_tier_3(self, blood_request_id):
-    """Notify donors within 15–30 km. Chains to Tier 4."""
+    """Notify donors within 15–30 km. Chains to Tier 4 after 1 minute."""
     from blood_requests.models import BloodRequest
 
     try:
@@ -135,8 +140,8 @@ def notify_tier_3(self, blood_request_id):
     )
     logger.info(f"✅ Tier 3 done — {count} donors notified for request #{blood_request_id}")
 
-    # Chain Tier 4 after 20 minutes
-    notify_tier_4.apply_async(args=[blood_request_id], countdown=1200)
+    # Chain Tier 4 after 1 minute
+    notify_tier_4.apply_async(args=[blood_request_id], countdown=TIER_4_DELAY_SECONDS)
 
 
 # =======================================================================
