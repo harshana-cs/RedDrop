@@ -141,6 +141,7 @@ def admin_pending_blood_requests(request):
         BloodRequest.objects
         .filter(status="pending")
         .select_related("patient")
+        .order_by("-created_at")
     )
     data = []
     for r in blood_requests:
@@ -155,6 +156,7 @@ def admin_pending_blood_requests(request):
             "district": r.district,
             "contact": r.contact_phone,
             "date": r.required_date.strftime("%Y-%m-%d") if r.required_date else None,
+            "created_at": r.created_at.isoformat(),
             "hospital_doc": r.hospital_doc.url if r.hospital_doc else None,
             "doctor_note": r.doctor_note.url if r.doctor_note else None,
         })
@@ -545,6 +547,8 @@ def admin_processed_blood_requests(request):
             "hospital": r.hospital_location.name if r.hospital_location else None,
             "urgency": r.urgency,
             "status": r.status,
+            "created_at": r.created_at.isoformat(),
+            "processed_at": (r.donation_date or r.created_at).isoformat(),
             "processed_on": (
                 r.donation_date.strftime("%Y-%m-%d %H:%M")
                 if r.donation_date
