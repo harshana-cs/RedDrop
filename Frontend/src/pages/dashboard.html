@@ -1991,9 +1991,104 @@ table th, table td {
 
           <!-- ALL HISTORY TAB CONTENT -->
           <div id="history-tab" class="tab-content p-8 hidden">
-            <div class="mb-8">
-              <h3 class="text-3xl font-bold text-gray-900 mb-2">All Request History</h3>
-              <p class="text-gray-500 text-lg">Complete history of all your blood requests</p>
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h3 class="text-3xl font-bold text-gray-900 mb-2">All Request History</h3>
+                <p class="text-gray-500 text-lg">Complete history of all your blood requests</p>
+              </div>
+              <div class="text-sm text-gray-500 bg-gray-100 px-4 py-2 rounded-full">
+                Showing <span id="historyCount" class="font-bold text-red-600">0</span> records
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-gray-50 to-white rounded-2xl border border-gray-200 p-6 mb-6 shadow-sm">
+              <div class="flex flex-wrap items-end gap-4">
+                <div class="flex-1 min-w-[160px]">
+                  <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+                    <i class="fas fa-calendar-alt text-red-500 mr-1"></i>From
+                  </label>
+                  <input
+                    type="date"
+                    id="historyDateFrom"
+                    onchange="applyHistoryFilters()"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-red-100 focus:border-red-400 outline-none transition-all duration-200 bg-white"
+                  />
+                </div>
+                <div class="flex-1 min-w-[160px]">
+                  <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+                    <i class="fas fa-calendar-check text-red-500 mr-1"></i>To
+                  </label>
+                  <input
+                    type="date"
+                    id="historyDateTo"
+                    onchange="applyHistoryFilters()"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-red-100 focus:border-red-400 outline-none transition-all duration-200 bg-white"
+                  />
+                </div>
+                <div class="flex-1 min-w-[130px]">
+                  <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+                    <i class="fas fa-tint text-red-500 mr-1"></i>Blood Group
+                  </label>
+                  <select
+                    id="historyBloodFilter"
+                    onchange="applyHistoryFilters()"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-red-100 focus:border-red-400 outline-none transition-all duration-200 bg-white"
+                  >
+                    <option value="all">All Types</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+                <div class="flex-1 min-w-[130px]">
+                  <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+                    <i class="fas fa-circle-dot text-red-500 mr-1"></i>Status
+                  </label>
+                  <select
+                    id="historyStatusFilter"
+                    onchange="applyHistoryFilters()"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-red-100 focus:border-red-400 outline-none transition-all duration-200 bg-white"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="completed">Completed</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                </div>
+                <div class="flex-1 min-w-[130px]">
+                  <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+                    <i class="fas fa-bolt text-red-500 mr-1"></i>Quick Range
+                  </label>
+                  <select
+                    id="historyQuickRange"
+                    onchange="applyHistoryQuickRange()"
+                    class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-red-100 focus:border-red-400 outline-none transition-all duration-200 bg-white"
+                  >
+                    <option value="">Custom</option>
+                    <option value="7">Last 7 days</option>
+                    <option value="30">Last 30 days</option>
+                    <option value="90">Last 3 months</option>
+                    <option value="180">Last 6 months</option>
+                    <option value="365">This year</option>
+                  </select>
+                </div>
+                <div class="flex-shrink-0">
+                  <label class="block text-xs font-semibold text-transparent mb-2">Reset</label>
+                  <button
+                    onclick="resetHistoryFilters()"
+                    class="bg-gradient-to-r from-gray-100 to-gray-200 hover:from-red-50 hover:to-red-100 hover:border-red-300 border border-gray-200 text-gray-700 hover:text-red-700 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2"
+                  >
+                    <i class="fas fa-rotate-left"></i> Reset
+                  </button>
+                </div>
+              </div>
+              <div id="historyFilterChips" class="hidden flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100"></div>
             </div>
 
             <div class="overflow-hidden rounded-2xl border border-gray-200">
