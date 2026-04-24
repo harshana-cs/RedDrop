@@ -77,7 +77,7 @@ def api_user_requests(request):
     qs = (
         BloodRequest.objects
         .filter(patient=patient)
-        .select_related("hospital_location", "escalation")
+        .select_related("hospital_location", "escalation", "accepted_donor")
         .order_by("-created_at")
     )
     data = []
@@ -122,6 +122,11 @@ def api_user_requests(request):
             "fulfilled": r.fulfilled,
             "patient_confirmed": r.patient_confirmed,
             "accepted_donor_id": r.accepted_donor_id,
+            "accepted_donor_name": (
+                f"{(r.accepted_donor.first_name or '').strip()} {(r.accepted_donor.last_name or '').strip()}".strip()
+                if r.accepted_donor
+                else None
+            ),
             "stock_found": stock_found,
             "blood_bank_units": (esc.blood_bank_units if esc else 0),
             "hospital_stock_details": (
