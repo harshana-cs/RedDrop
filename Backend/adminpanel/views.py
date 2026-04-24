@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from blood_requests.models import BloodRequest
 from hospital.models import Hospital, HospitalProfile, HospitalApplication
 from register_donor.models import Donor
+from donor.models import Donation, DonationConfirmation
 from loginsignup.models import Patient
 from register_donor.models import Donor
 from rest_framework.decorators import api_view
@@ -928,25 +929,47 @@ def admin_user_detail(request, user_id):
         )
 
     donor = Donor.objects.filter(email=user.emailaddress).first()
-    blood_requests = BloodRequest.objects.filter(patient=user)
+    blood_requests = BloodRequest.objects.filter(patient=user).select_related("hospital_location").order_by("-created_at")
 
     request_list = []
     donation_history = []
+
+    def _abs(media_field):
+        if not media_field:
+            return None
+        try:
+            return request.build_absolute_uri(media_field.url)
+        except Exception:
+            return media_field.url
 
     for r in blood_requests:
         request_list.append({
             "id": r.id,
             "blood_type": r.blood_type,
             "units": r.units_required,
+            "urgency": r.urgency,
+            "reason": r.reason,
+            "district": r.district,
+            "required_date": r.required_date.isoformat() if r.required_date else None,
+            "contact_name": r.contact_name,
+            "contact_phone": r.contact_phone,
             "hospital": r.hospital_location.name if r.hospital_location else None,
             "status": r.status,
-            "date": r.created_at.strftime("%Y-%m-%d")
+            "date": r.created_at.strftime("%Y-%m-%d"),
+            "created_at": r.created_at.isoformat(),
+            "donation_date": r.donation_date.isoformat() if r.donation_date else None,
+            "hospital_doc": _abs(r.hospital_doc),
+            "doctor_note": _abs(r.doctor_note),
         })
         if r.status == "completed":
             donation_history.append({
+                "request_id": r.id,
                 "blood_type": r.blood_type,
                 "hospital": r.hospital_location.name if r.hospital_location else None,
-                "date": r.donation_date.strftime("%Y-%m-%d") if r.donation_date else None
+                "status": "completed",
+                "date": r.donation_date.strftime("%Y-%m-%d") if r.donation_date else None,
+                "donation_date": r.donation_date.isoformat() if r.donation_date else None,
+                "units": r.units_required,
             })
 
     last_donation = None
@@ -960,21 +983,79 @@ def admin_user_detail(request, user_id):
         if days_since < 90:
             eligibility = f"Not Eligible ({90 - days_since} days remaining)"
 
+    donor_info = None
+    donor_donations = []
+    donor_confirmations = []
+    if donor:
+        donor_info = {
+            "id": donor.id,
+            "first_name": donor.first_name,
+            "last_name": donor.last_name,
+            "blood_type": donor.blood_type,
+            "phone": donor.phone_number,
+            "email": donor.email,
+            "gender": donor.gender,
+            "date_of_birth": donor.date_of_birth.isoformat() if donor.date_of_birth else None,
+            "address": donor.address,
+            "city": donor.city,
+            "state": donor.state,
+            "zip_code": donor.zip_code,
+            "latitude": donor.latitude,
+            "longitude": donor.longitude,
+            "location_updated_at": donor.location_updated_at.isoformat() if donor.location_updated_at else None,
+            "emergency_contact_name": donor.emergency_contact_name,
+            "emergency_contact_phone": donor.emergency_contact_phone,
+            "weight": donor.weight,
+            "has_diabetes": donor.has_diabetes,
+            "has_hypertension": donor.has_hypertension,
+            "has_heart_disease": donor.has_heart_disease,
+            "no_medical_conditions": donor.no_medical_conditions,
+            "approved": donor.is_approved,
+            "is_profile_completed": donor.is_profile_completed,
+            "created_on": donor.created_on.isoformat() if donor.created_on else None,
+            "photo": _abs(donor.photo),
+            "citizenship_id": _abs(donor.citizenship_id),
+        }
+
+        donor_donations = [
+            {
+                "id": d.id,
+                "blood_type": d.blood_type,
+                "hospital": d.hospital,
+                "status": d.status,
+                "date": d.date.isoformat() if d.date else None,
+                "next_donation_date": d.next_donation_date.isoformat() if d.next_donation_date else None,
+            }
+            for d in Donation.objects.filter(donor=donor).order_by("-date")
+        ]
+
+        donor_confirmations = [
+            {
+                "id": c.id,
+                "request_id": c.request_id,
+                "patient_confirmed": c.patient_confirmed,
+                "donor_confirmed": c.donor_confirmed,
+                "donation_date": c.donation_date.isoformat() if c.donation_date else None,
+                "created_at": c.created_at.isoformat() if c.created_at else None,
+            }
+            for c in DonationConfirmation.objects.filter(donor=donor).order_by("-created_at")[:50]
+        ]
+
     return Response({
         "id": user.id,
         "name": user.fullname,
         "email": user.emailaddress,
-        "created_on": user.created_on.strftime("%Y-%m-%d"),
-        "donor": {
-            "blood_type": donor.blood_type if donor else None,
-            "phone": donor.phone_number if donor else None,
-            "city": donor.city if donor else None,
-            "approved": donor.is_approved if donor else False
-        },
+        "created_on": user.created_on.isoformat() if user.created_on else None,
+        "donor": donor_info,
+        "is_donor": bool(donor),
         "last_donation_date": last_donation.strftime("%Y-%m-%d") if last_donation else None,
         "eligibility_status": eligibility,
         "requests": request_list,
-        "donation_history": donation_history
+        "donation_history": donation_history,
+        "donations": donor_donations,
+        "donation_confirmations": donor_confirmations,
+        "total_requests": blood_requests.count(),
+        "total_donations": len(donor_donations) if donor else len(donation_history),
     })
 
 

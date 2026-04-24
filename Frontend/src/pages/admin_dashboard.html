@@ -5464,297 +5464,188 @@ async function loadUsers(){
 }
 async function viewUser(id) {
     const modal = document.getElementById("userDetailModal");
-    const body  = document.getElementById("userDetailBody");
+    const body = document.getElementById("userDetailBody");
     modal.classList.remove("hidden");
     body.innerHTML = `
       <div class="flex flex-col items-center justify-center py-16">
         <div class="animate-spin rounded-full h-12 w-12 border-4 border-red-200 border-t-red-600 mb-4"></div>
         <p class="text-gray-500 text-sm">Loading user details...</p>
       </div>`;
+
     try {
         const res = await fetch(`${API_BASE}/api/admin/users/${id}/`);
         if (!res.ok) throw new Error("Server returned " + res.status);
         const data = await res.json();
 
-        const isDonor = !!(
-    data.donor ||
-    data.is_donor ||
-    data.donor_approved ||
-    (data.donation_history && data.donation_history.length > 0) ||
-    (data.donations && data.donations.length > 0) ||
-    (data.total_donations && data.total_donations > 0)
-);
-
-        const formatDate = (dateStr) => {
-            if (!dateStr) return 'Never';
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-        };
-
-        const getEligibilityBadge = (status) => {
-            status = status?.toLowerCase() || '';
-            if (status.includes('eligible')) return 'bg-green-100 text-green-700 border-green-200';
-            if (status.includes('not eligible') || status.includes('ineligible')) return 'bg-red-100 text-red-700 border-red-200';
-            return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-        };
+        const donor = data.donor || {};
+        const isDonor = !!data.is_donor;
+        const donationItems = (data.donations && data.donations.length) ? data.donations : (data.donation_history || []);
+        const requestItems = (data.requests || []).slice().sort((a, b) => new Date(b.created_at || b.date || 0) - new Date(a.created_at || a.date || 0));
 
         const getStatusBadge = (status) => {
-            status = status?.toLowerCase() || '';
-            if (status === 'approved') return 'bg-green-100 text-green-700';
-            if (status === 'pending') return 'bg-yellow-100 text-yellow-700';
-            if (status === 'rejected') return 'bg-red-100 text-red-700';
-            if (status === 'completed') return 'bg-blue-100 text-blue-700';
-            return 'bg-gray-100 text-gray-700';
+            const s = (status || "").toLowerCase();
+            if (s === "approved" || s === "completed" || s === "verified") return "bg-green-100 text-green-700";
+            if (s === "pending") return "bg-yellow-100 text-yellow-700";
+            if (s === "rejected" || s === "cancelled") return "bg-red-100 text-red-700";
+            return "bg-gray-100 text-gray-700";
         };
 
+        const yesNo = (v) => v ? "Yes" : "No";
+        const donorName = [donor.first_name, donor.last_name].filter(Boolean).join(" ").trim();
+        const avatar = donor.photo || "";
+        const joined = formatAdminDateTime(data.created_on);
+        const donorJoined = formatAdminDateTime(donor.created_on);
+        const docButton = (url, label) => url ? `
+            <a href="${url}" target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 text-red-700 text-xs font-semibold hover:bg-red-100">
+               <i class="ri-file-line mr-1"></i>${label}
+            </a>` : `<span class="text-xs text-gray-400">${label}: Not uploaded</span>`;
+
         body.innerHTML = `
-            <div class="space-y-6 pb-2">
-
-                <!-- ── User Header ── -->
-                <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-5 border border-red-100">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div class="flex items-center space-x-4">
-                            <div class="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center text-white shadow-lg flex-shrink-0">
-                                <span class="text-2xl font-bold">${data.name ? data.name.charAt(0).toUpperCase() : 'U'}</span>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-900">${data.name || 'Unknown User'}</h3>
-                                <p class="text-gray-600 flex items-center mt-1">
-                                    <i class="ri-mail-line mr-2 text-red-400"></i>
-                                    ${data.email || 'No email provided'}
-                                </p>
-                                <p class="text-sm text-gray-500 flex items-center mt-1">
-                                    <i class="ri-calendar-line mr-2 text-red-400"></i>
-                                    Joined: ${formatDate(data.created_on)}
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex flex-col items-end gap-2">
-                            <span class="px-3 py-1 bg-white text-red-600 rounded-full text-xs font-medium border border-red-200 shadow-sm">
-                                ID: ${id}
-                            </span>
-                            <span class="px-3 py-1 rounded-full text-xs font-medium ${isDonor ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}">
-                                ${isDonor ? '❤️ Donor' : '👤 Patient Only'}
-                            </span>
-                        </div>
-                    </div>
+          <div class="space-y-6 pb-2">
+            <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-5 border border-red-100">
+              <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                  <div class="w-16 h-16 rounded-full overflow-hidden bg-red-100 flex items-center justify-center flex-shrink-0 border border-red-200">
+                    ${avatar ? `<img src="${avatar}" alt="user photo" class="w-full h-full object-cover" />` : `<span class="text-2xl font-bold text-red-600">${(data.name || "U").charAt(0).toUpperCase()}</span>`}
+                  </div>
+                  <div>
+                    <h3 class="text-xl font-bold text-gray-900">${data.name || "Unknown User"}</h3>
+                    <p class="text-gray-600">${data.email || "-"}</p>
+                    <p class="text-sm text-gray-500 mt-1">Joined: ${joined}</p>
+                  </div>
                 </div>
-
-                <!-- ── Donor Information (only for donors) ── -->
-                ${isDonor ? `
-                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                    <div class="bg-gray-50 px-5 py-3 border-b border-gray-200">
-                        <h4 class="font-semibold text-gray-900 flex items-center">
-                            <i class="ri-user-heart-line text-red-500 mr-2"></i>
-                            Donor Information
-                        </h4>
-                    </div>
-                    <div class="p-5">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                            <div class="bg-red-50 rounded-lg p-3">
-                                <p class="text-xs text-red-600 font-medium mb-1">Blood Type</p>
-                                <p class="text-lg font-bold text-gray-900">
-                                    ${data.donor?.blood_type || data.blood_type || 'Not specified'}
-                                </p>
-                            </div>
-                            <div class="bg-blue-50 rounded-lg p-3">
-                                <p class="text-xs text-blue-600 font-medium mb-1">Phone</p>
-                                <p class="text-lg font-bold text-gray-900">
-                                    ${data.donor?.phone || data.phone || '-'}
-                                </p>
-                            </div>
-                            <div class="bg-green-50 rounded-lg p-3">
-                                <p class="text-xs text-green-600 font-medium mb-1">City / District</p>
-                                <p class="text-lg font-bold text-gray-900">
-                                    ${data.donor?.city || data.donor?.district || data.district || data.city || '-'}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                <div class="flex flex-col items-end gap-2">
+                  <span class="px-3 py-1 bg-white text-red-600 rounded-full text-xs font-medium border border-red-200">ID: ${id}</span>
+                  <span class="px-3 py-1 rounded-full text-xs font-medium ${isDonor ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}">
+                    ${isDonor ? "Donor" : "Patient Only"}
+                  </span>
                 </div>
-                ` : `
-                <!-- ── Not a Donor notice ── -->
-                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                    <div class="bg-gray-50 px-5 py-3 border-b border-gray-200">
-                        <h4 class="font-semibold text-gray-900 flex items-center">
-                            <i class="ri-user-heart-line text-gray-400 mr-2"></i>
-                            Donor Information
-                        </h4>
-                    </div>
-                    <div class="p-5 text-center py-8">
-                        <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <i class="ri-user-unfollow-line text-2xl text-gray-400"></i>
-                        </div>
-                        <p class="text-gray-700 font-medium">Not registered as a donor</p>
-                        <p class="text-xs text-gray-400 mt-1">This user has not signed up to donate blood</p>
-                    </div>
-                </div>
-                `}
-
-                <!-- ── Donation Status (only for donors) ── -->
-                ${isDonor ? `
-                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                    <div class="bg-gray-50 px-5 py-3 border-b border-gray-200">
-                        <h4 class="font-semibold text-gray-900 flex items-center">
-                            <i class="ri-heart-pulse-line text-red-500 mr-2"></i>
-                            Donation Status
-                        </h4>
-                    </div>
-                    <div class="p-5">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <p class="text-sm text-gray-600 mb-2">Last Donation</p>
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                                        <i class="ri-calendar-check-line text-purple-600"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-semibold text-gray-900">${formatDate(data.last_donation_date)}</p>
-                                        <p class="text-xs text-gray-500">${data.last_donation_date ? 'Last donation date' : 'No donations yet'}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-600 mb-2">Eligibility Status</p>
-                                <div class="flex items-center">
-                                    <div class="w-10 h-10 ${data.eligibility_status?.toLowerCase().includes('eligible') ? 'bg-green-100' : 'bg-yellow-100'} rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                                        <i class="ri-checkbox-circle-line ${data.eligibility_status?.toLowerCase().includes('eligible') ? 'text-green-600' : 'text-yellow-600'}"></i>
-                                    </div>
-                                    <span class="px-3 py-1 rounded-full text-xs font-medium border ${getEligibilityBadge(data.eligibility_status)}">
-                                        ${data.eligibility_status || 'Unknown'}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                ` : ''}
-
-                <!-- ── Donation History (only for donors) ── -->
-                ${isDonor ? `
-                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                    <div class="bg-gray-50 px-5 py-3 border-b border-gray-200 flex items-center justify-between">
-                        <h4 class="font-semibold text-gray-900 flex items-center">
-                            <i class="ri-history-line text-red-500 mr-2"></i>
-                            Donation History
-                        </h4>
-                        <span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-medium">
-                            ${(data.donation_history || data.donations || []).length} donations
-                        </span>
-                    </div>
-                    <div class="p-5">
-                        ${!(data.donation_history || data.donations || []).length ? `
-                            <div class="text-center py-8">
-                                <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <i class="ri-inbox-line text-2xl text-gray-400"></i>
-                                </div>
-                                <p class="text-gray-600">No donation history yet</p>
-                                <p class="text-xs text-gray-400 mt-1">Donations will appear here once completed</p>
-                            </div>
-                        ` : `
-                            <div class="space-y-3">
-                                ${(data.donation_history || data.donations || []).map(d => `
-                                    <div class="border border-gray-100 rounded-lg p-4 hover:bg-red-50 transition-colors">
-                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                                            <div class="flex items-center space-x-3">
-                                                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                                    <i class="ri-heart-pulse-line text-red-600 text-sm"></i>
-                                                </div>
-                                                <span class="font-semibold text-gray-900">
-                                                    ${d.blood_type || data.donor?.blood_type || '—'}
-                                                </span>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="px-2 py-1 rounded-full text-xs font-medium
-                                                    ${(d.status === 'verified' || d.status === 'completed') ? 'bg-green-100 text-green-700' :
-                                                      d.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                                      'bg-gray-100 text-gray-600'}">
-                                                    ${d.status || 'Completed'}
-                                                </span>
-                                                <span class="text-sm text-gray-500">
-                                                    ${timeAgo(d.donation_date || d.date || d.created_at)}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3 text-sm">
-                                            <div class="bg-gray-50 rounded-lg p-2">
-                                                <p class="text-xs text-gray-400 mb-0.5">Hospital</p>
-                                                <p class="font-medium text-gray-800">${d.hospital_name || d.hospital || 'Donation Center'}</p>
-                                            </div>
-                                            <div class="bg-gray-50 rounded-lg p-2">
-                                                <p class="text-xs text-gray-400 mb-0.5">Date</p>
-                                                <p class="font-medium text-gray-800">${formatDate(d.donation_date || d.date || d.created_at)}</p>
-                                            </div>
-                                            <div class="bg-gray-50 rounded-lg p-2">
-                                                <p class="text-xs text-gray-400 mb-0.5">Units</p>
-                                                <p class="font-medium text-gray-800">${d.units_donated || d.units || d.volume || '1'} unit(s)</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        `}
-                    </div>
-                </div>
-                ` : ''}
-
-                <!-- ── Blood Requests (always shown for everyone) ── -->
-                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                    <div class="bg-gray-50 px-5 py-3 border-b border-gray-200 flex items-center justify-between">
-                        <h4 class="font-semibold text-gray-900 flex items-center">
-                            <i class="ri-heart-pulse-line text-red-500 mr-2"></i>
-                            Blood Requests
-                        </h4>
-                        <span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-medium">
-                            ${data.requests?.length || 0} requests
-                        </span>
-                    </div>
-                    <div class="p-5">
-                        ${!data.requests || data.requests.length === 0 ? `
-                            <div class="text-center py-8">
-                                <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                    <i class="ri-inbox-line text-2xl text-gray-400"></i>
-                                </div>
-                                <p class="text-gray-600">No blood requests found</p>
-                                <p class="text-xs text-gray-400 mt-1">This user hasn't made any blood requests</p>
-                            </div>
-                        ` : `
-                            <div class="space-y-3">
-                                ${data.requests.map(r => `
-                                    <div class="border border-gray-100 rounded-lg p-4 hover:bg-red-50 transition-colors">
-                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                                            <div class="flex items-center space-x-3">
-                                                <div class="w-8 h-8 ${r.status === 'approved' ? 'bg-green-100' : r.status === 'pending' ? 'bg-yellow-100' : 'bg-red-100'} rounded-full flex items-center justify-center flex-shrink-0">
-                                                    <i class="${r.status === 'approved' ? 'ri-check-line text-green-600' : r.status === 'pending' ? 'ri-time-line text-yellow-600' : 'ri-close-line text-red-600'}"></i>
-                                                </div>
-                                                <span class="font-semibold text-gray-900">${r.blood_type || 'Unknown'}</span>
-                                            </div>
-                                            <span class="px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(r.status)} self-start sm:self-auto">
-                                                ${r.status || 'Unknown'}
-                                            </span>
-                                        </div>
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 text-sm">
-                                            <div>
-                                                <p class="text-gray-500">Hospital</p>
-                                                <p class="font-medium text-gray-900">${r.hospital || 'Unknown'}</p>
-                                            </div>
-                                            <div>
-                                                <p class="text-gray-500">Date</p>
-                                                <p class="font-medium text-gray-900">${formatDate(r.date)}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `).join("")}
-                            </div>
-                        `}
-                    </div>
-                </div>
-
+              </div>
             </div>
-        `;
 
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div class="bg-gray-50 px-5 py-3 border-b border-gray-200">
+                <h4 class="font-semibold text-gray-900">User Summary</h4>
+              </div>
+              <div class="p-5 grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="bg-gray-50 rounded-lg p-3"><p class="text-xs text-gray-500 mb-1">Total Requests</p><p class="font-semibold text-gray-900">${data.total_requests || 0}</p></div>
+                <div class="bg-gray-50 rounded-lg p-3"><p class="text-xs text-gray-500 mb-1">Total Donations</p><p class="font-semibold text-gray-900">${data.total_donations || 0}</p></div>
+                <div class="bg-gray-50 rounded-lg p-3"><p class="text-xs text-gray-500 mb-1">Last Donation</p><p class="font-semibold text-gray-900">${data.last_donation_date || "Never"}</p></div>
+                <div class="bg-gray-50 rounded-lg p-3"><p class="text-xs text-gray-500 mb-1">Eligibility</p><p class="font-semibold text-gray-900">${data.eligibility_status || "-"}</p></div>
+              </div>
+            </div>
+
+            ${isDonor ? `
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div class="bg-gray-50 px-5 py-3 border-b border-gray-200">
+                <h4 class="font-semibold text-gray-900">Donor Exact Details</h4>
+              </div>
+              <div class="p-5 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                <div class="bg-red-50 rounded-lg p-3"><p class="text-xs text-red-600 mb-1">Donor Name</p><p class="font-semibold text-gray-900">${donorName || "-"}</p></div>
+                <div class="bg-red-50 rounded-lg p-3"><p class="text-xs text-red-600 mb-1">Blood Type</p><p class="font-semibold text-gray-900">${donor.blood_type || "-"}</p></div>
+                <div class="bg-red-50 rounded-lg p-3"><p class="text-xs text-red-600 mb-1">Phone</p><p class="font-semibold text-gray-900">${donor.phone || "-"}</p></div>
+                <div class="bg-gray-50 rounded-lg p-3"><p class="text-xs text-gray-500 mb-1">Gender</p><p class="font-semibold text-gray-900">${donor.gender || "-"}</p></div>
+                <div class="bg-gray-50 rounded-lg p-3"><p class="text-xs text-gray-500 mb-1">Date of Birth</p><p class="font-semibold text-gray-900">${donor.date_of_birth || "-"}</p></div>
+                <div class="bg-gray-50 rounded-lg p-3"><p class="text-xs text-gray-500 mb-1">Weight</p><p class="font-semibold text-gray-900">${donor.weight || "-"}</p></div>
+                <div class="bg-gray-50 rounded-lg p-3"><p class="text-xs text-gray-500 mb-1">Address</p><p class="font-semibold text-gray-900">${donor.address || "-"}</p></div>
+                <div class="bg-gray-50 rounded-lg p-3"><p class="text-xs text-gray-500 mb-1">City</p><p class="font-semibold text-gray-900">${donor.city || "-"}</p></div>
+                <div class="bg-gray-50 rounded-lg p-3"><p class="text-xs text-gray-500 mb-1">State / ZIP</p><p class="font-semibold text-gray-900">${[donor.state, donor.zip_code].filter(Boolean).join(" / ") || "-"}</p></div>
+                <div class="bg-gray-50 rounded-lg p-3"><p class="text-xs text-gray-500 mb-1">Emergency Contact</p><p class="font-semibold text-gray-900">${donor.emergency_contact_name || "-"}</p></div>
+                <div class="bg-gray-50 rounded-lg p-3"><p class="text-xs text-gray-500 mb-1">Emergency Phone</p><p class="font-semibold text-gray-900">${donor.emergency_contact_phone || "-"}</p></div>
+                <div class="bg-gray-50 rounded-lg p-3"><p class="text-xs text-gray-500 mb-1">Registered On</p><p class="font-semibold text-gray-900">${donorJoined}</p></div>
+              </div>
+              <div class="px-5 pb-5">
+                <div class="bg-gray-50 rounded-lg p-3 text-sm mb-3">
+                  <p class="text-xs text-gray-500 mb-1">Medical Flags</p>
+                  <p class="text-gray-800">Diabetes: ${yesNo(donor.has_diabetes)}, Hypertension: ${yesNo(donor.has_hypertension)}, Heart Disease: ${yesNo(donor.has_heart_disease)}, No Medical Conditions: ${yesNo(donor.no_medical_conditions)}</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  ${docButton(donor.photo, "View Uploaded Photo")}
+                  ${docButton(donor.citizenship_id, "View Citizenship ID")}
+                </div>
+              </div>
+            </div>` : `
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm p-6 text-center">
+              <p class="text-gray-700 font-medium">Not registered as donor</p>
+            </div>`}
+
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div class="bg-gray-50 px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+                <h4 class="font-semibold text-gray-900">Donation History</h4>
+                <span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-medium">${donationItems.length}</span>
+              </div>
+              <div class="p-5">
+                ${!donationItems.length ? `<p class="text-gray-500 text-sm">No donation history yet.</p>` : `
+                <div class="space-y-3">
+                  ${donationItems.map(d => `
+                    <div class="border border-gray-100 rounded-lg p-4">
+                      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                        <p class="font-semibold text-gray-900">${d.blood_type || donor.blood_type || "-"}</p>
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(d.status)}">${d.status || "completed"}</span>
+                      </div>
+                      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                        <div><p class="text-gray-500">Hospital</p><p class="font-medium text-gray-900">${d.hospital || "-"}</p></div>
+                        <div><p class="text-gray-500">Date/Time</p><p class="font-medium text-gray-900">${formatAdminDateTime(d.donation_date || d.date || d.created_at)}</p></div>
+                        <div><p class="text-gray-500">Units</p><p class="font-medium text-gray-900">${d.units || "1"}</p></div>
+                      </div>
+                    </div>`).join("")}
+                </div>`}
+              </div>
+            </div>
+
+            ${(data.donation_confirmations || []).length ? `
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div class="bg-gray-50 px-5 py-3 border-b border-gray-200">
+                <h4 class="font-semibold text-gray-900">Donation Confirmations</h4>
+              </div>
+              <div class="p-5 space-y-2">
+                ${(data.donation_confirmations || []).map(c => `
+                  <div class="border border-gray-100 rounded-lg p-3 text-sm grid grid-cols-1 sm:grid-cols-4 gap-2">
+                    <div><p class="text-gray-500">Request ID</p><p class="font-medium text-gray-900">${c.request_id || "-"}</p></div>
+                    <div><p class="text-gray-500">Donor Confirmed</p><p class="font-medium text-gray-900">${yesNo(c.donor_confirmed)}</p></div>
+                    <div><p class="text-gray-500">Patient Confirmed</p><p class="font-medium text-gray-900">${yesNo(c.patient_confirmed)}</p></div>
+                    <div><p class="text-gray-500">Created</p><p class="font-medium text-gray-900">${formatAdminDateTime(c.created_at)}</p></div>
+                  </div>`).join("")}
+              </div>
+            </div>` : ""}
+
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div class="bg-gray-50 px-5 py-3 border-b border-gray-200 flex items-center justify-between">
+                <h4 class="font-semibold text-gray-900">Blood Request History (Recent on top)</h4>
+                <span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-medium">${requestItems.length}</span>
+              </div>
+              <div class="p-5">
+                ${!requestItems.length ? `<p class="text-gray-500 text-sm">No blood requests found.</p>` : `
+                <div class="space-y-3">
+                  ${requestItems.map(r => `
+                    <div class="border border-gray-100 rounded-lg p-4">
+                      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-2">
+                          <span class="font-semibold text-gray-900">${r.blood_type || "-"}</span>
+                          <span class="text-xs text-gray-500">${r.units || 0} unit(s)</span>
+                        </div>
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(r.status)}">${r.status || "-"}</span>
+                      </div>
+                      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                        <div><p class="text-gray-500">Hospital</p><p class="font-medium text-gray-900">${r.hospital || "-"}</p></div>
+                        <div><p class="text-gray-500">Urgency / District</p><p class="font-medium text-gray-900">${r.urgency || "-"} / ${r.district || "-"}</p></div>
+                        <div><p class="text-gray-500">Requested At</p><p class="font-medium text-gray-900">${formatAdminDateTime(r.created_at || r.date)}</p></div>
+                        <div><p class="text-gray-500">Required Date</p><p class="font-medium text-gray-900">${r.required_date || "-"}</p></div>
+                        <div><p class="text-gray-500">Contact</p><p class="font-medium text-gray-900">${r.contact_name || "-"} (${r.contact_phone || "-"})</p></div>
+                        <div><p class="text-gray-500">Reason</p><p class="font-medium text-gray-900">${r.reason || "-"}</p></div>
+                      </div>
+                      <div class="mt-3 flex flex-wrap gap-2">
+                        ${docButton(r.hospital_doc, "Hospital Document")}
+                        ${docButton(r.doctor_note, "Doctor Note")}
+                      </div>
+                    </div>`).join("")}
+                </div>`}
+              </div>
+            </div>
+          </div>`;
     } catch (error) {
-        console.error('Error loading user details:', error);
+        console.error("Error loading user details:", error);
         document.getElementById("userDetailBody").innerHTML = `
             <div class="text-center py-12">
                 <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -7989,3 +7880,4 @@ async function initAnalytics() {
 </div>
 </body>
 </html>
+
