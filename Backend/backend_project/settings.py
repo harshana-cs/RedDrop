@@ -213,13 +213,13 @@ EMAIL_HOST_PASSWORD = 'knpg pwzb vzji aqkc'
 LOGIN_REDIRECT_URL = '/login-success/'
 from dotenv import load_dotenv
 import os
-load_dotenv()
+load_dotenv(BASE_DIR / ".env")
 
 ADMIN_SECRET_KEY = os.getenv("ADMIN_SECRET_KEY")
 
 # Sparrow SMS
 SMS_TOKEN = os.getenv("SMS_TOKEN")
-SMS_FROM = "Demo"  
+SMS_FROM = os.getenv("SMS_FROM", "Demo")
 # =======================================================================
 # LOCATION 7: settings.py — ADD THIS ENTIRE BLOCK at the bottom
 # =======================================================================

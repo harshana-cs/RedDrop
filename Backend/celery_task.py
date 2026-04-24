@@ -469,12 +469,11 @@ def _notify_tier(blood_request_id, tier_label, min_km, max_km):
         try:
             if donor.phone_number:
                 from adminpanel.sms import send_sms
-                send_sms(
+                sms_sent = bool(send_sms(
                     donor.phone_number,
                     f"RedDrop: {blood_request.blood_type} blood needed at "
                     f"{hospital.name} ({round(distance, 1)} km away). Login to respond."
-                )
-                sms_sent = True
+                ))
         except Exception as exc:
             logger.error(f"[{tier_label}] SMS failed for {donor.email}: {exc}")
 

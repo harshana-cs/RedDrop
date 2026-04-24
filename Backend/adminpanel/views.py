@@ -95,7 +95,7 @@ def send_donor_alert(donor, blood_request, distance, tier=None):
             )
             result = send_sms(donor.phone_number, message)
             logger.info(f"SMS to {donor.phone_number}: result={result}")
-            sms_sent = True
+            sms_sent = bool(result)
         else:
             logger.warning(f"Donor {donor.id} has no phone number — SMS skipped")
     except Exception as e:
