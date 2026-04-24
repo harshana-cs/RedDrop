@@ -293,21 +293,21 @@ def api_create_request(request):
         print(f"   Status: {blood_request.status}")
  
         # ========================================
-        # STEP 6: Create Notification
+        # STEP 6: Create Admin/System Log Notification
         # ========================================
-        print("\n📍 STEP 6: Creating notification...")
+        print("\n📍 STEP 6: Creating admin notification...")
         try:
             notification = Notification.objects.create(
                 title="New Blood Request",
                 message=f"{patient.fullname} requested {blood_request.blood_type} blood at {hospital_name}",
                 type="blood_request",
                 blood_request=blood_request,
-                user=request.user,
+                user=None,
                 hospital=None,
             )
-            print(f"✅ Notification created ID: {notification.id}")
+            print(f"✅ Admin notification created ID: {notification.id}")
         except Exception as e:
-            print(f"⚠️ Notification failed (non-fatal): {e}")
+            print(f"⚠️ Admin notification failed (non-fatal): {e}")
  
         # ========================================
         # STEP 7: Return JSON Response (NOT redirect!)

@@ -88,10 +88,18 @@ def send_donor_alert(donor, blood_request, distance, tier=None):
     # SMS
     try:
         if donor.phone_number:
-            send_sms(donor.phone_number, "Blood needed near you - RedDrop")
+            message = (
+                f"URGENT: {blood_request.blood_type} blood needed at "
+                f"{blood_request.hospital_location.name if blood_request.hospital_location else 'hospital'}. "
+                f"You are {round(distance, 1)} km away. Login to RedDrop to help."
+            )
+            result = send_sms(donor.phone_number, message)
+            logger.info(f"SMS to {donor.phone_number}: result={result}")
             sms_sent = True
+        else:
+            logger.warning(f"Donor {donor.id} has no phone number — SMS skipped")
     except Exception as e:
-        print("SMS ERROR:", e)
+        logger.error(f"SMS ERROR for donor {donor.id} ({donor.phone_number}): {e}", exc_info=True)
 
     # EMAIL
     try:
@@ -104,14 +112,15 @@ def send_donor_alert(donor, blood_request, distance, tier=None):
                 fail_silently=False
             )
             email_sent = True
+        else:
+            logger.warning(f"Donor {donor.id} has no email — email skipped")
     except Exception as e:
-        print("EMAIL ERROR:", e)
+        logger.error(f"EMAIL ERROR for donor {donor.id}: {e}", exc_info=True)
 
     return {
         "sms_sent": sms_sent,
         "email_sent": email_sent
     }
-
 
 # ================= ADMIN SECRET LOGIN =================
 @api_view(["POST"])
@@ -824,7 +833,8 @@ def api_request_status_overview(request):
 # ================= NOTIFICATIONS =================
 def get_notifications(request):
     notifications = Notification.objects.filter(
-        hospital__isnull=True
+        hospital__isnull=True,
+        user__isnull=True,
     ).order_by("-created_at")[:10]
 
     data = [
@@ -841,6 +851,7 @@ def get_notifications(request):
 
     unread = Notification.objects.filter(
         hospital__isnull=True,
+        user__isnull=True,
         is_read=False
     ).count()
 
@@ -853,7 +864,12 @@ def get_notifications(request):
 @csrf_exempt
 def mark_notification_read(request, notification_id):
     if request.method == "POST":
-        notification = get_object_or_404(Notification, id=notification_id)
+        notification = get_object_or_404(
+            Notification,
+            id=notification_id,
+            hospital__isnull=True,
+            user__isnull=True,
+        )
         notification.is_read = True
         notification.save()
         return JsonResponse({"success": True})
@@ -866,6 +882,7 @@ def mark_notification_read(request, notification_id):
 def mark_all_notifications_read(request):
     Notification.objects.filter(
         hospital__isnull=True,
+        user__isnull=True,
         is_read=False
     ).update(is_read=True)
     return Response({"success": True})

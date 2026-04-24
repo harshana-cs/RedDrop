@@ -5241,19 +5241,17 @@ async function loadNotifications() {
  
   const headers = { "Authorization": `Bearer ${tok}` };
   try {
-    // Fetch notifications + user capabilities in parallel
-    const [donorRes, patientRes, capRes] = await Promise.allSettled([
-      fetch(`${API_BASE}/api/donor/notifications/`, {headers}),
-      fetch(`${API_BASE}/blood_requests/api/patient-notifications/`, {headers}),
-      fetch(`${API_BASE}/loginsignup/user-capabilities/`, {headers})
-    ]);
+    // Fetch capabilities first so we only hit the relevant notification APIs.
+    const capRes = await fetch(`${API_BASE}/loginsignup/user-capabilities/`, { headers });
 
     // Check donor eligibility from capabilities
     let isEligible = true;
     let isDonor = false;
-    if (capRes.status === "fulfilled" && capRes.value.ok) {
-      const capData = await capRes.value.json();
+    let isPatient = false;
+    if (capRes.ok) {
+      const capData = await capRes.json();
       isDonor = !!capData.is_donor;
+      isPatient = !!capData.is_patient;
       const lastRaw = capData?.donations?.last_date;
       const daysSince = lastRaw
         ? Math.floor((Date.now() - new Date(lastRaw)) / 86400000)
@@ -5261,14 +5259,21 @@ async function loadNotifications() {
       isEligible = daysSince === null || daysSince >= MIN_GAP_DAYS;
     }
 
-    let notifications = [];
-    if (donorRes.status === "fulfilled" && donorRes.value.ok) {
-      const d = await donorRes.value.json();
-      if (Array.isArray(d)) notifications = notifications.concat(d);
+    const promises = [];
+    if (isDonor) {
+      promises.push(fetch(`${API_BASE}/api/donor/notifications/`, { headers }));
     }
-    if (patientRes.status === "fulfilled" && patientRes.value.ok) {
-      const d = await patientRes.value.json();
-      if (Array.isArray(d)) notifications = notifications.concat(d);
+    if (isPatient) {
+      promises.push(fetch(`${API_BASE}/blood_requests/api/patient-notifications/`, { headers }));
+    }
+    const responses = await Promise.allSettled(promises);
+
+    let notifications = [];
+    for (const res of responses) {
+      if (res.status === "fulfilled" && res.value.ok) {
+        const d = await res.value.json();
+        if (Array.isArray(d)) notifications = notifications.concat(d);
+      }
     }
 
     // Only hide notifications asking YOU to donate.
