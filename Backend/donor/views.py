@@ -10,6 +10,8 @@ from blood_requests.models import BloodRequest
 from adminpanel.models import DonationCamp
 from adminpanel.models import Notification  
 from .models import Donation, DonationConfirmation
+from django.db.models import Count, Max
+from django.contrib.auth.models import User
 
 
 MIN_GAP_DAYS = 56
@@ -489,4 +491,181 @@ def api_donor_decline_request(request):
     return Response({
         "success": True, 
         "message": "You have declined the request. It is now available for other donors."
+    })
+
+
+# ===============================
+# CERTIFICATE + LEADERBOARD APIs
+# ===============================
+def _request_user_email(request):
+    return (request.user.email or request.user.username or "").strip().lower()
+
+
+def _certificate_serial(donation):
+    return f"RDC-{donation.date.strftime('%Y%m%d')}-{donation.id:06d}"
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_donation_certificate(request, donation_id):
+    """
+    Returns certificate data payload for a specific donation.
+    Frontend can use this payload with any custom certificate design.
+    """
+    donation = get_object_or_404(Donation.objects.select_related("donor"), id=donation_id)
+
+    user_email = _request_user_email(request)
+    donor_email = (donation.donor.email or "").strip().lower() if donation.donor else ""
+    is_owner = donor_email and donor_email == user_email
+    is_admin = bool(request.user.is_staff or request.user.is_superuser)
+
+    if not (is_owner or is_admin):
+        return Response({"success": False, "message": "Forbidden"}, status=403)
+
+    donor_name = f"{donation.donor.first_name or ''} {donation.donor.last_name or ''}".strip()
+    payload = {
+        "success": True,
+        "certificate": {
+            "serial_number": _certificate_serial(donation),
+            "issued_at": timezone.now().isoformat(),
+            "title": "Blood Donation Certificate",
+            "recipient_name": donor_name or "Donor",
+            "blood_type": donation.blood_type,
+            "hospital": donation.hospital,
+            "donation_date": donation.date.isoformat() if donation.date else None,
+            "donation_id": donation.id,
+            "status": donation.status,
+        }
+    }
+    return Response(payload)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_donor_leaderboard(request):
+    """
+    Donor leaderboard by count of verified donations.
+    Optional filters: ?year=YYYY&month=MM
+    """
+    year = request.GET.get("year")
+    month = request.GET.get("month")
+
+    qs = Donation.objects.filter(status="verified")
+    if year and str(year).isdigit():
+        qs = qs.filter(date__year=int(year))
+    if month and str(month).isdigit():
+        qs = qs.filter(date__month=int(month))
+
+    rows = (
+        qs.values("donor")
+        .annotate(total_donations=Count("id"), latest_donation=Max("date"))
+        .order_by("-total_donations", "-latest_donation", "donor")
+    )
+
+    donor_ids = [r["donor"] for r in rows if r.get("donor")]
+    donor_map = {
+        d.id: d for d in Donor.objects.filter(id__in=donor_ids)
+    }
+
+    me_email = _request_user_email(request)
+    leaderboard = []
+    my_rank = None
+    for idx, row in enumerate(rows, start=1):
+        donor = donor_map.get(row["donor"])
+        if not donor:
+            continue
+        name = f"{donor.first_name or ''} {donor.last_name or ''}".strip() or "Donor"
+        item = {
+            "rank": idx,
+            "donor_id": donor.id,
+            "name": name,
+            "blood_type": donor.blood_type or "",
+            "city": donor.city or donor.state or "",
+            "total_donations": row["total_donations"],
+            "latest_donation": row["latest_donation"].isoformat() if row["latest_donation"] else None,
+        }
+        leaderboard.append(item)
+        if (donor.email or "").strip().lower() == me_email:
+            my_rank = idx
+
+    return Response({
+        "success": True,
+        "year": int(year) if year and str(year).isdigit() else None,
+        "month": int(month) if month and str(month).isdigit() else None,
+        "leaderboard": leaderboard[:100],
+        "my_rank": my_rank,
+    })
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_leaderboard_certificate(request):
+    """
+    Certificate payload for leaderboard achievement.
+    Rules:
+    - donor must be in top 3
+    - donor must have at least 1 verified donation in selected period
+    Optional filters: ?year=YYYY&month=MM
+    """
+    year = request.GET.get("year")
+    month = request.GET.get("month")
+
+    qs = Donation.objects.filter(status="verified")
+    if year and str(year).isdigit():
+        qs = qs.filter(date__year=int(year))
+    if month and str(month).isdigit():
+        qs = qs.filter(date__month=int(month))
+
+    rows = (
+        qs.values("donor")
+        .annotate(total_donations=Count("id"), latest_donation=Max("date"))
+        .order_by("-total_donations", "-latest_donation", "donor")
+    )
+
+    me_email = _request_user_email(request)
+    my_row = None
+    my_rank = None
+    donor_obj = None
+    for idx, row in enumerate(rows, start=1):
+        donor = Donor.objects.filter(id=row["donor"]).first()
+        if donor and (donor.email or "").strip().lower() == me_email:
+            my_row = row
+            my_rank = idx
+            donor_obj = donor
+            break
+
+    if not my_row or not donor_obj:
+        return Response({
+            "success": False,
+            "eligible": False,
+            "message": "No verified donations found for leaderboard period.",
+        }, status=404)
+
+    eligible = my_rank <= 3 and my_row["total_donations"] > 0
+    if not eligible:
+        return Response({
+            "success": True,
+            "eligible": False,
+            "rank": my_rank,
+            "total_donations": my_row["total_donations"],
+            "message": "Leaderboard certificate is available for top 3 donors.",
+        })
+
+    donor_name = f"{donor_obj.first_name or ''} {donor_obj.last_name or ''}".strip() or "Donor"
+    period = f"{year}-{str(month).zfill(2)}" if year and month else (str(year) if year else "All Time")
+    serial = f"RDL-{period.replace('-', '')}-{donor_obj.id:06d}-{my_rank}"
+
+    return Response({
+        "success": True,
+        "eligible": True,
+        "certificate": {
+            "serial_number": serial,
+            "issued_at": timezone.now().isoformat(),
+            "title": "Donor Leaderboard Achievement Certificate",
+            "recipient_name": donor_name,
+            "rank": my_rank,
+            "period": period,
+            "total_donations": my_row["total_donations"],
+            "latest_donation": my_row["latest_donation"].isoformat() if my_row["latest_donation"] else None,
+        }
     })

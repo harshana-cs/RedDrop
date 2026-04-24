@@ -14,6 +14,9 @@ from .views import (
     approved_donors_basic_view,   
     all_donors,
     api_donor_decline_request,
+    api_donation_certificate,
+    api_donor_leaderboard,
+    api_leaderboard_certificate,
     
 )
 
@@ -36,5 +39,8 @@ urlpatterns = [
     path("approved-donors-basic/", approved_donors_basic_view),
     path("api/all-donors/",  all_donors),
     path("decline-request/", api_donor_decline_request),
+    path("certificate/<int:donation_id>/", api_donation_certificate),
+    path("leaderboard/", api_donor_leaderboard),
+    path("leaderboard/certificate/", api_leaderboard_certificate),
 
 ]
