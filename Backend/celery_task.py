@@ -90,6 +90,21 @@ def _is_already_fulfilled(blood_request_id):
         return False
 
 
+def _is_stock_found(blood_request_id):
+    """True when blood bank / hospital stock has been found for this request."""
+    try:
+        from adminpanel.models import BloodRequestEscalation
+        esc = BloodRequestEscalation.objects.get(blood_request_id=blood_request_id)
+        return (esc.blood_bank_units or 0) > 0 or bool(esc.hospital_stock_details)
+    except Exception:
+        return False
+
+
+def _should_stop_search(blood_request_id):
+    """Stop donor search when donor already accepted OR stock is already found."""
+    return _is_already_fulfilled(blood_request_id) or _is_stock_found(blood_request_id)
+
+
 def _mark_escalation_complete(blood_request_id):
     """Stamps completed_at on the escalation record."""
     from django.utils import timezone
@@ -165,8 +180,8 @@ def orchestrate_tiered_notification(blood_request_id):
 
         # ── Wait → TIER 2: 5–15 km ───────────────────────────────────
         time.sleep(TIER_2_DELAY)
-        if _is_already_fulfilled(blood_request_id):
-            logger.info(f"[Escalation] #{blood_request_id} fulfilled — stopped after Tier 1")
+        if _should_stop_search(blood_request_id):
+            logger.info(f"[Escalation] #{blood_request_id} stopped after Tier 1 (donor accepted or stock found)")
             _mark_escalation_complete(blood_request_id)
             return
 
@@ -180,8 +195,8 @@ def orchestrate_tiered_notification(blood_request_id):
 
         # ── Wait → TIER 3: 15–30 km ──────────────────────────────────
         time.sleep(TIER_3_DELAY)
-        if _is_already_fulfilled(blood_request_id):
-            logger.info(f"[Escalation] #{blood_request_id} fulfilled — stopped after Tier 2")
+        if _should_stop_search(blood_request_id):
+            logger.info(f"[Escalation] #{blood_request_id} stopped after Tier 2 (donor accepted or stock found)")
             _mark_escalation_complete(blood_request_id)
             return
 
@@ -189,8 +204,8 @@ def orchestrate_tiered_notification(blood_request_id):
 
         # ── Wait → TIER 4: 30+ km ────────────────────────────────────
         time.sleep(TIER_4_DELAY)
-        if _is_already_fulfilled(blood_request_id):
-            logger.info(f"[Escalation] #{blood_request_id} fulfilled — stopped after Tier 3")
+        if _should_stop_search(blood_request_id):
+            logger.info(f"[Escalation] #{blood_request_id} stopped after Tier 3 (donor accepted or stock found)")
             _mark_escalation_complete(blood_request_id)
             return
 
@@ -396,7 +411,7 @@ def _notify_tier(blood_request_id, tier_label, min_km, max_km):
         return 0
 
     # Early exit if already fulfilled
-    if blood_request.fulfilled or blood_request.status == "completed":
+    if _should_stop_search(blood_request_id):
         logger.info(f"[{tier_label}] #{blood_request_id} already fulfilled — skip")
         return 0
 
@@ -422,8 +437,8 @@ def _notify_tier(blood_request_id, tier_label, min_km, max_km):
 
     for donor in donors:
         # Stop mid-tier if a donor accepted while we were looping
-        if _is_already_fulfilled(blood_request_id):
-            logger.info(f"[{tier_label}] #{blood_request_id} fulfilled mid-tier — stopping")
+        if _should_stop_search(blood_request_id):
+            logger.info(f"[{tier_label}] #{blood_request_id} stop condition reached mid-tier — stopping")
             break
 
         if not donor.latitude or not donor.longitude:

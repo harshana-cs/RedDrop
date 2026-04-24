@@ -74,11 +74,27 @@ def api_user_requests(request):
             status=403
         )
 
-    qs = BloodRequest.objects.filter(
-        patient=patient
-    ).order_by("-created_at")
+    qs = (
+        BloodRequest.objects
+        .filter(patient=patient)
+        .select_related("hospital_location", "escalation")
+        .order_by("-created_at")
+    )
     data = []
     for r in qs:
+        esc = getattr(r, "escalation", None)
+        stock_found = bool(
+            esc and (
+                (esc.blood_bank_units or 0) > 0 or bool(esc.hospital_stock_details)
+            )
+        )
+        completion_source = None
+        if r.status == "completed":
+            if r.accepted_donor_id:
+                completion_source = "donor"
+            elif stock_found:
+                completion_source = "blood_bank"
+
         data.append({
             "id": r.id,
             "blood_type": r.blood_type,
@@ -90,6 +106,8 @@ def api_user_requests(request):
             "fulfilled": r.fulfilled,
             "patient_confirmed": r.patient_confirmed,
             "accepted_donor_id": r.accepted_donor_id,
+            "stock_found": stock_found,
+            "completion_source": completion_source,
             "created_at": r.created_at,
             "donation_date": r.donation_date,
         })
