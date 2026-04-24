@@ -95,21 +95,44 @@ def api_user_requests(request):
             elif stock_found:
                 completion_source = "blood_bank"
 
+        hospital_doc_url = (
+            request.build_absolute_uri(r.hospital_doc.url)
+            if getattr(r, "hospital_doc", None)
+            else None
+        )
+        doctor_note_url = (
+            request.build_absolute_uri(r.doctor_note.url)
+            if getattr(r, "doctor_note", None)
+            else None
+        )
+
         data.append({
             "id": r.id,
             "blood_type": r.blood_type,
             "units_required": r.units_required,
             "urgency": r.urgency,
             "district": r.district,
+            "required_date": r.required_date,
+            "reason": r.reason,
+            "contact_name": r.contact_name,
+            "contact_phone": r.contact_phone,
+            "patient_name": r.patient_name,
             "hospital_name": r.hospital_location.name if r.hospital_location else None,
             "status": r.status,
             "fulfilled": r.fulfilled,
             "patient_confirmed": r.patient_confirmed,
             "accepted_donor_id": r.accepted_donor_id,
             "stock_found": stock_found,
+            "blood_bank_units": (esc.blood_bank_units if esc else 0),
+            "hospital_stock_details": (
+                esc.hospital_stock_details if esc else None
+            ),
             "completion_source": completion_source,
+            "approved_at": r.approved_at,
             "created_at": r.created_at,
             "donation_date": r.donation_date,
+            "hospital_doc_url": hospital_doc_url,
+            "doctor_note_url": doctor_note_url,
         })
 
     # 📊 Stats
