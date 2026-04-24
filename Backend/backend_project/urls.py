@@ -5,7 +5,12 @@ from django.urls import path, include
 from django.shortcuts import redirect
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from adminpanel.views import admin_escalation_status, admin_notification_logs
-from donor.views import api_donation_certificate, api_donor_leaderboard, api_leaderboard_certificate
+from donor.views import (
+    api_donation_certificate,
+    api_download_donation_certificate,
+    api_donor_leaderboard,
+    api_leaderboard_certificate,
+)
 
 
 urlpatterns = [
@@ -23,6 +28,7 @@ urlpatterns = [
     path("api/", include("blood_stock.urls")),
     # Donation certificate + leaderboard aliases (kept for frontend compatibility)
     path("donations/api/certificate/<int:donation_id>/", api_donation_certificate),
+    path("donations/api/certificate/download/<int:donation_id>/", api_download_donation_certificate),
     path("donations/api/leaderboard/", api_donor_leaderboard),
     path("donations/api/leaderboard/certificate/", api_leaderboard_certificate),
 

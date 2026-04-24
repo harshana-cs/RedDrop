@@ -5190,15 +5190,50 @@ function contactDonor(name, phone) {
 // ─────────────────────────────────────────────────────────────────────────────
 async function downloadCertificate(donationId) {
   try {
-    const res = await fetch(`${API_BASE}/donations/api/certificate/${donationId}/`, { headers:{"Authorization":`Bearer ${token}`} });
-    if (res.ok) {
-      const url = window.URL.createObjectURL(await res.blob());
-      const a   = Object.assign(document.createElement('a'), {href:url, download:`donation-certificate-${donationId}.pdf`});
-      document.body.appendChild(a); a.click();
-      window.URL.revokeObjectURL(url); document.body.removeChild(a);
-      showNotification("Certificate downloaded successfully!","success");
-    } else showNotification("Certificate not available","warning");
-  } catch (err) { console.error(err); showNotification("Error downloading certificate","error"); }
+    const pdfRes = await fetch(`${API_BASE}/donations/api/certificate/download/${donationId}/`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+
+    if (pdfRes.ok && (pdfRes.headers.get("content-type") || "").includes("application/pdf")) {
+      const url = window.URL.createObjectURL(await pdfRes.blob());
+      const a = Object.assign(document.createElement("a"), {
+        href: url,
+        download: `donation-certificate-${donationId}.pdf`
+      });
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      showNotification("Certificate downloaded successfully!", "success");
+      return;
+    }
+
+    // Fallback to certificate-data JSON endpoint (for custom template rendering)
+    const dataRes = await fetch(`${API_BASE}/donations/api/certificate/${donationId}/`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const data = await dataRes.json().catch(() => ({}));
+
+    if (!dataRes.ok || data.success === false) {
+      showNotification(data.message || "Certificate not available", "warning");
+      return;
+    }
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = window.URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement("a"), {
+      href: url,
+      download: `donation-certificate-data-${donationId}.json`
+    });
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    showNotification("Certificate data downloaded (JSON)", "success");
+  } catch (err) {
+    console.error(err);
+    showNotification("Error downloading certificate", "error");
+  }
 }
  
 // ─────────────────────────────────────────────────────────────────────────────
