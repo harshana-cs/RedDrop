@@ -183,14 +183,18 @@ def api_donor_confirm(request):
     confirmation.donation_date = timezone.now()
     confirmation.save()
 
+    # Use the patient receipt-confirmed date for donation history/certificate date.
+    receipt_confirmed_dt = confirmation.created_at or timezone.now()
+    receipt_confirmed_date = timezone.localtime(receipt_confirmed_dt).date()
+
     # ✅ CREATE DONATION HISTORY
     Donation.objects.create(
         donor=donor,
         hospital=blood_request.hospital_location.name if blood_request.hospital_location else "",
         blood_type=blood_request.blood_type,
-        date=timezone.now().date(),
+        date=receipt_confirmed_date,
         status="verified",
-        next_donation_date=timezone.now().date() + timedelta(days=MIN_GAP_DAYS)
+        next_donation_date=receipt_confirmed_date + timedelta(days=MIN_GAP_DAYS)
     )
 
     # 🔥 EXPIRE OTP **ONLY NOW**
@@ -533,6 +537,7 @@ def api_donation_certificate(request, donation_id):
             "blood_type": donation.blood_type,
             "hospital": donation.hospital,
             "donation_date": donation.date.isoformat() if donation.date else None,
+            "certificate_date": donation.date.isoformat() if donation.date else None,
             "donation_id": donation.id,
             "status": donation.status,
         }
