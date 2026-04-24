@@ -674,3 +674,197 @@ def api_leaderboard_certificate(request):
             "latest_donation": my_row["latest_donation"].isoformat() if my_row["latest_donation"] else None,
         }
     })
+from django.core.files.storage import default_storage
+from reportlab.lib.pagesizes import landscape, letter
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from reportlab.lib import colors
+from reportlab.lib.styles import ParagraphStyle
+from io import BytesIO
+from io import BytesIO
+from django.http import FileResponse
+
+import os
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_download_donation_certificate(request, donation_id):
+    """
+    Download donation certificate as PDF using ReportLab
+    """
+    donation = get_object_or_404(Donation.objects.select_related("donor"), id=donation_id)
+    
+    user_email = _request_user_email(request)
+    donor_email = (donation.donor.email or "").strip().lower() if donation.donor else ""
+    is_owner = donor_email and donor_email == user_email
+    is_admin = bool(request.user.is_staff or request.user.is_superuser)
+
+    if not (is_owner or is_admin):
+        return Response({"success": False, "message": "Forbidden"}, status=403)
+
+    try:
+        # Create PDF buffer
+        pdf_buffer = BytesIO()
+        pagesize = landscape(letter)
+        width, height = pagesize
+        
+        # Create canvas with buffer
+        c = canvas.Canvas(pdf_buffer, pagesize=pagesize)
+        
+        # Colors
+        red_color = colors.HexColor("#B91C1C")
+        gold_color = colors.HexColor("#FCD34D")
+        dark_text = colors.HexColor("#1f2937")
+        
+        # Draw decorative border
+        c.setLineWidth(2)
+        c.setStrokeColor(red_color)
+        c.rect(0.5*inch, 0.5*inch, width - 1*inch, height - 1*inch)
+        
+        # Draw corner decorations
+        corner_size = 0.3*inch
+        c.setLineWidth(3)
+        c.setStrokeColor(red_color)
+        
+        # Top-left corner
+        c.line(0.5*inch, height - 0.5*inch, 0.5*inch + corner_size, height - 0.5*inch)
+        c.line(0.5*inch, height - 0.5*inch, 0.5*inch, height - 0.5*inch - corner_size)
+        
+        # Top-right corner
+        c.line(width - 0.5*inch, height - 0.5*inch, width - 0.5*inch - corner_size, height - 0.5*inch)
+        c.line(width - 0.5*inch, height - 0.5*inch, width - 0.5*inch, height - 0.5*inch - corner_size)
+        
+        # Bottom-left corner
+        c.line(0.5*inch, 0.5*inch, 0.5*inch + corner_size, 0.5*inch)
+        c.line(0.5*inch, 0.5*inch, 0.5*inch, 0.5*inch + corner_size)
+        
+        # Bottom-right corner
+        c.line(width - 0.5*inch, 0.5*inch, width - 0.5*inch - corner_size, 0.5*inch)
+        c.line(width - 0.5*inch, 0.5*inch, width - 0.5*inch, 0.5*inch + corner_size)
+        
+        # Title
+        c.setFont("Helvetica-Bold", 48)
+        c.setFillColor(red_color)
+        c.drawCentredString(width/2, height - 1.5*inch, "CERTIFICATE OF HONOR")
+        
+        # Subtitle
+        c.setFont("Helvetica", 12)
+        c.setFillColor(dark_text)
+        c.drawCentredString(width/2, height - 1.9*inch, "In Recognition of Generosity")
+        
+        # Decorative line
+        c.setLineWidth(2)
+        c.setStrokeColor(gold_color)
+        c.line(1.5*inch, height - 2.2*inch, width - 1.5*inch, height - 2.2*inch)
+        
+        # Body text
+        c.setFont("Helvetica", 16)
+        c.setFillColor(dark_text)
+        c.drawCentredString(width/2, height - 2.8*inch, "This certifies that")
+        
+        # Donor name (underlined)
+        c.setFont("Helvetica-Bold", 32)
+        c.setFillColor(red_color)
+        donor_name = f"{donation.donor.first_name or ''} {donation.donor.last_name or ''}".strip()
+        c.drawCentredString(width/2, height - 3.4*inch, donor_name)
+        
+        c.setStrokeColor(gold_color)
+        c.setLineWidth(2)
+        c.line((width/2) - 2.5*inch, height - 3.6*inch, (width/2) + 2.5*inch, height - 3.6*inch)
+        
+        # Details section
+        c.setFont("Helvetica", 14)
+        c.setFillColor(dark_text)
+        y_pos = height - 4.3*inch
+        
+        c.drawCentredString(width/2, y_pos, "has generously donated blood through")
+        y_pos -= 0.3*inch
+        
+        c.setFont("Helvetica-Bold", 14)
+        c.drawCentredString(width/2, y_pos, "RedDrop Blood Donation Service")
+        y_pos -= 0.6*inch
+        
+        # Donation details in boxes
+        c.setFont("Helvetica", 11)
+        box_width = 2*inch
+        box_height = 0.6*inch
+        
+        details = [
+            ("Date", donation.date.strftime("%B %d, %Y") if donation.date else "N/A"),
+            ("Blood Type", donation.blood_type or "N/A"),
+            ("Hospital", donation.hospital or "N/A"),
+        ]
+        
+        x_positions = [1*inch, (width/2) - box_width/2, width - 3*inch]
+        
+        for idx, (label, value) in enumerate(details):
+            x = x_positions[idx]
+            c.setStrokeColor(red_color)
+            c.setLineWidth(1)
+            c.rect(x, y_pos - box_height, box_width, box_height, fill=0)
+            
+            c.setFont("Helvetica-Bold", 9)
+            c.setFillColor(red_color)
+            c.drawString(x + 0.1*inch, y_pos - 0.2*inch, label.upper())
+            
+            c.setFont("Helvetica", 11)
+            c.setFillColor(dark_text)
+            c.drawString(x + 0.1*inch, y_pos - 0.45*inch, str(value)[:25])
+        
+        y_pos -= 1*inch
+        
+        # Signature lines
+        c.setFont("Helvetica", 10)
+        c.setFillColor(dark_text)
+        
+        sig_y = y_pos - 0.5*inch
+        sig_x1 = 1.5*inch
+        sig_x2 = width - 2*inch
+        
+        # Left signature
+        c.setLineWidth(1)
+        c.setStrokeColor(dark_text)
+        c.line(sig_x1, sig_y, sig_x1 + 1.5*inch, sig_y)
+        c.setFont("Helvetica-Bold", 9)
+        c.setFillColor(dark_text)
+        c.drawString(sig_x1, sig_y - 0.25*inch, "Medical Director")
+        
+        # Right signature
+        c.line(sig_x2, sig_y, sig_x2 + 1.5*inch, sig_y)
+        c.drawString(sig_x2, sig_y - 0.25*inch, "Authorized Officer")
+        
+        # Serial number
+        serial = _certificate_serial(donation)
+        c.setFont("Helvetica", 9)
+        c.setFillColor(colors.HexColor("#666666"))
+        c.drawString(1*inch, 0.8*inch, f"Serial: {serial}")
+        
+        # Heart seal
+        c.setFont("Helvetica", 48)
+        c.setFillColor(red_color)
+        c.drawString(width - 1.8*inch, 0.5*inch, "❤")
+        
+        # ✅ CRITICAL: Save the canvas first
+        c.save()
+        
+        # ✅ Reset buffer position for reading
+        pdf_buffer.seek(0)
+        
+        filename = f"RedDrop_Certificate_{donation.id}.pdf"
+        
+        # ✅ Return the file response
+        return FileResponse(
+            pdf_buffer,
+            as_attachment=True,
+            filename=filename,
+            content_type='application/pdf'
+        )
+        
+    except Exception as e:
+        import traceback
+        print(f"Certificate Error: {str(e)}")
+        print(traceback.format_exc())
+        return Response({
+            "success": False,
+            "message": f"Error generating certificate: {str(e)}"
+        }, status=500)

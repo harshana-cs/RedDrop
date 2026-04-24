@@ -29,3 +29,15 @@ class DonationConfirmation(models.Model):
     donation_date = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+# models.py
+from django.db import models
+
+class DonationCertificate(models.Model):
+    donation = models.OneToOneField(Donation, on_delete=models.CASCADE, related_name='certificate')
+    pdf_file = models.FileField(upload_to='certificates/')  # Auto-stores in MEDIA_ROOT
+    serial_number = models.CharField(max_length=100, unique=True)
+    issued_at = models.DateTimeField(auto_now_add=True)
+    downloaded_count = models.IntegerField(default=0)
+    
+    def __str__(self):
+        return f"Certificate for Donation #{self.donation.id}"

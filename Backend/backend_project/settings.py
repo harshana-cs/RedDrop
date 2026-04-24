@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 from corsheaders.defaults import default_headers
 
 # Base directory
@@ -171,6 +172,9 @@ STATIC_URL = '/static/'
 # settings.py
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Create subdirectory for certificates
+CERTIFICATE_STORAGE_PATH = os.path.join(MEDIA_ROOT, 'certificates')
 
 
 # =====================
