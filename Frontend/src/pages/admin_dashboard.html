@@ -6575,6 +6575,16 @@ function renderCampCards(camps) {
     ${c.description
         ? `<p class="text-xs text-gray-500 line-clamp-2 border-t pt-2">${c.description}</p>`
         : ''}
+        
+${c.authorization_letter
+  ? `<div class="mt-2">
+       <a href="http://127.0.0.1:8000${c.authorization_letter}" target="_blank"
+          class="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm">
+         <i class="ri-file-text-line"></i> View Authorization Letter
+       </a>
+     </div>`
+  : '<p class="text-xs text-amber-600 mt-2"><i class="ri-alert-line mr-1"></i>No document attached</p>'
+}
 
 </div>
 

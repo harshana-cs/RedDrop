@@ -741,15 +741,42 @@
       <!-- ================= STOCK HISTORY ================= -->
       <section id="history" class="tab-section hidden space-y-6">
         <div class="bg-white p-6 rounded-xl shadow">
-          <div class="flex justify-between items-center mb-6">
+          <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
             <h3 class="text-xl font-semibold">Stock Transaction History</h3>
-            <div class="flex space-x-3">
-              <input type="date" id="historyStartDate" class="border p-2 rounded">
-              <input type="date" id="historyEndDate" class="border p-2 rounded">
-              <button onclick="loadStockHistory()" class="px-4 py-2 bg-blue-600 text-white rounded">
-                Filter
+            <div class="flex flex-wrap items-end gap-2">
+              <div class="flex flex-col">
+                <label for="historyStartDate" class="text-xs text-gray-500 mb-1">From</label>
+                <input type="date" id="historyStartDate" class="border p-2 rounded">
+              </div>
+              <div class="flex flex-col">
+                <label for="historyEndDate" class="text-xs text-gray-500 mb-1">To</label>
+                <input type="date" id="historyEndDate" class="border p-2 rounded">
+              </div>
+              <div class="flex flex-col">
+                <label for="historyTxnType" class="text-xs text-gray-500 mb-1">Type</label>
+                <select id="historyTxnType" class="border p-2 rounded">
+                  <option value="">All</option>
+                  <option value="add">Addition</option>
+                  <option value="remove">Removal</option>
+                </select>
+              </div>
+              <button onclick="loadStockHistory()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                <i class="fas fa-filter mr-1"></i> Filter
+              </button>
+              <button onclick="clearHistoryFilter()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded">
+                <i class="fas fa-times mr-1"></i> Clear
               </button>
             </div>
+          </div>
+
+          <!-- Quick date range presets -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="text-xs text-gray-500 self-center mr-1">Quick range:</span>
+            <button type="button" onclick="setHistoryDateRange('today')" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full">Today</button>
+            <button type="button" onclick="setHistoryDateRange('7')" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full">Last 7 days</button>
+            <button type="button" onclick="setHistoryDateRange('30')" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full">Last 30 days</button>
+            <button type="button" onclick="setHistoryDateRange('month')" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full">This month</button>
+            <button type="button" onclick="setHistoryDateRange('all')" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full">All time</button>
           </div>
 
           <div class="overflow-x-auto">
@@ -1492,23 +1519,101 @@ let stockDistributionChartInstance = null;
     try {
       const startDate = document.getElementById('historyStartDate').value;
       const endDate = document.getElementById('historyEndDate').value;
-      
+      const txnType = document.getElementById('historyTxnType')
+        ? document.getElementById('historyTxnType').value
+        : '';
+
+      // Validate: start date must be <= end date
+      if (startDate && endDate && startDate > endDate) {
+        alert('Start date cannot be after end date.');
+        return;
+      }
+
       let url = "http://127.0.0.1:8000/api/hospital/stock-history/";
       const params = [];
-      if (startDate) params.push(`start_date=${startDate}`);
-      if (endDate) params.push(`end_date=${endDate}`);
+      if (startDate) params.push(`start_date=${encodeURIComponent(startDate)}`);
+      if (endDate) params.push(`end_date=${encodeURIComponent(endDate)}`);
+      if (txnType) params.push(`transaction_type=${encodeURIComponent(txnType)}`);
       if (params.length > 0) {
         url += '?' + params.join('&');
       }
-      
+
       const response = await fetch(url, {
         headers: authHeaders()
       });
-      const data = await response.json();
+      let data = await response.json();
+
+      // Client-side fallback filters (in case backend ignores query params)
+      if (Array.isArray(data)) {
+        if (startDate) {
+          const s = new Date(startDate + 'T00:00:00');
+          data = data.filter(t => new Date(t.timestamp) >= s);
+        }
+        if (endDate) {
+          const e = new Date(endDate + 'T23:59:59');
+          data = data.filter(t => new Date(t.timestamp) <= e);
+        }
+        if (txnType) {
+          data = data.filter(t => t.transaction_type === txnType);
+        }
+      }
+
       updateStockHistoryTable(data);
     } catch (error) {
       console.error('Error loading stock history:', error);
     }
+  }
+
+  // Reset all history filters and reload
+  function clearHistoryFilter() {
+    document.getElementById('historyStartDate').value = '';
+    document.getElementById('historyEndDate').value = '';
+    const typeEl = document.getElementById('historyTxnType');
+    if (typeEl) typeEl.value = '';
+    loadStockHistory();
+  }
+
+  // Apply a preset date range to the history filter and reload
+  function setHistoryDateRange(range) {
+    const startEl = document.getElementById('historyStartDate');
+    const endEl = document.getElementById('historyEndDate');
+    const today = new Date();
+    const fmt = (d) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+
+    let start = null;
+    let end = today;
+
+    switch (range) {
+      case 'today':
+        start = today;
+        break;
+      case '7':
+        start = new Date();
+        start.setDate(today.getDate() - 6);
+        break;
+      case '30':
+        start = new Date();
+        start.setDate(today.getDate() - 29);
+        break;
+      case 'month':
+        start = new Date(today.getFullYear(), today.getMonth(), 1);
+        break;
+      case 'all':
+      default:
+        startEl.value = '';
+        endEl.value = '';
+        loadStockHistory();
+        return;
+    }
+
+    startEl.value = fmt(start);
+    endEl.value = fmt(end);
+    loadStockHistory();
   }
 
   function updateStockHistoryTable(history) {

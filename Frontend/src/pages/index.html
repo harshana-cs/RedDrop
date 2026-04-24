@@ -393,17 +393,29 @@
         <input type="url" id="campMapLink" placeholder="https://maps.google.com/?q=..." class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
       </div>
 
-      <div class="flex items-center">
+      
+      <div id="campFormMessage" class="hidden p-3 rounded-lg text-sm"></div>
+      <div>
+  <label class="block text-gray-700 font-semibold mb-2">
+    Authorization Letter *
+    <span class="text-xs text-gray-400 font-normal ml-1">(PDF, JPG, PNG — max 5MB)</span>
+  </label>
+  <input type="file" id="campAuthLetter" accept=".pdf,.jpg,.jpeg,.png"
+    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+  <p class="text-xs text-gray-400 mt-1">
+    <i class="fas fa-info-circle mr-1"></i>
+    Upload a signed letter on official letterhead confirming you are authorized to organize this camp
+  </p>
+</div>
+<div class="flex items-center">
         <input type="checkbox" id="campUrgent" class="w-4 h-4 text-[#B91C1C] focus:ring-[#B91C1C]">
         <label class="ml-2 text-gray-700">Mark as Urgent (requires immediate attention)</label>
       </div>
-      
-      <div id="campFormMessage" class="hidden p-3 rounded-lg text-sm"></div>
-      
       <div class="flex gap-3 pt-4">
         <button type="button" onclick="closeCampModal()" class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition">Cancel</button>
         <button type="submit" class="flex-1 bg-[#B91C1C] text-white px-4 py-2 rounded-lg hover:bg-[#991B1B] transition font-semibold">Submit for Approval</button>
       </div>
+      
     </form>
   </div>
 </div>
@@ -416,9 +428,14 @@
         <h3 class="text-5xl font-bold gradient-text mb-4">Urgent Blood Requests</h3>
         <p class="text-gray-600 text-lg max-w-2xl mx-auto">These patients urgently need blood. If you are eligible, please help save a life.</p>
       </div>
-      <div id="bloodRequestContainer" class="grid md:grid-cols-3 gap-8">
-        <p class="text-center col-span-3 text-gray-500">Loading requests...</p>
-      </div>
+      <div id="bloodRequestContainer" class="grid md:grid-cols-3 gap-8"></div>
+
+<div id="showMoreWrap" class="text-center mt-8 hidden">
+  <button id="showMoreBtn" onclick="showMoreRequests()"
+    class="border border-gray-300 text-gray-600 px-8 py-3 rounded-full hover:bg-gray-50 transition font-medium">
+    <i class="fas fa-chevron-down mr-2"></i>Show more requests
+  </button>
+</div>
     </div>
   </section>
 
@@ -567,86 +584,139 @@
 
     // Submit camp registration
     document.getElementById('campRegistrationForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const formData = {
-            title: document.getElementById('campTitle').value,
-            description: document.getElementById('campDescription').value,
-            hospital_name: document.getElementById('campHospital').value,
-            location: document.getElementById('campLocation').value,
-            date: document.getElementById('campDate').value,
-            start_time: document.getElementById('campStartTime').value,
-            end_time: document.getElementById('campEndTime').value,
-            is_urgent: document.getElementById('campUrgent').checked,
-            contact_number: document.getElementById('campContact').value,
-            map_link: document.getElementById('campMapLink').value
-        };
-        
-        const messageDiv = document.getElementById('campFormMessage');
-        const submitBtn = e.target.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Submitting...';
-        
-        try {
-            const response = await fetch('http://127.0.0.1:8000/api/admin/partner/create-camp/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                messageDiv.className = 'p-3 rounded-lg text-sm bg-green-100 text-green-700';
-                messageDiv.innerHTML = '<i class="fas fa-check-circle mr-2"></i> ' + data.message;
-                messageDiv.classList.remove('hidden');
-                
-                setTimeout(() => {
-                    closeCampModal();
-                }, 2000);
-            } else {
-                messageDiv.className = 'p-3 rounded-lg text-sm bg-red-100 text-red-700';
-                messageDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i> ' + (data.message || 'Submission failed. Please try again.');
-                messageDiv.classList.remove('hidden');
-            }
-        } catch (error) {
-            console.error('Error submitting camp:', error);
-            messageDiv.className = 'p-3 rounded-lg text-sm bg-red-100 text-red-700';
-            messageDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i> Network error. Please check your connection and try again.';
-            messageDiv.classList.remove('hidden');
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-        }
-    });
+    e.preventDefault();
 
-    // Load blood requests
-    async function loadBloodRequests() {
-      try {
-        const response = await fetch("http://127.0.0.1:8000/blood_requests/api/public-requests/");
-        const data = await response.json();
-        const container = document.getElementById("bloodRequestContainer");
-        if(!container) return;
-        container.innerHTML = "";
-        if (!data.length) {
-          container.innerHTML = "<p class='text-center col-span-3 text-gray-500'>No urgent requests right now.</p>";
-          return;
-        }
-        data.forEach(req => {
-          const urgencyClass = req.urgency === "Critical" ? "urgent-badge" : "";
-          const card = `<div class="bg-[#FFF5F5] rounded-3xl p-6 shadow-lg border-l-4 border-[#B91C1C]"><div class="flex justify-between items-center mb-3"><h4 class="text-xl font-bold text-gray-800">${req.patient_name}</h4><span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm ${urgencyClass}">${req.blood_type}</span></div><p class="text-gray-600 mb-2"><strong>Units Needed:</strong> ${req.units}</p><p class="text-gray-600 mb-2"><strong>Hospital:</strong> ${req.hospital_name}</p><p class="text-gray-600 mb-4"><strong>Urgency:</strong> ${req.urgency}</p><a href="login-signup.html" class="block text-center bg-[#B91C1C] text-white py-2 rounded-lg hover:bg-[#991B1B] transition">Donate Now</a></div>`;
-          container.innerHTML += card;
-        });
-      } catch (error) {
-        console.error("Failed to load requests", error);
-        const container = document.getElementById("bloodRequestContainer");
-        if(container) container.innerHTML = "<p class='text-center col-span-3 text-gray-500'>Unable to load urgent requests. Please try again later.</p>";
-      }
+    const messageDiv = document.getElementById('campFormMessage');
+    const submitBtn  = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+
+    // ── Validate file ───────────────────────────────────────
+    const authFile = document.getElementById('campAuthLetter').files[0];
+    if (!authFile) {
+        messageDiv.className = 'p-3 rounded-lg text-sm bg-red-100 text-red-700';
+        messageDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>Please upload the authorization letter.';
+        messageDiv.classList.remove('hidden');
+        return;
     }
+    if (authFile.size > 5 * 1024 * 1024) {
+        messageDiv.className = 'p-3 rounded-lg text-sm bg-red-100 text-red-700';
+        messageDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>File size exceeds 5MB limit.';
+        messageDiv.classList.remove('hidden');
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Submitting...';
+
+    // ── Build FormData (supports file upload) ───────────────
+    const formData = new FormData();
+    formData.append('title',                document.getElementById('campTitle').value);
+    formData.append('description',          document.getElementById('campDescription').value);
+    formData.append('hospital_name',        document.getElementById('campHospital').value);
+    formData.append('location',             document.getElementById('campLocation').value);
+    formData.append('date',                 document.getElementById('campDate').value);
+    formData.append('start_time',           document.getElementById('campStartTime').value);
+    formData.append('end_time',             document.getElementById('campEndTime').value);
+    formData.append('is_urgent',            document.getElementById('campUrgent').checked);
+    formData.append('contact_number',       document.getElementById('campContact').value);
+    formData.append('map_link',             document.getElementById('campMapLink').value);
+    formData.append('authorization_letter', authFile);
+
+    try {
+        const response = await fetch('http://127.0.0.1:8000/api/admin/partner/create-camp/', {
+            method: 'POST',
+            // ← No Content-Type header — browser sets it automatically with boundary for FormData
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            messageDiv.className = 'p-3 rounded-lg text-sm bg-green-100 text-green-700';
+            messageDiv.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Camp submitted for approval!';
+            messageDiv.classList.remove('hidden');
+            setTimeout(() => closeCampModal(), 2000);
+        } else {
+            messageDiv.className = 'p-3 rounded-lg text-sm bg-red-100 text-red-700';
+            messageDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>' + (data.message || 'Submission failed.');
+            messageDiv.classList.remove('hidden');
+        }
+    } catch (error) {
+        messageDiv.className = 'p-3 rounded-lg text-sm bg-red-100 text-red-700';
+        messageDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>Network error. Please try again.';
+        messageDiv.classList.remove('hidden');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+});
+
+    const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+let _olderRequests = [];
+
+function timeAgo(iso) {
+  if (!iso) return "";
+  const h = Math.floor((Date.now() - new Date(iso).getTime()) / 3600000);
+  if (h < 1) return "Just now";
+  if (h < 24) return h + "h ago";
+  return Math.floor(h / 24) + "d ago";
+}
+
+function buildRequestCard(req) {
+  const urgencyClass = req.urgency === "Critical" ? "urgent-badge" : "";
+  return `
+    <div class="bg-[#FFF5F5] rounded-3xl p-6 shadow-lg border-l-4 border-[#B91C1C]">
+      <div class="flex justify-between items-center mb-3">
+        <h4 class="text-xl font-bold text-gray-800">${req.patient_name}</h4>
+        <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm ${urgencyClass}">${req.blood_type}</span>
+      </div>
+      <p class="text-gray-600 mb-1"><strong>Units Needed:</strong> ${req.units}</p>
+      <p class="text-gray-600 mb-1"><strong>Hospital:</strong> ${req.hospital_name}</p>
+      <p class="text-gray-600 mb-1"><strong>Urgency:</strong> ${req.urgency}</p>
+      ${req.created_at ? `<p class="text-gray-400 text-sm mb-3">${timeAgo(req.created_at)}</p>` : "<div class='mb-3'></div>"}
+      <a href="login-signup.html"
+         class="block text-center bg-[#B91C1C] text-white py-2 rounded-lg hover:bg-[#991B1B] transition">
+        Donate Now
+      </a>
+    </div>`;
+}
+
+async function loadBloodRequests() {
+  const container = document.getElementById("bloodRequestContainer");
+  const moreWrap  = document.getElementById("showMoreWrap");
+  if (!container) return;
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/blood_requests/api/public-requests/");
+    const data = await response.json();
+
+    if (!data.length) {
+      container.innerHTML = "<p class='text-center col-span-3 text-gray-500'>No urgent requests right now.</p>";
+      return;
+    }
+
+    const now = Date.now();
+    const recent = data.filter(r => !r.created_at || (now - new Date(r.created_at).getTime()) <= TWO_DAYS_MS);
+    _olderRequests = data.filter(r => r.created_at  && (now - new Date(r.created_at).getTime()) >  TWO_DAYS_MS);
+
+    container.innerHTML = recent.length
+      ? recent.map(buildRequestCard).join("")
+      : "<p class='text-center col-span-3 text-gray-500'>No requests in the last 2 days.</p>";
+
+    if (moreWrap) moreWrap.classList.toggle("hidden", _olderRequests.length === 0);
+
+  } catch (error) {
+    console.error("Failed to load requests", error);
+    container.innerHTML = "<p class='text-center col-span-3 text-gray-500'>Unable to load urgent requests.</p>";
+  }
+}
+
+function showMoreRequests() {
+  const container = document.getElementById("bloodRequestContainer");
+  const moreWrap  = document.getElementById("showMoreWrap");
+  container.innerHTML += _olderRequests.map(buildRequestCard).join("");
+  if (moreWrap) moreWrap.classList.add("hidden");
+}
 
     // Admin modal functions
     function openAdminModal(){ document.getElementById("adminModal")?.classList.remove("hidden"); }

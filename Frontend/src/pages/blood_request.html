@@ -237,70 +237,85 @@
     <div class="particle" style="top: 80%; left: 70%; animation-delay: 8s;"></div>
   </div>
 
-  <!-- Enhanced Header -->
-  <header class="bg-gradient-to-r from-[#B91C1C] via-[#b12a2a] to-[#991B1B] text-white fixed top-0 left-0 w-full z-50 shadow-2xl backdrop-blur-md bg-opacity-95 border-b border-red-400/30">
-    <nav class="container mx-auto flex items-center justify-between py-3 px-6">
+ <header class="bg-gradient-to-r from-[#B91C1C] via-[#b12a2a] to-[#991B1B] text-white fixed top-0 left-0 w-full z-50 shadow-2xl backdrop-blur-md bg-opacity-95 border-b border-red-400/30">
+  <nav class="container mx-auto flex items-center justify-between py-3 px-6">
 
-      <!-- Logo with enhanced animation -->
-      <div class="flex items-center space-x-3 group cursor-pointer">
-        <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-500 border-2 border-white/30">
-          <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-inner">
-            <i class="fas fa-tint text-[#e03636] text-2xl animate-pulse-slow"></i>
-          </div>
+    <!-- Logo -->
+    <div class="flex items-center space-x-3 group cursor-pointer">
+      <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-500 border-2 border-white/30">
+        <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-inner">
+          <i class="fas fa-tint text-[#e03636] text-2xl"></i>
         </div>
-
-        <a href="index.html" class="ml-2">
-          <h1 class="text-3xl font-bold tracking-wide">
-            Red<span class="font-extrabold text-yellow-300 drop-shadow-lg">Drop</span>
-          </h1>
-          <p class="text-xs text-red-200 mt-0.5 tracking-wider">SAVE LIVES • DONATE BLOOD</p>
-        </a>
       </div>
+      <a href="index.html" class="ml-2">
+        <h1 class="text-3xl font-bold tracking-wide">
+          Red<span class="font-extrabold text-yellow-300 drop-shadow-lg">Drop</span>
+        </h1>
+        <p class="text-xs text-red-200 mt-0.5 tracking-wider">SAVE LIVES • DONATE BLOOD</p>
+      </a>
+    </div>
 
-      <div class="flex items-center gap-4 ml-auto">
+    <!-- Back to Dashboard -->
+    <a href="dashboard.html"
+       class="flex items-center gap-2 text-white hover:text-yellow-300 transition-all duration-300 px-4 py-2 hover:bg-white/10 rounded-xl font-medium text-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      <span class="hidden sm:inline">Back to Dashboard</span>
+    </a>
 
-        <!-- Enhanced Notification -->
-        <div class="relative">
-          <button onclick="toggleNotifications()" class="relative text-white text-xl hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 hover:rotate-12 p-3 hover:bg-white/10 rounded-xl">
-            <i class="fas fa-bell"></i>
+    <!-- Notification + Profile -->
+    <div class="flex items-center gap-4">
 
-            <span id="notificationBadge" class="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-xs px-2 py-1 rounded-full hidden animate-bounce font-bold shadow-lg">
-              0
-            </span>
-          </button>
-
-          <div id="notificationDropdown" class="hidden absolute right-0 mt-3 w-96 bg-white/95 backdrop-blur-md text-gray-800 rounded-2xl shadow-2xl border border-red-200 transform transition-all duration-300 origin-top-right">
-            <div class="p-5 border-b bg-gradient-to-r from-red-50 to-white rounded-t-2xl">
-              <div class="flex items-center justify-between">
-                <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
-                  <i class="fas fa-bell text-red-600"></i>Notifications
-                </h3>
-                <span class="text-xs text-red-600 cursor-pointer hover:underline flex items-center gap-1">
-                  <i class="fas fa-check-circle"></i>Mark all as read
-                </span>
-              </div>
-            </div>
-            <div id="notificationList" class="max-h-80 overflow-y-auto"></div>
-            <div class="p-3 border-t text-center">
-              <button class="text-sm text-red-600 hover:text-red-800 font-medium hover:underline transition-all duration-300">
-                View all notifications
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Enhanced Profile Icon -->
-        <button onclick="showSection('profile')" class="text-white text-xl hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 relative group p-2 hover:bg-white/10 rounded-xl">
-          <i class="fas fa-user-circle text-2xl"></i>
-          <span class="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-2.5 h-2.5 bg-green-400 rounded-full pulse-ring"></span>
-          <span class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
-            Profile
+      <!-- Notification Bell -->
+      <div class="relative">
+        <button onclick="toggleNotifications()"
+          class="relative text-white text-xl hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 hover:rotate-12 p-3 hover:bg-white/10 rounded-xl">
+          <i class="fas fa-bell"></i>
+          <span id="notificationBadge"
+            class="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-xs px-2 py-1 rounded-full hidden animate-bounce font-bold shadow-lg">
+            0
           </span>
         </button>
+        <div id="notificationDropdown"
+          class="hidden absolute right-0 mt-3 w-96 bg-white/95 backdrop-blur-md text-gray-800 rounded-2xl shadow-2xl border border-red-200 z-50">
+          <div class="p-5 border-b bg-gradient-to-r from-red-50 to-white rounded-t-2xl">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <i class="fas fa-bell text-red-600"></i> Notifications
+              </h3>
+              <span onclick="markAllRead()"
+                class="text-xs text-red-600 cursor-pointer hover:underline flex items-center gap-1">
+                <i class="fas fa-check-circle"></i> Mark all as read
+              </span>
+            </div>
+          </div>
+          <div id="notificationList" class="max-h-80 overflow-y-auto">
+            <div class="p-6 text-center text-gray-400 text-sm">
+              <i class="fas fa-bell-slash text-2xl mb-2 block"></i>
+              No notifications yet
+            </div>
+          </div>
+          <div class="p-3 border-t text-center">
+            <a href="dashboard.html" class="text-sm text-red-600 hover:text-red-800 font-medium hover:underline">
+              View all in dashboard
+            </a>
+          </div>
+        </div>
       </div>
-    </nav>
-  </header>
 
+      <!-- Profile -->
+      <button onclick="window.location.href='dashboard.html?tab=profile'"
+        class="text-white text-xl hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 relative group p-2 hover:bg-white/10 rounded-xl">
+        <i class="fas fa-user-circle text-2xl"></i>
+        <span class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">
+          Profile
+        </span>
+      </button>
+
+    </div>
+  </nav>
+</header>
 <div class="min-h-screen flex pt-16 w-full">
 
 
@@ -357,7 +372,7 @@
                             </div>
                         </div>
                     </div>
-                    <form id="bloodRequestForm" class="p-8 space-y-8" onsubmit="return false;">
+                    <form id="bloodRequestForm" class="p-8 space-y-8" onsubmit="event.preventDefault(); return false;">
                         <!-- Blood Group and Units -->
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <div class="space-y-3">
@@ -386,17 +401,17 @@
                             </div>
 
                             <div class="space-y-3">
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Units Required *</label>
-                                <div class="relative">
-                                    <input type="number" min="1" max="10" id="unitsRequired" required 
-                                           class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
-                                           placeholder="Enter number of units (1-10)">
-                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                                        <span class="text-gray-500">units</span>
-                                    </div>
-                                </div>
-                                <p class="text-xs text-gray-500">Each unit is approximately 450ml of blood</p>
-                            </div>
+    <label class="block text-sm font-semibold text-gray-700 mb-2">Units Required *</label>
+    <div class="relative">
+        <input type="number" min="1" max="10" id="unitsRequired" value="1"
+               class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
+               placeholder="Enter number of units (1-10)">
+        <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+            <span class="text-gray-500">units</span>
+        </div>
+    </div>
+    <p class="text-xs text-gray-500">Each unit is approximately 450ml of blood</p>
+</div>
                         </div>
 
                         <!-- Urgency Level -->
@@ -588,13 +603,16 @@
                         </div>
 
                         <!-- Reason for Request -->
-                        <div class="space-y-3">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Reason for Blood Request *</label>
-                            <textarea rows="4" required id="reason" 
-                                      class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
-                                      placeholder="Please describe the reason for blood request (surgery, accident, medical condition, etc.)"></textarea>
-                            <p class="text-xs text-gray-500">Be specific about the medical need</p>
-                        </div>
+                       <div class="space-y-3">
+    <label class="block text-sm font-semibold text-gray-700 mb-2">
+        Reason for Blood Request 
+        <span class="text-gray-400 font-normal text-xs">(optional)</span>
+    </label>
+    <textarea rows="4" id="reason"
+        class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
+        placeholder="Describe the reason (surgery, accident, medical condition, etc.)"></textarea>
+    <p class="text-xs text-gray-500">Providing a reason helps admin approve faster</p>
+</div>
 
                         <!-- Contact Information -->
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -664,7 +682,7 @@
                                 <div>
                                     <label class="block mb-4">
                                         <span class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                            Doctor's Note / Prescription *
+                                            Doctor's Note / Prescription 
                                             <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">PDF, JPG, PNG up to 5MB</span>
                                         </span>
                                     </label>
@@ -758,18 +776,48 @@
     </main>
 
     <!-- Notification Toast -->
-    <div id="notification" class="fixed bottom-4 right-4 hidden animate-fade-in z-50">
-        <div class="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3">
-            <i class="fas fa-check-circle"></i>
-            <span id="notificationText" class="font-medium"></span>
+    <div class="relative">
+    <button onclick="toggleNotifications()" 
+        class="relative text-white text-xl hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 hover:rotate-12 p-3 hover:bg-white/10 rounded-xl">
+        <i class="fas fa-bell"></i>
+        <span id="notificationBadge" 
+            class="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-xs px-2 py-1 rounded-full hidden animate-bounce font-bold shadow-lg">
+            0
+        </span>
+    </button>
+
+    <div id="notificationDropdown" 
+        class="hidden absolute right-0 mt-3 w-96 bg-white/95 backdrop-blur-md text-gray-800 rounded-2xl shadow-2xl border border-red-200 z-50">
+        <div class="p-5 border-b bg-gradient-to-r from-red-50 to-white rounded-t-2xl">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-bell text-red-600"></i> Notifications
+                </h3>
+                <span onclick="markAllRead()"
+    class="text-xs text-red-600 cursor-pointer hover:underline flex items-center gap-1">
+    <i class="fas fa-check-circle"></i>Mark all as read
+</span>
+            </div>
+        </div>
+        <div id="notificationList" class="max-h-80 overflow-y-auto">
+            <div class="p-6 text-center text-gray-400 text-sm">
+                <i class="fas fa-bell-slash text-2xl mb-2 block"></i>
+                No notifications yet
+            </div>
+        </div>
+        <div class="p-3 border-t text-center">
+            <a href="dashboard.html" class="text-sm text-red-600 hover:text-red-800 font-medium hover:underline">
+                View all in dashboard
+            </a>
         </div>
     </div>
+</div>
 <!-- Blood Request Flow Modal -->
 <div id="brfModal" class="brf-backdrop" style="display:none" onclick="brfBackdropClick(event)">
     <div id="brfCard" class="brf-card"></div>
 </div>
-   <script>
-   
+  <script>
+
 // ============================================================
 // BLOOD GROUP COMPATIBILITY
 // ============================================================
@@ -869,15 +917,51 @@ const hospitalsByDistrict = {
 };
 
 // ============================================================
+// TOAST (replaces showNotification — no missing DOM needed)
+// ============================================================
+function showToast(message, isError = false) {
+    document.getElementById('_toast')?.remove();
+    const toast = document.createElement('div');
+    toast.id = '_toast';
+    toast.style.cssText = `
+        position:fixed; bottom:1.5rem; right:1.5rem; z-index:99999;
+        padding:.85rem 1.25rem; border-radius:12px; font-size:14px;
+        font-weight:600; color:#fff; max-width:360px;
+        box-shadow:0 8px 24px rgba(0,0,0,.2);
+        background:${isError ? 'linear-gradient(135deg,#B91C1C,#991B1B)' : 'linear-gradient(135deg,#16a34a,#15803d)'};
+        display:flex; align-items:center; gap:10px;
+        animation:_toastIn .3s ease;
+    `;
+    toast.innerHTML = `
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            ${isError
+                ? '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'
+                : '<polyline points="20 6 9 17 4 12"/>'}
+        </svg>
+        <span>${message}</span>`;
+    if (!document.getElementById('_toastCSS')) {
+        const s = document.createElement('style');
+        s.id = '_toastCSS';
+        s.textContent = '@keyframes _toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}';
+        document.head.appendChild(s);
+    }
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
+}
+
+// Keep old name working too (called from a few places)
+function showNotification(message, isError = false) {
+    showToast(message, isError);
+}
+
+// ============================================================
 // VALIDATION HELPERS
 // ============================================================
-
 function setFieldError(inputEl, message) {
     if (!inputEl) return;
     inputEl.classList.add('border-red-500', 'bg-red-50');
     inputEl.classList.remove('border-gray-300');
-    const existing = inputEl.parentElement.querySelector('.field-error-msg');
-    if (existing) existing.remove();
+    inputEl.parentElement.querySelector('.field-error-msg')?.remove();
     const msg = document.createElement('p');
     msg.className = 'field-error-msg text-xs text-red-600 mt-1 flex items-center gap-1';
     msg.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
@@ -888,8 +972,7 @@ function clearFieldError(inputEl) {
     if (!inputEl) return;
     inputEl.classList.remove('border-red-500', 'bg-red-50');
     inputEl.classList.add('border-gray-300');
-    const existing = inputEl.parentElement.querySelector('.field-error-msg');
-    if (existing) existing.remove();
+    inputEl.parentElement.querySelector('.field-error-msg')?.remove();
 }
 
 function setUrgencyError(show) {
@@ -909,22 +992,19 @@ function setUrgencyError(show) {
 }
 
 function setFileError(fieldId, message) {
-    const statusEl = document.getElementById(fieldId + '-status');
-    const existing = document.getElementById(fieldId + '-error-msg');
-    if (existing) existing.remove();
+    document.getElementById(fieldId + '-error-msg')?.remove();
     if (message) {
         const msg = document.createElement('p');
         msg.id = fieldId + '-error-msg';
         msg.className = 'text-xs text-red-600 mt-2 flex items-center gap-1';
         msg.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
-        statusEl?.parentElement.appendChild(msg);
+        document.getElementById(fieldId + '-status')?.parentElement.appendChild(msg);
     }
 }
 
 // ============================================================
 // FULL FORM VALIDATION
 // ============================================================
-
 function validateForm() {
     let isValid = true;
     const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -959,17 +1039,17 @@ function validateForm() {
     } else { clearFieldError(hospitalEl); }
 
     const dateEl = document.getElementById('requiredDate');
-    const selectedDate = dateEl.value ? new Date(dateEl.value) : null;
-    if (!dateEl.value || selectedDate < today) {
-        setFieldError(dateEl, 'Please select today or a future date.');
+    if (dateEl.value) {
+        const selectedDate = new Date(dateEl.value);
+        selectedDate.setHours(0, 0, 0, 0);
+        if (selectedDate < today) {
+            setFieldError(dateEl, 'Please select today or a future date.');
+            isValid = false;
+        } else { clearFieldError(dateEl); }
+    } else {
+        setFieldError(dateEl, 'Please select the required date.');
         isValid = false;
-    } else { clearFieldError(dateEl); }
-
-    const reasonEl = document.getElementById('reason');
-    if (!reasonEl.value.trim() || reasonEl.value.trim().length < 10) {
-        setFieldError(reasonEl, 'Please describe the reason (at least 10 characters).');
-        isValid = false;
-    } else { clearFieldError(reasonEl); }
+    }
 
     const nameEl = document.getElementById('contactName');
     if (!nameEl.value.trim() || !/^[A-Za-z\s'.]{2,}$/.test(nameEl.value.trim())) {
@@ -993,10 +1073,7 @@ function validateForm() {
     } else { setFileError('hospitalDoc', null); }
 
     const doctorNote = document.getElementById('doctorNote')?.files[0];
-    if (!doctorNote) {
-        setFileError('doctorNote', "Please upload the doctor's note or prescription.");
-        isValid = false;
-    } else if (doctorNote.size > 5 * 1024 * 1024) {
+    if (doctorNote && doctorNote.size > 5 * 1024 * 1024) {
         setFileError('doctorNote', 'File size exceeds 5MB limit.');
         isValid = false;
     } else { setFileError('doctorNote', null); }
@@ -1005,296 +1082,193 @@ function validateForm() {
 }
 
 // ============================================================
-// NOTIFICATION TOAST
-// ============================================================
-
-function showNotification(message, isError = false) {
-    const notification = document.getElementById('notification');
-    const text = document.getElementById('notificationText');
-    const inner = notification?.querySelector('div');
-    if (!notification || !text) return;
-    text.textContent = message;
-    inner.className = isError
-        ? 'bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3'
-        : 'bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3';
-    notification.classList.remove('hidden');
-    setTimeout(() => notification.classList.add('hidden'), 3000);
-}
-
-// ============================================================
 // FILE UPLOAD HANDLER
 // ============================================================
-
 function handleFileUpload(fieldId, input) {
-    if (input.files && input.files[0]) {
-        const file = input.files[0];
-        setFileError(fieldId, null);
-        if (file.size > 5 * 1024 * 1024) {
-            setFileError(fieldId, 'File size exceeds 5MB limit. Please choose a smaller file.');
-            input.value = '';
-            document.getElementById(fieldId + '-status')?.classList.add('hidden');
-            return;
-        }
-        const status = document.getElementById(fieldId + '-status');
-        const nameSpan = document.getElementById(fieldId + '-name');
-        if (status && nameSpan) {
-            nameSpan.textContent = file.name;
-            status.classList.remove('hidden');
-        }
+    if (!input.files?.[0]) return;
+    const file = input.files[0];
+    setFileError(fieldId, null);
+    if (file.size > 5 * 1024 * 1024) {
+        setFileError(fieldId, 'File size exceeds 5MB. Please choose a smaller file.');
+        input.value = '';
+        document.getElementById(fieldId + '-status')?.classList.add('hidden');
+        return;
     }
+    const nameSpan = document.getElementById(fieldId + '-name');
+    const status   = document.getElementById(fieldId + '-status');
+    if (nameSpan) nameSpan.textContent = file.name;
+    if (status)   status.classList.remove('hidden');
 }
 
 // ============================================================
-// FIXED: Submit Button Handler - NO PAGE RELOAD
+// DOM CONTENT LOADED
 // ============================================================
-
 document.addEventListener("DOMContentLoaded", function () {
-    // ADD THIS ⬇️
+
+    const form      = document.getElementById("bloodRequestForm");
+    const submitBtn = document.getElementById("submitBtn");
+
+    if (!form || !submitBtn) {
+        console.error("Form or submit button not found");
+        return;
+    }
+
+    // ── Block ALL native form submission ──────────────────────
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        return false;
+    });
+
+    // ── District → Hospital ───────────────────────────────────
     const districtSelect = document.getElementById("districtSelect");
     const hospitalSelect = document.getElementById("hospitalSelect");
-    
     if (districtSelect && hospitalSelect) {
         districtSelect.addEventListener("change", function () {
             const hospitals = hospitalsByDistrict[this.value] || [];
             hospitalSelect.innerHTML = '<option value="">Select Hospital</option>';
-            
             hospitals.forEach(h => {
                 const opt = document.createElement("option");
-                opt.value = h;
-                opt.textContent = h;
+                opt.value = h; opt.textContent = h;
                 hospitalSelect.appendChild(opt);
             });
-            
             const other = document.createElement("option");
-            other.value = "Other";
-            other.textContent = "Other";
+            other.value = "Other"; other.textContent = "Other";
             hospitalSelect.appendChild(other);
         });
     }
-    const submitBtn = document.getElementById("submitBtn");
-    const form = document.getElementById("bloodRequestForm");
 
-    if (!submitBtn || !form) {
-        console.error("Submit button or form not found");
-        return;
+    // ── Set min date to today ─────────────────────────────────
+    const dateInput = document.getElementById('requiredDate');
+    if (dateInput) {
+        const t  = new Date();
+        const yy = t.getFullYear();
+        const mm = String(t.getMonth() + 1).padStart(2, '0');
+        const dd = String(t.getDate()).padStart(2, '0');
+        dateInput.min = `${yy}-${mm}-${dd}`;
     }
 
-    // Remove duplicate listeners
+    // ── Clone button to remove any prior listeners ────────────
     submitBtn.replaceWith(submitBtn.cloneNode(true));
-    const newSubmitBtn = document.getElementById("submitBtn");
+    const btn = document.getElementById("submitBtn");
 
-    newSubmitBtn.addEventListener("click", async function (e) {
-        // CRITICAL: Always prevent default
+    // ── Submit handler ────────────────────────────────────────
+    btn.addEventListener("click", async function (e) {
         e.preventDefault();
         e.stopPropagation();
+        e.stopImmediatePropagation();
 
-        // Prevent duplicate submissions
-        if (form.dataset.submitting === "true") {
-            console.log("Already submitting...");
-            return;
-        }
+        if (form.dataset.submitting === "true") return;
 
-        // Validate
         if (!validateForm()) {
-            const firstError = document.querySelector('.field-error-msg, #urgency-error-msg');
-            firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            showNotification("Please fix the errors before submitting.", true);
+            document.querySelector('.field-error-msg, #urgency-error-msg')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            showToast("Please fix the errors before submitting.", true);
             return;
         }
 
-        // Check authentication
         const token = localStorage.getItem("access_token");
         if (!token) {
-            showNotification("You must be logged in to request blood.", true);
-            window.location.href = "login.html";
+            showToast("You must be logged in to request blood.", true);
+            setTimeout(() => window.location.href = "login-signup.html", 1500);
             return;
         }
 
-        // Lock form
+        // Lock
         form.dataset.submitting = "true";
-        const originalBtnHTML = newSubmitBtn.innerHTML;
-        newSubmitBtn.disabled = true;
-        newSubmitBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i><span>Processing...</span>`;
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `
+            <svg class="animate-spin inline h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+            </svg>Processing...`;
 
-        // Collect form data
+        // Build FormData
         const formData = new FormData();
         formData.append("blood_type",     document.getElementById("bloodGroup").value);
         formData.append("units_required", document.getElementById("unitsRequired").value);
         formData.append("district",       document.getElementById("districtSelect").value);
         formData.append("hospital",       document.getElementById("hospitalSelect").value);
         formData.append("required_date",  document.getElementById("requiredDate").value);
-        formData.append("reason",         document.getElementById("reason").value);
+        formData.append("reason",         document.getElementById("reason").value || "");
         formData.append("contact_name",   document.getElementById("contactName").value);
         formData.append("contact_phone",  document.getElementById("contactPhone").value);
         formData.append("urgency",        document.querySelector('input[name="urgency"]:checked')?.value || "Normal");
 
-        const hDoc = document.getElementById("hospitalDoc")?.files[0];
+        const hDoc  = document.getElementById("hospitalDoc")?.files[0];
         const dNote = document.getElementById("doctorNote")?.files[0];
-        if (hDoc) formData.append("hospital_doc", hDoc);
-        if (dNote) formData.append("doctor_note", dNote);
+        if (hDoc)  formData.append("hospital_doc", hDoc);
+        if (dNote) formData.append("doctor_note",  dNote);
 
-        showNotification("Sending your request...");
+        showToast("Sending your request...");
 
         try {
             const response = await fetch("http://127.0.0.1:8000/blood_requests/api/create/", {
                 method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                },
+                headers: { "Authorization": `Bearer ${token}` },
                 body: formData
             });
 
             if (response.ok) {
                 const payload = await response.json();
-                console.log("✅ API returned 201!", payload);
+                console.log("✅ Request created:", payload);
 
+                // Reset form
                 form.reset();
                 document.getElementById("hospitalDoc-status")?.classList.add("hidden");
                 document.getElementById("doctorNote-status")?.classList.add("hidden");
 
-                // Show request flow modal (submitted → awaiting admin review)
+                // Show BRF modal — stays on page, NO redirect
                 showBloodRequestFlow("submitted", { requestId: payload?.id });
-                return; // STOP HERE
+
             } else {
                 let errorMsg = "Submission failed. Please try again.";
                 try {
                     const data = await response.json();
                     errorMsg = data.message || data.detail || errorMsg;
                 } catch (_) {}
-                
-                showNotification(errorMsg, true);
+                showToast(errorMsg, true);
             }
+
         } catch (err) {
             console.error("Network error:", err);
-            showNotification("Network error. Please check your connection and try again.", true);
+            showToast("Network error. Please check your connection.", true);
+
         } finally {
-            // Always unlock button
             form.dataset.submitting = "false";
-            newSubmitBtn.disabled = false;
-            newSubmitBtn.innerHTML = originalBtnHTML;
+            btn.disabled  = false;
+            btn.innerHTML = originalHTML;
         }
     });
+
+    // ── Load notification badge on page load ──────────────────
+    const token = localStorage.getItem('access_token');
+    if (token) {
+        fetch('http://127.0.0.1:8000/blood_requests/api/patient-notifications/', {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(r => r.ok ? r.json() : [])
+        .then(data => {
+            if (!Array.isArray(data)) return;
+            const unread = data.filter(n => !n.is_read).length;
+            const badge  = document.getElementById('notificationBadge');
+            if (unread > 0 && badge) {
+                badge.textContent = unread;
+                badge.classList.remove('hidden');
+            }
+        })
+        .catch(() => {});
+    }
 });
 
 // ============================================================
-// NEW SUCCESS OVERLAY - Does NOT reload the page
+// BRF — Blood Request Flow Modal
 // ============================================================
-
-function showSuccessOverlay() {
-    const overlay = document.createElement("div");
-    overlay.id = "successOverlay";
-    overlay.style.cssText = `
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.6);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-    `;
-    
-    overlay.innerHTML = `
-        <div style="
-            background: white;
-            border-radius: 16px;
-            padding: 40px;
-            max-width: 440px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-        ">
-            <div style="
-                width: 72px;
-                height: 72px;
-                background: #dcfce7;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin: 0 auto 20px;
-            ">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
-                     stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-            </div>
-            
-            <h2 style="
-                font-size: 22px;
-                font-weight: 600;
-                color: #111;
-                margin: 0 0 10px;
-            ">Request Submitted Successfully!</h2>
-            
-            <p style="
-                font-size: 15px;
-                color: #666;
-                margin: 0 0 24px;
-                line-height: 1.6;
-            ">
-                Your blood request is <strong style="color: #16a34a;">pending admin review</strong>.<br>
-                <span style="font-size: 13px; color: #999;">We'll notify you once it's approved.</span>
-            </p>
-            
-            <div style="
-                background: #f0fdf4;
-                border: 1px solid #86efac;
-                border-radius: 10px;
-                padding: 12px;
-                margin-bottom: 20px;
-                font-size: 13px;
-                color: #166534;
-            ">
-                ⏱ <strong>Typical wait:</strong> 30 minutes during business hours
-            </div>
-            
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <button id="viewHistoryBtn" style="
-                    background: linear-gradient(135deg, #B91C1C, #991B1B);
-                    color: white;
-                    border: none;
-                    padding: 13px;
-                    border-radius: 10px;
-                    font-size: 15px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    width: 100%;
-                ">View My Requests</button>
-                <button id="closeSuccessBtn" style="
-                    background: #f3f4f6;
-                    color: #374151;
-                    border: none;
-                    padding: 11px;
-                    border-radius: 10px;
-                    font-size: 14px;
-                    cursor: pointer;
-                    width: 100%;
-                ">Close</button>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(overlay);
-
-    document.getElementById("viewHistoryBtn").addEventListener("click", () => {
-        document.body.removeChild(overlay);
-        window.location.href = "dashboard.html?tab=history";
-    });
-
-    document.getElementById("closeSuccessBtn").addEventListener("click", () => {
-        document.body.removeChild(overlay);
-    });
-}
-// ============================================================
-// BLOOD REQUEST FLOW MODAL (unchanged)
-// ============================================================
-
 const BRF = {
-    stage: null,
-    tierData: { t1: 0, t2: 0, t3: 0, t4: 0, currentTier: 0, total: 0 },
-    donorData: null,
-    requestId: null,
-    pollTimer: null,
+    stage: null, requestId: null, pollTimer: null,
+    tierData: { t1:0, t2:0, t3:0, t4:0, currentTier:0, total:0 },
 };
 
 function showBloodRequestFlow(stage, payload = {}) {
@@ -1302,12 +1276,10 @@ function showBloodRequestFlow(stage, payload = {}) {
     if (payload.requestId) BRF.requestId = payload.requestId;
     const modal = document.getElementById('brfModal');
     const card  = document.getElementById('brfCard');
-    card.className = `brf-card brf-stage-${stage}`;
-    card.innerHTML = brfRender(stage, payload);
+    card.className  = `brf-card brf-stage-${stage}`;
+    card.innerHTML  = brfRender(stage, payload);
     modal.style.display = 'flex';
-    if (stage === 'approved' || stage === 'searching') {
-        brfStartPolling();
-    }
+    if (stage === 'approved' || stage === 'searching') brfStartPolling();
 }
 
 function brfClose() {
@@ -1316,9 +1288,7 @@ function brfClose() {
 }
 
 function brfBackdropClick(e) {
-    if (e.target.id === 'brfModal' && (BRF.stage === 'found' || BRF.stage === 'submitted')) {
-        brfClose();
-    }
+    if (e.target.id === 'brfModal' && ['submitted','found'].includes(BRF.stage)) brfClose();
 }
 
 function brfRender(stage, payload) {
@@ -1346,18 +1316,16 @@ function brfSubmitted() {
       <p class="brf-sub">Your blood request is now in the queue for admin review. You'll be notified the moment it's approved.</p>
     </div>
     <div style="padding:0 1.75rem">
-      <div style="display:flex;flex-direction:column;gap:0">
-        ${brfStep('done',   '1', 'Request submitted',  'Received by the system')}
-        ${brfStep('active', '2', 'Admin review',        'An admin will verify your documents')}
-        ${brfStep('idle',   '3', 'Searching donors',    'Nearby compatible donors alerted')}
-        ${brfStep('idle',   '4', 'Donor matched',       'Confirmation & OTP exchange')}
-      </div>
+      ${brfStep('done',   '1', 'Request submitted', 'Received by the system')}
+      ${brfStep('active', '2', 'Admin review',       'An admin will verify your documents')}
+      ${brfStep('idle',   '3', 'Searching donors',   'Nearby compatible donors alerted')}
+      ${brfStep('idle',   '4', 'Donor matched',      'Confirmation & OTP exchange')}
     </div>
     <div style="margin:1.25rem 1.75rem 0;padding:.9rem 1rem;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;font-size:.82rem;color:#92400e;line-height:1.5">
       <strong style="color:#78350f">⏱ Typical wait:</strong> Admin reviews usually complete within 30 minutes during business hours.
     </div>
     <div class="brf-actions">
-      <button class="brf-btn-ghost" onclick="brfGoToDashboard()">View dashboard</button>
+      <button class="brf-btn-ghost"   onclick="brfGoToDashboard()">View dashboard</button>
       <button class="brf-btn-primary" onclick="brfClose()">Got it</button>
     </div>`;
 }
@@ -1385,10 +1353,10 @@ function brfApproved(payload) {
     <div class="brf-tier-track">
       <div class="brf-tier-label">Donor search radius</div>
       <div class="brf-tiers">
-        ${brfTierDot(1, 'active', '0–5',  'km')}
-        ${brfTierDot(2, 'idle',   '5–15', 'km')}
-        ${brfTierDot(3, 'idle',   '15–30','km')}
-        ${brfTierDot(4, 'idle',   '30+',  'km')}
+        ${brfTierDot(1,'active','0–5','km')}
+        ${brfTierDot(2,'idle','5–15','km')}
+        ${brfTierDot(3,'idle','15–30','km')}
+        ${brfTierDot(4,'idle','30+','km')}
       </div>
     </div>
     <div style="padding:.5rem 1.75rem 0;text-align:center">
@@ -1402,7 +1370,7 @@ function brfApproved(payload) {
 }
 
 function brfSearching(payload = {}) {
-    const { currentTier = 1, t1 = 0, t2 = 0, t3 = 0, t4 = 0, total = 0 } = payload;
+    const { currentTier=1, t1=0, t2=0, t3=0, t4=0, total=0 } = payload;
     const tierLabels = ['0–5 km','5–15 km','15–30 km','30+ km'];
     const pct = Math.min(100, Math.round((currentTier / 4) * 100));
     return `
@@ -1452,8 +1420,8 @@ function brfSearching(payload = {}) {
 }
 
 function brfFound(payload = {}) {
-    const { donorName = 'A donor', donorBlood = '—', donorPhone = '—', distanceKm = null } = payload;
-    const initials = donorName.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    const { donorName='A donor', donorBlood='—', donorPhone='—', distanceKm=null } = payload;
+    const initials = donorName.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const dist = distanceKm ? `${Math.round(distanceKm)} km away` : 'Nearby';
     return `
     <div class="brf-header">
@@ -1490,14 +1458,13 @@ function brfFound(payload = {}) {
       <strong>Next step:</strong> Once you receive the blood, tap <em>Confirm Receipt</em> in your active requests.
     </div>
     <div class="brf-actions">
-      <button class="brf-btn-ghost" onclick="brfClose()">Close</button>
+      <button class="brf-btn-ghost"   onclick="brfClose()">Close</button>
       <button class="brf-btn-primary" onclick="brfGoToHistory()">View my requests</button>
     </div>`;
 }
 
 function brfStep(state, num, label, sub) {
-    const colors   = { done: '#16a34a', active: '#B91C1C', idle: '#d1d5db' };
-    const c = colors[state];
+    const c = { done:'#16a34a', active:'#B91C1C', idle:'#d1d5db' }[state];
     const icon = state === 'done'
         ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="5,13 10,18 19,7"/></svg>`
         : state === 'active'
@@ -1505,7 +1472,7 @@ function brfStep(state, num, label, sub) {
         : num;
     return `
     <div style="display:flex;align-items:flex-start;gap:12px;padding:.6rem 0">
-      <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0">
+      <div style="flex-shrink:0">
         <div style="width:32px;height:32px;border-radius:50%;background:${c};display:flex;align-items:center;justify-content:center;
           font-size:.75rem;font-weight:700;color:${state==='idle'?'#9ca3af':'#fff'};
           ${state==='active'?'box-shadow:0 0 0 4px rgba(185,28,28,.15)':''}">
@@ -1527,23 +1494,18 @@ function brfTierDot(num, state, range, unit) {
     </div>`;
 }
 
+// ── BRF Navigation ───────────────────────────────────────────
 function brfGoToDashboard() {
     brfClose();
-    if (typeof showSection === 'function') showSection('home');
-    else window.location.href = 'dashboard.html';
+    window.location.href = 'dashboard.html';
 }
 
 function brfGoToHistory() {
     brfClose();
-    if (typeof showSection === 'function') {
-        showSection('history');
-        if (typeof switchHistoryTab === 'function') switchHistoryTab('requests');
-        if (typeof showRequestTab === 'function') showRequestTab('active');
-    } else {
-        window.location.href = 'dashboard.html?tab=history';
-    }
+    window.location.href = 'dashboard.html?tab=history';
 }
 
+// ── BRF Polling ──────────────────────────────────────────────
 function brfStartPolling() {
     brfStopPolling();
     if (!BRF.requestId) return;
@@ -1559,7 +1521,7 @@ async function brfPollEscalation() {
     if (!BRF.requestId) return;
     const tok = localStorage.getItem('access_token');
     try {
-        const statusRes = await fetch(
+        const statusRes  = await fetch(
             `http://127.0.0.1:8000/blood_requests/api/request-status/${BRF.requestId}/`,
             { headers: { Authorization: `Bearer ${tok}` } }
         );
@@ -1568,9 +1530,9 @@ async function brfPollEscalation() {
             brfStopPolling();
             const d = statusData.accepted_donor;
             showBloodRequestFlow('found', {
-                donorName:  d.name  || 'A compatible donor',
-                donorBlood: d.blood_type || '—',
-                donorPhone: d.phone  || '—',
+                donorName:  d.name        || 'A compatible donor',
+                donorBlood: d.blood_type  || '—',
+                donorPhone: d.phone       || '—',
                 distanceKm: d.distance_km || null,
             });
             return;
@@ -1586,7 +1548,7 @@ async function brfPollEscalation() {
         const t3 = esc.tier_3?.donors_notified || 0;
         const t4 = esc.tier_4?.donors_notified || 0;
         let currentTier = 1;
-        if (esc.tier_4?.completed) currentTier = 4;
+        if      (esc.tier_4?.completed) currentTier = 4;
         else if (esc.tier_3?.completed) currentTier = 4;
         else if (esc.tier_2?.completed) currentTier = 3;
         else if (esc.tier_1?.completed) currentTier = 2;
@@ -1596,7 +1558,104 @@ async function brfPollEscalation() {
     }
 }
 
-</script>
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+function toggleNotifications() {
+    const dropdown = document.getElementById('notificationDropdown');
+    dropdown.classList.toggle('hidden');
+    if (!dropdown.classList.contains('hidden')) loadNotifications();
+}
 
+document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('notificationDropdown');
+    const bell = e.target.closest('button[onclick="toggleNotifications()"]');
+    if (!bell && dropdown && !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
+    }
+});
+
+async function loadNotifications() {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    const list  = document.getElementById('notificationList');
+    const badge = document.getElementById('notificationBadge');
+    try {
+        const res  = await fetch('http://127.0.0.1:8000/blood_requests/api/patient-notifications/', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('failed');
+        const data = await res.json();
+
+        if (!Array.isArray(data) || !data.length) {
+            if (list) list.innerHTML = `
+                <div class="p-6 text-center text-gray-400 text-sm">
+                    <i class="fas fa-bell-slash text-2xl mb-2 block"></i>No notifications yet
+                </div>`;
+            badge?.classList.add('hidden');
+            return;
+        }
+
+        const unread = data.filter(n => !n.is_read).length;
+        if (unread > 0 && badge) {
+            badge.textContent = unread;
+            badge.classList.remove('hidden');
+        } else {
+            badge?.classList.add('hidden');
+        }
+
+        if (list) list.innerHTML = data.slice(0, 10).map(n => {
+            const iconBg    = n.type === 'blood_request_approved' ? 'bg-green-100' : n.type === 'donor_accept' ? 'bg-blue-100' : 'bg-red-100';
+            const iconClass = n.type === 'blood_request_approved' ? 'fa-check-circle text-green-600' : n.type === 'donor_accept' ? 'fa-user-check text-blue-600' : 'fa-tint text-red-600';
+            return `
+            <div class="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 transition-colors ${!n.is_read ? 'bg-red-50/40' : ''}">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full ${iconBg} flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <i class="fas ${iconClass} text-xs"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-800">${n.title || 'Notification'}</p>
+                        <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">${n.message || ''}</p>
+                        <p class="text-xs text-gray-400 mt-1">${timeAgo(n.created_at)}</p>
+                    </div>
+                    ${!n.is_read ? '<div class="w-2 h-2 bg-red-500 rounded-full flex-shrink-0 mt-1.5"></div>' : ''}
+                </div>
+            </div>`;
+        }).join('');
+
+    } catch (err) {
+        console.warn('Notifications load failed:', err);
+        if (list) list.innerHTML = `<p class="p-4 text-center text-gray-400 text-sm">Unable to load notifications</p>`;
+    }
+}
+
+async function markAllRead() {
+    const token = localStorage.getItem('access_token');
+    if (!token) return;
+    try {
+        await fetch('http://127.0.0.1:8000/blood_requests/api/patient-notifications/mark-all-read/', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        document.getElementById('notificationBadge')?.classList.add('hidden');
+        loadNotifications();
+    } catch (err) { console.warn(err); }
+}
+
+function timeAgo(iso) {
+    if (!iso) return '';
+    const h = Math.floor((Date.now() - new Date(iso).getTime()) / 3600000);
+    if (h < 1) return 'Just now';
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+}
+
+</script><!-- Toast Notification -->
+<div id="notification" class="fixed bottom-4 right-4 hidden z-50">
+  <div class="bg-green-500 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3">
+    <i class="fas fa-check-circle"></i>
+    <span id="notificationText"></span>
+  </div>
+</div>
 </body>
 </html>
