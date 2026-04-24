@@ -53,7 +53,7 @@ class BloodRequest(models.Model):
 
     # CORE INFO
     blood_type = models.CharField(max_length=3)
-    units_required = models.PositiveIntegerField()
+    units_required = models.PositiveIntegerField(default=1)
     urgency = models.CharField(max_length=10)
 
     # LOCATION
@@ -64,8 +64,8 @@ class BloodRequest(models.Model):
     district = models.CharField(max_length=50)
 
     # DETAILS
-    required_date = models.DateField()
-    reason = models.TextField()
+    required_date = models.DateField(null=True, blank=True)
+    reason = models.TextField(null=True, blank=True)
 
     contact_name = models.CharField(max_length=100)
     contact_phone = models.CharField(max_length=20)

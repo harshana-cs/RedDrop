@@ -5,7 +5,7 @@ from donor.models import DonationConfirmation
 
 class BloodRequestSerializer(serializers.ModelSerializer):
     hospital_doc = serializers.FileField(required=True)
-    doctor_note  = serializers.FileField(required=True)
+    doctor_note  = serializers.FileField(required=False, allow_null=True)  # ← optional
 
     hospital_location    = serializers.PrimaryKeyRelatedField(read_only=True)
     created_by_hospital  = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -14,6 +14,7 @@ class BloodRequestSerializer(serializers.ModelSerializer):
     donor_confirmed_at   = serializers.SerializerMethodField()
     donated_at           = serializers.SerializerMethodField()
     hospital_name = serializers.SerializerMethodField()
+    units_required = serializers.IntegerField(required=False, default=1, min_value=1)
 
     class Meta:
         model = BloodRequest
@@ -48,6 +49,15 @@ class BloodRequestSerializer(serializers.ModelSerializer):
             "hospital_location",
             "created_by_hospital",
         ]
+        class Meta:
+            model = BloodRequest
+            fields = [...]
+            read_only_fields = [...]
+            extra_kwargs = {
+    'reason':         {'required': False, 'allow_blank': True, 'allow_null': True},
+    'required_date':  {'required': False, 'allow_null': True},
+    'units_required': {'required': False},
+}
 
     def get_patient_confirmed_at(self, obj):
         confirmation = DonationConfirmation.objects.filter(

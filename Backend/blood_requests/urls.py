@@ -35,7 +35,10 @@ urlpatterns = [
     "api/compatible-donors/",
     views.api_compatible_donors_for_patient,
     name="api_compatible_donors_for_patient"
+    
 ),
+path("api/my-requests/", views.api_user_requests, name="api_my_requests"),
+path("api/approved-request/", views.api_patient_approved_request, name="api_approved_request"),
 path("api/public-requests/", views.public_blood_requests, name="api_public_blood_requests"),
 path("api/patient-notifications/", views.api_patient_notifications, name="api_patient_notifications"),
 path("api/patient-notifications/mark-all-read/", views.api_patient_notifications_mark_all_read, name="api_patient_notifications_mark_all_read"),

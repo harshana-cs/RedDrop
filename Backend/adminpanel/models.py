@@ -15,6 +15,13 @@ class DonationCamp(models.Model):
     created_by = models.CharField(max_length=100, blank=True, null=True)
     contact_number = models.CharField(max_length=15, blank=True, null=True)
     map_link = models.URLField(max_length=500, blank=True, null=True)
+    # ── New document field ──────────────────────────────────
+    authorization_letter = models.FileField(
+        upload_to='camp_documents/',
+        blank=True,
+        null=True,
+        help_text="Official authorization letter or permission document (PDF/JPG/PNG, max 5MB)"
+    )
 
     def __str__(self):
         return self.title

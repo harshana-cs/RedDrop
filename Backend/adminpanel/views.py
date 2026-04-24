@@ -80,42 +80,36 @@ def haversine(lat1, lon1, lat2, lon2):
     return R * c
 
 
-def send_donor_alert(donor, blood_request, distance):
+def send_donor_alert(donor, blood_request, distance, tier=None):
+    sms_sent = False
+    email_sent = False
 
-    # ✅ SMS — keep under 160 chars
-    sms_message = (
-    f"Blood needed near you. Please login and accept if you want to donate. "
-    f"- RedDrop"
-)
+    # SMS
+    try:
+        if donor.phone_number:
+            send_sms(donor.phone_number, "Blood needed near you - RedDrop")
+            sms_sent = True
+    except Exception as e:
+        print("SMS ERROR:", e)
 
-    if donor.phone_number:
-        send_sms(donor.phone_number, sms_message)
+    # EMAIL
+    try:
+        if donor.email:
+            send_mail(
+                subject=f"{blood_request.blood_type} blood needed",
+                message="Please login and donate.",
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[donor.email],
+                fail_silently=False
+            )
+            email_sent = True
+    except Exception as e:
+        print("EMAIL ERROR:", e)
 
-    # ✅ Email — shorter than before
-    subject = f"RedDrop: {blood_request.blood_type} blood needed near you"
-
-    message = f"""Hi {donor.first_name},
-
-{blood_request.blood_type} blood is urgently needed near you.
-
-Hospital : {blood_request.hospital_location.name}
-District : {blood_request.district}
-Distance : {round(distance, 1)} km
-Contact  : {blood_request.contact_phone}
-
-Login to donate:
-http://localhost:5500/donor_dashboard.html
-
-Thank you for saving lives.
-— RedDrop Team"""
-
-    send_mail(
-        subject,
-        message,
-        settings.EMAIL_HOST_USER,
-        [donor.email],
-        fail_silently=True
-    )
+    return {
+        "sms_sent": sms_sent,
+        "email_sent": email_sent
+    }
 
 
 # ================= ADMIN SECRET LOGIN =================
@@ -203,32 +197,35 @@ def admin_pending_donor_registrations(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def admin_approve_blood_request(request, request_id):
+    from django.utils import timezone
+    from django.conf import settings
+    from django.core.mail import send_mail
+    from django.contrib.auth.models import User
+    from blood_requests.models import BloodRequest
+    from adminpanel.models import BloodRequestEscalation, Notification
+    import logging
+    logger = logging.getLogger(__name__)
+ 
     try:
         blood_request = BloodRequest.objects.get(id=request_id)
     except BloodRequest.DoesNotExist:
-        return Response(
-            {"success": False, "message": "Blood request not found"},
-            status=404
-        )
-
+        return Response({"success": False, "message": "Blood request not found"}, status=404)
+ 
     if blood_request.status.lower() != "pending":
-        return Response(
-            {"success": False, "message": "Request already processed"},
-            status=400
-        )
-
+        return Response({"success": False, "message": "Request already processed"}, status=400)
+ 
     blood_request.status = "approved"
     blood_request.patient_confirmed = False
     blood_request.fulfilled = False
     blood_request.approved_at = timezone.now()
     blood_request.save()
-
-    # ✅ NOTIFY PATIENT that their request was approved
+ 
+    # ── Notify patient (in-app) ──────────────────────────────────────
     if blood_request.patient:
         patient_user = User.objects.filter(
             username=blood_request.patient.emailaddress
         ).first()
-
+ 
         if patient_user:
             Notification.objects.create(
                 user=patient_user,
@@ -237,44 +234,49 @@ def admin_approve_blood_request(request, request_id):
                 message=(
                     f"Your blood request for {blood_request.blood_type} blood at "
                     f"{blood_request.hospital_location.name if blood_request.hospital_location else 'the hospital'} "
-                    f"has been approved by admin. Searching for donors..."
+                    "has been approved. Searching for donors..."
                 ),
-                type="blood_request_approved_by_admin"
+                type="blood_request_approved_by_admin",
             )
-            print(f"✅ Patient notification sent to {blood_request.patient.emailaddress}")
-
-            # Email patient as well (best-effort)
-            if blood_request.patient and getattr(blood_request.patient, "emailaddress", None):
-                try:
-                    send_mail(
-                        subject="RedDrop: Your blood request was approved",
-                        message=(
-                            f"Hi {blood_request.patient.fullname},\n\n"
-                            f"Your blood request for {blood_request.blood_type} blood has been approved.\n"
-                            f"We are now searching for compatible donors.\n\n"
-                            f"— RedDrop Team"
-                        ),
-                        from_email=settings.EMAIL_HOST_USER,
-                        recipient_list=[blood_request.patient.emailaddress],
-                        fail_silently=True,
-                    )
-                except Exception:
-                    pass
-        else:
-            print(f"⚠️ No Django User found for patient: {blood_request.patient.emailaddress}")
-
-    # 🔴 START TIERED NOTIFICATION SYSTEM (LOCATION 1)
-    logger.info(f"🚀 Starting tiered notification for request #{blood_request.id}")
-
-    # Option A: Using Celery (RECOMMENDED for production)
-    orchestrate_tiered_notification.delay(blood_request.id)
-
-    # Option B: Synchronous fallback (uncomment for testing without Celery)
-    # result = orchestrate_tiered_notification(blood_request.id)
-
+ 
+        # Email patient
+        try:
+            send_mail(
+                subject="RedDrop: Your blood request was approved",
+                message=(
+                    f"Hi {blood_request.patient.fullname},\n\n"
+                    f"Your blood request for {blood_request.blood_type} blood has been approved.\n"
+                    "We are now searching for compatible donors.\n\n"
+                    "— RedDrop Team"
+                ),
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[blood_request.patient.emailaddress],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
+ 
+    # ── Create escalation record BEFORE starting tasks ───────────────
+    escalation, created = BloodRequestEscalation.objects.get_or_create(
+        blood_request=blood_request,
+        defaults={"hospital": blood_request.created_by_hospital}
+    )
+    logger.info(
+        f"Escalation record {'created' if created else 'exists'} "
+        f"for request #{blood_request.id}"
+    )
+ 
+    # ── Start tiered notifications (sync in DEBUG, async in production) ─
+    try:
+        from celery_task import orchestrate_tiered_notification
+        orchestrate_tiered_notification.delay(blood_request.id)
+        logger.info(f"Tiered notification started for request #{blood_request.id}")
+    except Exception as exc:
+        logger.error(f"Failed to start notifications for #{blood_request.id}: {exc}")
+ 
     return Response({
         "success": True,
-        "message": "Blood request approved. Tiered notifications started."
+        "message": "Blood request approved. Tiered notifications started.",
     })
 
 
@@ -1356,17 +1358,17 @@ def create_camp_by_partner(request):
         map_link=request.data.get("map_link"),
         is_urgent=request.data.get("is_urgent", False),
         is_approved=False,
-        created_by="corporate"
+        created_by="corporate",
+        authorization_letter=request.FILES.get("authorization_letter"),  # ← new
     )
 
     Notification.objects.create(
         title="New Camp Submitted",
-        message=f'"{camp.title}" waiting for approval',
+        message=f'"{camp.title}" waiting for approval — document attached',
         type="camp"
     )
 
     return Response({"success": True})
-
 
 @api_view(["PATCH"])
 @permission_classes([AllowAny])
@@ -1397,47 +1399,77 @@ def reject_camp(request, camp_id):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def admin_escalation_status(request, request_id):
-    """Get current escalation status for a blood request"""
+    """
+    Returns live escalation progress for a blood request.
+    READ-ONLY — never starts a new task. Tasks are started only in
+    admin_approve_blood_request().
+    """
+    from blood_requests.models import BloodRequest
+    from adminpanel.models import BloodRequestEscalation
+    import logging
+    logger = logging.getLogger(__name__)
+ 
     try:
-        escalation = BloodRequestEscalation.objects.get(blood_request_id=request_id)
-
-        # Access control: staff can view any; patients can view their own request only.
-        blood_request = escalation.blood_request
-        if not (getattr(request.user, "is_staff", False) or getattr(request.user, "is_superuser", False)):
-            patient_email = getattr(getattr(blood_request, "patient", None), "emailaddress", None)
-            if not patient_email or request.user.username != patient_email:
-                return Response({"error": "Forbidden"}, status=403)
-
-        return Response({
-            "request_id": request_id,
-            "status": "escalating" if not escalation.completed_at else "completed",
-            "tier_1": {
-                "completed": escalation.tier_1_completed is not None,
-                "donors_notified": escalation.tier_1_donor_count
-            },
-            "tier_2": {
-                "completed": escalation.tier_2_completed is not None,
-                "donors_notified": escalation.tier_2_donor_count
-            },
-            "tier_3": {
-                "completed": escalation.tier_3_completed is not None,
-                "donors_notified": escalation.tier_3_donor_count
-            },
-            "tier_4": {
-                "completed": escalation.tier_4_completed is not None,
-                "donors_notified": escalation.tier_4_donor_count
-            },
-            "stock_check": {
-                "completed": escalation.blood_bank_checked is not None,
-                "blood_bank_units": escalation.blood_bank_units,
-                "hospital_stock": escalation.hospital_stock_details
-            },
-            "total_donors_alerted": escalation.total_donors_alerted,
-            "completed_at": escalation.completed_at
-        })
-    except BloodRequestEscalation.DoesNotExist:
-        return Response({"error": "Escalation not found"}, status=404)
-
+        blood_request = BloodRequest.objects.get(id=request_id)
+    except BloodRequest.DoesNotExist:
+        return Response({"error": "Blood request not found"}, status=404)
+ 
+    # Access control: staff see all; patient sees own request only
+    if not (getattr(request.user, "is_staff", False) or
+            getattr(request.user, "is_superuser", False)):
+        patient_email = getattr(
+            getattr(blood_request, "patient", None), "emailaddress", None
+        )
+        if not patient_email or request.user.username != patient_email:
+            return Response({"error": "Forbidden"}, status=403)
+ 
+    # Get or create escalation record — but DO NOT start a new task here
+    escalation, created = BloodRequestEscalation.objects.get_or_create(
+        blood_request=blood_request,
+        defaults={"hospital": blood_request.created_by_hospital}
+    )
+ 
+    if created:
+        logger.info(
+            f"Created missing escalation record for request #{request_id} "
+            "(approve endpoint should have done this)"
+        )
+        # Only start notifications if the request is actually approved and
+        # we somehow missed creating the escalation in admin_approve_blood_request
+        if blood_request.status == "approved":
+            try:
+                from celery_task import orchestrate_tiered_notification
+                orchestrate_tiered_notification.delay(blood_request.id)
+            except Exception as exc:
+                logger.error(f"Could not start notification for #{request_id}: {exc}")
+ 
+    return Response({
+        "request_id": request_id,
+        "status": "completed" if escalation.completed_at else "escalating",
+        "tier_1": {
+            "completed": escalation.tier_1_completed is not None,
+            "donors_notified": escalation.tier_1_donor_count or 0,
+        },
+        "tier_2": {
+            "completed": escalation.tier_2_completed is not None,
+            "donors_notified": escalation.tier_2_donor_count or 0,
+        },
+        "tier_3": {
+            "completed": escalation.tier_3_completed is not None,
+            "donors_notified": escalation.tier_3_donor_count or 0,
+        },
+        "tier_4": {
+            "completed": escalation.tier_4_completed is not None,
+            "donors_notified": escalation.tier_4_donor_count or 0,
+        },
+        "stock_check": {
+            "completed": escalation.blood_bank_checked is not None,
+            "blood_bank_units": escalation.blood_bank_units or 0,
+            "hospital_stock": escalation.hospital_stock_details or {},
+        },
+        "total_donors_alerted": escalation.total_donors_alerted or 0,
+        "completed_at": escalation.completed_at,
+    })
 
 # ================= NOTIFICATION LOGS (LOCATION 9) =================
 @api_view(["GET"])
@@ -1453,7 +1485,34 @@ def admin_notification_logs(request, request_id):
             if not patient_email or request.user.username != patient_email:
                 return Response({"error": "Forbidden"}, status=403)
     except BloodRequestEscalation.DoesNotExist:
-        return Response({"error": "Escalation not found"}, status=404)
+        # Try to find the blood request and create escalation on-the-fly
+        try:
+            blood_request = BloodRequest.objects.get(id=request_id)
+            # Access control check
+            if not (getattr(request.user, "is_staff", False) or getattr(request.user, "is_superuser", False)):
+                patient_email = getattr(getattr(blood_request, "patient", None), "emailaddress", None)
+                if not patient_email or request.user.username != patient_email:
+                    return Response({"error": "Forbidden"}, status=403)
+            # Create escalation on-the-fly
+            escalation = BloodRequestEscalation.objects.create(
+                blood_request=blood_request,
+                hospital=blood_request.hospital_location
+            )
+            logger.info(f"Created missing escalation record for request {request_id}")
+            # Return the status response
+            return Response({
+                "request_id": request_id,
+                "status": "escalating",
+                "tier_1": {"completed": False, "donors_notified": 0},
+                "tier_2": {"completed": False, "donors_notified": 0},
+                "tier_3": {"completed": False, "donors_notified": 0},
+                "tier_4": {"completed": False, "donors_notified": 0},
+                "stock_check": {"completed": False, "blood_bank_units": 0, "hospital_stock": {}},
+                "total_donors_alerted": 0,
+                "completed_at": None
+            })
+        except BloodRequest.DoesNotExist:
+            return Response({"error": "Blood request not found"}, status=404)
 
     logs = NotificationLog.objects.filter(
         blood_request_id=request_id

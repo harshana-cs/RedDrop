@@ -7,6 +7,7 @@ class GoogleSignupAdmin(admin.ModelAdmin):
     list_display = ("email", "fullname", "is_verified", "created_on")
     list_filter = ("is_verified",)
     search_fields = ("email", "fullname")
+    list_display = ['email', 'fullname', 'is_verified', 'created_at']
 
 
 @admin.register(Patient)

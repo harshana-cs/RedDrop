@@ -300,78 +300,94 @@ def api_create_request(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def api_patient_confirm_receipt(request, request_id):
-    patient = Patient.objects.filter(
-        emailaddress=request.user.username
-    ).first()
-
+    patient = Patient.objects.filter(emailaddress=request.user.username).first()
     if not patient:
         return Response({"message": "Patient not found"}, status=403)
-
+ 
     blood_request = get_object_or_404(
-        BloodRequest,
-        id=request_id,
-        patient=patient,
-        status="approved"
+        BloodRequest, id=request_id, patient=patient, status="approved"
     )
-
+ 
     if blood_request.patient_confirmed:
-        return Response(
-            {"message": "Already confirmed"},
-            status=400
-        )
-
+        return Response({"message": "Already confirmed"}, status=400)
+ 
     if not blood_request.accepted_donor:
         return Response(
             {"success": False, "message": "No donor has accepted this request yet."},
             status=400,
         )
-
-    # 🔐 Generate OTP
+ 
+    # ── Generate OTP ───────────────────────────────────────────────
+    import random
+    from datetime import timedelta
     otp = str(random.randint(1000, 9999))
-
+ 
     blood_request.patient_confirmed = True
     blood_request.otp = otp
     blood_request.otp_expires_at = timezone.now() + timedelta(hours=24)
     blood_request.save()
-
+ 
+    from donor.models import DonationConfirmation
     DonationConfirmation.objects.update_or_create(
         request=blood_request,
         defaults={
             "donor": blood_request.accepted_donor,
             "patient_confirmed": True,
-            "donor_confirmed": False
-        }
+            "donor_confirmed": False,
+        },
     )
-
-    # Email OTP to the accepted donor (in addition to showing it to the patient)
-    try:
-        from django.core.mail import send_mail
-        from django.conf import settings
-
-        donor = blood_request.accepted_donor
-        if donor and donor.email:
+ 
+    # ── Email OTP to the accepted donor ────────────────────────────
+    donor = blood_request.accepted_donor
+    if donor and donor.email:
+        try:
+            from django.core.mail import send_mail
+            from django.conf import settings
             send_mail(
-                subject="RedDrop: Donation OTP (Complete verification)",
+                subject="RedDrop: Your Donation OTP — Please Verify",
                 message=(
-                    f"Hi {donor.first_name},\n\n"
-                    f"The patient confirmed receipt for request #{blood_request.id}.\n"
-                    f"Your OTP to verify the donation is: {otp}\n\n"
-                    f"This OTP expires in 24 hours.\n"
-                    f"Open your donor dashboard and enter the OTP to complete verification.\n\n"
+                    f"Hi {donor.first_name or 'Donor'},\n\n"
+                    f"The patient has confirmed receipt of blood for request "
+                    f"#{blood_request.id} ({blood_request.blood_type}).\n\n"
+                    f"Your verification OTP is:\n\n"
+                    f"    {otp}\n\n"
+                    f"Please open your RedDrop donor dashboard, go to\n"
+                    f"History → Donation History → Pending Confirmation\n"
+                    f"and enter this OTP to complete the donation record.\n\n"
+                    f"This OTP expires in 24 hours.\n\n"
+                    f"Thank you for saving a life! ❤️\n"
                     f"— RedDrop Team"
                 ),
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[donor.email],
                 fail_silently=True,
             )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"OTP email failed for donor {donor.email}: {e}")
+ 
+    # ── In-app notification to donor (optional but helpful) ────────
+    try:
+        from django.contrib.auth.models import User
+        from adminpanel.models import Notification
+        donor_user = User.objects.filter(
+            email__iexact=donor.email
+        ).first() if donor else None
+        if donor_user:
+            Notification.objects.create(
+                user=donor_user,
+                blood_request=blood_request,
+                title="Donation OTP Ready",
+                message=(
+                    f"The patient confirmed receipt. Your OTP is {otp}. "
+                    "Enter it in your donor dashboard to complete verification."
+                ),
+                type="donation_otp",
+            )
     except Exception:
-        # Non-fatal: patient still sees OTP in UI
         pass
-
-    return Response({
-        "success": True,
-        "confirmation_code": otp
-    })
+ 
+    return Response({"success": True, "confirmation_code": otp})
 
 
 # =========================================================

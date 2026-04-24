@@ -6,12 +6,12 @@ from django.contrib.auth.hashers import make_password, check_password as django_
 # GOOGLE SIGNUP (ONLY FOR VERIFICATION)
 # -------------------------------------------------
 class GoogleSignup(models.Model):
-    fullname = models.CharField(max_length=150)
-    email = models.EmailField(unique=True)
-    credential = models.TextField(default="")
-    verification_code = models.CharField(max_length=6)
-    is_verified = models.BooleanField(default=False)
-    created_on = models.DateTimeField(auto_now_add=True)
+    email              = models.EmailField(unique=True)
+    fullname           = models.CharField(max_length=200)
+    verification_code  = models.CharField(max_length=6, blank=True)
+    is_verified        = models.BooleanField(default=False)
+    pending_password   = models.CharField(max_length=200, blank=True, null=True)  # ← new
+    created_at         = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.email

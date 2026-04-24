@@ -72,43 +72,53 @@ def verify_code(request):
 
     data = json.loads(request.body)
     email = data.get("email")
-    code = data.get("code")
+    code  = data.get("code")
 
     google_user = GoogleSignup.objects.filter(
         email=email, verification_code=code
     ).first()
 
     if not google_user:
-        return JsonResponse({"success": False, "message": "Invalid code"})
+        return JsonResponse({"success": False, "message": "Invalid or expired code"})
 
     google_user.is_verified = True
     google_user.save()
 
-    # -------- ENSURE PATIENT --------
+    # ── Create Patient account ───────────────────────────────
     patient, _ = Patient.objects.get_or_create(
         emailaddress=email,
         defaults={"fullname": google_user.fullname}
     )
 
-    # -------- ENSURE DJANGO USER --------
-    user, _ = User.objects.get_or_create(
+    # ── Create Django User ───────────────────────────────────
+    user, created = User.objects.get_or_create(
         username=email,
         defaults={"email": email}
     )
 
-    if not user.has_usable_password():
-        user.set_password(get_random_string(12))
+    if created:
+        if google_user.pending_password:
+            # Manual signup — use the stored hashed password
+            user.password = google_user.pending_password
+        else:
+            # Google signup — random password
+            user.set_password(get_random_string(12))
         user.save()
 
-    # -------- AUTO LOGIN (JWT) --------
+    # ── Clear pending password ───────────────────────────────
+    if google_user.pending_password:
+        google_user.pending_password = None
+        google_user.save()
+
+    # ── Generate JWT ─────────────────────────────────────────
     refresh = RefreshToken.for_user(user)
 
     return JsonResponse({
         "success": True,
         "fullname": patient.fullname,
-        "email": patient.emailaddress,
+        "email":    patient.emailaddress,
         "tokens": {
-            "access": str(refresh.access_token),
+            "access":  str(refresh.access_token),
             "refresh": str(refresh),
         }
     })
@@ -192,20 +202,36 @@ def patient_signup_manually(request):
     if Patient.objects.filter(emailaddress=data["emailaddress"]).exists():
         return JsonResponse({"success": False, "message": "Email already exists"})
 
-    patient = Patient(
-        fullname=data["fullname"],
-        emailaddress=data["emailaddress"]
-    )
-    patient.set_password(data["password"])
-    patient.save()
+    code = ''.join(random.choices(string.digits, k=6))
 
-    User.objects.create_user(
-        username=data["emailaddress"],
+    # Store pending signup with hashed password
+    from django.contrib.auth.hashers import make_password as hash_pw
+    GoogleSignup.objects.update_or_create(
         email=data["emailaddress"],
-        password=data["password"]
+        defaults={
+            "fullname":         data["fullname"],
+            "verification_code": code,
+            "is_verified":      False,
+            "pending_password": hash_pw(data["password"]),
+        }
     )
 
-    return JsonResponse({"success": True, "message": "Account created"})
+    try:
+        send_mail(
+            "RedDrop — Verify Your Email",
+            f"Hi {data['fullname']},\n\nYour RedDrop verification code is:\n\n{code}\n\nDo not share this code with anyone.\n\n— RedDrop Team",
+            "noreply@reddrop.com",
+            [data["emailaddress"]],
+        )
+    except Exception as e:
+        print("Email error:", e)
+
+    return JsonResponse({
+        "success": True,
+        "verify": True,
+        "email": data["emailaddress"],
+        "message": "Verification code sent to your email"
+    })
 @csrf_exempt
 def patient_login(request):
     if request.method != "POST":

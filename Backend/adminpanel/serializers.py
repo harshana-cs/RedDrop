@@ -20,6 +20,7 @@ class DonationCampSerializer(serializers.ModelSerializer):
             'is_past',
                 'contact_number',
                 'map_link',
+                'authorization_letter',
         ]
  
     def get_is_past(self, obj):
