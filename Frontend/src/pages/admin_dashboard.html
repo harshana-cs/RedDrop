@@ -1098,6 +1098,13 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
     <i class="ri-drop-line"></i>
     <span>Blood Inventory</span>
 </button>
+<!-- Add this button in the sidebar nav section -->
+<button data-tab="donations"
+    class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
+    <i class="ri-hand-heart-line"></i>
+    <span>Donations</span>
+    <span id="donations-badge" class="ml-auto bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full hidden">0</span>
+</button>
                 <button data-tab="analytics" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
                     <i class="ri-bar-chart-line"></i>
                     <span>Analytics</span>
@@ -1844,6 +1851,22 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                 </button>
                 <button onclick="submitHospitalApproval()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
                     Approve
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="activeHospitalDetailModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold">Hospital Account Details</h3>
+                <button onclick="closeActiveHospitalDetailModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="ri-close-line text-xl"></i>
+                </button>
+            </div>
+            <div id="activeHospitalDetailBody" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"></div>
+            <div class="mt-6 text-right">
+                <button onclick="closeActiveHospitalDetailModal()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+                    Close
                 </button>
             </div>
         </div>
@@ -3269,7 +3292,154 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                     </div>
 
                 </div> 
+<!-- Add inside the main content div, after campsSection -->
+<div id="donationsSection" class="hidden space-y-6">
 
+    <!-- Header -->
+    <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+            <h3 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <i class="ri-hand-heart-line text-red-500"></i>
+                All Donation Records
+            </h3>
+            <p class="text-gray-600 mt-1">
+                Complete view — who requested, who donated, source, confirmations
+            </p>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="exportDonationsCSV()"
+                    class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 flex items-center gap-2">
+                <i class="ri-download-line"></i> Export CSV
+            </button>
+            <button onclick="loadDonations()"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 flex items-center gap-2">
+                <i class="ri-refresh-line"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="bg-white rounded-xl border p-4 shadow-sm text-center">
+            <p class="text-2xl font-bold text-gray-900" id="donStatTotal">—</p>
+            <p class="text-xs text-gray-500 mt-1">Total</p>
+        </div>
+        <div class="bg-white rounded-xl border p-4 shadow-sm text-center">
+            <p class="text-2xl font-bold text-green-600" id="donStatCompleted">—</p>
+            <p class="text-xs text-gray-500 mt-1">Completed</p>
+        </div>
+        <div class="bg-white rounded-xl border p-4 shadow-sm text-center">
+            <p class="text-2xl font-bold text-yellow-600" id="donStatPending">—</p>
+            <p class="text-xs text-gray-500 mt-1">Pending</p>
+        </div>
+        <div class="bg-white rounded-xl border p-4 shadow-sm text-center">
+            <p class="text-2xl font-bold text-blue-600" id="donStatDonorSource">—</p>
+            <p class="text-xs text-gray-500 mt-1">Via Donor</p>
+        </div>
+        <div class="bg-white rounded-xl border p-4 shadow-sm text-center">
+            <p class="text-2xl font-bold text-purple-600" id="donStatBankSource">—</p>
+            <p class="text-xs text-gray-500 mt-1">Via Blood Bank</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl border p-4 shadow-sm flex flex-wrap gap-3 items-center">
+        <select id="donFilterStatus" onchange="applyDonationFilters()"
+                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500">
+            <option value="all">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="completed">Completed</option>
+            <option value="rejected">Rejected</option>
+        </select>
+        <select id="donFilterBloodType" onchange="applyDonationFilters()"
+                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500">
+            <option value="all">All Blood Types</option>
+            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+        </select>
+        <select id="donFilterSource" onchange="applyDonationFilters()"
+                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500">
+            <option value="all">All Sources</option>
+            <option value="donor">Via Donor</option>
+            <option value="blood_bank">Via Blood Bank</option>
+        </select>
+        <input type="date" id="donFilterFrom"
+               class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500"
+               onchange="applyDonationFilters()">
+        <span class="text-gray-400 text-sm">to</span>
+        <input type="date" id="donFilterTo"
+               class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500"
+               onchange="applyDonationFilters()">
+        <button onclick="resetDonationFilters()"
+                class="text-sm text-gray-500 hover:text-red-600 px-3 py-2 border rounded-lg">
+            Reset
+        </button>
+        <span id="donRowCount" class="ml-auto text-xs text-gray-400 font-medium"></span>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gray-50 border-b">
+                    <tr>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Request</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Patient</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Blood / Units</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Hospital</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Source / Donor</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Confirmations</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Date</th>
+                        <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="donationsTableBody" class="divide-y divide-gray-100">
+                    <tr>
+                        <td colspan="9" class="px-6 py-12 text-center text-gray-400">
+                            Loading donation records...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div id="donationDetailModal"
+     class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
+
+        <div class="bg-gradient-to-r from-red-600 to-red-500 px-6 py-4 rounded-t-2xl flex justify-between items-center flex-shrink-0">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="ri-hand-heart-line"></i>
+                Donation Detail — #<span id="donDetailId"></span>
+            </h3>
+            <button onclick="closeDonationDetail()"
+                    class="text-white/80 hover:text-white p-1 hover:bg-white/20 rounded-lg">
+                <i class="ri-close-line text-xl"></i>
+            </button>
+        </div>
+
+        <div id="donationDetailBody"
+             class="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
+            <div class="flex items-center justify-center py-12 text-gray-400">
+                <div class="animate-spin rounded-full h-10 w-10 border-4 border-red-200 border-t-red-600"></div>
+            </div>
+        </div>
+
+        <div class="border-t px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3 flex-shrink-0">
+            <button id="donDetailCompleteBtn"
+                    class="hidden px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 font-medium flex items-center gap-2">
+                <i class="ri-checkbox-circle-line"></i> Mark Complete
+            </button>
+            <button onclick="closeDonationDetail()"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 font-medium">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
             </div> 
         </main>
     </div>
@@ -3422,6 +3592,8 @@ let bloodTypeChart, requestStatusChart;
     hospital: document.getElementById('hospitalSection'),
     users: document.getElementById('usersSection'),
     inventory: document.getElementById('inventorySection'),
+    <!-- Add to sections object -->
+    donations: document.getElementById('donationsSection'),
     analytics: document.getElementById('analyticsSection'),
     audit: document.getElementById('auditLogsSection'),
     camps: document.getElementById('campsSection')  // ✅ FIXED
@@ -3437,6 +3609,7 @@ let bloodTypeChart, requestStatusChart;
             inventory: { title: 'Blood Inventory',       subtitle: 'Manage blood bank stock levels' },
             analytics: { title: 'Analytics Dashboard',   subtitle: 'System-wide statistics and insights' },
             audit:     { title: 'Audit Logs',            subtitle: 'Track all system activity and changes' },
+            donations: { title: 'Donation Records', subtitle: 'Complete view of all blood donations — donors, patients, and blood bank' },
             camps:     { title: 'Donation Camps',        subtitle: 'Create and manage donation camp events' }  // ← ADD THIS LINE
         };
 
@@ -3479,6 +3652,7 @@ let bloodTypeChart, requestStatusChart;
 if (tabName === 'users') {
     loadUsers();
 }
+if (tabName === 'donations') loadDonations();
 if (tabName === 'inventory') {
     loadInventory();
 }
@@ -4807,6 +4981,7 @@ async function loadHospitals() {
         }
 
         table.innerHTML = "";
+        window._hospitalMap = {};
 
 // ✅ COUNT ACTIVE HOSPITALS
 const activeCount = json.data.filter(h => h.active).length;
@@ -4816,6 +4991,7 @@ totalHospitalsEl.textContent = activeCount;
 json.data
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .forEach(h => {
+        window._hospitalMap[h.id] = h;
 
         const statusBadge = h.active
             ? `<span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full">Active</span>`
@@ -4825,7 +5001,8 @@ json.data
             <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4">
                         <p class="font-medium">${h.name}</p>
-                        <p class="text-sm text-gray-500">${h.username}</p>
+                        <p class="text-sm text-gray-500">Username: ${h.username}</p>
+                        <p class="text-xs text-gray-400 break-all">Password: ${h.password || "-"}</p>
                     </td>
                     <td class="px-6 py-4">${h.district || "-"}</td>
                     <td class="px-6 py-4">
@@ -4834,9 +5011,13 @@ json.data
                     </td>
                     <td class="px-6 py-4">${statusBadge}</td>
                     <td class="px-6 py-4 space-x-2">
+                        <button onclick="viewActiveHospitalDetails(${h.id})"
+                            class="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
+                            View Details
+                        </button>
                         <button onclick="toggleHospital(${h.id})"
                             class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200">
-                            Toggle
+                            ${h.active ? "Deactivate" : "Activate"}
                         </button>
                         <button onclick="resetHospitalPassword(${h.id})"
                             class="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
@@ -4861,10 +5042,23 @@ json.data
 }
 
 async function toggleHospital(id) {
-    await fetch(`http://127.0.0.1:8000/api/admin/hospital/${id}/toggle/`, {
-        method: "POST"
-    });
-    loadHospitals();
+    try {
+        const res = await fetch(`http://127.0.0.1:8000/api/admin/hospital/${id}/toggle/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" }
+        });
+
+        const data = await res.json();
+        if (!res.ok || data.success === false) {
+            throw new Error(data.message || "Failed to toggle hospital status");
+        }
+
+        showToast("success", "Hospital Updated", `Hospital is now ${data.active ? "active" : "inactive"}.`);
+        await loadHospitals();
+    } catch (error) {
+        console.error("Toggle hospital failed:", error);
+        showToast("error", "Toggle Failed", error.message || "Could not update hospital status.");
+    }
 }
 
 async function resetHospitalPassword(id) {
@@ -4877,7 +5071,41 @@ async function resetHospitalPassword(id) {
         body: JSON.stringify({ password })
     });
 
-    alert("Password reset successfully");
+    showToast("success", "Password Reset", "Hospital password reset successfully.");
+    await loadHospitals();
+}
+function viewActiveHospitalDetails(id) {
+    const h = (window._hospitalMap || {})[id];
+    if (!h) {
+        showToast("error", "Not Found", "Hospital details not found.");
+        return;
+    }
+
+    const body = document.getElementById("activeHospitalDetailBody");
+    const rows = [
+        ["Hospital Name", h.name || "-"],
+        ["Username", h.username || "-"],
+        ["Password", h.password || "Not available"],
+        ["Status", h.active ? "Active" : "Inactive"],
+        ["District", h.district || "-"],
+        ["Address", h.address || "-"],
+        ["Contact Number", h.contact_number || "-"],
+        ["Email", h.email || "-"],
+        ["Registration Number", h.registration_number || "-"],
+        ["Created On", h.created_at || "-"]
+    ];
+
+    body.innerHTML = rows.map(([label, value]) => `
+        <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+            <p class="text-xs text-gray-500 mb-1">${label}</p>
+            <p class="font-medium text-gray-900 break-all">${value}</p>
+        </div>
+    `).join("");
+
+    document.getElementById("activeHospitalDetailModal").classList.remove("hidden");
+}
+function closeActiveHospitalDetailModal() {
+    document.getElementById("activeHospitalDetailModal").classList.add("hidden");
 }
 async function loadRejectedHospitalRequests() {
   const table = document.getElementById("rejectedHospitalTable");
@@ -5048,6 +5276,19 @@ async function handleNotificationClick(id, type) {
 } else if (type === "alert" || type === "audit" || type === "completed") {
     openAuditLogs();
 }
+else if (type === "completed" || type === "donation_complete") {
+    // open donations tab
+    tabs.forEach(t => { t.classList.remove('bg-red-50','text-red-600'); t.classList.add('text-gray-700'); });
+    const donTab = document.querySelector('[data-tab="donations"]');
+    if (donTab) donTab.classList.add('bg-red-50','text-red-600');
+    Object.values(sections).forEach(s => s.classList.add('hidden'));
+    sections.donations.classList.remove('hidden');
+    document.getElementById('page-title').textContent    = 'Donation Records';
+    document.getElementById('page-subtitle').textContent = 'Complete view of all blood donations';
+    loadDonations();
+    document.getElementById('notificationDropdown').classList.add('hidden');
+}
+
 }
 
 function openAuditLogs() {
@@ -5698,6 +5939,10 @@ function setInventoryTab(tab) {
     if (tab === 'hospitals') renderHospitalAccordion();
     if (tab === 'bloodtype') renderBloodTypeAccordion();
     if (tab === 'movements') loadStockMovements();
+    setInterval(() => {
+    if (!document.getElementById("donationsSection").classList.contains("hidden"))
+        loadDonations();
+}, 30000);
 }
  
 function filterByStatus(s) {
@@ -7251,7 +7496,7 @@ function anRenderSupply() {
     const gap  = supply[i] - demand[i];
     const gapColor = gap >= 0 ? '#166534' : '#991B1B';
     const gapBg    = gap >= 0 ? '#DCFCE7' : '#FEE2E2';
-    const cov  = demand[i] ? Math.round(supply[i] / demand[i] * 100) : 100;
+    const cov = demand[i] ? Math.min(Math.round(fulfilled[i] / demand[i] * 100), 100) : 0;
     const covColor = cov >= 80 ? '#1BCCAA' : cov >= 50 ? '#F5A623' : '#E24B4A';
     return `<tr>
       <td><span class="bt-chip">${bt}</span></td>
@@ -7369,7 +7614,7 @@ function anRenderHospitals() {
         <div style="display:flex;align-items:center;gap:8px;">
           <div class="an-prog-track" style="width:70px;">
             <div class="an-prog-fill"
-                 style="width:${h.fulfillment_rate}%;background:${rateColor};"></div>
+                 style="width:${Math.min(h.fulfillment_rate, 100)}%;background:${rateColor};"></div>
           </div>
           <span style="font-size:12px;font-weight:700;color:${rateColor};
                        font-family:'JetBrains Mono',mono;">
@@ -7631,7 +7876,7 @@ function anRenderGeo() {
       <td style="font-family:'JetBrains Mono',mono;font-weight:600;">${d.total}</td>
       <td style="color:#1BCCAA;font-weight:600;">${d.completed}</td>
       <td style="color:#F5A623;font-weight:600;">${d.pending}</td>
-      <td style="color:${c};font-weight:700;font-family:'JetBrains Mono',mono;">${d.rate}%</td>
+      <td style="color:${c};font-weight:700;font-family:'JetBrains Mono',mono;">${Math.min(d.rate, 100)}%</td>
       <td style="min-width:140px;">
         <div class="an-prog-track">
           <div class="an-prog-fill"
@@ -7699,6 +7944,401 @@ async function initAnalytics() {
   document.getElementById('anTo').value   = today.toISOString().split('T')[0];
   document.getElementById('anFrom').value = week.toISOString().split('T')[0];
   await anRefreshAll();
+}
+// ── DONATIONS STATE ──────────────────────────────────────────
+let allDonations = [];
+let filteredDonations = [];
+
+// ── LOAD ALL DONATIONS ───────────────────────────────────────
+async function loadDonations() {
+    const body = document.getElementById('donationsTableBody');
+    body.innerHTML = `<tr><td colspan="9" class="px-6 py-10 text-center text-gray-400">
+        <div class="flex flex-col items-center gap-2">
+            <div class="animate-spin h-8 w-8 border-b-2 border-red-500 rounded-full"></div>
+            Loading donations...
+        </div>
+    </td></tr>`;
+
+    try {
+        const res  = await fetch(`${API_BASE}/api/admin/donations/`);
+        const json = await res.json();
+        allDonations = json.data || [];
+        updateDonationStats(allDonations);
+        filteredDonations = [...allDonations];
+        renderDonationsTable(filteredDonations);
+    } catch (err) {
+        console.error(err);
+        body.innerHTML = `<tr><td colspan="9" class="px-6 py-10 text-center text-red-400">
+            Failed to load donations</td></tr>`;
+    }
+}
+
+// ── STATS ────────────────────────────────────────────────────
+function updateDonationStats(data) {
+    document.getElementById('donStatTotal').textContent =
+        data.length;
+    document.getElementById('donStatCompleted').textContent =
+        data.filter(d => d.status === 'completed').length;
+    document.getElementById('donStatPending').textContent =
+        data.filter(d => d.status === 'pending').length;
+    document.getElementById('donStatDonorSource').textContent =
+        data.filter(d => d.source === 'donor').length;
+    document.getElementById('donStatBankSource').textContent =
+        data.filter(d => d.source === 'blood_bank').length;
+
+    // Update donations badge in sidebar
+    const badge = document.getElementById('donations-badge');
+    const pending = data.filter(d => d.status === 'pending').length;
+    if (badge) {
+        if (pending > 0) { badge.textContent = pending; badge.classList.remove('hidden'); }
+        else badge.classList.add('hidden');
+    }
+}
+
+// ── FILTERS ──────────────────────────────────────────────────
+function applyDonationFilters() {
+    const status    = document.getElementById('donFilterStatus').value;
+    const bloodType = document.getElementById('donFilterBloodType').value;
+    const source    = document.getElementById('donFilterSource').value;
+    const from      = document.getElementById('donFilterFrom').value;
+    const to        = document.getElementById('donFilterTo').value;
+
+    filteredDonations = allDonations.filter(d => {
+        if (status    !== 'all' && d.status     !== status)    return false;
+        if (bloodType !== 'all' && d.blood_type !== bloodType) return false;
+        if (source    !== 'all' && d.source     !== source)    return false;
+        if (from) {
+            const dt = parseAdminDate(d.created_at);
+            if (dt && dt < new Date(from)) return false;
+        }
+        if (to) {
+            const dt = parseAdminDate(d.created_at);
+            if (dt && dt > new Date(to + 'T23:59:59')) return false;
+        }
+        return true;
+    });
+
+    document.getElementById('donRowCount').textContent =
+        `${filteredDonations.length} of ${allDonations.length}`;
+    renderDonationsTable(filteredDonations);
+}
+
+function resetDonationFilters() {
+    ['donFilterStatus','donFilterBloodType','donFilterSource'].forEach(id => {
+        document.getElementById(id).value = 'all';
+    });
+    document.getElementById('donFilterFrom').value = '';
+    document.getElementById('donFilterTo').value   = '';
+    filteredDonations = [...allDonations];
+    document.getElementById('donRowCount').textContent = '';
+    renderDonationsTable(filteredDonations);
+}
+
+// ── RENDER TABLE ─────────────────────────────────────────────
+function renderDonationsTable(data) {
+    const body = document.getElementById('donationsTableBody');
+
+    if (!data.length) {
+        body.innerHTML = `<tr><td colspan="9" class="px-6 py-12 text-center text-gray-400">
+            No records found</td></tr>`;
+        return;
+    }
+
+    // Sort newest first
+    const sorted = [...data].sort((a, b) =>
+        (parseAdminDate(b.created_at)?.getTime() || 0) -
+        (parseAdminDate(a.created_at)?.getTime() || 0)
+    );
+
+    const statusColors = {
+        pending:   'bg-yellow-100 text-yellow-700',
+        approved:  'bg-blue-100 text-blue-700',
+        completed: 'bg-green-100 text-green-700',
+        rejected:  'bg-red-100 text-red-700',
+    };
+
+    body.innerHTML = sorted.map(d => {
+        const stCls = statusColors[d.status] || 'bg-gray-100 text-gray-600';
+
+        // Source column
+        const sourceHtml = d.source === 'donor'
+            ? `<div>
+                 <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700
+                              text-xs font-semibold rounded-full mb-1">
+                     <i class="ri-user-heart-line"></i> Donor
+                 </span>
+                 <p class="text-xs font-medium text-gray-800">${d.donor_name || '—'}</p>
+                 <p class="text-xs text-gray-400">${d.donor_blood_type || ''}</p>
+                 ${d.donor_phone
+                     ? `<p class="text-xs text-gray-400">${d.donor_phone}</p>`
+                     : ''}
+               </div>`
+            : `<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 text-purple-700
+                            text-xs font-semibold rounded-full">
+                   <i class="ri-drop-line"></i> Blood Bank
+               </span>`;
+
+        // Confirmation pills
+        const confHtml = `
+            <div class="flex flex-col gap-1">
+                <span class="text-xs ${d.donor_confirmed
+                    ? 'text-green-600 font-semibold'
+                    : 'text-gray-400'}">
+                    ${d.donor_confirmed ? '✓' : '○'} Donor
+                </span>
+                <span class="text-xs ${d.patient_confirmed
+                    ? 'text-green-600 font-semibold'
+                    : 'text-gray-400'}">
+                    ${d.patient_confirmed ? '✓' : '○'} Patient
+                </span>
+            </div>`;
+
+        // Documents
+        const docsHtml = [
+            d.hospital_doc
+                ? `<a href="${d.hospital_doc}" target="_blank"
+                       class="text-blue-500 hover:text-blue-700 text-xs flex items-center gap-1">
+                       <i class="ri-file-text-line"></i>Doc
+                   </a>` : '',
+            d.doctor_note
+                ? `<a href="${d.doctor_note}" target="_blank"
+                       class="text-blue-500 hover:text-blue-700 text-xs flex items-center gap-1">
+                       <i class="ri-stethoscope-line"></i>Note
+                   </a>` : '',
+        ].filter(Boolean).join('') || '<span class="text-gray-300 text-xs">—</span>';
+
+        return `
+            <tr class="hover:bg-gray-50 transition">
+                <td class="px-5 py-4">
+                    <span class="font-mono text-xs text-gray-500">#${d.id}</span>
+                    <div class="flex gap-1 mt-1">${docsHtml}</div>
+                </td>
+                <td class="px-5 py-4">
+                    <p class="font-medium text-sm text-gray-900">${d.patient_name}</p>
+                    ${d.contact_phone
+                        ? `<p class="text-xs text-gray-400">${d.contact_phone}</p>`
+                        : ''}
+                </td>
+                <td class="px-5 py-4">
+                    <span class="px-2 py-1 bg-red-100 text-red-700 rounded-full
+                                 text-xs font-bold">${d.blood_type}</span>
+                    <p class="text-xs text-gray-500 mt-1">${d.units || 1} unit(s)</p>
+                    <p class="text-xs text-gray-400">${d.urgency || ''}</p>
+                </td>
+                <td class="px-5 py-4">
+                    <p class="text-sm font-medium text-gray-800">${d.hospital}</p>
+                    <p class="text-xs text-gray-400">${d.hospital_district || ''}</p>
+                </td>
+                <td class="px-5 py-4">${sourceHtml}</td>
+                <td class="px-5 py-4">${confHtml}</td>
+                <td class="px-5 py-4">
+                    <span class="px-2 py-1 rounded-full text-xs font-semibold ${stCls}">
+                        ${d.status.charAt(0).toUpperCase() + d.status.slice(1)}
+                    </span>
+                </td>
+                <td class="px-5 py-4">
+                    <p class="text-xs font-medium text-gray-700">
+                        ${timeAgo(d.created_at)}
+                    </p>
+                    <p class="text-xs text-gray-400">
+                        ${formatAdminDateTime(d.created_at)}
+                    </p>
+                </td>
+                <td class="px-5 py-4">
+                    <div class="flex flex-col gap-1">
+                        <button onclick="viewDonationDetail(${d.id})"
+                                class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg
+                                       text-xs font-semibold hover:bg-blue-100 transition
+                                       flex items-center gap-1">
+                            <i class="ri-eye-line"></i> View
+                        </button>
+                        ${d.status === 'approved'
+                            ? `<button onclick="adminMarkComplete(${d.id})"
+                                       class="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg
+                                              text-xs font-semibold hover:bg-green-100 transition
+                                              flex items-center gap-1">
+                                   <i class="ri-checkbox-circle-line"></i> Complete
+                               </button>` : ''}
+                    </div>
+                </td>
+            </tr>`;
+    }).join('');
+}
+
+// ── DETAIL MODAL ─────────────────────────────────────────────
+async function viewDonationDetail(id) {
+    const modal = document.getElementById('donationDetailModal');
+    const body  = document.getElementById('donationDetailBody');
+    const idEl  = document.getElementById('donDetailId');
+    const completeBtn = document.getElementById('donDetailCompleteBtn');
+
+    idEl.textContent = id;
+    modal.classList.remove('hidden');
+    body.innerHTML = `<div class="flex justify-center py-12">
+        <div class="animate-spin h-10 w-10 border-4 border-red-200 border-t-red-600 rounded-full"></div>
+    </div>`;
+
+    try {
+        const res  = await fetch(`${API_BASE}/api/admin/donations/${id}/`);
+        const data = await res.json();
+
+        // Show complete button only if approved
+        const rec = allDonations.find(d => d.id === id);
+        if (rec && rec.status === 'approved') {
+            completeBtn.classList.remove('hidden');
+            completeBtn.onclick = () => adminMarkComplete(id);
+        } else {
+            completeBtn.classList.add('hidden');
+        }
+
+        // ── Donor block ──
+        const donor = data.donor || {};
+        const donorHtml = donor.id
+            ? `<div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                 <h5 class="font-bold text-blue-800 mb-3 flex items-center gap-2">
+                     <i class="ri-user-heart-line"></i> Donor Details
+                 </h5>
+                 <div class="grid grid-cols-2 gap-3 text-sm">
+                     <div><p class="text-xs text-gray-500">Name</p>
+                          <p class="font-semibold">${donor.name || '—'}</p></div>
+                     <div><p class="text-xs text-gray-500">Blood Type</p>
+                          <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-bold">
+                              ${donor.blood_type || '—'}
+                          </span></div>
+                     <div><p class="text-xs text-gray-500">Phone</p>
+                          <p class="font-semibold">${donor.phone || '—'}</p></div>
+                     <div><p class="text-xs text-gray-500">Email</p>
+                          <p class="font-semibold">${donor.email || '—'}</p></div>
+                     <div><p class="text-xs text-gray-500">City</p>
+                          <p class="font-semibold">${donor.city || '—'}</p></div>
+                 </div>
+               </div>`
+            : `<div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
+                 <h5 class="font-bold text-purple-800 flex items-center gap-2">
+                     <i class="ri-drop-line"></i> Fulfilled from Blood Bank
+                 </h5>
+                 <p class="text-sm text-gray-500 mt-1">
+                     No individual donor — blood supplied from central bank stock.
+                 </p>
+               </div>`;
+
+        // ── Confirmation block ──
+        const conf = data.confirmation;
+        const confHtml = conf
+            ? `<div class="bg-gray-50 rounded-xl p-4 border">
+                 <h5 class="font-bold text-gray-700 mb-3 flex items-center gap-2">
+                     <i class="ri-checkbox-double-line"></i> Confirmation Status
+                 </h5>
+                 <div class="flex gap-6">
+                     <div class="flex items-center gap-2">
+                         <span class="w-5 h-5 rounded-full flex items-center justify-center text-xs
+                             ${conf.donor_confirmed
+                                 ? 'bg-green-500 text-white'
+                                 : 'bg-gray-200 text-gray-400'}">
+                             ${conf.donor_confirmed ? '✓' : '○'}
+                         </span>
+                         <span class="text-sm font-medium">Donor Confirmed</span>
+                     </div>
+                     <div class="flex items-center gap-2">
+                         <span class="w-5 h-5 rounded-full flex items-center justify-center text-xs
+                             ${conf.patient_confirmed
+                                 ? 'bg-green-500 text-white'
+                                 : 'bg-gray-200 text-gray-400'}">
+                             ${conf.patient_confirmed ? '✓' : '○'}
+                         </span>
+                         <span class="text-sm font-medium">Patient Confirmed</span>
+                     </div>
+                 </div>
+                 ${conf.created_at
+                     ? `<p class="text-xs text-gray-400 mt-2">
+                            Created: ${formatAdminDateTime(conf.created_at)}
+                        </p>` : ''}
+               </div>`
+            : `<div class="bg-gray-50 rounded-xl p-4 border text-sm text-gray-400">
+                   No confirmation record yet.
+               </div>`;
+
+        // ── Timeline block ──
+        const timelineHtml = `
+            <div class="bg-white rounded-xl border p-4">
+                <h5 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
+                    <i class="ri-timeline-view text-red-500"></i> Donation Timeline
+                </h5>
+                <div class="relative pl-6">
+                    <div class="absolute left-2 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                    ${(data.timeline || []).map((t, i) => `
+                        <div class="relative mb-4 last:mb-0">
+                            <div class="absolute -left-4 top-1 w-3 h-3 rounded-full border-2 border-white
+                                        ${i === 0 ? 'bg-red-500'
+                                            : t.event.includes('Complete') ? 'bg-green-500'
+                                            : 'bg-blue-400'}">
+                            </div>
+                            <p class="text-sm font-semibold text-gray-800">${t.event}</p>
+                            <p class="text-xs text-gray-400">
+                                ${t.time ? formatAdminDateTime(t.time) : '—'}
+                                ${t.by ? `· by ${t.by}` : ''}
+                            </p>
+                        </div>`).join('')}
+                </div>
+            </div>`;
+
+        body.innerHTML = `
+            <div class="space-y-4">
+                ${donorHtml}
+                ${confHtml}
+                ${timelineHtml}
+            </div>`;
+
+    } catch (err) {
+        console.error(err);
+        body.innerHTML = `<p class="text-center text-red-400 py-8">Failed to load details</p>`;
+    }
+}
+
+function closeDonationDetail() {
+    document.getElementById('donationDetailModal').classList.add('hidden');
+}
+
+// ── ADMIN MARK COMPLETE ───────────────────────────────────────
+async function adminMarkComplete(id) {
+    if (!confirm('Mark this donation as completed?')) return;
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/donations/${id}/complete/`, {
+            method: 'POST'
+        });
+        if (res.ok) {
+            showToast('success', 'Completed', 'Donation marked as complete');
+            closeDonationDetail();
+            loadDonations();
+        } else {
+            showToast('error', 'Failed', 'Could not mark as complete');
+        }
+    } catch (err) {
+        showToast('error', 'Network Error', 'Failed to connect');
+    }
+}
+
+// ── EXPORT CSV ───────────────────────────────────────────────
+function exportDonationsCSV() {
+    if (!allDonations.length) return;
+    const hdr = ['ID','Patient','Blood Type','Units','Urgency','Hospital',
+                 'Source','Donor Name','Donor Phone','Status',
+                 'Donor Confirmed','Patient Confirmed','Date'];
+    const rows = allDonations.map(d => [
+        d.id, d.patient_name, d.blood_type, d.units, d.urgency,
+        d.hospital, d.source, d.donor_name || '', d.donor_phone || '',
+        d.status, d.donor_confirmed, d.patient_confirmed,
+        formatAdminDateTime(d.created_at)
+    ]);
+    const csv = [hdr, ...rows].map(r =>
+        r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')
+    ).join('\n');
+    const a = Object.assign(document.createElement('a'), {
+        href: URL.createObjectURL(new Blob([csv], {type:'text/csv'})),
+        download: `donations-${new Date().toISOString().split('T')[0]}.csv`
+    });
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    showToast('success', 'Exported', `${allDonations.length} records exported`);
 }
     </script>
 <!-- User Detail Modal - FIXED VERSION with proper scrolling -->
@@ -7880,4 +8520,5 @@ async function initAnalytics() {
 </div>
 </body>
 </html>
+
 

@@ -5,6 +5,7 @@ class Hospital(models.Model):
     name = models.CharField(max_length=255)
     username = models.CharField(max_length=50, unique=True)
     password = models.CharField(max_length=255)
+    plain_password = models.CharField(max_length=255, blank=True, null=True)
     # ✅ ADD THIS FIELD
     location = models.OneToOneField(
         "blood_requests.HospitalLocation",
@@ -17,6 +18,7 @@ class Hospital(models.Model):
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
+        self.plain_password = raw_password
 
     def check_password(self, raw_password):
         return check_password(raw_password, self.password)

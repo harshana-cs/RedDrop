@@ -20,6 +20,7 @@ from adminpanel.models import HospitalAuditLog
 from blood_requests.models import HospitalLocation
 from blood_requests.utils import get_coordinates_from_osm
 from register_donor.models import Donor
+from adminpanel.models import BloodRequestEscalation
 
 
 
@@ -452,12 +453,13 @@ def hospital_create_blood_request(request):
     }
 )
         Notification.objects.create(
-    title="New Hospital Blood Request",
-    message=f"{hospital.name} requested {units} units of {blood_type}",
-    type="blood_request",
-    hospital=hospital,
-    blood_request=new_request
-)
+            title="New Hospital Blood Request",
+            message=f"{hospital.name} requested {units} units of {blood_type}",
+            type="blood_request",
+            hospital=None,  # Admin/global notification
+            user=None,
+            blood_request=new_request
+        )
 
         return Response({
             "success": True,
@@ -597,3 +599,69 @@ def mark_notification_read(request, notification_id):
     notification.save()
 
     return Response({"success": True})
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def mark_all_notifications_read(request):
+
+    hospital = get_hospital_from_token(request)
+    if not hospital:
+        return Response({"detail": "Unauthorized"}, status=401)
+
+    Notification.objects.filter(
+        hospital=hospital,
+        is_read=False
+    ).update(is_read=True)
+
+    return Response({"success": True, "message": "All notifications marked as read"})
+
+
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def hospital_request_escalation_status(request, request_id):
+    hospital = get_hospital_from_token(request)
+    if not hospital:
+        return Response({"detail": "Unauthorized"}, status=401)
+
+    blood_request = BloodRequest.objects.filter(
+        id=request_id,
+        created_by_hospital=hospital
+    ).first()
+    if not blood_request:
+        return Response({"error": "Request not found"}, status=404)
+
+    escalation, _ = BloodRequestEscalation.objects.get_or_create(
+        blood_request=blood_request,
+        defaults={"hospital": hospital}
+    )
+
+    return Response({
+        "request_id": request_id,
+        "status": "completed" if escalation.completed_at else "escalating",
+        "tier_1": {
+            "completed": escalation.tier_1_completed is not None,
+            "donors_notified": escalation.tier_1_donor_count or 0,
+        },
+        "tier_2": {
+            "completed": escalation.tier_2_completed is not None,
+            "donors_notified": escalation.tier_2_donor_count or 0,
+        },
+        "tier_3": {
+            "completed": escalation.tier_3_completed is not None,
+            "donors_notified": escalation.tier_3_donor_count or 0,
+        },
+        "tier_4": {
+            "completed": escalation.tier_4_completed is not None,
+            "donors_notified": escalation.tier_4_donor_count or 0,
+        },
+        "stock_check": {
+            "completed": escalation.blood_bank_checked is not None,
+            "blood_bank_units": escalation.blood_bank_units or 0,
+            "hospital_stock": escalation.hospital_stock_details or {},
+        },
+        "total_donors_alerted": escalation.total_donors_alerted or 0,
+        "completed_at": escalation.completed_at,
+    })

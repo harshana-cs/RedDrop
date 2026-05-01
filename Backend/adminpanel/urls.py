@@ -1,4 +1,6 @@
 from django.urls import path
+
+# from Backend.blood_stock import views
 from .views import (
     admin_all_hospitals_stock,
     admin_hospital_stock,
@@ -54,6 +56,9 @@ from .views import (
     analytics_donor_activity,
     analytics_fulfillment,
     analytics_geographic,
+    admin_all_donations,
+    admin_donation_detail,
+    admin_complete_donation,
 )
 
 urlpatterns = [
@@ -125,4 +130,9 @@ urlpatterns = [
     path("partner/create-camp/",                       create_camp_by_partner),
     path("approve-camp/<int:camp_id>/",                approve_camp),
     path("reject-camp/<int:camp_id>/",                 reject_camp),
+    # urls.py additions
+path("donations/",                              admin_all_donations),
+path("donations/<int:donation_id>/",            admin_donation_detail),
+path("donations/<int:donation_id>/complete/",   admin_complete_donation),
+
 ]

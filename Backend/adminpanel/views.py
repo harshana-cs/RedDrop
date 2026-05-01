@@ -97,7 +97,7 @@ def send_donor_alert(donor, blood_request, distance, tier=None):
             logger.info(f"SMS to {donor.phone_number}: result={result}")
             sms_sent = bool(result)
         else:
-            logger.warning(f"Donor {donor.id} has no phone number — SMS skipped")
+            logger.warning(f"Donor {donor.id} has no phone number - SMS skipped")
     except Exception as e:
         logger.error(f"SMS ERROR for donor {donor.id} ({donor.phone_number}): {e}", exc_info=True)
 
@@ -113,7 +113,7 @@ def send_donor_alert(donor, blood_request, distance, tier=None):
             )
             email_sent = True
         else:
-            logger.warning(f"Donor {donor.id} has no email — email skipped")
+            logger.warning(f"Donor {donor.id} has no email - email skipped")
     except Exception as e:
         logger.error(f"EMAIL ERROR for donor {donor.id}: {e}", exc_info=True)
 
@@ -217,27 +217,26 @@ def admin_approve_blood_request(request, request_id):
     from adminpanel.models import BloodRequestEscalation, Notification
     import logging
     logger = logging.getLogger(__name__)
- 
+
     try:
         blood_request = BloodRequest.objects.get(id=request_id)
     except BloodRequest.DoesNotExist:
         return Response({"success": False, "message": "Blood request not found"}, status=404)
- 
+
     if blood_request.status.lower() != "pending":
         return Response({"success": False, "message": "Request already processed"}, status=400)
- 
+
     blood_request.status = "approved"
     blood_request.patient_confirmed = False
     blood_request.fulfilled = False
     blood_request.approved_at = timezone.now()
     blood_request.save()
- 
-    # ── Notify patient (in-app) ──────────────────────────────────────
+
     if blood_request.patient:
         patient_user = User.objects.filter(
             username=blood_request.patient.emailaddress
         ).first()
- 
+
         if patient_user:
             Notification.objects.create(
                 user=patient_user,
@@ -250,8 +249,7 @@ def admin_approve_blood_request(request, request_id):
                 ),
                 type="blood_request_approved_by_admin",
             )
- 
-        # Email patient
+
         try:
             send_mail(
                 subject="RedDrop: Your blood request was approved",
@@ -259,7 +257,7 @@ def admin_approve_blood_request(request, request_id):
                     f"Hi {blood_request.patient.fullname},\n\n"
                     f"Your blood request for {blood_request.blood_type} blood has been approved.\n"
                     "We are now searching for compatible donors.\n\n"
-                    "— RedDrop Team"
+                    "- RedDrop Team"
                 ),
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[blood_request.patient.emailaddress],
@@ -267,8 +265,19 @@ def admin_approve_blood_request(request, request_id):
             )
         except Exception:
             pass
- 
-    # ── Create escalation record BEFORE starting tasks ───────────────
+
+    if blood_request.created_by_hospital:
+        Notification.objects.create(
+            hospital=blood_request.created_by_hospital,
+            blood_request=blood_request,
+            title="Blood Request Approved",
+            message=(
+                f"Your request for {blood_request.blood_type} has been approved. "
+                "Please find nearby donors now."
+            ),
+            type="blood_request_approved",
+        )
+
     escalation, created = BloodRequestEscalation.objects.get_or_create(
         blood_request=blood_request,
         defaults={"hospital": blood_request.created_by_hospital}
@@ -277,20 +286,18 @@ def admin_approve_blood_request(request, request_id):
         f"Escalation record {'created' if created else 'exists'} "
         f"for request #{blood_request.id}"
     )
- 
-    # ── Start tiered notifications (sync in DEBUG, async in production) ─
+
     try:
         from celery_task import orchestrate_tiered_notification
         orchestrate_tiered_notification.delay(blood_request.id)
         logger.info(f"Tiered notification started for request #{blood_request.id}")
     except Exception as exc:
         logger.error(f"Failed to start notifications for #{blood_request.id}: {exc}")
- 
+
     return Response({
         "success": True,
         "message": "Blood request approved. Tiered notifications started.",
     })
-
 
 # ================= REJECT BLOOD REQUEST =================
 @api_view(["POST"])
@@ -334,7 +341,7 @@ def admin_reject_blood_request(request, request_id):
                     f"Your blood request for {blood_request.blood_type} was rejected by admin."
                     + (f"\nReason: {reason}\n\n" if reason else "\n\n")
                     + "If you believe this is a mistake, please resubmit with correct documents.\n\n"
-                    + "— RedDrop Team"
+                    + "- RedDrop Team"
                 ),
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[blood_request.patient.emailaddress],
@@ -413,7 +420,7 @@ def admin_approve_donor_registration(request, donor_id):
                 "Great news! Your donor registration on RedDrop has been approved.\n\n"
                 "You can now receive blood donation requests and help save lives.\n\n"
                 "Thank you for being a hero ❤️\n"
-                "— RedDrop Team"
+                "- RedDrop Team"
             ),
             from_email="noreply@reddrop.com",
             recipient_list=[donor.email],
@@ -438,9 +445,11 @@ def admin_list_hospitals(request):
             "id": h.id,
             "name": h.name,
             "username": h.username,
+            "password": h.plain_password or "",
             "active": h.is_active,
             "created_at": h.created_at.strftime("%Y-%m-%d"),
             "district": profile.district if profile else None,
+            "address": profile.address if profile else None,
             "contact_number": profile.contact_number if profile else None,
             "registration_number": profile.registration_number if profile else None,
             "email": profile.email if profile else None,
@@ -663,7 +672,7 @@ def approve_hospital_request(request, pk):
     app.save()
 
     send_mail(
-        subject="🏥 Hospital Registration Approved – RedDrop",
+        subject="Hospital Registration Approved - RedDrop",
         message=(
             f"Dear {app.hospital_name},\n\n"
             "Your hospital registration request has been approved.\n\n"
@@ -671,7 +680,7 @@ def approve_hospital_request(request, pk):
             f"Username: {username}\n"
             f"Password: {password}\n\n"
             "You can now log in and manage blood requests on RedDrop.\n\n"
-            "— RedDrop Team"
+            "- RedDrop Team"
         ),
         from_email=settings.EMAIL_HOST_USER,
         recipient_list=[app.email],
@@ -1279,12 +1288,12 @@ def _serialize_camp(camp):
 @permission_classes([AllowAny])
 def admin_donation_camps(request):
 
-    # ── LIST ──────────────────────────────────────────────────
+    # �"��"� LIST �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
     if request.method == "GET":
         camps = DonationCamp.objects.all().order_by("-date", "-id")
         return Response([_serialize_camp(c) for c in camps])
 
-    # ── CREATE ────────────────────────────────────────────────
+    # �"��"� CREATE �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
     title      = request.data.get("title", "").strip()
     hospital   = request.data.get("hospital_name", "").strip()
     date_val   = request.data.get("date")
@@ -1357,7 +1366,7 @@ def admin_donation_camp_detail(request, camp_id):
 
     data = request.data
 
-    # ── PUT (FULL UPDATE) ─────────────────
+    # �"��"� PUT (FULL UPDATE) �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
     if request.method == "PUT":
         camp.title         = data.get("title", "").strip()
         camp.description   = data.get("description", "")
@@ -1373,7 +1382,7 @@ def admin_donation_camp_detail(request, camp_id):
         camp.save()
         camp.refresh_from_db()
 
-    # ── PATCH (PARTIAL UPDATE) ────────────
+    # �"��"� PATCH (PARTIAL UPDATE) �"��"��"��"��"��"��"��"��"��"��"��"�
     elif request.method == "PATCH":
 
         if "title" in data: camp.title = data["title"].strip()
@@ -1413,7 +1422,7 @@ def public_donation_camps(request):
 def admin_all_hospitals_stock(request):
     result = []
 
-    # ── Blood Bank (hospital=None) ──
+    # �"��"� Blood Bank (hospital=None) �"��"�
     bank_stocks = BloodStock.objects.filter(hospital__isnull=True)
     if bank_stocks.exists():
         result.append({
@@ -1424,7 +1433,7 @@ def admin_all_hospitals_stock(request):
             ]
         })
 
-    # ── Active Hospitals ──
+    # �"��"� Active Hospitals �"��"�
     hospitals = Hospital.objects.filter(is_active=True)
     for h in hospitals:
         stocks = BloodStock.objects.filter(hospital=h)
@@ -1466,7 +1475,7 @@ def create_camp_by_partner(request):
 
     Notification.objects.create(
         title="New Camp Submitted",
-        message=f'"{camp.title}" waiting for approval — document attached',
+        message=f'"{camp.title}" waiting for approval - document attached',
         type="camp"
     )
 
@@ -1503,7 +1512,7 @@ def reject_camp(request, camp_id):
 def admin_escalation_status(request, request_id):
     """
     Returns live escalation progress for a blood request.
-    READ-ONLY — never starts a new task. Tasks are started only in
+    READ-ONLY - never starts a new task. Tasks are started only in
     admin_approve_blood_request().
     """
     from blood_requests.models import BloodRequest
@@ -1525,7 +1534,7 @@ def admin_escalation_status(request, request_id):
         if not patient_email or request.user.username != patient_email:
             return Response({"error": "Forbidden"}, status=403)
  
-    # Get or create escalation record — but DO NOT start a new task here
+    # Get or create escalation record - but DO NOT start a new task here
     escalation, created = BloodRequestEscalation.objects.get_or_create(
         blood_request=blood_request,
         defaults={"hospital": blood_request.created_by_hospital}
@@ -1648,10 +1657,10 @@ from django.utils import timezone
 from collections import defaultdict
 
 
-# ─────────────────────────────────────────────
+# �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
 # HELPER (already exists in your views.py)
 # def get_date_range(request): ...  ← reuse it
-# ─────────────────────────────────────────────
+# �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
 
 
 # ===============================================================
@@ -1800,7 +1809,7 @@ def analytics_hospital_performance(request):
 
         data.append({
             "hospital": h.name,
-            "district": h.profile.district if hasattr(h, "profile") else "—",
+            "district": h.profile.district if hasattr(h, "profile") else "-",
             "total_requests": total,
             "completed": completed,
             "pending": pending,
@@ -2067,3 +2076,274 @@ def analytics_kpi(request):
         "fulfillment_rate":  {"value": rate,           "change": pct_change(rate, prev_rate)},
         "total_approved_donors": Donor.objects.filter(is_approved=True).count(),
     })
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def admin_all_donations(request):
+
+    # �"��"� Base queryset �" NO prefetch_related until we know the relation name �"��"�
+    donations = BloodRequest.objects.select_related(
+        'patient',
+        'hospital_location',
+        'accepted_donor',
+    ).order_by('-created_at')
+
+    # �"��"� Filters �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
+    status_f     = request.GET.get('status')
+    blood_type_f = request.GET.get('blood_type')
+    from_date    = request.GET.get('from')
+    to_date      = request.GET.get('to')
+
+    if status_f and status_f != 'all':
+        donations = donations.filter(status=status_f)
+    if blood_type_f and blood_type_f != 'all':
+        donations = donations.filter(blood_type=blood_type_f)
+    if from_date:
+        donations = donations.filter(created_at__date__gte=from_date)
+    if to_date:
+        donations = donations.filter(created_at__date__lte=to_date)
+
+    def _abs(field):
+        try:
+            return request.build_absolute_uri(field.url) if field else None
+        except Exception:
+            return None
+
+    data = []
+    for req in donations:
+
+        # �"��"� patient �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
+        patient      = req.patient
+        patient_name = patient.fullname if patient else "By Hospital"
+
+        # �"��"� hospital �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
+        hosp          = req.hospital_location
+        hospital_name = hosp.name     if hosp else None
+        hospital_dist = hosp.district if hosp else None
+
+        # �"��"� donor �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
+        donor = req.accepted_donor  # Donor model instance or None
+
+        donor_id = donor_name = donor_blood_type = None
+        donor_phone = donor_city = donor_email = None
+
+        if donor:
+            donor_id         = donor.id
+            donor_name       = f"{donor.first_name or ''} {donor.last_name or ''}".strip()
+            donor_blood_type = donor.blood_type
+            donor_phone      = donor.phone_number
+            donor_city       = donor.city
+            donor_email      = donor.email
+
+        # �"��"� confirmation �" query DonationConfirmation directly �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
+        # Avoids any reverse-relation name guessing
+        donor_confirmed   = False
+        patient_confirmed = False
+        conf_id           = None
+
+        try:
+            conf = DonationConfirmation.objects.filter(
+                request=req
+            ).order_by('-created_at').first()
+
+            if conf is None:
+                # try alternate field name
+                conf = DonationConfirmation.objects.filter(
+                    blood_request=req
+                ).order_by('-created_at').first()
+
+            if conf:
+                donor_confirmed   = bool(conf.donor_confirmed)
+                patient_confirmed = bool(conf.patient_confirmed)
+                conf_id           = conf.id
+
+        except Exception:
+            pass
+
+        data.append({
+            "id":               req.id,
+            "patient_name":     patient_name,
+            "blood_type":       req.blood_type,
+            "units":            req.units_required,
+            "urgency":          req.urgency     or "",
+            "reason":           req.reason      or "",
+            "status":           req.status,
+            "hospital":         hospital_name,
+            "hospital_district":hospital_dist,
+            "contact_name":     req.contact_name  or "",
+            "contact_phone":    req.contact_phone or "",
+            "required_date":    str(req.required_date) if req.required_date else None,
+            "created_at":       req.created_at.isoformat()    if req.created_at    else None,
+            "approved_at":      req.approved_at.isoformat()   if getattr(req, 'approved_at',  None) else None,
+            "completed_at":     req.donation_date.isoformat() if req.donation_date else None,
+            # source
+            "source":           "donor" if donor else "blood_bank",
+            # donor
+            "donor_id":         donor_id,
+            "donor_name":       donor_name,
+            "donor_blood_type": donor_blood_type,
+            "donor_phone":      donor_phone,
+            "donor_city":       donor_city,
+            "donor_email":      donor_email,
+            # confirmation
+            "donor_confirmed":   donor_confirmed,
+            "patient_confirmed": patient_confirmed,
+            "confirmation_id":   conf_id,
+            # documents
+            "hospital_doc":  _abs(req.hospital_doc),
+            "doctor_note":   _abs(req.doctor_note),
+        })
+
+    return JsonResponse({"data": data, "total": len(data)})
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def admin_donation_detail(request, donation_id):
+    try:
+        req = BloodRequest.objects.select_related(
+            'patient', 'hospital_location', 'accepted_donor'
+        ).get(id=donation_id)
+    except BloodRequest.DoesNotExist:
+        return JsonResponse({"error": "Not found"}, status=404)
+
+    donor = req.accepted_donor
+
+    # �"��"� confirmation �" direct query �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
+    conf = None
+    try:
+        conf = DonationConfirmation.objects.filter(
+            request=req
+        ).order_by('-created_at').first()
+
+        if conf is None:
+            conf = DonationConfirmation.objects.filter(
+                blood_request=req
+            ).order_by('-created_at').first()
+    except Exception:
+        pass
+
+    # �"��"� donor block �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
+    donor_data = {}
+    if donor:
+        photo_url = None
+        try:
+            if donor.photo:
+                photo_url = request.build_absolute_uri(donor.photo.url)
+        except Exception:
+            pass
+
+        donor_data = {
+            "id":         donor.id,
+            "name":       f"{donor.first_name or ''} {donor.last_name or ''}".strip(),
+            "blood_type": donor.blood_type,
+            "phone":      donor.phone_number,
+            "email":      donor.email,
+            "city":       donor.city,
+            "photo":      photo_url,
+        }
+
+    # �"��"� confirmation block �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
+    conf_data = None
+    if conf:
+        conf_data = {
+            "donor_confirmed":   bool(conf.donor_confirmed),
+            "patient_confirmed": bool(conf.patient_confirmed),
+            "created_at":        conf.created_at.isoformat() if conf.created_at else None,
+        }
+
+    # �"��"� timeline �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
+    timeline = []
+
+    if req.created_at:
+        timeline.append({
+            "event": "Request Created",
+            "time":  req.created_at.isoformat(),
+            "by":    req.patient.fullname if req.patient else "Hospital",
+        })
+
+    if req.status in ('approved', 'completed', 'rejected'):
+        approved_at = getattr(req, 'approved_at', None)
+        timeline.append({
+            "event": f"Request {req.status.title()}",
+            "time":  approved_at.isoformat() if approved_at else None,
+            "by":    "Admin",
+        })
+
+    if donor:
+        timeline.append({
+            "event": "Donor Accepted Request",
+            "time":  None,
+            "by":    donor.first_name or "Donor",
+        })
+
+    if conf and conf.donor_confirmed:
+        timeline.append({
+            "event": "Donor Confirmed Donation",
+            "time":  None,
+            "by":    donor_data.get("name", "Donor"),
+        })
+
+    if conf and conf.patient_confirmed:
+        timeline.append({
+            "event": "Patient Confirmed Receipt",
+            "time":  None,
+            "by":    req.patient.fullname if req.patient else "Patient",
+        })
+
+    if req.status == 'completed':
+        timeline.append({
+            "event": "Donation Completed",
+            "time":  req.donation_date.isoformat() if req.donation_date else None,
+            "by":    "System",
+        })
+
+    # �"��"� audit trail from Notification �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
+    audit_logs = []
+    try:
+        audit_logs = list(
+            Notification.objects.filter(blood_request=req)
+            .order_by('created_at')
+            .values('title', 'message', 'created_at', 'type')
+        )
+    except Exception:
+        pass
+
+    return JsonResponse({
+        "id":           req.id,
+        "timeline":     timeline,
+        "audit_logs":   audit_logs,
+        "donor":        donor_data,
+        "confirmation": conf_data,
+    })
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def admin_complete_donation(request, donation_id):
+    try:
+        req = BloodRequest.objects.get(id=donation_id)
+    except BloodRequest.DoesNotExist:
+        return JsonResponse({"error": "Not found"}, status=404)
+
+    req.status = 'completed'
+    if not req.donation_date:
+        req.donation_date = timezone.now()
+    req.save()
+
+    try:
+        patient_name = req.patient.fullname if req.patient else "patient"
+        Notification.objects.create(
+            title="Blood Request Completed",
+            message=f"Blood request #{donation_id} for {patient_name} marked complete by admin.",
+            type="completed",
+            is_read=False,
+            blood_request=req,
+        )
+    except Exception:
+        pass
+
+    return JsonResponse({"success": True, "message": "Marked as completed"})
+
+
+

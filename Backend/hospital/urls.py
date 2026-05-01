@@ -21,5 +21,13 @@ path(
     "notifications/<int:notification_id>/read/",
     views.mark_notification_read
 ),
+path(
+    "notifications/mark-all-read/",
+    views.mark_all_notifications_read
+),
+path(
+    "request/<int:request_id>/escalation-status/",
+    views.hospital_request_escalation_status
+),
     
 ]

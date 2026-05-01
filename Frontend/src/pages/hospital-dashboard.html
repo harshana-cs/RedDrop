@@ -296,10 +296,10 @@
         <i class="fas fa-tint nav-icon mr-2"></i>
         <span class="nav-text">Blood Requests</span>
       </button>
-      <button data-tab="donors" data-tooltip="Donor Matches"
+      <button data-tab="donors" data-tooltip="Donors Near Hospital"
   class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 flex items-center">
   <i class="fas fa-users nav-icon mr-2"></i>
-  <span class="nav-text">Matched Donors</span>
+  <span class="nav-text">Donors Near Hospital</span>
 </button>
       <button data-tab="stock" data-tooltip="Blood Stock"
         class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 flex items-center">
@@ -365,8 +365,12 @@
     <div id="notificationBox"
          class="hidden absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg max-h-96 overflow-y-auto">
 
-      <div class="p-2 border-b font-semibold">
-        Notifications
+      <div class="p-2 border-b flex items-center justify-between">
+        <span class="font-semibold">Notifications</span>
+        <div class="flex items-center gap-2">
+          <button onclick="loadHospitalNotifications()" class="text-xs px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">Refresh</button>
+          <button onclick="markAllHospitalNotificationsRead()" class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">Mark all read</button>
+        </div>
       </div>
 
       <div id="notificationList"></div>
@@ -433,6 +437,23 @@
           </div>
         </div>
 
+        <div class="bg-white p-4 rounded-xl shadow flex flex-wrap gap-3 items-center">
+          <p class="text-sm font-medium text-gray-700">Overview Filters:</p>
+          <select id="overviewDaysFilter" class="border p-2 rounded text-sm" onchange="loadOverviewData()">
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="all">All time</option>
+          </select>
+          <select id="overviewRequestStatusFilter" class="border p-2 rounded text-sm" onchange="loadOverviewData()">
+            <option value="all">All request statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div class="bg-white p-6 rounded-xl shadow">
             <h3 class="text-lg font-semibold mb-4">Blood Stock Overview</h3>
@@ -443,6 +464,17 @@
             <div id="recentActivity" class="space-y-3">
               <!-- dynamic -->
             </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow">
+            <h3 class="text-lg font-semibold mb-4">Request Status Distribution</h3>
+            <canvas id="requestStatusChart" height="260"></canvas>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow">
+            <h3 class="text-lg font-semibold mb-4">Request Urgency Breakdown</h3>
+            <canvas id="requestUrgencyChart" height="260"></canvas>
           </div>
         </div>
 
@@ -587,6 +619,23 @@
             </div>
           </div>
 
+          <div class="mb-6 flex flex-wrap items-center gap-3">
+            <p class="text-sm font-medium text-gray-700">Inventory Filters:</p>
+            <select id="stockBloodTypeFilter" class="border p-2 rounded text-sm" onchange="applyStockFilters()">
+              <option value="all">All Blood Types</option>
+              <option value="A+">A+</option><option value="A-">A-</option>
+              <option value="B+">B+</option><option value="B-">B-</option>
+              <option value="AB+">AB+</option><option value="AB-">AB-</option>
+              <option value="O+">O+</option><option value="O-">O-</option>
+            </select>
+            <select id="stockLevelFilter" class="border p-2 rounded text-sm" onchange="applyStockFilters()">
+              <option value="all">All Levels</option>
+              <option value="critical">Critical</option>
+              <option value="low">Low</option>
+              <option value="adequate">Adequate</option>
+            </select>
+          </div>
+
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-red-50 p-4 rounded-lg">
               <p class="text-sm text-gray-600">Critical Stock</p>
@@ -633,6 +682,12 @@
             <canvas id="stockDistributionChart" height="300"></canvas>
           </div>
           <div class="bg-white p-6 rounded-xl shadow">
+            <h3 class="text-lg font-semibold mb-4">Current vs Minimum Required</h3>
+            <canvas id="stockMinCompareChart" height="300"></canvas>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow">
             <h3 class="text-lg font-semibold mb-4">Stock Alerts</h3>
             <div id="stockAlerts" class="space-y-3"></div>
           </div>
@@ -642,7 +697,8 @@
       <!-- ================= DONORS ================= -->
       <section id="donors" class="tab-section hidden space-y-6">
         <div class="bg-white rounded-xl shadow p-6">
-          <h3 class="text-xl font-semibold mb-4">Assigned Donors</h3>
+          <h3 class="text-xl font-semibold mb-4">Donors Near Hospital</h3>
+          <div id="donorTierStatus" class="mb-4 hidden"></div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="donorList"></div>
         </div>
       </section>
@@ -957,10 +1013,15 @@
  // Global variables
   let hospitalData = {};
   let stockData = [];
+  let rawStockData = [];
+  let overviewRequestsData = [];
   let requestsData = [];
   let showMatchedDonors = false;
   let stockChartInstance = null;
-let stockDistributionChartInstance = null;
+  let stockDistributionChartInstance = null;
+  let stockMinCompareChartInstance = null;
+  let requestStatusChartInstance = null;
+  let requestUrgencyChartInstance = null;
   
   // Sidebar collapse state
   let isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
@@ -1102,11 +1163,16 @@ let stockDistributionChartInstance = null;
   async function loadOverviewData() {
     try {
       // Load dashboard statistics
-      const response = await fetch("http://127.0.0.1:8000/api/hospital/dashboard/", {
-        headers: authHeaders()
-
-      });
-      const data = await response.json();
+      const [dashboardRes, requestsRes] = await Promise.all([
+        fetch("http://127.0.0.1:8000/api/hospital/dashboard/", {
+          headers: authHeaders()
+        }),
+        fetch("http://127.0.0.1:8000/api/hospital/blood-requests/", {
+          headers: authHeaders()
+        })
+      ]);
+      const data = await dashboardRes.json();
+      overviewRequestsData = await requestsRes.json();
       
       // Update overview cards
       document.getElementById('totalRequests').textContent = data.total_requests || 0;
@@ -1122,6 +1188,7 @@ let stockDistributionChartInstance = null;
       
       // Update recent activity
       updateRecentActivity(data.recent_activity || []);
+      updateOverviewRequestCharts(overviewRequestsData || []);
       
       document.getElementById('lastSync').textContent = 'Last sync: ' + new Date().toLocaleTimeString();
     } catch (error) {
@@ -1137,14 +1204,35 @@ let stockDistributionChartInstance = null;
 
       });
       const data = await response.json();
-      stockData = data;
-      updateStockTable(data);
-      updateStockAlerts(data);
-      updateStockDistributionChart(data);
-      updateStockCounts(data);
+      rawStockData = Array.isArray(data) ? data : [];
+      applyStockFilters();
     } catch (error) {
       console.error('Error loading stock data:', error);
     }
+  }
+
+  function applyStockFilters() {
+    const bloodTypeFilterEl = document.getElementById('stockBloodTypeFilter');
+    const levelFilterEl = document.getElementById('stockLevelFilter');
+    const bloodType = bloodTypeFilterEl ? bloodTypeFilterEl.value : 'all';
+    const level = levelFilterEl ? levelFilterEl.value : 'all';
+
+    const filtered = (rawStockData || []).filter(item => {
+      const typeOk = bloodType === 'all' || item.blood_type === bloodType;
+      if (!typeOk) return false;
+
+      if (level === 'critical') return item.units < 5;
+      if (level === 'low') return item.units >= 5 && item.units < item.minimum_required;
+      if (level === 'adequate') return item.units >= item.minimum_required;
+      return true;
+    });
+
+    stockData = filtered;
+    updateStockTable(filtered);
+    updateStockAlerts(filtered);
+    updateStockDistributionChart(filtered);
+    updateStockCounts(filtered);
+    updateStockMinCompareChart(filtered);
   }
 
   function updateStockTable(stock) {
@@ -1301,7 +1389,7 @@ let stockDistributionChartInstance = null;
   });
 }
 
-  function updateStockDistributionChart(stock) {
+function updateStockDistributionChart(stock) {
   const ctx = document.getElementById('stockDistributionChart').getContext('2d');
 
   if (stockDistributionChartInstance) {
@@ -1327,20 +1415,122 @@ let stockDistributionChartInstance = null;
   });
 }
 
- async function createBloodRequest() {
+function updateStockMinCompareChart(stock) {
+  const canvas = document.getElementById('stockMinCompareChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  if (stockMinCompareChartInstance) {
+    stockMinCompareChartInstance.destroy();
+  }
+
+  const labels = stock.map(item => item.blood_type);
+  const current = stock.map(item => item.units);
+  const minimum = stock.map(item => item.minimum_required);
+
+  stockMinCompareChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Current Units', data: current, backgroundColor: '#3B82F6' },
+        { label: 'Minimum Required', data: minimum, backgroundColor: '#F59E0B' }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true, title: { display: true, text: 'Units' } } }
+    }
+  });
+}
+
+function updateOverviewRequestCharts(requests) {
+  const daysFilter = document.getElementById('overviewDaysFilter')?.value || '7';
+  const statusFilter = document.getElementById('overviewRequestStatusFilter')?.value || 'all';
+  const now = new Date();
+
+  const filtered = (requests || []).filter(r => {
+    const created = r.created_at ? new Date(r.created_at) : null;
+    if (daysFilter !== 'all' && created) {
+      const days = Number(daysFilter);
+      const diff = (now - created) / (1000 * 60 * 60 * 24);
+      if (diff > days) return false;
+    }
+    if (statusFilter !== 'all' && r.status !== statusFilter) return false;
+    return true;
+  });
+
+  const statusCounts = { pending: 0, approved: 0, rejected: 0, completed: 0 };
+  const urgencyCounts = { Normal: 0, High: 0, Critical: 0 };
+  filtered.forEach(r => {
+    if (statusCounts[r.status] !== undefined) statusCounts[r.status] += 1;
+    if (urgencyCounts[r.urgency] !== undefined) urgencyCounts[r.urgency] += 1;
+  });
+
+  const statusCtx = document.getElementById('requestStatusChart')?.getContext('2d');
+  if (statusCtx) {
+    if (requestStatusChartInstance) requestStatusChartInstance.destroy();
+    requestStatusChartInstance = new Chart(statusCtx, {
+      type: 'pie',
+      data: {
+        labels: ['Pending', 'Approved', 'Rejected', 'Completed'],
+        datasets: [{
+          data: [statusCounts.pending, statusCounts.approved, statusCounts.rejected, statusCounts.completed],
+          backgroundColor: ['#F59E0B', '#10B981', '#EF4444', '#3B82F6']
+        }]
+      },
+      options: { responsive: true }
+    });
+  }
+
+  const urgCtx = document.getElementById('requestUrgencyChart')?.getContext('2d');
+  if (urgCtx) {
+    if (requestUrgencyChartInstance) requestUrgencyChartInstance.destroy();
+    requestUrgencyChartInstance = new Chart(urgCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Normal', 'High', 'Critical'],
+        datasets: [{
+          label: 'Requests',
+          data: [urgencyCounts.Normal, urgencyCounts.High, urgencyCounts.Critical],
+          backgroundColor: ['#60A5FA', '#F59E0B', '#EF4444']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+}
+
+  async function createBloodRequest() {
 
   const patientName = document.getElementById('patientName').value;
   const bloodType = document.getElementById('bloodType').value;
-  const units = document.getElementById('units').value;
+  const units = parseInt(document.getElementById('units').value || "0", 10);
   const urgency = document.getElementById('urgency').value;
   const notes = document.getElementById('requestNotes').value;
   const hospitalDoc = document.getElementById('hospitalDoc').files[0];
+
+  if (!bloodType || !units || units <= 0) {
+    alert("Please select blood type and valid units.");
+    return;
+  }
+
+  const ownStock = (rawStockData || []).find(s => s.blood_type === bloodType);
+  const ownUnits = Number(ownStock?.units || 0);
+  if (ownUnits >= units) {
+    alert(`Request blocked: You already have ${ownUnits} units of ${bloodType} in stock (requested ${units}).`);
+    return;
+  }
 
   const formData = new FormData();
 
   formData.append("patient_name", patientName);
   formData.append("blood_type", bloodType);   // must match backend
-  formData.append("units", units);            // must match backend
+  formData.append("units", String(units));    // must match backend
   formData.append("urgency", urgency);
   formData.append("notes", notes);
 
@@ -1471,13 +1661,22 @@ let stockDistributionChartInstance = null;
       container.innerHTML = `
         <div class="col-span-full text-center py-8">
           <i class="fas fa-user-slash text-4xl text-gray-300 mb-3"></i>
-          <p class="text-gray-500">No donors assigned yet</p>
+          <p class="text-gray-500">No donors found near this hospital yet</p>
         </div>
       `;
       return;
     }
     
     donors.forEach(donor => {
+      const availability = donor.availability || (donor.is_available === false ? "Unavailable" : "Available");
+      const availabilityClass = availability.toLowerCase() === "available"
+        ? "bg-green-100 text-green-700"
+        : "bg-red-100 text-red-700";
+      const locationText = donor.city || donor.location || donor.address || "Location not available";
+      const distanceText = (donor.distance_km !== null && donor.distance_km !== undefined)
+        ? `${Number(donor.distance_km).toFixed(1)} km away`
+        : "Distance not available";
+
       const card = `
         <div class="bg-white border rounded-lg p-4 hover:shadow-md transition">
           <div class="flex items-start justify-between mb-3">
@@ -1485,8 +1684,8 @@ let stockDistributionChartInstance = null;
               <h4 class="font-semibold">${donor.name}</h4>
               <p class="text-sm text-gray-600">${donor.blood_type}</p>
             </div>
-            <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
-              Available
+            <span class="px-2 py-1 text-xs rounded ${availabilityClass}">
+              ${availability}
             </span>
           </div>
           <div class="space-y-2 text-sm">
@@ -1495,8 +1694,16 @@ let stockDistributionChartInstance = null;
               <span>${donor.phone || 'N/A'}</span>
             </div>
             <div class="flex items-center">
+              <i class="fas fa-envelope text-gray-400 mr-2 w-4"></i>
+              <span>${donor.email || 'N/A'}</span>
+            </div>
+            <div class="flex items-center">
               <i class="fas fa-map-marker-alt text-gray-400 mr-2 w-4"></i>
-              <span>${donor.distance_km ? donor.distance_km + " km away" : "N/A"}</span>
+              <span>${locationText}</span>
+            </div>
+            <div class="flex items-center">
+              <i class="fas fa-route text-gray-400 mr-2 w-4"></i>
+              <span>${distanceText}</span>
             </div>
             <div class="flex items-center">
               <i class="fas fa-calendar-alt text-gray-400 mr-2 w-4"></i>
@@ -1756,7 +1963,31 @@ let stockDistributionChartInstance = null;
   async function showRequestDetails(requestId) {
     const request = requestsData.find(r => r.id === requestId);
     if (!request) return;
-    
+
+    let escalation = null;
+    try {
+      const escRes = await fetch(
+        `http://127.0.0.1:8000/api/hospital/request/${requestId}/escalation-status/`,
+        { headers: authHeaders() }
+      );
+      if (escRes.ok) escalation = await escRes.json();
+    } catch (e) {
+      console.error("Failed to fetch escalation status:", e);
+    }
+
+    const tiers = [
+      { name: "Tier 1 (0-5 km)", data: escalation?.tier_1 },
+      { name: "Tier 2 (5-15 km)", data: escalation?.tier_2 },
+      { name: "Tier 3 (15-30 km)", data: escalation?.tier_3 },
+      { name: "Tier 4 (30+ km)", data: escalation?.tier_4 },
+    ];
+
+    const stockCheck = escalation?.stock_check || {};
+    const hospitalStockMap = stockCheck.hospital_stock || {};
+    const ownHospitalName = (hospitalData?.name || '').trim().toLowerCase();
+    const hospitalStockRows = Object.entries(hospitalStockMap)
+      .filter(([name]) => (name || '').trim().toLowerCase() !== ownHospitalName);
+
     const content = document.getElementById('requestDetailsContent');
     content.innerHTML = `
       <div class="space-y-4">
@@ -1824,6 +2055,62 @@ let stockDistributionChartInstance = null;
           </div>
         </div>
         ` : ''}
+
+        <div class="mt-6 pt-6 border-t">
+          <h4 class="font-semibold mb-3">Tier Escalation Progress</h4>
+          ${escalation ? `
+            <div class="space-y-3">
+              <div class="text-sm text-gray-600">
+                Total donors alerted: <span class="font-semibold text-gray-900">${escalation.total_donors_alerted || 0}</span>
+              </div>
+              ${tiers.map(t => `
+                <div class="p-3 rounded-lg border ${t.data?.completed ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}">
+                  <div class="flex items-center justify-between">
+                    <p class="font-medium">${t.name}</p>
+                    <span class="text-xs px-2 py-1 rounded ${t.data?.completed ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                      ${t.data?.completed ? 'Completed' : 'In Progress'}
+                    </span>
+                  </div>
+                  <p class="text-sm text-gray-600 mt-1">Donors notified: ${t.data?.donors_notified || 0}</p>
+                </div>
+              `).join('')}
+            </div>
+          ` : `
+            <p class="text-sm text-gray-500">Escalation details are not available yet.</p>
+          `}
+        </div>
+
+        <div class="mt-6 pt-6 border-t">
+          <h4 class="font-semibold mb-3">Stock Check (Blood Bank + Other Hospitals)</h4>
+          ${escalation ? `
+            <div class="space-y-3">
+              <div class="p-3 rounded-lg border border-blue-200 bg-blue-50">
+                <p class="text-sm text-blue-700">
+                  Blood bank units found:
+                  <span class="font-semibold">${stockCheck.blood_bank_units || 0}</span>
+                </p>
+              </div>
+              <div class="p-3 rounded-lg border border-gray-200 bg-gray-50">
+                <p class="text-sm font-medium mb-2">Other hospitals stock:</p>
+                ${hospitalStockRows.length ? `
+                  <div class="space-y-2">
+                    ${hospitalStockRows.map(([name, info]) => `
+                      <div class="flex items-center justify-between bg-white border rounded p-2">
+                        <div>
+                          <p class="font-medium text-sm">${name}</p>
+                          <p class="text-xs text-gray-500">${info?.district || 'District N/A'}</p>
+                        </div>
+                        <div class="text-sm font-semibold text-red-600">${info?.units || 0} units</div>
+                      </div>
+                    `).join('')}
+                  </div>
+                ` : `<p class="text-sm text-gray-500">No nearby hospital stock found yet.</p>`}
+              </div>
+            </div>
+          ` : `
+            <p class="text-sm text-gray-500">Stock check details are not available yet.</p>
+          `}
+        </div>
       </div>
     `;
     
@@ -2155,42 +2442,79 @@ async function loadHospitalNotifications() {
     );
 
     const data = await response.json();
-    console.log("Notifications:", data);
-
-     const container = document.getElementById("notificationList");
+    const container = document.getElementById("notificationList");
     const countBadge = document.getElementById("notificationCount");
     container.innerHTML = "";
-    
-     // update notification count
-    if(data.length > 0){
-        countBadge.textContent = data.length;
+
+    const unreadCount = (data || []).filter(n => !n.is_read).length;
+
+    if(unreadCount > 0){
+        countBadge.textContent = unreadCount;
         countBadge.classList.remove("hidden");
     }else{
         countBadge.classList.add("hidden");
     }
 
-   data.forEach(n => {
+    if (!data.length) {
+      container.innerHTML = `<div class="p-4 text-sm text-gray-500">No notifications yet</div>`;
+      return;
+    }
 
-  let click = "";
+    data.forEach(n => {
+      const rowClass = n.is_read ? "bg-white" : "bg-blue-50";
+      const clickTarget = (n.type === "blood_request_approved" && n.request_id)
+        ? `onclick="handleHospitalNotificationClick(${n.id}, ${n.request_id})"`
+        : `onclick="markHospitalNotificationRead(${n.id})"`;
 
-  if(n.type === "blood_request_approved" && n.request_id){
-    click = `onclick="openDonorMatch(${n.request_id})"`
-}
-  container.innerHTML += `
-    <div class="p-3 border-b hover:bg-gray-50 cursor-pointer" ${click}>
-      <p class="font-semibold text-sm">${n.title}</p>
-      <p class="text-xs text-gray-600">${n.message}</p>
-      <p class="text-xs text-gray-400">
-        ${new Date(n.created_at).toLocaleString()}
-      </p>
-    </div>
-  `;
-});
+      container.innerHTML += `
+        <div class="p-3 border-b hover:bg-gray-50 cursor-pointer ${rowClass}" ${clickTarget}>
+          <div class="flex items-start justify-between gap-2">
+            <p class="font-semibold text-sm">${n.title}</p>
+            ${n.is_read ? "" : '<span class="text-[10px] px-2 py-0.5 bg-blue-600 text-white rounded-full">NEW</span>'}
+          </div>
+          <p class="text-xs text-gray-600 mt-1">${n.message}</p>
+          <p class="text-xs text-gray-400 mt-1">
+            ${new Date(n.created_at).toLocaleString()}
+          </p>
+        </div>
+      `;
+    });
 
   } catch(err){
     console.error("Notification load error", err);
   }
 
+}
+async function markHospitalNotificationRead(notificationId) {
+  if (!notificationId) return;
+  try {
+    await fetch(`http://127.0.0.1:8000/api/hospital/notifications/${notificationId}/read/`, {
+      method: "POST",
+      headers: authHeaders()
+    });
+    loadHospitalNotifications();
+  } catch (err) {
+    console.error("Failed to mark notification read", err);
+  }
+}
+async function markAllHospitalNotificationsRead() {
+  try {
+    await fetch("http://127.0.0.1:8000/api/hospital/notifications/mark-all-read/", {
+      method: "POST",
+      headers: authHeaders()
+    });
+    loadHospitalNotifications();
+  } catch (err) {
+    console.error("Failed to mark all notifications read", err);
+  }
+}
+async function handleHospitalNotificationClick(notificationId, requestId) {
+  await markHospitalNotificationRead(notificationId);
+  if (requestId) {
+    await openDonorMatch(requestId);
+    const box = document.getElementById("notificationBox");
+    box.classList.add("hidden");
+  }
 }
 function toggleNotifications(){
 
@@ -2216,8 +2540,13 @@ async function openDonorMatch(requestId){
       `http://127.0.0.1:8000/api/hospital/request/${requestId}/donors/`,
       { headers: authHeaders() }
     );
+    const escRes = await fetch(
+      `http://127.0.0.1:8000/api/hospital/request/${requestId}/escalation-status/`,
+      { headers: authHeaders() }
+    );
 
     const data = await response.json();
+    const esc = escRes.ok ? await escRes.json() : null;
 
     const donors = data.donors || [];
 
@@ -2226,14 +2555,63 @@ async function openDonorMatch(requestId){
     switchTab("donors");   // ✅ CORRECT
 
     updateDonorsList(donors);
+    renderDonorTierStatus(esc, requestId);
 
     document.getElementById("pageTitle").textContent =
-      `Matched Donors for Request #${requestId}`;
+      `Donors Near Hospital for Request #${requestId}`;
 
   }catch(err){
     console.error(err);
   }
 
+}
+
+function renderDonorTierStatus(esc, requestId) {
+  const box = document.getElementById('donorTierStatus');
+  if (!box) return;
+
+  if (!esc) {
+    box.classList.remove('hidden');
+    box.innerHTML = `
+      <div class="p-3 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600">
+        Tier status not available for request #${requestId}.
+      </div>
+    `;
+    return;
+  }
+
+  const tiers = [
+    { name: 'Tier 1', d: esc.tier_1 },
+    { name: 'Tier 2', d: esc.tier_2 },
+    { name: 'Tier 3', d: esc.tier_3 },
+    { name: 'Tier 4', d: esc.tier_4 },
+  ];
+  const bankUnits = Number(esc?.stock_check?.blood_bank_units || 0);
+  const hospitalsFound = Object.keys(esc?.stock_check?.hospital_stock || {}).length;
+
+  box.classList.remove('hidden');
+  box.innerHTML = `
+    <div class="p-4 rounded-lg border border-blue-200 bg-blue-50">
+      <div class="flex items-center justify-between mb-2">
+        <h4 class="font-semibold text-blue-800">Tier Progress (Request #${requestId})</h4>
+        <span class="text-xs px-2 py-1 rounded ${esc.completed_at ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+          ${esc.completed_at ? 'Completed' : 'In Progress'}
+        </span>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+        ${tiers.map(t => `
+          <div class="bg-white border rounded p-2">
+            <p class="text-xs text-gray-500">${t.name}</p>
+            <p class="text-sm font-semibold">${t.d?.donors_notified || 0} donors</p>
+            <p class="text-xs ${t.d?.completed ? 'text-green-600' : 'text-yellow-600'}">${t.d?.completed ? 'done' : 'running'}</p>
+          </div>
+        `).join('')}
+      </div>
+      <div class="mt-2 text-xs text-blue-900">
+        Blood bank units: <b>${bankUnits}</b> | Other hospitals with stock: <b>${hospitalsFound}</b>
+      </div>
+    </div>
+  `;
 }
 </script>
 
