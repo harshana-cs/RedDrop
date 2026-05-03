@@ -3585,20 +3585,21 @@ let bloodTypeChart, requestStatusChart;
 
         /* ---------- TAB MANAGEMENT ---------- */
         const tabs = document.querySelectorAll('nav button');
-       const sections = {
-    overview: document.getElementById('overviewSection'),
-    blood: document.getElementById('pendingBloodRequests'),
-    donor: document.getElementById('pendingDonorRequests'),
-    hospital: document.getElementById('hospitalSection'),
-    users: document.getElementById('usersSection'),
-    inventory: document.getElementById('inventorySection'),
-    <!-- Add to sections object -->
-    donations: document.getElementById('donationsSection'),
-    analytics: document.getElementById('analyticsSection'),
-    audit: document.getElementById('auditLogsSection'),
-    camps: document.getElementById('campsSection')  // ✅ FIXED
-};
- 
+        let sections = {};
+        function buildSectionsMap() {
+            sections = {
+                overview: document.getElementById('overviewSection'),
+                blood: document.getElementById('pendingBloodRequests'),
+                donor: document.getElementById('pendingDonorRequests'),
+                hospital: document.getElementById('hospitalSection'),
+                users: document.getElementById('usersSection'),
+                inventory: document.getElementById('inventorySection'),
+                donations: document.getElementById('donationsSection'),
+                analytics: document.getElementById('analyticsSection'),
+                audit: document.getElementById('auditLogsSection'),
+                camps: document.getElementById('campsSection')
+            };
+        }
 
         const pageTitles = {
             overview:  { title: 'Dashboard Overview',    subtitle: 'System statistics and quick insights' },
@@ -3629,9 +3630,9 @@ let bloodTypeChart, requestStatusChart;
                 
                 // Show selected section
                 Object.values(sections).forEach(section => {
-                    section.classList.add('hidden');
+                    if (section) section.classList.add('hidden');
                 });
-                sections[tabName].classList.remove('hidden');
+                if (sections[tabName]) sections[tabName].classList.remove('hidden');
                 
                 // Load data for the section
                 if (tabName === 'blood') {
@@ -3668,7 +3669,6 @@ if (tabName === 'analytics') initAnalytics();
 
         });
 
-       // ─── CHART STATE ──────────────────────────────────────────────
 
 let bloodTypeChartType  = 'doughnut';
 let requestChartType    = 'bar';
@@ -3922,7 +3922,8 @@ function renderRequestStatusChart() {
     const data   = _requestStatusData;
     const ctx    = document.getElementById('requestStatusChart').getContext('2d');
     const empty  = document.getElementById('requestStatusChartEmpty');
-    const filter = document.getElementById('requestStatusFilter')?.value || 'all';
+    const rsFilterEl = document.getElementById('requestStatusFilter');
+    const filter = (rsFilterEl && rsFilterEl.value) || 'all';
  
     // Build datasets based on filter
     const allDatasets = [
@@ -4028,7 +4029,13 @@ function setRequestChartType(type) {
     body.innerHTML = '';
 
     json.data
-        .sort((a, b) => { const ta = parseAdminDate(a.created_at || a.date)?.getTime() || 0; const tb = parseAdminDate(b.created_at || b.date)?.getTime() || 0; return tb - ta; })
+        .sort((a, b) => {
+            const da = parseAdminDate(a.created_at || a.date);
+            const db = parseAdminDate(b.created_at || b.date);
+            const ta = da ? da.getTime() : 0;
+            const tb = db ? db.getTime() : 0;
+            return tb - ta;
+        })
         .forEach(r => {
 
             const urgencyClass = r.urgency === 'Critical' ? 'bg-red-100 text-red-800' : 
@@ -4397,62 +4404,6 @@ function setRequestChartType(type) {
             }
         }
 
-        async function createHospital() {
-    const name = document.getElementById('hospitalName').value.trim();
-    const district = document.getElementById('hospitalDistrict').value.trim();
-    const contact = document.getElementById('hospitalContact').value.trim();
-    const regNo = document.getElementById('hospitalRegNo').value.trim();
-    const username = document.getElementById('hospitalUsername').value.trim();
-    const password = document.getElementById('hospitalPassword').value.trim();
-
-    if (!name || !district || !contact || !regNo || !username || !password) {
-        showToast('error', 'Validation Error', 'Please fill in all required fields.');
-        return;
-    }
-
-    if (password.length < 8) {
-        showToast('warning', 'Weak Password', 'Password must be at least 8 characters.');
-        return;
-    }
-
-    try {
-        const response = await fetch("http://127.0.0.1:8000/api/admin/hospital/create/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                name: name,
-                username: username,
-                password: password,
-                district: district,
-                contact_number: contact,
-                registration_number: regNo   // ✅ FIXED KEY
-            })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            showToast('success', 'Hospital Created', 'Hospital account created successfully.');
-
-            // Clear form
-            document.getElementById('hospitalName').value = '';
-            document.getElementById('hospitalDistrict').value = '';
-            document.getElementById('hospitalContact').value = '';
-            document.getElementById('hospitalRegNo').value = '';
-            document.getElementById('hospitalUsername').value = '';
-            document.getElementById('hospitalPassword').value = '';
-
-            toggleHospitalForm();
-            loadHospitals();
-        } else {
-            showToast('error', 'Creation Failed', data.message || 'Failed to create hospital.');
-        }
-
-    } catch (error) {
-        console.error(error);
-        showToast('error', 'Network Error', 'Failed to connect to server.');
-    }
-}
 
          /* ---------- HOSPITAL REQUEST MANAGEMENT ---------- */
         async function loadHospitalRequests() {
@@ -4491,6 +4442,7 @@ function setRequestChartType(type) {
     
     <!-- View -->
     <button
+
       onclick="viewHospitalRequest(${h.id})"
       class="inline-flex items-center gap-1.5
              px-3 py-1.5 text-sm font-medium
@@ -4811,8 +4763,9 @@ function setRequestChartType(type) {
         }
         /* ---------- INITIAL LOAD ---------- */
         document.addEventListener('DOMContentLoaded', () => {
+            buildSectionsMap();
             initializeCharts();
-            tabs[0].click();
+            if (tabs.length) tabs[0].click();
             loadBloodRequests();
             loadDonors();
             loadHospitals();
@@ -4841,6 +4794,10 @@ function setRequestChartType(type) {
                 if (!document.getElementById("usersSection").classList.contains("hidden"))
                     loadUsers();
             }, 30000);
+            setInterval(() => {
+                if (!document.getElementById("donationsSection").classList.contains("hidden"))
+                    loadDonations();
+            }, 30000);
         });
 
         // Close dropdowns when clicking outside
@@ -4859,7 +4816,7 @@ function setRequestChartType(type) {
         const res = await fetch("http://127.0.0.1:8000/api/admin/blood-requests/processed/");
         const json = await res.json();
 
-        if (json.data?.length) {
+        if (json.data && json.data.length) {
             // Store globally for filtering
             window._processedBloodRequests = json.data;
             renderProcessedBloodRequests(json.data);
@@ -4881,7 +4838,13 @@ function renderProcessedBloodRequests(data) {
     }
 
     // Sort newest first
-    data.sort((a, b) => { const ta = parseAdminDate(a.processed_at || a.processed_on)?.getTime() || 0; const tb = parseAdminDate(b.processed_at || b.processed_on)?.getTime() || 0; return tb - ta; });
+    data.sort((a, b) => {
+        const da = parseAdminDate(a.processed_at || a.processed_on);
+        const db = parseAdminDate(b.processed_at || b.processed_on);
+        const ta = da ? da.getTime() : 0;
+        const tb = db ? db.getTime() : 0;
+        return tb - ta;
+    });
 
     body.innerHTML = data.map(r => {
         const statusClass = r.status === "approved"
@@ -4924,7 +4887,7 @@ async function loadProcessedDonors() {
         const res = await fetch("http://127.0.0.1:8000/api/admin/donors/processed/");
         const json = await res.json();
 
-        if (json.data?.length) {
+        if (json.data && json.data.length) {
             body.innerHTML = "";
             json.data.forEach(d => {
                 const statusClass = d.status === "approved"
@@ -5238,11 +5201,11 @@ function openBloodRequests() {
 
     // hide all sections
     Object.values(sections).forEach(section => {
-        section.classList.add('hidden');
+        if (section) section.classList.add('hidden');
     });
 
     // show blood request section
-    sections.blood.classList.remove('hidden');
+    if (sections.blood) sections.blood.classList.remove('hidden');
 
     // change header title
     document.getElementById('page-title').textContent = "Blood Requests";
@@ -5281,8 +5244,8 @@ else if (type === "completed" || type === "donation_complete") {
     tabs.forEach(t => { t.classList.remove('bg-red-50','text-red-600'); t.classList.add('text-gray-700'); });
     const donTab = document.querySelector('[data-tab="donations"]');
     if (donTab) donTab.classList.add('bg-red-50','text-red-600');
-    Object.values(sections).forEach(s => s.classList.add('hidden'));
-    sections.donations.classList.remove('hidden');
+    Object.values(sections).forEach(s => { if (s) s.classList.add('hidden'); });
+    if (sections.donations) sections.donations.classList.remove('hidden');
     document.getElementById('page-title').textContent    = 'Donation Records';
     document.getElementById('page-subtitle').textContent = 'Complete view of all blood donations';
     loadDonations();
@@ -5295,8 +5258,8 @@ function openAuditLogs() {
     tabs.forEach(t => { t.classList.remove("bg-red-50", "text-red-600"); t.classList.add("text-gray-700"); });
     const auditTab = document.querySelector("[data-tab=\"audit\"]");
     if (auditTab) auditTab.classList.add("bg-red-50", "text-red-600");
-    Object.values(sections).forEach(s => s.classList.add("hidden"));
-    sections.audit.classList.remove("hidden");
+    Object.values(sections).forEach(s => { if (s) s.classList.add("hidden"); });
+    if (sections.audit) sections.audit.classList.remove("hidden");
     document.getElementById("page-title").textContent = "Audit Logs";
     document.getElementById("page-subtitle").textContent = "Track all system activity and changes";
     loadAuditLogs();
@@ -5311,10 +5274,10 @@ function openDonorRequests() {
     donorTab.classList.add('bg-red-50', 'text-red-600');
 
     Object.values(sections).forEach(section => {
-        section.classList.add('hidden');
+        if (section) section.classList.add('hidden');
     });
 
-    sections.donor.classList.remove('hidden');
+    if (sections.donor) sections.donor.classList.remove('hidden');
 
     document.getElementById('page-title').textContent = "Donor Registrations";
     document.getElementById('page-subtitle').textContent = "Review and verify new donor applications";
@@ -5334,10 +5297,10 @@ function openHospitalSection() {
     hospitalTab.classList.add('bg-red-50', 'text-red-600');
 
     Object.values(sections).forEach(section => {
-        section.classList.add('hidden');
+        if (section) section.classList.add('hidden');
     });
 
-    sections.hospital.classList.remove('hidden');
+    if (sections.hospital) sections.hospital.classList.remove('hidden');
 
     document.getElementById('page-title').textContent = "Hospital Management";
     document.getElementById('page-subtitle').textContent = "Manage hospital registrations";
@@ -5357,10 +5320,10 @@ function openCampsSection() {
     if (campsTab) campsTab.classList.add('bg-red-50', 'text-red-600');
 
     Object.values(sections).forEach(section => {
-        section.classList.add('hidden');
+        if (section) section.classList.add('hidden');
     });
 
-    sections.camps.classList.remove('hidden');
+    if (sections.camps) sections.camps.classList.remove('hidden');
 
     document.getElementById('page-title').textContent    = 'Donation Camps';
     document.getElementById('page-subtitle').textContent = 'Create and manage donation camp events';
@@ -5551,6 +5514,62 @@ let bgColor = getActionBgColor(log.action);
                 `;
             }
         }
+function exportToCSV(tbodyId, filename) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) {
+        showToast('error', 'Export Failed', 'Table not found for export');
+        return;
+    }
+
+    const rows = Array.from(tbody.querySelectorAll('tr')).map(tr =>
+        Array.from(tr.querySelectorAll('td,th')).map(cell =>
+            '"' + String(cell.textContent || '').replace(/\s+/g, ' ').trim().replace(/"/g, '""') + '"'
+        )
+    ).filter(r => r.length);
+
+    if (!rows.length) {
+        showToast('warning', 'No Data', 'No rows available to export');
+        return;
+    }
+
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const a = Object.assign(document.createElement('a'), {
+        href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })),
+        download: filename || ('export-' + new Date().toISOString().split('T')[0] + '.csv')
+    });
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function exportActivityLogs() {
+    const logs = window._hospitalLogs || [];
+    if (!logs.length) {
+        showToast('warning', 'No Data', 'No activity logs available to export');
+        return;
+    }
+
+    const header = ['Hospital', 'Action', 'Description', 'IP Address', 'Time'];
+    const rows = logs.map(log => [
+        log.hospital || '',
+        log.action || '',
+        log.description || '',
+        log.ip_address || '',
+        log.time ? new Date(log.time).toLocaleString() : ''
+    ]);
+    const csv = [header, ...rows].map(r =>
+        r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')
+    ).join('\n');
+
+    const a = Object.assign(document.createElement('a'), {
+        href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })),
+        download: 'hospital-activity-' + new Date().toISOString().split('T')[0] + '.csv'
+    });
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
         async function markAllRead(){
 
     await fetch(`${API_BASE}/api/admin/notifications/mark-all-read/`,{
@@ -5684,8 +5703,8 @@ async function loadUsers(){
             <span class="px-2 py-1 bg-red-50 text-red-700 rounded font-semibold text-sm">${bloodType}</span>
           </td>
           <td class="px-6 py-4 text-gray-600">${location}</td>
-          <td class="px-6 py-4 text-gray-800 font-medium">${u.total_donations ?? 0}</td>
-          <td class="px-6 py-4 text-gray-800 font-medium">${u.total_requests ?? 0}</td>
+          <td class="px-6 py-4 text-gray-800 font-medium">${u.total_donations == null ? 0 : u.total_donations}</td>
+          <td class="px-6 py-4 text-gray-800 font-medium">${u.total_requests == null ? 0 : u.total_requests}</td>
           <td class="px-6 py-4">
             <span class="px-2 py-1 rounded-full text-xs font-medium ${availClass}">${u.availability}</span>
           </td>
@@ -5939,10 +5958,6 @@ function setInventoryTab(tab) {
     if (tab === 'hospitals') renderHospitalAccordion();
     if (tab === 'bloodtype') renderBloodTypeAccordion();
     if (tab === 'movements') loadStockMovements();
-    setInterval(() => {
-    if (!document.getElementById("donationsSection").classList.contains("hidden"))
-        loadDonations();
-}, 30000);
 }
  
 function filterByStatus(s) {
@@ -5991,7 +6006,7 @@ async function loadInventory() {
  
     allStock = [];
     raw.forEach(h => {
-      const name = h.hospital?.name || 'Blood Bank';
+      const name = (h.hospital && h.hospital.name) || 'Blood Bank';
       (h.stock || []).forEach(s => {
         allStock.push({
           bt:      s.blood_type,
@@ -7364,7 +7379,8 @@ function anTrendsType(type) {
  
 function anRenderTrends() {
   if (!_trendsData) return;
-  const filter = document.getElementById('trendsStatusFilter')?.value || 'all';
+  const trendsFilterEl = document.getElementById('trendsStatusFilter');
+  const filter = (trendsFilterEl && trendsFilterEl.value) || 'all';
   const ctx    = document.getElementById('trendsChart').getContext('2d');
  
   const ALL_DS = [
@@ -7887,128 +7903,151 @@ function anRenderGeo() {
   }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-3);padding:1.5rem;">No data</td></tr>';
 }
  
-// ── EXPORTS ────────────────────────────────────────────────
 function anExportReport() {
-  const rows = [];
-  const pushBlank = () => rows.push(['', '', '', '', '', '', '']);
-  const pushSection = (title) => rows.push([title, '', '', '', '', '', '']);
-  const pushHeader = (...cols) => rows.push([...cols, '', '', '', '', '', ''].slice(0, 7));
+  var rows = [];
+  var pushBlank = function() { rows.push(['', '', '', '', '', '', '']); };
+  var pushSection = function(title) { rows.push([title, '', '', '', '', '', '']); };
+  var pushHeader = function() {
+    var cols = Array.prototype.slice.call(arguments);
+    rows.push(cols.concat(['', '', '', '', '', '', '']).slice(0, 7));
+  };
 
   rows.push(['RedDrop Analytics Report', '', '', '']);
   rows.push(['Generated', new Date().toLocaleString(), '', '']);
   rows.push(['Period', document.getElementById('anPeriodLabel').textContent, '', '']);
   pushBlank();
- 
-  if (_hospData?.hospitals) {
+
+  if (_hospData && _hospData.hospitals) {
     pushSection('HOSPITAL PERFORMANCE');
-    pushHeader('Hospital','Total Requests','Completed','Fulfillment Rate');
-    _hospData.hospitals.forEach(h => rows.push([h.hospital, h.total_requests, h.completed, h.fulfillment_rate + '%']));
-    pushBlank();
-  }
-  if (_supplyData) {
-    pushSection('DEMAND VS SUPPLY');
-    pushHeader('Blood Type','Demand','Supply','Fulfilled');
-    _supplyData.labels.forEach((bt, i) =>
-      rows.push([bt, _supplyData.demand[i], _supplyData.supply[i], _supplyData.fulfilled[i]]));
-    pushBlank();
-  }
-  if (_geoData?.requests_by_district) {
-    pushSection('GEOGRAPHIC BREAKDOWN');
-    pushHeader('District','Total','Completed','Rate');
-    _geoData.requests_by_district.forEach(d => rows.push([d.district,d.total,d.completed,d.rate+'%']));
+    pushHeader('Hospital', 'Total Requests', 'Completed', 'Fulfillment Rate');
+    _hospData.hospitals.forEach(function(h) {
+      rows.push([h.hospital, h.total_requests, h.completed, h.fulfillment_rate + '%']);
+    });
     pushBlank();
   }
 
-  // Include chart datasets explicitly so graphs are exported as data too.
+  if (_supplyData) {
+    pushSection('DEMAND VS SUPPLY');
+    pushHeader('Blood Type', 'Demand', 'Supply', 'Fulfilled');
+    _supplyData.labels.forEach(function(bt, i) {
+      rows.push([bt, _supplyData.demand[i], _supplyData.supply[i], _supplyData.fulfilled[i]]);
+    });
+    pushBlank();
+  }
+
+  if (_geoData && _geoData.requests_by_district) {
+    pushSection('GEOGRAPHIC BREAKDOWN');
+    pushHeader('District', 'Total', 'Completed', 'Rate');
+    _geoData.requests_by_district.forEach(function(d) {
+      rows.push([d.district, d.total, d.completed, d.rate + '%']);
+    });
+    pushBlank();
+  }
+
   if (_trendsData) {
     pushSection('CHART DATA: DONATION TRENDS');
-    pushHeader('Date','Completed','Approved','Pending','Rejected');
-    const labels = _trendsData.labels || [];
-    labels.forEach((label, i) => {
+    pushHeader('Date', 'Completed', 'Approved', 'Pending', 'Rejected');
+    var labels = _trendsData.labels || [];
+    labels.forEach(function(label, i) {
       rows.push([
         label,
-        (_trendsData.completed || [])[i] ?? 0,
-        (_trendsData.approved  || [])[i] ?? 0,
-        (_trendsData.pending   || [])[i] ?? 0,
-        (_trendsData.rejected  || [])[i] ?? 0,
+        (_trendsData.completed || [])[i] || 0,
+        (_trendsData.approved  || [])[i] || 0,
+        (_trendsData.pending   || [])[i] || 0,
+        (_trendsData.rejected  || [])[i] || 0
       ]);
     });
     pushBlank();
   }
 
-  if (_donorData?.trend || _donorData?.blood_type_breakdown) {
+  if (_donorData && (_donorData.trend || _donorData.blood_type_breakdown)) {
     pushSection('CHART DATA: DONOR ACTIVITY TREND');
-    pushHeader('Date','New Donors');
-    const trendLabels = _donorData?.trend?.labels || [];
-    const trendValues = _donorData?.trend?.values || [];
-    trendLabels.forEach((label, i) => rows.push([label, trendValues[i] ?? 0]));
+    pushHeader('Date', 'New Donors');
+    var trendLabels = (_donorData.trend && _donorData.trend.labels) ? _donorData.trend.labels : [];
+    var trendValues = (_donorData.trend && _donorData.trend.values) ? _donorData.trend.values : [];
+    trendLabels.forEach(function(label, i) {
+      rows.push([label, trendValues[i] || 0]);
+    });
     pushBlank();
 
     pushSection('CHART DATA: DONOR BLOOD TYPE BREAKDOWN');
-    pushHeader('Blood Type','Donor Count');
-    const btLabels = _donorData?.blood_type_breakdown?.labels || [];
-    const btValues = _donorData?.blood_type_breakdown?.values || [];
-    btLabels.forEach((label, i) => rows.push([label, btValues[i] ?? 0]));
+    pushHeader('Blood Type', 'Donor Count');
+    var btLabels = (_donorData.blood_type_breakdown && _donorData.blood_type_breakdown.labels) ? _donorData.blood_type_breakdown.labels : [];
+    var btValues = (_donorData.blood_type_breakdown && _donorData.blood_type_breakdown.values) ? _donorData.blood_type_breakdown.values : [];
+    btLabels.forEach(function(label, i) {
+      rows.push([label, btValues[i] || 0]);
+    });
     pushBlank();
   }
 
-  if (_fulfillData?.summary || _fulfillData?.by_urgency || _fulfillData?.by_blood_type) {
+  if (_fulfillData && (_fulfillData.summary || _fulfillData.by_urgency || _fulfillData.by_blood_type)) {
     pushSection('CHART DATA: FULFILLMENT SUMMARY');
-    pushHeader('Metric','Value');
-    const fs = _fulfillData.summary || {};
-    rows.push(['Total Requests', fs.total ?? 0]);
-    rows.push(['Approved', fs.approved ?? 0]);
-    rows.push(['Completed', fs.completed ?? 0]);
-    rows.push(['Pending', fs.pending ?? 0]);
-    rows.push(['Rejected', fs.rejected ?? 0]);
-    rows.push(['Fulfillment Rate', (fs.rate ?? 0) + '%']);
+    pushHeader('Metric', 'Value');
+    var fs = _fulfillData.summary || {};
+    rows.push(['Total Requests', fs.total || 0]);
+    rows.push(['Approved', fs.approved || 0]);
+    rows.push(['Completed', fs.completed || 0]);
+    rows.push(['Pending', fs.pending || 0]);
+    rows.push(['Rejected', fs.rejected || 0]);
+    rows.push(['Fulfillment Rate', (fs.rate || 0) + '%']);
     pushBlank();
 
     pushSection('CHART DATA: FULFILLMENT BY URGENCY');
-    pushHeader('Urgency','Total','Completed','Rate');
-    (_fulfillData.by_urgency || []).forEach(u => rows.push([u.urgency, u.total, u.completed, (u.rate ?? 0) + '%']));
+    pushHeader('Urgency', 'Total', 'Completed', 'Rate');
+    (_fulfillData.by_urgency || []).forEach(function(u) {
+      rows.push([u.urgency, u.total, u.completed, (u.rate || 0) + '%']);
+    });
     pushBlank();
 
     pushSection('CHART DATA: FULFILLMENT BY BLOOD TYPE');
-    pushHeader('Blood Type','Total','Completed','Rate');
-    (_fulfillData.by_blood_type || []).forEach(b => rows.push([b.blood_type, b.total, b.completed, (b.rate ?? 0) + '%']));
+    pushHeader('Blood Type', 'Total', 'Completed', 'Rate');
+    (_fulfillData.by_blood_type || []).forEach(function(b) {
+      rows.push([b.blood_type, b.total, b.completed, (b.rate || 0) + '%']);
+    });
     pushBlank();
   }
 
-  if (_geoData?.donors_by_district) {
+  if (_geoData && _geoData.donors_by_district) {
     pushSection('CHART DATA: DONORS BY DISTRICT');
-    pushHeader('District','Donors');
-    _geoData.donors_by_district.forEach(d => rows.push([d.district, d.total]));
+    pushHeader('District', 'Donors');
+    _geoData.donors_by_district.forEach(function(d) {
+      rows.push([d.district, d.total]);
+    });
     pushBlank();
   }
 
-  if (_hospData?.hospitals) {
+  if (_hospData && _hospData.hospitals) {
     pushSection('CHART DATA: HOSPITAL REQUEST METRICS');
-    pushHeader('Hospital','Total','Completed','Pending','Rejected');
-    _hospData.hospitals.forEach(h => rows.push([h.hospital, h.total_requests, h.completed, h.pending, h.rejected]));
+    pushHeader('Hospital', 'Total', 'Completed', 'Pending', 'Rejected');
+    _hospData.hospitals.forEach(function(h) {
+      rows.push([h.hospital, h.total_requests, h.completed, h.pending, h.rejected]);
+    });
     pushBlank();
   }
 
   if (_supplyData) {
     pushSection('CHART DATA: SUPPLY FULFILLMENT RATE');
-    pushHeader('Blood Type','Demand','Fulfilled','Fulfillment %');
-    _supplyData.labels.forEach((bt, i) => {
-      const demand = _supplyData.demand?.[i] ?? 0;
-      const fulfilled = _supplyData.fulfilled?.[i] ?? 0;
-      const rate = demand ? Math.round((fulfilled / demand) * 100) : 0;
+    pushHeader('Blood Type', 'Demand', 'Fulfilled', 'Fulfillment %');
+    _supplyData.labels.forEach(function(bt, i) {
+      var demand = _supplyData.demand ? (_supplyData.demand[i] || 0) : 0;
+      var fulfilled = _supplyData.fulfilled ? (_supplyData.fulfilled[i] || 0) : 0;
+      var rate = demand ? Math.round((fulfilled / demand) * 100) : 0;
       rows.push([bt, demand, fulfilled, rate + '%']);
     });
   }
- 
-  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
-  const a = Object.assign(document.createElement('a'), {
-    href: URL.createObjectURL(new Blob([csv], {type:'text/csv'})),
-    download: `reddrop-analytics-${new Date().toISOString().split('T')[0]}.csv`
-  });
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
 
-  // Export chart snapshots as a separate HTML report (Excel-friendly visual backup)
-  const chartList = [
+  var csv = rows.map(function(r) {
+    return r.map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(',');
+  }).join('\n');
+
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
+  a.download = 'reddrop-analytics-' + new Date().toISOString().split('T')[0] + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  var chartList = [
     ['Donation Trends', 'trendsChart'],
     ['Demand vs Supply', 'supplyChart'],
     ['Supply Fulfillment', 'supplyFulfillChart'],
@@ -8020,41 +8059,58 @@ function anExportReport() {
     ['Donors by District', 'geoDonorChart']
   ];
 
-  const esc = (v) => String(v ?? '').replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
-  const blocks = chartList.map(([title, id]) => {
-    const canvas = document.getElementById(id);
+  var esc = function(v) {
+    return String(v == null ? '' : v)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  };
+
+  var blocks = chartList.map(function(item) {
+    var title = item[0];
+    var id = item[1];
+    var canvas = document.getElementById(id);
     if (!canvas || typeof canvas.toDataURL !== 'function') return '';
-    return `<h3>${esc(title)}</h3><img src="${canvas.toDataURL('image/png')}" alt="${esc(title)}" />`;
+    return '<h3>' + esc(title) + '</h3><img src="' + canvas.toDataURL('image/png') + '" alt="' + esc(title) + '" />';
   }).filter(Boolean).join('');
 
   if (blocks) {
-    const chartHtml =
-      '<!doctype html><html><head><meta charset="UTF-8"><title>RedDrop Analytics Charts</title>' +
-      '<style>body{font-family:Arial,sans-serif;margin:16px;}h1{margin:0 0 6px;}h3{margin:18px 0 8px;}img{max-width:100%;width:980px;border:1px solid #ddd;}p{color:#555;}</style>' +
-      '</head><body>' +
-      `<h1>RedDrop Analytics Charts</h1><p>Generated: ${esc(new Date().toLocaleString())}</p>${blocks}` +
-      '</body></html>';
+    var chartHtmlParts = [
+      '<!doctype html>',
+      '<html><head><meta charset="UTF-8"><title>RedDrop Analytics Charts</title>',
+      '<style>body{font-family:Arial,sans-serif;margin:16px;}h1{margin:0 0 6px;}h3{margin:18px 0 8px;}img{max-width:100%;width:980px;border:1px solid #ddd;}p{color:#555;}</style>',
+      '</head><body>',
+      '<h1>RedDrop Analytics Charts</h1><p>Generated: ' + esc(new Date().toLocaleString()) + '</p>',
+      blocks,
+      '</body></html>'
+    ];
+    var chartHtml = chartHtmlParts.join('');
 
-    const a2 = Object.assign(document.createElement('a'), {
-      href: URL.createObjectURL(new Blob([chartHtml], { type: 'text/html' })),
-      download: `reddrop-analytics-charts-${new Date().toISOString().split('T')[0]}.html`
-    });
-    document.body.appendChild(a2); a2.click(); document.body.removeChild(a2);
+    var a2 = document.createElement('a');
+    a2.href = URL.createObjectURL(new Blob([chartHtml], {type: 'text/html'}));
+    a2.download = 'reddrop-analytics-charts-' + new Date().toISOString().split('T')[0] + '.html';
+    document.body.appendChild(a2);
+    a2.click();
+    document.body.removeChild(a2);
   }
 }
- 
+
 function anExportHospitals() {
-  if (!_hospData?.hospitals) return;
-  const hdr = ['Hospital','District','Total','Completed','Pending','Rejected','Rate','Stock'];
-  const rows = _hospData.hospitals.map(h =>
-    [h.hospital,h.district,h.total_requests,h.completed,h.pending,h.rejected,h.fulfillment_rate+'%',h.total_stock]
-  );
-  const csv = [hdr, ...rows].map(r => r.map(v=>`"${v}"`).join(',')).join('\n');
-  const a = Object.assign(document.createElement('a'), {
-    href: URL.createObjectURL(new Blob([csv], {type:'text/csv'})),
-    download: `hospital-performance-${new Date().toISOString().split('T')[0]}.csv`
+  if (!_hospData || !_hospData.hospitals) return;
+  var hdr = ['Hospital', 'District', 'Total', 'Completed', 'Pending', 'Rejected', 'Rate', 'Stock'];
+  var rows = _hospData.hospitals.map(function(h) {
+    return [h.hospital, h.district, h.total_requests, h.completed, h.pending, h.rejected, h.fulfillment_rate + '%', h.total_stock];
   });
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  var csv = [hdr].concat(rows).map(function(r) {
+    return r.map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(',');
+  }).join('\n');
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
+  a.download = 'hospital-performance-' + new Date().toISOString().split('T')[0] + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
  
 // ── INIT (called when analytics tab is clicked) ─────────────
@@ -8166,10 +8222,13 @@ function renderDonationsTable(data) {
     }
 
     // Sort newest first
-    const sorted = [...data].sort((a, b) =>
-        (parseAdminDate(b.created_at)?.getTime() || 0) -
-        (parseAdminDate(a.created_at)?.getTime() || 0)
-    );
+    const sorted = [...data].sort((a, b) => {
+        const db = parseAdminDate(b.created_at);
+        const da = parseAdminDate(a.created_at);
+        const tb = db ? db.getTime() : 0;
+        const ta = da ? da.getTime() : 0;
+        return tb - ta;
+    });
 
     const statusColors = {
         pending:   'bg-yellow-100 text-yellow-700',
@@ -8502,7 +8561,7 @@ function exportDonationsCSV() {
 </div>
 
 <!-- ================= COMPLETE FIXED CAMP MODAL WITH VISIBLE BUTTONS ================= -->
-<div id="campModal" class="fixed inset-0 z-50 hidden" style="display: none; background: rgba(0, 0, 0, 0.5);">
+<div id="campModal" class="fixed inset-0 z-50" style="display: none; background: rgba(0, 0, 0, 0.5);">
     <div class="flex items-center justify-center w-full h-full p-4" onclick="closeCampModal()">
         <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl" onclick="event.stopPropagation()" style="max-height: 90vh; display: flex; flex-direction: column;">
             
@@ -8641,5 +8700,8 @@ function exportDonationsCSV() {
 </div>
 </body>
 </html>
+
+
+
 
 
