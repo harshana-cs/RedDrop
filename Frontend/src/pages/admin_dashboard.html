@@ -7890,28 +7890,114 @@ function anRenderGeo() {
 // ── EXPORTS ────────────────────────────────────────────────
 function anExportReport() {
   const rows = [];
+  const pushBlank = () => rows.push(['', '', '', '', '', '', '']);
+  const pushSection = (title) => rows.push([title, '', '', '', '', '', '']);
+  const pushHeader = (...cols) => rows.push([...cols, '', '', '', '', '', ''].slice(0, 7));
+
   rows.push(['RedDrop Analytics Report', '', '', '']);
   rows.push(['Generated', new Date().toLocaleString(), '', '']);
   rows.push(['Period', document.getElementById('anPeriodLabel').textContent, '', '']);
-  rows.push(['', '', '', '']);
+  pushBlank();
  
   if (_hospData?.hospitals) {
-    rows.push(['HOSPITAL PERFORMANCE', '', '', '']);
-    rows.push(['Hospital','Total Requests','Completed','Fulfillment Rate']);
+    pushSection('HOSPITAL PERFORMANCE');
+    pushHeader('Hospital','Total Requests','Completed','Fulfillment Rate');
     _hospData.hospitals.forEach(h => rows.push([h.hospital, h.total_requests, h.completed, h.fulfillment_rate + '%']));
-    rows.push(['','','','']);
+    pushBlank();
   }
   if (_supplyData) {
-    rows.push(['DEMAND VS SUPPLY', '', '', '']);
-    rows.push(['Blood Type','Demand','Supply','Fulfilled']);
+    pushSection('DEMAND VS SUPPLY');
+    pushHeader('Blood Type','Demand','Supply','Fulfilled');
     _supplyData.labels.forEach((bt, i) =>
       rows.push([bt, _supplyData.demand[i], _supplyData.supply[i], _supplyData.fulfilled[i]]));
-    rows.push(['','','','']);
+    pushBlank();
   }
   if (_geoData?.requests_by_district) {
-    rows.push(['GEOGRAPHIC BREAKDOWN', '', '', '']);
-    rows.push(['District','Total','Completed','Rate']);
+    pushSection('GEOGRAPHIC BREAKDOWN');
+    pushHeader('District','Total','Completed','Rate');
     _geoData.requests_by_district.forEach(d => rows.push([d.district,d.total,d.completed,d.rate+'%']));
+    pushBlank();
+  }
+
+  // Include chart datasets explicitly so graphs are exported as data too.
+  if (_trendsData) {
+    pushSection('CHART DATA: DONATION TRENDS');
+    pushHeader('Date','Completed','Approved','Pending','Rejected');
+    const labels = _trendsData.labels || [];
+    labels.forEach((label, i) => {
+      rows.push([
+        label,
+        (_trendsData.completed || [])[i] ?? 0,
+        (_trendsData.approved  || [])[i] ?? 0,
+        (_trendsData.pending   || [])[i] ?? 0,
+        (_trendsData.rejected  || [])[i] ?? 0,
+      ]);
+    });
+    pushBlank();
+  }
+
+  if (_donorData?.trend || _donorData?.blood_type_breakdown) {
+    pushSection('CHART DATA: DONOR ACTIVITY TREND');
+    pushHeader('Date','New Donors');
+    const trendLabels = _donorData?.trend?.labels || [];
+    const trendValues = _donorData?.trend?.values || [];
+    trendLabels.forEach((label, i) => rows.push([label, trendValues[i] ?? 0]));
+    pushBlank();
+
+    pushSection('CHART DATA: DONOR BLOOD TYPE BREAKDOWN');
+    pushHeader('Blood Type','Donor Count');
+    const btLabels = _donorData?.blood_type_breakdown?.labels || [];
+    const btValues = _donorData?.blood_type_breakdown?.values || [];
+    btLabels.forEach((label, i) => rows.push([label, btValues[i] ?? 0]));
+    pushBlank();
+  }
+
+  if (_fulfillData?.summary || _fulfillData?.by_urgency || _fulfillData?.by_blood_type) {
+    pushSection('CHART DATA: FULFILLMENT SUMMARY');
+    pushHeader('Metric','Value');
+    const fs = _fulfillData.summary || {};
+    rows.push(['Total Requests', fs.total ?? 0]);
+    rows.push(['Approved', fs.approved ?? 0]);
+    rows.push(['Completed', fs.completed ?? 0]);
+    rows.push(['Pending', fs.pending ?? 0]);
+    rows.push(['Rejected', fs.rejected ?? 0]);
+    rows.push(['Fulfillment Rate', (fs.rate ?? 0) + '%']);
+    pushBlank();
+
+    pushSection('CHART DATA: FULFILLMENT BY URGENCY');
+    pushHeader('Urgency','Total','Completed','Rate');
+    (_fulfillData.by_urgency || []).forEach(u => rows.push([u.urgency, u.total, u.completed, (u.rate ?? 0) + '%']));
+    pushBlank();
+
+    pushSection('CHART DATA: FULFILLMENT BY BLOOD TYPE');
+    pushHeader('Blood Type','Total','Completed','Rate');
+    (_fulfillData.by_blood_type || []).forEach(b => rows.push([b.blood_type, b.total, b.completed, (b.rate ?? 0) + '%']));
+    pushBlank();
+  }
+
+  if (_geoData?.donors_by_district) {
+    pushSection('CHART DATA: DONORS BY DISTRICT');
+    pushHeader('District','Donors');
+    _geoData.donors_by_district.forEach(d => rows.push([d.district, d.total]));
+    pushBlank();
+  }
+
+  if (_hospData?.hospitals) {
+    pushSection('CHART DATA: HOSPITAL REQUEST METRICS');
+    pushHeader('Hospital','Total','Completed','Pending','Rejected');
+    _hospData.hospitals.forEach(h => rows.push([h.hospital, h.total_requests, h.completed, h.pending, h.rejected]));
+    pushBlank();
+  }
+
+  if (_supplyData) {
+    pushSection('CHART DATA: SUPPLY FULFILLMENT RATE');
+    pushHeader('Blood Type','Demand','Fulfilled','Fulfillment %');
+    _supplyData.labels.forEach((bt, i) => {
+      const demand = _supplyData.demand?.[i] ?? 0;
+      const fulfilled = _supplyData.fulfilled?.[i] ?? 0;
+      const rate = demand ? Math.round((fulfilled / demand) * 100) : 0;
+      rows.push([bt, demand, fulfilled, rate + '%']);
+    });
   }
  
   const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
