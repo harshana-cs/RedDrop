@@ -665,6 +665,7 @@
                 <tr>
                   <th class="px-4 py-3 text-left">Blood Type</th>
                   <th class="px-4 py-3 text-left">Available Units</th>
+                  <th class="px-4 py-3 text-left">Expiry Date</th>
                   <th class="px-4 py-3 text-left">Minimum Required</th>
                   <th class="px-4 py-3 text-left">Status</th>
                   <th class="px-4 py-3 text-left">Last Updated</th>
@@ -739,6 +740,10 @@
                     <option value="purchase">Purchase</option>
                     <option value="other">Other</option>
                   </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Expiry Date</label>
+                  <input id="addExpiryDate" type="date" class="w-full border p-3 rounded" />
                 </div>
                 <button onclick="addBloodStock()"
                   class="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700">
@@ -843,6 +848,7 @@
                   <th class="px-4 py-3 text-left">Blood Type</th>
                   <th class="px-4 py-3 text-left">Transaction Type</th>
                   <th class="px-4 py-3 text-left">Units</th>
+                  <th class="px-4 py-3 text-left">Expiry Date</th>
                   <th class="px-4 py-3 text-left">Source/Reason</th>
                   <th class="px-4 py-3 text-left">Performed By</th>
                   <th class="px-4 py-3 text-left">New Balance</th>
@@ -1227,6 +1233,12 @@
       return true;
     });
 
+    filtered.sort((a, b) => {
+      const aExpiry = a.expiry_date ? new Date(a.expiry_date).getTime() : Number.MAX_SAFE_INTEGER;
+      const bExpiry = b.expiry_date ? new Date(b.expiry_date).getTime() : Number.MAX_SAFE_INTEGER;
+      return aExpiry - bExpiry;
+    });
+
     stockData = filtered;
     updateStockTable(filtered);
     updateStockAlerts(filtered);
@@ -1238,9 +1250,13 @@
   function updateStockTable(stock) {
     const table = document.getElementById('stockTable');
     table.innerHTML = '';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     
     stock.forEach(item => {
-      const status = getStockStatus(item.units, item.minimum_required);
+      const expiryObj = item.expiry_date ? new Date(item.expiry_date) : null;
+      const isExpired = expiryObj && expiryObj < today;
+      const status = isExpired ? "Expired" : getStockStatus(item.units, item.minimum_required);
       const statusClass = getStatusClass(status);
       
       const row = `
@@ -1256,6 +1272,9 @@
               ${item.units}
             </span>
             <span class="text-sm text-gray-500 ml-1">units</span>
+          </td>
+          <td class="px-4 py-3 text-sm ${isExpired ? 'text-red-600 font-semibold' : 'text-gray-500'}">
+            ${item.expiry_date ? new Date(item.expiry_date).toLocaleDateString() : 'N/A'}
           </td>
           <td class="px-4 py-3">${item.minimum_required} units</td>
           <td class="px-4 py-3">
@@ -1590,7 +1609,7 @@ function updateOverviewRequestCharts(requests) {
     if (requests.length === 0) {
       table.innerHTML = `
         <tr>
-          <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+          <td colspan="8" class="px-4 py-8 text-center text-gray-500">
             No blood requests found
           </td>
         </tr>
@@ -1859,6 +1878,9 @@ function updateOverviewRequestCharts(requests) {
             ${transaction.units} units
           </td>
           <td class="px-4 py-3">
+            ${transaction.expiry_date ? new Date(transaction.expiry_date).toLocaleDateString() : 'N/A'}
+          </td>
+          <td class="px-4 py-3">
             ${transaction.reason || transaction.source || 'N/A'}
           </td>
           <td class="px-4 py-3">
@@ -1877,8 +1899,9 @@ function updateOverviewRequestCharts(requests) {
     const bloodType = document.getElementById('addBloodType').value;
     const units = document.getElementById('addUnits').value;
     const source = document.getElementById('addSource').value;
+    const expiryDate = document.getElementById('addExpiryDate').value;
     
-    if (!bloodType || !units || units < 1) {
+    if (!bloodType || !units || units < 1 || !expiryDate) {
       alert('Please fill in all required fields correctly');
       return;
     }
@@ -1891,6 +1914,7 @@ function updateOverviewRequestCharts(requests) {
           blood_type: bloodType,
           units: parseInt(units),
           source: source,
+          expiry_date: expiryDate,
           notes: "Added via hospital dashboard"
         })
       });
@@ -1900,6 +1924,7 @@ function updateOverviewRequestCharts(requests) {
         // Clear form
         document.getElementById('addBloodType').value = '';
         document.getElementById('addUnits').value = '';
+        document.getElementById('addExpiryDate').value = '';
         // Reload data
         loadStockData();
         loadOverviewData();
@@ -2264,6 +2289,7 @@ function updateOverviewRequestCharts(requests) {
   function getStatusClass(status) {
     switch(status) {
       case 'Critical': return 'bg-red-100 text-red-800';
+      case 'Expired': return 'bg-red-100 text-red-800';
       case 'Low': return 'bg-yellow-100 text-yellow-800';
       case 'Adequate': return 'bg-green-100 text-green-800';
       case 'Pending': return 'bg-yellow-100 text-yellow-800';

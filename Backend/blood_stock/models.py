@@ -21,6 +21,7 @@ class BloodStock(models.Model):
 
     blood_type = models.CharField(max_length=3, choices=BLOOD_TYPES)
     units = models.PositiveIntegerField(default=0)
+    expiry_date = models.DateField(blank=True, null=True)
     minimum_required = models.PositiveIntegerField(default=10)
     last_updated = models.DateTimeField(auto_now=True)
 
@@ -29,6 +30,9 @@ class BloodStock(models.Model):
 
     def is_blood_bank_stock(self):
         return self.hospital is None
+
+    def is_expired(self):
+        return bool(self.expiry_date and self.expiry_date < timezone.now().date())
 
     def __str__(self):
         owner = "Blood Bank (Admin)" if self.hospital is None else self.hospital.name

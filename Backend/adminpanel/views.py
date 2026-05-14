@@ -26,6 +26,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 from dateutil.relativedelta import relativedelta
 from .models import HospitalAuditLog, Notification
 # ✅ NEW IMPORTS for tiered notification system (LOCATION 8)
@@ -1095,6 +1096,7 @@ def admin_blood_inventory(request):
         data.append({
             "blood_type": s.blood_type,
             "units": s.units,
+            "expiry_date": s.expiry_date,
             "minimum_required": s.minimum_required,
             "last_updated": s.last_updated
         })
@@ -1112,6 +1114,7 @@ def admin_hospital_stock(request):
             "hospital": s.hospital.name,
             "blood_type": s.blood_type,
             "units": s.units,
+            "expiry_date": s.expiry_date,
             "minimum_required": s.minimum_required,
             "last_updated": s.last_updated
         })
@@ -1123,13 +1126,14 @@ def admin_hospital_stock(request):
 def admin_add_inventory(request):
     blood_type = request.data.get("blood_type")
     units = int(request.data.get("units"))
-    expiry_date = request.data.get("expiry_date")
+    expiry_date = parse_date(request.data.get("expiry_date")) if request.data.get("expiry_date") else None
 
     stock, created = BloodStock.objects.get_or_create(
         hospital=None,
         blood_type=blood_type
     )
     stock.units += units
+    stock.expiry_date = expiry_date
     stock.save()
 
     BloodStockHistory.objects.create(
@@ -1214,6 +1218,7 @@ def admin_stock_movements(request):
         data.append({
             "date": h.timestamp,
             "blood_type": h.blood_type,
+            "expiry_date": h.expiry_date,
             "type": h.transaction_type,
             "units": h.units,
             "updated_by": h.performed_by,
@@ -1428,7 +1433,7 @@ def admin_all_hospitals_stock(request):
         result.append({
             "hospital": {"id": None, "name": "Blood Bank", "district": "Central"},
             "stock": [
-                {"blood_type": s.blood_type, "units": s.units, "last_updated": s.last_updated}
+                {"blood_type": s.blood_type, "units": s.units, "expiry_date": s.expiry_date, "last_updated": s.last_updated}
                 for s in bank_stocks
             ]
         })
@@ -1444,7 +1449,7 @@ def admin_all_hospitals_stock(request):
                 "district": h.profile.district if hasattr(h, "profile") else None
             },
             "stock": [
-                {"blood_type": s.blood_type, "units": s.units, "last_updated": s.last_updated}
+                {"blood_type": s.blood_type, "units": s.units, "expiry_date": s.expiry_date, "last_updated": s.last_updated}
                 for s in stocks
             ]
         })

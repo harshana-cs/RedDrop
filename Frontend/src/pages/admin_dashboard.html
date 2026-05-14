@@ -2218,6 +2218,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
               <th onclick="sortBy('bt')">Blood type</th>
               <th onclick="sortBy('loc')">Location</th>
               <th onclick="sortBy('units')">Units</th>
+              <th onclick="sortBy('expiry')">Expiry date</th>
               <th>Level</th>
               <th onclick="sortBy('status')">Status</th>
               <th>Last updated</th>
@@ -2252,7 +2253,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
           <thead>
             <tr>
               <th>Date</th><th>Blood type</th><th>Location</th>
-              <th>Type</th><th>Units</th><th>By</th>
+              <th>Type</th><th>Units</th><th>Expiry</th><th>By</th>
             </tr>
           </thead>
           <tbody id="movementsTable">
@@ -2290,6 +2291,11 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
         <label style="font-size:12px;color:var(--text2);font-weight:500;display:block;margin-bottom:5px">Source / notes</label>
         <textarea id="addNotes" rows="2" placeholder="e.g. Donation camp, hospital name..."
           style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px;resize:none"></textarea>
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--text2);font-weight:500;display:block;margin-bottom:5px">Expiry date *</label>
+        <input type="date" id="addExpiryDate"
+          style="width:100%;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--radius-md);font-family:var(--font-sans);font-size:13px">
       </div>
       <div id="addStockError" style="display:none;font-size:12px;color:var(--red);padding:6px 10px;background:var(--red-light);border-radius:6px"></div>
       <div style="display:flex;justify-content:flex-end;gap:8px">
@@ -6012,6 +6018,7 @@ async function loadInventory() {
           bt:      s.blood_type,
           units:   s.units || 0,
           loc:     name,
+          expiry:  s.expiry_date || null,
           updated: s.last_updated ? new Date(s.last_updated).toLocaleString() : 'Unknown'
         });
       });
@@ -6152,6 +6159,10 @@ function sortData() {
   filtered.sort((a, b) => {
     let va, vb;
     if (sortField === 'units')  { va = a.units; vb = b.units; }
+    else if (sortField === 'expiry') {
+      va = a.expiry ? new Date(a.expiry).getTime() : Number.MAX_SAFE_INTEGER;
+      vb = b.expiry ? new Date(b.expiry).getTime() : Number.MAX_SAFE_INTEGER;
+    }
     else if (sortField === 'status') { va = STATUS_ORDER[getStatus(a.units)]; vb = STATUS_ORDER[getStatus(b.units)]; }
     else if (sortField === 'loc')    { va = a.loc.toLowerCase(); vb = b.loc.toLowerCase(); }
     else                             { va = a.bt; vb = b.bt; }
@@ -6166,7 +6177,7 @@ function renderTable() {
   const tb = document.getElementById('stockTable');
   document.getElementById('tableRowCount').textContent = `${filtered.length} rows`;
   if (!filtered.length) {
-    tb.innerHTML = `<tr><td colspan="7" class="empty-state">No matching inventory records</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="8" class="empty-state">No matching inventory records</td></tr>`;
     return;
   }
   tb.innerHTML = filtered.map(r => {
@@ -6187,6 +6198,7 @@ function renderTable() {
           </div>
         </div>
       </td>
+      <td style="color:var(--text3);font-size:12px">${r.expiry ? new Date(r.expiry).toLocaleDateString() : 'N/A'}</td>
       <td style="color:var(--text3);font-size:12px">${pct}%</td>
       <td><span class="pill p-${st}">${STATUS_LABELS[st]}</span></td>
       <td style="color:var(--text3);font-size:12px">${r.updated}</td>
@@ -6399,12 +6411,12 @@ function buildBTAccordion() {
 // ── MOVEMENTS ────────────────────────────────────────────────────────────────
 async function loadMovements() {
   const tb = document.getElementById('movementsTable');
-  tb.innerHTML = `<tr><td colspan="6" class="empty-state">Loading...</td></tr>`;
+  tb.innerHTML = `<tr><td colspan="7" class="empty-state">Loading...</td></tr>`;
   try {
     const res  = await fetch(`${API_BASE}/api/admin/stock-movements/?limit=20`);
     const data = await res.json();
     if (!data.length) {
-      tb.innerHTML = `<tr><td colspan="6" class="empty-state">No movements recorded yet</td></tr>`;
+      tb.innerHTML = `<tr><td colspan="7" class="empty-state">No movements recorded yet</td></tr>`;
       return;
     }
     tb.innerHTML = data.map(m => {
@@ -6415,11 +6427,12 @@ async function loadMovements() {
         <td style="color:var(--text2)">${m.location || 'Blood Bank'}</td>
         <td><span class="pill ${isAdd ? 'p-optimal' : 'p-critical'}">${isAdd ? '+ Added' : '− Removed'}</span></td>
         <td style="font-weight:500;font-family:var(--font-mono)">${m.units}</td>
+        <td style="color:var(--text3);font-size:12px">${m.expiry_date ? new Date(m.expiry_date).toLocaleDateString() : 'N/A'}</td>
         <td style="color:var(--text3);font-size:12px">${m.updated_by || 'System'}</td>
       </tr>`;
     }).join('');
   } catch {
-    tb.innerHTML = `<tr><td colspan="6" class="empty-state">Could not load movements — API unavailable</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="7" class="empty-state">Could not load movements — API unavailable</td></tr>`;
   }
 }
  
@@ -6448,24 +6461,26 @@ function showAddStock() {
 }
 function closeAddStock() {
   document.getElementById('addStockOverlay').style.display = 'none';
-  ['addBT','addUnits','addNotes'].forEach(id => { document.getElementById(id).value = ''; });
+  ['addBT','addUnits','addNotes','addExpiryDate'].forEach(id => { document.getElementById(id).value = ''; });
   document.getElementById('addStockError').style.display = 'none';
 }
 async function submitAddStock() {
   const bt    = document.getElementById('addBT').value;
   const units = parseInt(document.getElementById('addUnits').value);
   const notes = document.getElementById('addNotes').value;
+  const expiryDate = document.getElementById('addExpiryDate').value;
   const err   = document.getElementById('addStockError');
  
   if (!bt)       { err.textContent = 'Please select a blood type.'; err.style.display = 'block'; return; }
   if (!units || units < 1) { err.textContent = 'Please enter a valid number of units.'; err.style.display = 'block'; return; }
+  if (!expiryDate) { err.textContent = 'Please choose an expiry date.'; err.style.display = 'block'; return; }
  
   err.style.display = 'none';
   try {
     const res = await fetch(`${API_BASE}/api/admin/inventory/add/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ blood_type: bt, units, notes })
+      body: JSON.stringify({ blood_type: bt, units, notes, expiry_date: expiryDate })
     });
     if (res.ok) { closeAddStock(); loadInventory(); }
     else {
@@ -6478,7 +6493,7 @@ async function submitAddStock() {
     closeAddStock();
     const idx = allStock.findIndex(r => r.bt === bt && r.loc === 'Blood Bank');
     if (idx !== -1) allStock[idx].units += units;
-    else allStock.push({ bt, units, loc: 'Blood Bank', updated: 'Just now' });
+    else allStock.push({ bt, units, loc: 'Blood Bank', expiry: expiryDate, updated: 'Just now' });
     populateLocationFilter(); updateSummary(); updateAlert(); applyFilter(); buildBarChart(); buildDonut(); buildHospitalAccordion(); buildBTAccordion();
   }
 }
@@ -8036,17 +8051,6 @@ function anExportReport() {
     });
   }
 
-  var csv = rows.map(function(r) {
-    return r.map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(',');
-  }).join('\n');
-
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
-  a.download = 'reddrop-analytics-' + new Date().toISOString().split('T')[0] + '.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-
   var chartList = [
     ['Donation Trends', 'trendsChart'],
     ['Demand vs Supply', 'supplyChart'],
@@ -8059,41 +8063,85 @@ function anExportReport() {
     ['Donors by District', 'geoDonorChart']
   ];
 
-  var esc = function(v) {
-    return String(v == null ? '' : v)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+  var loadExcelJS = function() {
+    return new Promise(function(resolve, reject) {
+      if (window.ExcelJS) return resolve(window.ExcelJS);
+      var existing = document.getElementById('exceljs-cdn');
+      if (existing) {
+        existing.addEventListener('load', function() { resolve(window.ExcelJS); });
+        existing.addEventListener('error', reject);
+        return;
+      }
+      var s = document.createElement('script');
+      s.id = 'exceljs-cdn';
+      s.src = 'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';
+      s.onload = function() { resolve(window.ExcelJS); };
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
   };
 
-  var blocks = chartList.map(function(item) {
-    var title = item[0];
-    var id = item[1];
-    var canvas = document.getElementById(id);
-    if (!canvas || typeof canvas.toDataURL !== 'function') return '';
-    return '<h3>' + esc(title) + '</h3><img src="' + canvas.toDataURL('image/png') + '" alt="' + esc(title) + '" />';
-  }).filter(Boolean).join('');
+  loadExcelJS().then(function(ExcelJSLib) {
+    var workbook = new ExcelJSLib.Workbook();
+    var dataSheet = workbook.addWorksheet('Analytics Data');
+    rows.forEach(function(r) { dataSheet.addRow(r); });
+    dataSheet.columns.forEach(function(col) { col.width = 22; });
 
-  if (blocks) {
-    var chartHtmlParts = [
-      '<!doctype html>',
-      '<html><head><meta charset="UTF-8"><title>RedDrop Analytics Charts</title>',
-      '<style>body{font-family:Arial,sans-serif;margin:16px;}h1{margin:0 0 6px;}h3{margin:18px 0 8px;}img{max-width:100%;width:980px;border:1px solid #ddd;}p{color:#555;}</style>',
-      '</head><body>',
-      '<h1>RedDrop Analytics Charts</h1><p>Generated: ' + esc(new Date().toLocaleString()) + '</p>',
-      blocks,
-      '</body></html>'
-    ];
-    var chartHtml = chartHtmlParts.join('');
+    var chartSheet = workbook.addWorksheet('Charts');
+    chartSheet.columns = [{ width: 40 }, { width: 40 }, { width: 40 }, { width: 40 }];
+    chartSheet.getCell('A1').value = 'RedDrop Analytics Charts';
+    chartSheet.getCell('A2').value = 'Generated: ' + new Date().toLocaleString();
 
-    var a2 = document.createElement('a');
-    a2.href = URL.createObjectURL(new Blob([chartHtml], {type: 'text/html'}));
-    a2.download = 'reddrop-analytics-charts-' + new Date().toISOString().split('T')[0] + '.html';
-    document.body.appendChild(a2);
-    a2.click();
-    document.body.removeChild(a2);
-  }
+    var rowCursor = 4;
+    var embeddedCount = 0;
+    chartList.forEach(function(item) {
+      var title = item[0];
+      var id = item[1];
+      var canvas = document.getElementById(id);
+      if (!canvas || typeof canvas.toDataURL !== 'function') return;
+      if (!canvas.width || !canvas.height) return;
+
+      chartSheet.getCell('A' + rowCursor).value = title;
+      chartSheet.getCell('A' + rowCursor).font = { bold: true, size: 12 };
+
+      var dataUrl = canvas.toDataURL('image/png');
+      var base64 = dataUrl.replace(/^data:image\/png;base64,/, '');
+      if (!base64) return;
+      var imageId = workbook.addImage({ base64: base64, extension: 'png' });
+      chartSheet.addImage(imageId, {
+        tl: { col: 0, row: rowCursor },
+        ext: { width: 900, height: 300 }
+      });
+      embeddedCount += 1;
+      rowCursor += 17;
+    });
+
+    if (!embeddedCount) {
+      showToast('warning', 'No Charts Captured', 'Open Analytics tab and wait for charts to render, then export again.');
+    }
+
+    return workbook.xlsx.writeBuffer();
+  }).then(function(buffer) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    }));
+    a.download = 'reddrop-analytics-' + new Date().toISOString().split('T')[0] + '.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }).catch(function() {
+    var csv = rows.map(function(r) {
+      return r.map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(',');
+    }).join('\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
+    a.download = 'reddrop-analytics-' + new Date().toISOString().split('T')[0] + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('warning', 'Excel Export Fallback', 'Could not load Excel library, exported CSV instead.');
+  });
 }
 
 function anExportHospitals() {

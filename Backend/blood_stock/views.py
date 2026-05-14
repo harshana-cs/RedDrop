@@ -8,6 +8,7 @@ from django.db import transaction
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
 from adminpanel.models import HospitalAuditLog   # ✅ ADD
+from django.utils.dateparse import parse_date
 
 
 # ================= BLOOD STOCK =================
@@ -35,6 +36,7 @@ def hospital_blood_stock(request):
         data.append({
             "blood_type": bt,
             "units": stock.units if stock else 0,
+            "expiry_date": stock.expiry_date if stock else None,
             "minimum_required": stock.minimum_required if stock else 10,
             "last_updated": stock.last_updated if stock else None,
         })
@@ -56,6 +58,7 @@ def add_blood_stock(request):
     blood_type = request.data.get("blood_type")
     units = int(request.data.get("units", 0))
     source = request.data.get("source")
+    expiry_date = parse_date(request.data.get("expiry_date")) if request.data.get("expiry_date") else None
 
     if not blood_type or units <= 0:
         return Response({"error": "Invalid input"}, status=400)
@@ -69,6 +72,7 @@ def add_blood_stock(request):
         )
 
         stock.units += units
+        stock.expiry_date = expiry_date
         stock.save()
 
         # create stock history
@@ -78,6 +82,7 @@ def add_blood_stock(request):
             transaction_type="add",
             units=units,
             source=source,
+            expiry_date=expiry_date,
             performed_by="Hospital",
             new_balance=stock.units
         )
@@ -90,7 +95,8 @@ def add_blood_stock(request):
             metadata={
                 "blood_type": blood_type,
                 "units": units,
-                "source": source
+                "source": source,
+                "expiry_date": str(expiry_date) if expiry_date else None
             }
         )
 
@@ -178,6 +184,7 @@ def stock_history(request):
             "blood_type": h.blood_type,
             "transaction_type": h.transaction_type,
             "units": h.units,
+            "expiry_date": h.expiry_date,
             "source": h.source,
             "reason": h.reason,
             "performed_by": h.performed_by,
@@ -207,6 +214,7 @@ def blood_bank_stock(request):
         data.append({
             "blood_type": bt,
             "units": stock.units if stock else 0,
+            "expiry_date": stock.expiry_date if stock else None,
             "minimum_required": stock.minimum_required if stock else 10,
             "last_updated": stock.last_updated if stock else None
         })
@@ -233,7 +241,8 @@ def admin_combined_stock(request):
         grouped[s.blood_type]["total_units"] += s.units
         grouped[s.blood_type]["locations"].append({
             "location": location,
-            "units": s.units
+            "units": s.units,
+            "expiry_date": s.expiry_date
         })
 
     result = []
