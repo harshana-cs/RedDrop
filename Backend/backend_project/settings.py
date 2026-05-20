@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
 from corsheaders.defaults import default_headers
+from celery.schedules import crontab
 
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -271,6 +272,14 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'INFO',
         },
+    },
+}
+
+# Daily donor eligibility reminder (5 days before next_donation_date)
+CELERY_BEAT_SCHEDULE = {
+    'send-donation-eligibility-reminders-daily': {
+        'task': 'donor.tasks.send_donation_eligibility_reminders',
+        'schedule': crontab(hour=9, minute=0),  # 9:00 AM Asia/Kathmandu
     },
 }
 # settings.py
