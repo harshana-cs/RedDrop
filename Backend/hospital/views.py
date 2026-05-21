@@ -5,7 +5,6 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
-from django.db.models import Sum
 import jwt
 import traceback
 from django.conf import settings
@@ -13,6 +12,12 @@ from blood_requests.views import is_donor_eligible, BLOOD_COMPATIBILITY,haversin
 from .models import Hospital, HospitalApplication
 from blood_requests.models import BloodRequest
 from blood_stock.models import BloodStock, BloodStockHistory
+from blood_stock.stock_utils import (
+    BLOOD_TYPES,
+    available_units,
+    notify_stock_scarcity_for_hospital,
+    stock_state,
+)
 from hospital.auth import get_hospital_from_token
 import time
 from adminpanel.models import Notification
@@ -242,11 +247,25 @@ def hospital_dashboard(request):
     # pending_requests = BloodRequest.objects.filter(hospital=hospital, status="pending").count()
 
     stock_qs = BloodStock.objects.filter(hospital=hospital)
+    stock_map = {s.blood_type: s for s in stock_qs}
+    stock_by_type = {}
+    scarce_types = []
+    unavailable_types = []
+    critical_stock = 0
+    total_stock = 0
 
-    total_stock = stock_qs.aggregate(total=Sum("units"))["total"] or 0
-    critical_stock = stock_qs.filter(units__lt=5).count()
+    for bt in BLOOD_TYPES:
+        state = stock_state(stock_map.get(bt))
+        stock_by_type[bt] = state["units"]
+        total_stock += state["units"]
+        if state["scarcity"]:
+            scarce_types.append(bt)
+        if state["unavailable"]:
+            unavailable_types.append(bt)
+        if 0 < state["units"] < 5:
+            critical_stock += 1
 
-    stock_by_type = {s.blood_type: s.units for s in stock_qs}
+    notify_stock_scarcity_for_hospital(hospital, scarce_types, unavailable_types)
 
     recent_activity = BloodStockHistory.objects.filter(
         hospital=hospital
@@ -269,6 +288,13 @@ def hospital_dashboard(request):
         "critical_stock": critical_stock,
         "stock_by_type": stock_by_type,
         "recent_activity": activity_data,
+        "scarcity_popup": {
+            "show": bool(unavailable_types),
+            "title": "Blood Not Available",
+            "message": "Some blood types are currently unavailable. Please restock urgently.",
+            "unavailable_blood_types": unavailable_types,
+            "scarce_blood_types": scarce_types,
+        },
     })
 
 
@@ -322,19 +348,18 @@ def hospital_blood_stock(request):
     if not hospital:
         return Response({"detail": "Unauthorized"}, status=401)
 
-    BLOOD_TYPES = ["A+","A-","B+","B-","AB+","AB-","O+","O-"]
-
     data = []
+    stock_map = {s.blood_type: s for s in BloodStock.objects.filter(hospital=hospital)}
     for bt in BLOOD_TYPES:
-        stock = BloodStock.objects.filter(
-            hospital=hospital, blood_type=bt
-        ).first()
+        stock = stock_map.get(bt)
 
         data.append({
             "blood_type": bt,
-            "units": stock.units if stock else 0,
+            "units": available_units(stock),
             "minimum_required": stock.minimum_required if stock else 10,
             "last_updated": stock.last_updated if stock else None,
+            "expiry_date": stock.expiry_date if stock else None,
+            "expired": bool(stock and stock.expiry_date and stock.expiry_date < timezone.localdate()),
         })
 
     return Response(data)

@@ -9,6 +9,8 @@ from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny
 from adminpanel.models import HospitalAuditLog   # ✅ ADD
 from django.utils.dateparse import parse_date
+from django.utils import timezone
+from .stock_utils import BLOOD_TYPES, available_units
 
 
 # ================= BLOOD STOCK =================
@@ -22,23 +24,18 @@ def hospital_blood_stock(request):
     if not hospital:
         return Response({"detail": "Unauthorized"}, status=401)
 
-    BLOOD_TYPES = ["A+","A-","B+","B-","AB+","AB-","O+","O-"]
-
     data = []
-
+    stock_map = {s.blood_type: s for s in BloodStock.objects.filter(hospital=hospital)}
     for bt in BLOOD_TYPES:
-
-        stock = BloodStock.objects.filter(
-            hospital=hospital,
-            blood_type=bt
-        ).first()
+        stock = stock_map.get(bt)
 
         data.append({
             "blood_type": bt,
-            "units": stock.units if stock else 0,
+            "units": available_units(stock),
             "expiry_date": stock.expiry_date if stock else None,
             "minimum_required": stock.minimum_required if stock else 10,
             "last_updated": stock.last_updated if stock else None,
+            "expired": bool(stock and stock.expiry_date and stock.expiry_date < timezone.localdate()),
         })
 
     return Response(data, status=200)
@@ -201,22 +198,18 @@ def blood_bank_stock(request):
     if not hospital:
         return Response({"detail": "Unauthorized"}, status=401)
 
-    BLOOD_TYPES = ["A+","A-","B+","B-","AB+","AB-","O+","O-"]
-
     data = []
-
+    stock_map = {s.blood_type: s for s in BloodStock.objects.filter(hospital__isnull=True)}
     for bt in BLOOD_TYPES:
-        stock = BloodStock.objects.filter(
-            hospital__isnull=True,
-            blood_type=bt
-        ).first()
+        stock = stock_map.get(bt)
 
         data.append({
             "blood_type": bt,
-            "units": stock.units if stock else 0,
+            "units": available_units(stock),
             "expiry_date": stock.expiry_date if stock else None,
             "minimum_required": stock.minimum_required if stock else 10,
-            "last_updated": stock.last_updated if stock else None
+            "last_updated": stock.last_updated if stock else None,
+            "expired": bool(stock and stock.expiry_date and stock.expiry_date < timezone.localdate()),
         })
 
     return Response(data)
@@ -238,11 +231,12 @@ def admin_combined_stock(request):
     for s in stocks:
         location = "Blood Bank" if s.hospital is None else s.hospital.name
 
-        grouped[s.blood_type]["total_units"] += s.units
+        grouped[s.blood_type]["total_units"] += available_units(s)
         grouped[s.blood_type]["locations"].append({
             "location": location,
-            "units": s.units,
-            "expiry_date": s.expiry_date
+            "units": available_units(s),
+            "expiry_date": s.expiry_date,
+            "expired": bool(s.expiry_date and s.expiry_date < timezone.localdate()),
         })
 
     result = []

@@ -19,6 +19,7 @@ from register_donor.models import Donor
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from blood_stock.models import BloodStock, BloodStockHistory
+from blood_stock.stock_utils import BLOOD_TYPES, available_units
 from django.db import transaction
 from django.contrib.auth.models import User
 from math import radians, sin, cos, sqrt, atan2
@@ -1093,12 +1094,14 @@ def admin_blood_inventory(request):
     stocks = BloodStock.objects.filter(hospital__isnull=True)
     data = []
     for s in stocks:
+        units = available_units(s)
         data.append({
             "blood_type": s.blood_type,
-            "units": s.units,
+            "units": units,
             "expiry_date": s.expiry_date,
             "minimum_required": s.minimum_required,
-            "last_updated": s.last_updated
+            "last_updated": s.last_updated,
+            "expired": bool(s.expiry_date and s.expiry_date < timezone.localdate()),
         })
     return Response(data)
 
@@ -1110,14 +1113,17 @@ def admin_hospital_stock(request):
     ).select_related("hospital")
     data = []
     for s in stocks:
+        units = available_units(s)
         data.append({
             "hospital": s.hospital.name,
             "blood_type": s.blood_type,
-            "units": s.units,
+            "units": units,
             "expiry_date": s.expiry_date,
             "minimum_required": s.minimum_required,
-            "last_updated": s.last_updated
+            "last_updated": s.last_updated,
+            "expired": bool(s.expiry_date and s.expiry_date < timezone.localdate()),
         })
+
     return Response(data)
 
 
@@ -1426,35 +1432,87 @@ def public_donation_camps(request):
 @permission_classes([AllowAny])
 def admin_all_hospitals_stock(request):
     result = []
+    unavailable_global = set()
 
     # �"��"� Blood Bank (hospital=None) �"��"�
     bank_stocks = BloodStock.objects.filter(hospital__isnull=True)
     if bank_stocks.exists():
+        stock_rows = []
+        for s in bank_stocks:
+            units = available_units(s)
+            if units <= 0:
+                unavailable_global.add(s.blood_type)
+            stock_rows.append(
+                {
+                    "blood_type": s.blood_type,
+                    "units": units,
+                    "expiry_date": s.expiry_date,
+                    "last_updated": s.last_updated,
+                    "expired": bool(s.expiry_date and s.expiry_date < timezone.localdate()),
+                }
+            )
         result.append({
             "hospital": {"id": None, "name": "Blood Bank", "district": "Central"},
-            "stock": [
-                {"blood_type": s.blood_type, "units": s.units, "expiry_date": s.expiry_date, "last_updated": s.last_updated}
-                for s in bank_stocks
-            ]
+            "stock": stock_rows
         })
 
     # �"��"� Active Hospitals �"��"�
     hospitals = Hospital.objects.filter(is_active=True)
     for h in hospitals:
         stocks = BloodStock.objects.filter(hospital=h)
+        stock_rows = []
+        for s in stocks:
+            units = available_units(s)
+            if units <= 0:
+                unavailable_global.add(s.blood_type)
+            stock_rows.append(
+                {
+                    "blood_type": s.blood_type,
+                    "units": units,
+                    "expiry_date": s.expiry_date,
+                    "last_updated": s.last_updated,
+                    "expired": bool(s.expiry_date and s.expiry_date < timezone.localdate()),
+                }
+            )
         result.append({
             "hospital": {
                 "id": h.id,
                 "name": h.name,
                 "district": h.profile.district if hasattr(h, "profile") else None
             },
-            "stock": [
-                {"blood_type": s.blood_type, "units": s.units, "expiry_date": s.expiry_date, "last_updated": s.last_updated}
-                for s in stocks
-            ]
+            "stock": stock_rows
         })
 
-    return Response(result)
+    unavailable_list = sorted(unavailable_global)
+    if unavailable_list:
+        title = "Blood Stock Unavailable Alert"
+        today = timezone.localdate()
+        exists_today = Notification.objects.filter(
+            hospital__isnull=True,
+            user__isnull=True,
+            type="system_alert",
+            title=title,
+            created_at__date=today,
+        ).exists()
+        if not exists_today:
+            Notification.objects.create(
+                title=title,
+                message=(
+                    "Unavailable blood types detected across blood bank/hospitals: "
+                    f"{', '.join(unavailable_list)}."
+                ),
+                type="system_alert",
+            )
+
+    return Response({
+        "data": result,
+        "scarcity_popup": {
+            "show": bool(unavailable_list),
+            "title": "Blood Not Available",
+            "message": "These blood types are currently unavailable in stock.",
+            "unavailable_blood_types": unavailable_list,
+        },
+    })
 
 
 # ================= PARTNER CREATE =================
@@ -1744,8 +1802,6 @@ def analytics_donation_trends(request):
 def analytics_demand_supply(request):
     start, end = get_date_range(request)
 
-    BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
-
     demand = {}
     for bt in BLOOD_TYPES:
         demand[bt] = BloodRequest.objects.filter(
@@ -1755,13 +1811,12 @@ def analytics_demand_supply(request):
         ).count()
 
     # Supply from BloodStock (bank = hospital is None)
-    from blood_stock.models import BloodStock
     supply = {}
     for bt in BLOOD_TYPES:
-        stock = BloodStock.objects.filter(blood_type=bt).aggregate(
-            total=Count("id")
-        )
-        units = BloodStock.objects.filter(blood_type=bt).values_list("units", flat=True)
+        units = [
+            available_units(s)
+            for s in BloodStock.objects.filter(blood_type=bt)
+        ]
         supply[bt] = sum(units)
 
     # fulfilled = completed requests per blood type
@@ -1808,8 +1863,7 @@ def analytics_hospital_performance(request):
 
         rate = round((completed / total * 100), 1) if total else 0
 
-        from blood_stock.models import BloodStock
-        stock_units = BloodStock.objects.filter(hospital=h).values_list("units", flat=True)
+        stock_units = [available_units(s) for s in BloodStock.objects.filter(hospital=h)]
         total_stock = sum(stock_units)
 
         data.append({
