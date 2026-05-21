@@ -1054,6 +1054,30 @@ nav button span:last-child {
         </div>
     </div>
 
+    <!-- Stock Scarcity Popup -->
+    <div id="stockScarcityModal" class="fixed inset-0 bg-black/60 hidden z-[60] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6">
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+                        <i class="ri-alert-line text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900">Blood Not Available</h3>
+                </div>
+                <button onclick="closeStockScarcityModal()" class="text-gray-400 hover:text-gray-700 text-xl leading-none">&times;</button>
+            </div>
+            <p id="stockScarcityMessage" class="text-sm text-gray-600 mb-3">
+                Some blood types are currently unavailable.
+            </p>
+            <div id="stockScarcityList" class="flex flex-wrap gap-2 mb-5"></div>
+            <div class="flex justify-end">
+                <button onclick="closeStockScarcityModal()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="min-h-screen">
         <!-- ================= FIXED SIDEBAR ================= -->
         <aside class="fixed-sidebar bg-white border-r border-gray-200 shadow-sm flex flex-col">
@@ -5981,6 +6005,7 @@ let sortDir    = 'asc';
 let adjustState = {};
 let barChartInst, donutChartInst;
 let currentTab = 'all';
+let scarcityPopupShown = false;
  
 // ── STATUS HELPERS ───────────────────────────────────────────────────────────
 const STATUS_MAX = 50;
@@ -6008,7 +6033,8 @@ async function loadInventory() {
   document.getElementById('refreshBtn').disabled = true;
   try {
     const res  = await fetch(`${API_BASE}/api/admin/combined-stock/`);
-    const raw  = await res.json();
+    const payload = await res.json();
+    const raw = Array.isArray(payload) ? payload : (payload.data || []);
  
     allStock = [];
     raw.forEach(h => {
@@ -6023,6 +6049,12 @@ async function loadInventory() {
         });
       });
     });
+
+    const popup = payload && payload.scarcity_popup ? payload.scarcity_popup : null;
+    if (popup && popup.show && !scarcityPopupShown) {
+      showStockScarcityModal(popup);
+      scarcityPopupShown = true;
+    }
   } catch {
     // Fallback demo data so the UI always renders
     allStock = buildDemoData();
@@ -6038,6 +6070,31 @@ async function loadInventory() {
   buildHospitalAccordion();
   buildBTAccordion();
   document.getElementById('refreshBtn').disabled = false;
+}
+
+function showStockScarcityModal(popup) {
+  const modal = document.getElementById('stockScarcityModal');
+  const msgEl = document.getElementById('stockScarcityMessage');
+  const listEl = document.getElementById('stockScarcityList');
+  if (!modal || !msgEl || !listEl) return;
+
+  const unavailable = Array.isArray(popup.unavailable_blood_types)
+    ? popup.unavailable_blood_types
+    : [];
+
+  msgEl.textContent = popup.message || "Some blood types are currently unavailable.";
+  listEl.innerHTML = unavailable.length
+    ? unavailable.map(bt =>
+        `<span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-semibold">${bt}</span>`
+      ).join("")
+    : `<span class="text-sm text-gray-500">No blood types listed.</span>`;
+
+  modal.classList.remove('hidden');
+}
+
+function closeStockScarcityModal() {
+  const modal = document.getElementById('stockScarcityModal');
+  if (modal) modal.classList.add('hidden');
 }
  
 function buildDemoData() {
