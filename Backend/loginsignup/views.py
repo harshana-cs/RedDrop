@@ -89,6 +89,11 @@ def verify_code(request):
         emailaddress=email,
         defaults={"fullname": google_user.fullname}
     )
+    if not patient.is_active:
+        return JsonResponse({
+            "success": False,
+            "message": "Your account has been deactivated by admin"
+        })
 
     # ── Create Django User ───────────────────────────────────
     user, created = User.objects.get_or_create(
@@ -158,6 +163,11 @@ def google_login(request):
             emailaddress=email,
             defaults={"fullname": fullname}
         )
+        if not patient.is_active:
+            return JsonResponse({
+                "success": False,
+                "message": "Your account has been deactivated by admin"
+            })
 
         # 3️⃣ Ensure Django auth user exists
         user, created = User.objects.get_or_create(
@@ -241,6 +251,11 @@ def patient_login(request):
 
     try:
         patient = Patient.objects.get(emailaddress=data["emailaddress"])
+        if not patient.is_active:
+            return JsonResponse({
+                "success": False,
+                "message": "Your account has been deactivated by admin"
+            })
         if not patient.check_password(data["password"]):
             return JsonResponse({"success": False, "message": "Wrong password"})
 

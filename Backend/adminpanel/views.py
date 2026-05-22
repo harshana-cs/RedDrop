@@ -56,6 +56,46 @@ BLOOD_COMPATIBILITY = {
 # ✅ NEW: Logger instance (LOCATION 8)
 logger = logging.getLogger(__name__)
 
+# ================= ACCOUNT STATUS EMAIL HELPERS =================
+def _send_hospital_status_email(hospital, is_active):
+    profile = getattr(hospital, "profile", None)
+    recipient = profile.email if profile and profile.email else None
+    if not recipient:
+        return
+
+    state = "activated" if is_active else "deactivated"
+    send_mail(
+        subject=f"RedDrop: Hospital account {state}",
+        message=(
+            f"Hello {hospital.name},\n\n"
+            f"Your hospital account has been {state} by RedDrop admin.\n"
+            f"{'You can now log in and access your dashboard.' if is_active else 'You will not be able to log in until the account is reactivated.'}\n\n"
+            "- RedDrop Team"
+        ),
+        from_email=settings.EMAIL_HOST_USER,
+        recipient_list=[recipient],
+        fail_silently=True,
+    )
+
+
+def _send_user_status_email(user, is_active):
+    if not user.emailaddress:
+        return
+
+    state = "activated" if is_active else "deactivated"
+    send_mail(
+        subject=f"RedDrop: User account {state}",
+        message=(
+            f"Hello {user.fullname},\n\n"
+            f"Your RedDrop user account has been {state} by admin.\n"
+            f"{'You can now log in again.' if is_active else 'You will not be able to log in until the account is reactivated.'}\n\n"
+            "- RedDrop Team"
+        ),
+        from_email=settings.EMAIL_HOST_USER,
+        recipient_list=[user.emailaddress],
+        fail_silently=True,
+    )
+
 # ================= HELPER =================
 def fetch_hospital_coordinates(hospital_name):
     url = "https://nominatim.openstreetmap.org/search"
@@ -500,9 +540,39 @@ def admin_toggle_hospital(request, hospital_id):
         )
     hospital.is_active = not hospital.is_active
     hospital.save()
+    _send_hospital_status_email(hospital, hospital.is_active)
     return Response({
         "success": True,
         "active": hospital.is_active
+    })
+
+
+# ================= TOGGLE USER =================
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def admin_toggle_user(request, user_id):
+    try:
+        user = Patient.objects.get(id=user_id)
+    except Patient.DoesNotExist:
+        return Response(
+            {"success": False, "message": "User not found"},
+            status=404
+        )
+
+    user.is_active = not user.is_active
+    user.save(update_fields=["is_active"])
+
+    # Keep matching donor record aligned when available
+    donor = Donor.objects.filter(email=user.emailaddress).first()
+    if donor:
+        donor.is_approved = donor.is_approved and user.is_active
+        donor.save(update_fields=["is_approved"])
+
+    _send_user_status_email(user, user.is_active)
+
+    return Response({
+        "success": True,
+        "active": user.is_active
     })
 
 
@@ -936,6 +1006,7 @@ def admin_users(request):
             "id": u.id,
             "name": u.fullname,
             "email": u.emailaddress,
+            "active": u.is_active,
             "blood_type": donor.blood_type if donor else None,
             "total_requests": requests_count,
             "total_donations": donations_count,
@@ -1073,6 +1144,7 @@ def admin_user_detail(request, user_id):
         "id": user.id,
         "name": user.fullname,
         "email": user.emailaddress,
+        "active": user.is_active,
         "created_on": user.created_on.isoformat() if user.created_on else None,
         "donor": donor_info,
         "is_donor": bool(donor),

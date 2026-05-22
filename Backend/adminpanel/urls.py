@@ -36,6 +36,7 @@ from .views import (
     mark_notification_read,
     mark_all_notifications_read,   # ← ADD THIS
     admin_users,
+    admin_toggle_user,
     admin_blood_inventory,
     admin_add_inventory,
     admin_remove_inventory,
@@ -112,6 +113,7 @@ urlpatterns = [
 
     # ── Users ──────────────────────────────────────────────────
     path("users/",                                     admin_users),
+    path("users/<int:user_id>/toggle/",                admin_toggle_user),
     path("users/<int:user_id>/",                       admin_user_detail),
 
     # ── Blood Inventory ────────────────────────────────────────
