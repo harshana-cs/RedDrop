@@ -10,7 +10,7 @@ from rest_framework.permissions import AllowAny
 from adminpanel.models import HospitalAuditLog   # ✅ ADD
 from django.utils.dateparse import parse_date
 from django.utils import timezone
-from .stock_utils import BLOOD_TYPES, available_units
+from .stock_utils import BLOOD_TYPES, available_units, is_nearing_expiry
 
 
 # ================= BLOOD STOCK =================
@@ -26,6 +26,7 @@ def hospital_blood_stock(request):
 
     data = []
     stock_map = {s.blood_type: s for s in BloodStock.objects.filter(hospital=hospital)}
+    today = timezone.localdate()
     for bt in BLOOD_TYPES:
         stock = stock_map.get(bt)
 
@@ -36,6 +37,7 @@ def hospital_blood_stock(request):
             "minimum_required": stock.minimum_required if stock else 10,
             "last_updated": stock.last_updated if stock else None,
             "expired": bool(stock and stock.expiry_date and stock.expiry_date < timezone.localdate()),
+            "nearing_expiry": bool(stock and available_units(stock) > 0 and is_nearing_expiry(stock.expiry_date, days=5, today=today)),
         })
 
     return Response(data, status=200)
@@ -200,6 +202,7 @@ def blood_bank_stock(request):
 
     data = []
     stock_map = {s.blood_type: s for s in BloodStock.objects.filter(hospital__isnull=True)}
+    today = timezone.localdate()
     for bt in BLOOD_TYPES:
         stock = stock_map.get(bt)
 
@@ -210,6 +213,7 @@ def blood_bank_stock(request):
             "minimum_required": stock.minimum_required if stock else 10,
             "last_updated": stock.last_updated if stock else None,
             "expired": bool(stock and stock.expiry_date and stock.expiry_date < timezone.localdate()),
+            "nearing_expiry": bool(stock and available_units(stock) > 0 and is_nearing_expiry(stock.expiry_date, days=5, today=today)),
         })
 
     return Response(data)
@@ -237,6 +241,7 @@ def admin_combined_stock(request):
             "units": available_units(s),
             "expiry_date": s.expiry_date,
             "expired": bool(s.expiry_date and s.expiry_date < timezone.localdate()),
+            "nearing_expiry": bool(available_units(s) > 0 and is_nearing_expiry(s.expiry_date, days=5, today=timezone.localdate())),
         })
 
     result = []

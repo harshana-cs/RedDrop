@@ -750,6 +750,34 @@ th.sort-desc::after { content: ' ↓'; color: var(--red); }
     transform: translateY(-2px);
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
+
+/* Stock scarcity modal - isolated styles to avoid dashboard CSS conflicts */
+#stockScarcityModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+#stockScarcityModal .stock-scarcity-card {
+  width: min(560px, 92vw);
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.22);
+  padding: 20px;
+}
+#stockScarcityModal .stock-badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 700;
+}
         /* Custom scrollbar for better UX */
 .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
@@ -1055,8 +1083,8 @@ nav button span:last-child {
     </div>
 
     <!-- Stock Scarcity Popup -->
-    <div id="stockScarcityModal" class="fixed inset-0 bg-black/60 hidden z-[60] flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6">
+    <div id="stockScarcityModal" aria-hidden="true">
+        <div class="stock-scarcity-card">
             <div class="flex items-start justify-between mb-3">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
@@ -6085,17 +6113,27 @@ function showStockScarcityModal(popup) {
   msgEl.textContent = popup.message || "Some blood types are currently unavailable.";
   listEl.innerHTML = unavailable.length
     ? unavailable.map(bt =>
-        `<span class="px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-semibold">${bt}</span>`
+        `<span class="stock-badge">${bt}</span>`
       ).join("")
     : `<span class="text-sm text-gray-500">No blood types listed.</span>`;
 
-  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
+  modal.setAttribute('aria-hidden', 'false');
 }
 
 function closeStockScarcityModal() {
   const modal = document.getElementById('stockScarcityModal');
-  if (modal) modal.classList.add('hidden');
+  if (modal) {
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+  }
 }
+
+document.addEventListener('click', (e) => {
+  if (e.target && e.target.id === 'stockScarcityModal') {
+    closeStockScarcityModal();
+  }
+});
  
 function buildDemoData() {
   const locations = ['Blood Bank', 'Bir Hospital', 'Patan Hospital', 'Norvic Hospital'];

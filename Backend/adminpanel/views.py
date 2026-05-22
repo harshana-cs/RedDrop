@@ -19,7 +19,7 @@ from register_donor.models import Donor
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from blood_stock.models import BloodStock, BloodStockHistory
-from blood_stock.stock_utils import BLOOD_TYPES, available_units
+from blood_stock.stock_utils import BLOOD_TYPES, available_units, is_nearing_expiry
 from django.db import transaction
 from django.contrib.auth.models import User
 from math import radians, sin, cos, sqrt, atan2
@@ -1433,6 +1433,8 @@ def public_donation_camps(request):
 def admin_all_hospitals_stock(request):
     result = []
     unavailable_global = set()
+    expiring_global = []
+    today = timezone.localdate()
 
     # �"��"� Blood Bank (hospital=None) �"��"�
     bank_stocks = BloodStock.objects.filter(hospital__isnull=True)
@@ -1440,8 +1442,16 @@ def admin_all_hospitals_stock(request):
         stock_rows = []
         for s in bank_stocks:
             units = available_units(s)
+            nearing_expiry = bool(units > 0 and is_nearing_expiry(s.expiry_date, days=5, today=today))
             if units <= 0:
                 unavailable_global.add(s.blood_type)
+            if nearing_expiry:
+                expiring_global.append({
+                    "location": "Blood Bank",
+                    "blood_type": s.blood_type,
+                    "units": units,
+                    "expiry_date": s.expiry_date,
+                })
             stock_rows.append(
                 {
                     "blood_type": s.blood_type,
@@ -1449,6 +1459,7 @@ def admin_all_hospitals_stock(request):
                     "expiry_date": s.expiry_date,
                     "last_updated": s.last_updated,
                     "expired": bool(s.expiry_date and s.expiry_date < timezone.localdate()),
+                    "nearing_expiry": nearing_expiry,
                 }
             )
         result.append({
@@ -1463,8 +1474,16 @@ def admin_all_hospitals_stock(request):
         stock_rows = []
         for s in stocks:
             units = available_units(s)
+            nearing_expiry = bool(units > 0 and is_nearing_expiry(s.expiry_date, days=5, today=today))
             if units <= 0:
                 unavailable_global.add(s.blood_type)
+            if nearing_expiry:
+                expiring_global.append({
+                    "location": h.name,
+                    "blood_type": s.blood_type,
+                    "units": units,
+                    "expiry_date": s.expiry_date,
+                })
             stock_rows.append(
                 {
                     "blood_type": s.blood_type,
@@ -1472,6 +1491,7 @@ def admin_all_hospitals_stock(request):
                     "expiry_date": s.expiry_date,
                     "last_updated": s.last_updated,
                     "expired": bool(s.expiry_date and s.expiry_date < timezone.localdate()),
+                    "nearing_expiry": nearing_expiry,
                 }
             )
         result.append({
@@ -1486,7 +1506,6 @@ def admin_all_hospitals_stock(request):
     unavailable_list = sorted(unavailable_global)
     if unavailable_list:
         title = "Blood Stock Unavailable Alert"
-        today = timezone.localdate()
         exists_today = Notification.objects.filter(
             hospital__isnull=True,
             user__isnull=True,
@@ -1504,6 +1523,23 @@ def admin_all_hospitals_stock(request):
                 type="system_alert",
             )
 
+    if expiring_global:
+        title = "Blood Expiry Alert"
+        exists_today = Notification.objects.filter(
+            hospital__isnull=True,
+            user__isnull=True,
+            type="system_alert",
+            title=title,
+            created_at__date=today,
+        ).exists()
+        if not exists_today:
+            types = ", ".join(sorted({r.get("blood_type") for r in expiring_global if r.get("blood_type")})) or "Unknown"
+            Notification.objects.create(
+                title=title,
+                message=f"Blood units nearing expiry (within 5 days) detected: {types}.",
+                type="system_alert",
+            )
+
     return Response({
         "data": result,
         "scarcity_popup": {
@@ -1511,6 +1547,12 @@ def admin_all_hospitals_stock(request):
             "title": "Blood Not Available",
             "message": "These blood types are currently unavailable in stock.",
             "unavailable_blood_types": unavailable_list,
+        },
+        "expiry_popup": {
+            "show": bool(expiring_global),
+            "title": "Blood Expiry Alert",
+            "message": "Some blood units are nearing expiry within 5 days.",
+            "expiring_units": expiring_global,
         },
     })
 

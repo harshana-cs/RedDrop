@@ -15,6 +15,8 @@ from blood_stock.models import BloodStock, BloodStockHistory
 from blood_stock.stock_utils import (
     BLOOD_TYPES,
     available_units,
+    is_nearing_expiry,
+    notify_stock_expiry_for_hospital,
     notify_stock_scarcity_for_hospital,
     stock_state,
 )
@@ -251,11 +253,14 @@ def hospital_dashboard(request):
     stock_by_type = {}
     scarce_types = []
     unavailable_types = []
+    expiring_rows = []
     critical_stock = 0
     total_stock = 0
+    today = timezone.localdate()
 
     for bt in BLOOD_TYPES:
-        state = stock_state(stock_map.get(bt))
+        stock = stock_map.get(bt)
+        state = stock_state(stock)
         stock_by_type[bt] = state["units"]
         total_stock += state["units"]
         if state["scarcity"]:
@@ -264,8 +269,15 @@ def hospital_dashboard(request):
             unavailable_types.append(bt)
         if 0 < state["units"] < 5:
             critical_stock += 1
+        if stock and state["units"] > 0 and is_nearing_expiry(stock.expiry_date, days=5, today=today):
+            expiring_rows.append({
+                "blood_type": bt,
+                "units": state["units"],
+                "expiry_date": stock.expiry_date,
+            })
 
     notify_stock_scarcity_for_hospital(hospital, scarce_types, unavailable_types)
+    notify_stock_expiry_for_hospital(hospital, expiring_rows, days=5)
 
     recent_activity = BloodStockHistory.objects.filter(
         hospital=hospital
@@ -294,6 +306,12 @@ def hospital_dashboard(request):
             "message": "Some blood types are currently unavailable. Please restock urgently.",
             "unavailable_blood_types": unavailable_types,
             "scarce_blood_types": scarce_types,
+        },
+        "expiry_popup": {
+            "show": bool(expiring_rows),
+            "title": "Blood Expiry Alert",
+            "message": "Some blood units are nearing expiry within 5 days. Please use or rotate stock.",
+            "expiring_units": expiring_rows,
         },
     })
 
