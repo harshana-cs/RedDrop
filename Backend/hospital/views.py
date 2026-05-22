@@ -301,9 +301,9 @@ def hospital_dashboard(request):
         "stock_by_type": stock_by_type,
         "recent_activity": activity_data,
         "scarcity_popup": {
-            "show": bool(unavailable_types),
-            "title": "Blood Not Available",
-            "message": "Some blood types are currently unavailable. Please restock urgently.",
+            "show": bool(unavailable_types or scarce_types),
+            "title": "Blood Stock Alert",
+            "message": "Some blood types are low or unavailable. Please restock/rotate stock urgently.",
             "unavailable_blood_types": unavailable_types,
             "scarce_blood_types": scarce_types,
         },
