@@ -460,8 +460,8 @@
   <footer class="bg-gradient-to-r from-[#991B1B] to-[#B91C1C] text-white py-12">
     <div class="container mx-auto px-6">
       <div class="flex flex-col md:flex-row justify-between items-center">
-        <div class="mb-8 md:mb-0"><div class="flex items-center space-x-3 mb-4"><div class="w-12 h-12 bg-white rounded-full flex items-center justify-center"><i class="fas fa-tint text-[#B91C1C] text-2xl"></i></div><h2 class="text-3xl font-bold">RedDrop</h2></div><p class="text-white/80 max-w-md">Connecting hearts through blood donation.<br>Every drop counts, every donor matters.</p><div class="flex space-x-4 mt-6"><a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-facebook-f"></i></a><a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-twitter"></i></a><a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-instagram"></i></a><a href="#" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-linkedin-in"></i></a></div></div>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-10"><div><h4 class="font-bold text-lg mb-4">Quick Links</h4><ul class="space-y-2"><li><a href="#why" class="text-white/80 hover:text-white transition">Why Donate</a></li><li><a href="#work" class="text-white/80 hover:text-white transition">Our Impact</a></li><li><a href="#stories" class="text-white/80 hover:text-white transition">Success Stories</a></li></ul></div><div><h4 class="font-bold text-lg mb-4">Resources</h4><ul class="space-y-2"><li><a href="#" class="text-white/80 hover:text-white transition">Donor Guide</a></li><li><a href="#" class="text-white/80 hover:text-white transition">Blood Safety</a></li><li><a href="hospital-login.html" class="text-white/80 hover:text-white transition">Hospital Portal</a></li></ul></div><div><h4 class="font-bold text-lg mb-4">Contact</h4><ul class="space-y-2"><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-phone"></i><span>+977-1-1234567</span></li><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-envelope"></i><span>rdrop7214@gmail.com</span></li><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-map-marker-alt"></i><span>Kathmandu, Nepal</span></li></ul></div></div>
+        <div class="mb-8 md:mb-0"><div class="flex items-center space-x-3 mb-4"><div class="w-12 h-12 bg-white rounded-full flex items-center justify-center"><i class="fas fa-tint text-[#B91C1C] text-2xl"></i></div><h2 class="text-3xl font-bold">RedDrop</h2></div><p class="text-white/80 max-w-md">Connecting hearts through blood donation.<br>Every drop counts, every donor matters.</p><div class="flex space-x-4 mt-6"><a href="https://www.facebook.com/" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-facebook-f"></i></a><a href="https://twitter.com/" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-twitter"></i></a><a href="https://www.instagram.com/" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-instagram"></i></a><a href="https://www.linkedin.com/company/reddrop" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-linkedin-in"></i></a></div></div>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-10"><div><h4 class="font-bold text-lg mb-4">Quick Links</h4><ul class="space-y-2"><li><a href="#why" class="text-white/80 hover:text-white transition">Why Donate</a></li><li><a href="#work" class="text-white/80 hover:text-white transition">Our Impact</a></li><li><a href="#stories" class="text-white/80 hover:text-white transition">Success Stories</a></li></ul></div><div><h4 class="font-bold text-lg mb-4">Resources</h4><ul class="space-y-2"><li><a href="#" onclick="openResourceModal('donor'); return false;" class="text-white/80 hover:text-white transition">Donor Guide</a></li><li><a href="#" onclick="openResourceModal('safety'); return false;" class="text-white/80 hover:text-white transition">Blood Safety</a></li><li><a href="hospital-login.html" class="text-white/80 hover:text-white transition">Hospital Portal</a></li></ul></div><div><h4 class="font-bold text-lg mb-4">Contact</h4><ul class="space-y-2"><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-phone"></i><span>+977-9847373171</span></li><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-envelope"></i><span>rdrop7214@gmail.com</span></li><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-map-marker-alt"></i><span>Kathmandu, Nepal</span></li></ul></div></div>
       </div>
       <div class="border-t border-white/20 mt-10 pt-8 text-center"><p class="text-white/70">&copy; 2025 RedDrop | Digital Blood Bank. All Rights Reserved.</p><p class="text-white/60 text-sm mt-2">Made with <i class="fas fa-heart text-red-300"></i> for Nepal</p></div>
     </div>
@@ -717,6 +717,53 @@ function showMoreRequests() {
   if (moreWrap) moreWrap.classList.add("hidden");
 }
 
+    const resourceContent = {
+      donor: {
+        title: "Donor Guide",
+        body: `
+          <ul class="list-disc pl-5 space-y-2 text-gray-700">
+            <li>Be 18-60 years old, healthy, and at least 50 kg.</li>
+            <li>Eat a light meal and drink enough water before donation.</li>
+            <li>Carry a valid ID and share honest medical history.</li>
+            <li>After donation, rest for 10-15 minutes and avoid heavy exercise for 24 hours.</li>
+            <li>You can usually donate whole blood again after 3 months.</li>
+          </ul>
+        `
+      },
+      safety: {
+        title: "Blood Safety",
+        body: `
+          <ul class="list-disc pl-5 space-y-2 text-gray-700">
+            <li>Use only sterile, single-use needles and sealed blood bags.</li>
+            <li>All donated blood should be screened for major transfusion infections.</li>
+            <li>Confirm donor identity, blood group, and compatibility before transfusion.</li>
+            <li>Store blood products at correct temperature with expiry checks.</li>
+            <li>Report any side effects immediately and follow hospital protocols.</li>
+          </ul>
+        `
+      }
+    };
+
+    function openResourceModal(type) {
+      const modal = document.getElementById("resourceModal");
+      const title = document.getElementById("resourceModalTitle");
+      const body = document.getElementById("resourceModalBody");
+      const selected = resourceContent[type];
+      if (!modal || !title || !body || !selected) return;
+
+      title.textContent = selected.title;
+      body.innerHTML = selected.body;
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeResourceModal() {
+      const modal = document.getElementById("resourceModal");
+      if (!modal) return;
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
     // Admin modal functions
     function openAdminModal(){ document.getElementById("adminModal")?.classList.remove("hidden"); }
     function closeAdminModal(){ document.getElementById("adminModal")?.classList.add("hidden"); }
@@ -750,6 +797,19 @@ function showMoreRequests() {
       <div class="flex justify-end gap-3">
         <button onclick="closeAdminModal()" class="px-4 py-2 border rounded">Cancel</button>
         <button onclick="verifyAdminKey()" class="px-4 py-2 bg-[#B91C1C] text-white rounded">Enter</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resourceModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[999] p-4">
+    <div class="bg-white w-full max-w-xl p-6 rounded-2xl shadow-xl">
+      <div class="flex items-center justify-between mb-4">
+        <h2 id="resourceModalTitle" class="text-2xl font-bold text-[#B91C1C]">Resource</h2>
+        <button onclick="closeResourceModal()" class="text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
+      </div>
+      <div id="resourceModalBody" class="text-gray-700"></div>
+      <div class="mt-6 text-right">
+        <button onclick="closeResourceModal()" class="bg-[#B91C1C] text-white px-5 py-2 rounded-lg hover:bg-[#991B1B] transition">Close</button>
       </div>
     </div>
   </div>

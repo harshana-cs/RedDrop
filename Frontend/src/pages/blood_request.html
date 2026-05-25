@@ -4,13 +4,17 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Request Blood | RedDrop</title>
-
+<script>
+// Put this as the VERY FIRST script in <head>
+window.addEventListener('beforeunload', function() {
+    debugger; // This will pause DevTools before the page unloads
+});
+</script>
 <link href="../../dist/output.css" rel="stylesheet" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-    
 /* ── Blood Request Flow Modal ───────────────────────────────────────── */
 @keyframes brf-slide-up {
   from { opacity: 0; transform: translateY(32px) scale(0.96); }
@@ -42,7 +46,7 @@
   60%  { transform: scale(1.12); }
   100% { transform: scale(1); opacity: 1; }
 }
- 
+
 .brf-backdrop {
   position: fixed; inset: 0; z-index: 9999;
   background: rgba(0,0,0,.58);
@@ -81,37 +85,29 @@
   font-size: .9rem; color: #666; margin: 0; line-height: 1.5;
   max-width: 340px;
 }
- 
+
 /* ── Tier Track ─────────────────────────────────────────────────────── */
-.brf-tier-track {
-  padding: 1.25rem 1.75rem 0;
-}
+.brf-tier-track { padding: 1.25rem 1.75rem 0; }
 .brf-tier-label {
   font-size: .72rem; font-weight: 600; letter-spacing: .06em;
   text-transform: uppercase; color: #999; margin-bottom: .6rem;
 }
-.brf-tiers {
-  display: grid; grid-template-columns: repeat(4,1fr); gap: 6px;
-}
-.brf-tier {
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
-}
+.brf-tiers { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
+.brf-tier  { display: flex; flex-direction: column; align-items: center; gap: 5px; }
 .brf-tier-dot {
   width: 36px; height: 36px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: .72rem; font-weight: 700;
   transition: all .4s ease;
 }
-.brf-tier-dot.idle     { background: #f0f0f0; color: #aaa; }
-.brf-tier-dot.active   { background: #B91C1C; color: #fff;
-                          animation: brf-step-pop .4s ease both,
-                                     brf-heartbeat 1.8s ease-in-out .6s infinite; }
-.brf-tier-dot.done     { background: #16a34a; color: #fff;
-                          animation: brf-step-pop .3s ease both; }
-.brf-tier-name {
-  font-size: .68rem; color: #888; text-align: center; line-height: 1.2;
-}
- 
+.brf-tier-dot.idle   { background: #f0f0f0; color: #aaa; }
+.brf-tier-dot.active { background: #B91C1C; color: #fff;
+                        animation: brf-step-pop .4s ease both,
+                                   brf-heartbeat 1.8s ease-in-out .6s infinite; }
+.brf-tier-dot.done   { background: #16a34a; color: #fff;
+                        animation: brf-step-pop .3s ease both; }
+.brf-tier-name { font-size: .68rem; color: #888; text-align: center; line-height: 1.2; }
+
 /* ── Progress bar ───────────────────────────────────────────────────── */
 .brf-progress-wrap { padding: .85rem 1.75rem 0; }
 .brf-progress-row  { display: flex; justify-content: space-between;
@@ -123,7 +119,7 @@
   animation: brf-fill .9s cubic-bezier(.22,1,.36,1) both;
   transition: width .6s ease;
 }
- 
+
 /* ── Stats row ──────────────────────────────────────────────────────── */
 .brf-stats {
   display: grid; grid-template-columns: repeat(3,1fr);
@@ -131,12 +127,11 @@
 }
 .brf-stat {
   background: #fafafa; border: 1px solid #f0f0f0;
-  border-radius: 12px; padding: .7rem .5rem;
-  text-align: center;
+  border-radius: 12px; padding: .7rem .5rem; text-align: center;
 }
 .brf-stat-val { font-size: 1.15rem; font-weight: 700; color: #111; }
 .brf-stat-lbl { font-size: .68rem; color: #999; margin-top: 2px; }
- 
+
 /* ── Donor card ─────────────────────────────────────────────────────── */
 .brf-donor-card {
   margin: 1rem 1.75rem 0;
@@ -157,7 +152,7 @@
   font-size: .7rem; font-weight: 700; padding: .25rem .65rem;
   border-radius: 99px; white-space: nowrap;
 }
- 
+
 /* ── Spinning search indicator ──────────────────────────────────────── */
 .brf-spinner {
   width: 36px; height: 36px; border-radius: 50%;
@@ -165,24 +160,21 @@
   animation: brf-spin .9s linear infinite;
   margin: .5rem auto 0;
 }
- 
+
 /* ── SVG checkmark ──────────────────────────────────────────────────── */
 .brf-check { stroke: #fff; stroke-width: 3; stroke-linecap: round;
              stroke-linejoin: round; fill: none;
              stroke-dasharray: 40; stroke-dashoffset: 40;
              animation: brf-check-draw .5s .15s ease forwards; }
- 
+
 /* ── Footer actions ─────────────────────────────────────────────────── */
-.brf-actions {
-  display: flex; gap: 10px;
-  padding: 1.5rem 1.75rem 1.75rem;
-}
+.brf-actions { display: flex; gap: 10px; padding: 1.5rem 1.75rem 1.75rem; }
 .brf-btn-primary {
   flex: 1; padding: .8rem; border-radius: 12px; border: none; cursor: pointer;
   background: #B91C1C; color: #fff; font-weight: 700; font-size: .9rem;
   transition: background .2s, transform .1s;
 }
-.brf-btn-primary:hover { background: #991B1B; }
+.brf-btn-primary:hover  { background: #991B1B; }
 .brf-btn-primary:active { transform: scale(.97); }
 .brf-btn-ghost {
   flex: 1; padding: .8rem; border-radius: 12px; cursor: pointer;
@@ -190,17 +182,17 @@
   border: none; transition: background .2s;
 }
 .brf-btn-ghost:hover { background: #eee; }
- 
+
 /* ── Stage header colours ───────────────────────────────────────────── */
 .brf-stage-submitted .brf-header { background: linear-gradient(160deg,#fff7ed,#fff); }
 .brf-stage-approved  .brf-header { background: linear-gradient(160deg,#f0fdf4,#fff); }
 .brf-stage-searching .brf-header { background: linear-gradient(160deg,#fff1f2,#fff); }
 .brf-stage-found     .brf-header { background: linear-gradient(160deg,#f0fdf4,#fff); }
- 
+
 /* ── Shimmer skeleton ───────────────────────────────────────────────── */
 @keyframes brf-shimmer {
   from { background-position: -600px 0; }
-  to   { background-position: 600px 0; }
+  to   { background-position:  600px 0; }
 }
 .brf-skeleton {
   border-radius: 8px; height: 14px;
@@ -209,7 +201,6 @@
   animation: brf-shimmer 1.4s infinite;
 }
 
- 
 :root {
   --brand-red: #B91C1C;
   --brand-red-dark: #991B1B;
@@ -221,7 +212,7 @@
 
 @keyframes fadeIn {
   from { opacity:0; transform: translateY(10px); }
-  to { opacity:1; transform: translateY(0); }
+  to   { opacity:1; transform: translateY(0); }
 }
 </style>
 </head>
@@ -229,15 +220,15 @@
 <body class="bg-gray-100 text-gray-800">
 
 <!-- Floating particles for background effect -->
-  <div class="fixed inset-0 pointer-events-none overflow-hidden">
-    <div class="particle" style="top: 10%; left: 20%; animation-delay: 0s;"></div>
-    <div class="particle" style="top: 30%; left: 80%; animation-delay: 2s;"></div>
-    <div class="particle" style="top: 70%; left: 10%; animation-delay: 4s;"></div>
-    <div class="particle" style="top: 40%; left: 40%; animation-delay: 6s;"></div>
-    <div class="particle" style="top: 80%; left: 70%; animation-delay: 8s;"></div>
-  </div>
+<div class="fixed inset-0 pointer-events-none overflow-hidden">
+  <div class="particle" style="top: 10%; left: 20%; animation-delay: 0s;"></div>
+  <div class="particle" style="top: 30%; left: 80%; animation-delay: 2s;"></div>
+  <div class="particle" style="top: 70%; left: 10%; animation-delay: 4s;"></div>
+  <div class="particle" style="top: 40%; left: 40%; animation-delay: 6s;"></div>
+  <div class="particle" style="top: 80%; left: 70%; animation-delay: 8s;"></div>
+</div>
 
- <header class="bg-gradient-to-r from-[#B91C1C] via-[#b12a2a] to-[#991B1B] text-white fixed top-0 left-0 w-full z-50 shadow-2xl backdrop-blur-md bg-opacity-95 border-b border-red-400/30">
+<header class="bg-gradient-to-r from-[#B91C1C] via-[#b12a2a] to-[#991B1B] text-white fixed top-0 left-0 w-full z-50 shadow-2xl backdrop-blur-md bg-opacity-95 border-b border-red-400/30">
   <nav class="container mx-auto flex items-center justify-between py-3 px-6">
 
     <!-- Logo -->
@@ -266,7 +257,6 @@
 
     <!-- Notification + Profile -->
     <div class="flex items-center gap-4">
-
       <!-- Notification Bell -->
       <div class="relative">
         <button onclick="toggleNotifications()"
@@ -312,524 +302,482 @@
           Profile
         </span>
       </button>
-
     </div>
   </nav>
 </header>
+
 <div class="min-h-screen flex pt-16 w-full">
+  <main class="w-full pt-8 px-4 sm:px-6 md:px-8 animate-fade-in">
+    <div class="space-y-10">
 
-
-<!-- Main Content -->
-<main class="w-full pt-8 px-4 sm:px-6 md:px-8 animate-fade-in">
-  
-  <!-- FULL-WIDTH CONTENT WRAPPER -->
-  <div class="space-y-10">
-        <!-- <div class="ml-64 p-8 animate-fade-in">
-            <div class="max-w-6xl mx-auto space-y-8"> -->
-                <!-- Header -->
-                <div class="relative overflow-hidden bg-[var(--brand-red)] rounded-2xl shadow-lg">
-
-                    <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cdefs%3E%3Cpattern id=\"grid\" width=\"60\" height=\"60\" patternUnits=\"userSpaceOnUse\"%3E%3Cpath d=\"M 60 0 L 0 0 0 60\" fill=\"none\" stroke=\"rgba(255,255,255,0.1)\" stroke-width=\"1\"/%3E%3C/pattern%3E%3C/defs%3E%3Crect width=\"100%25\" height=\"100%25\" fill=\"url(%23grid)\"/%3E%3C/svg%3E')] opacity-20"></div>
-                    <div class="relative p-8 text-white">
-                        <div class="flex items-center space-x-4">
-                            <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                                <i class="fas fa-plus-circle text-4xl"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h1 class="text-3xl font-bold mb-2">Request Blood</h1>
-                                <p class="text-red-100/90 text-lg">Submit a new blood request with required documentation. Fill all required fields marked with *</p>
-                            </div>
-                        </div>
-                        <div class="mt-6 flex items-center space-x-4">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-3 h-3 bg-white rounded-full"></div>
-                                <span class="text-sm font-medium">Basic Information</span>
-                            </div>
-                            <div class="flex-1 h-1 bg-white/30 rounded-full"></div>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-3 h-3 bg-white/30 rounded-full"></div>
-                                <span class="text-sm text-white/70">Documents</span>
-                            </div>
-                            <div class="flex-1 h-1 bg-white/30 rounded-full"></div>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-3 h-3 bg-white/30 rounded-full"></div>
-                                <span class="text-sm text-white/70">Review & Submit</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Request Form -->
-                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                    <div class="p-8 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-                        <div class="flex items-center space-x-4">
-                            <div class="w-12 h-12 bg-[var(--brand-red-light)] rounded-xl flex items-center justify-center">
-                                <i class="fas fa-file-medical text-[var(--brand-red)] text-2xl"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-2xl font-bold text-gray-900">Blood Request Details</h2>
-                                <p class="text-gray-600 mt-1">Please fill in all required fields. Your request will be reviewed by admin.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <form id="bloodRequestForm" class="p-8 space-y-8" onsubmit="event.preventDefault(); return false;">
-                        <!-- Blood Group and Units -->
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div class="space-y-3">
-                                <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                    Required Blood Group *
-                                    <span class="ml-2 px-2 py-0.5 bg-[var(--brand-red-light)]text-[var(--brand-red)] text-xs font-medium rounded-full">Important</span>
-                                </label>
-                                <div class="relative">
-                                    <select id="bloodGroup" required 
-                                            class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white appearance-none hover:border-gray-400 transition-colors">
-                                        <option value="">Select blood group</option>
-                                        <option value="A+">A+</option>
-                                        <option value="A-">A-</option>
-                                        <option value="B+">B+</option>
-                                        <option value="B-">B-</option>
-                                        <option value="AB+">AB+</option>
-                                        <option value="AB-">AB-</option>
-                                        <option value="O+">O+</option>
-                                        <option value="O-">O-</option>
-                                    </select>
-                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <i class="fas fa-chevron-down text-gray-400"></i>
-                                    </div>
-                                </div>
-                                <p class="text-xs text-gray-500">Select the required blood type for patient</p>
-                            </div>
-
-                            <div class="space-y-3">
-    <label class="block text-sm font-semibold text-gray-700 mb-2">Units Required *</label>
-    <div class="relative">
-        <input type="number" min="1" max="10" id="unitsRequired" value="1"
-               class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
-               placeholder="Enter number of units (1-10)">
-        <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-            <span class="text-gray-500">units</span>
-        </div>
-    </div>
-    <p class="text-xs text-gray-500">Each unit is approximately 450ml of blood</p>
-</div>
-                        </div>
-
-                        <!-- Urgency Level -->
-                        <div class="space-y-4">
-                            <label class="block text-sm font-semibold text-gray-700 mb-3">Urgency Level *</label>
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-[var(--brand-red)] transition-all duration-200 group bg-white hover:bg-[var(--brand-red-light)]">
-                                    <input type="radio" name="urgency" value="Critical" required class="sr-only">
-                                    <div class="w-10 h-10 rounded-lg bg-[var(--brand-red)] flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                                        <i class="fas fa-exclamation-circle text-white"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-semibold text-gray-900">Critical</p>
-                                        <p class="text-xs text-gray-500">Within 24 hours</p>
-                                    </div>
-                                    <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                                </label>
-
-                                <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-300 transition-all duration-200 group bg-white hover:bg-orange-50">
-                                    <input type="radio" name="urgency" value="High" class="sr-only">
-                                    <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                                        <i class="fas fa-exclamation-circle text-white"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-semibold text-gray-900">High</p>
-                                        <p class="text-xs text-gray-500">Within 48 hours</p>
-                                    </div>
-                                    <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                                </label>
-
-                                <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-yellow-300 transition-all duration-200 group bg-white hover:bg-yellow-50">
-                                    <input type="radio" name="urgency" value="Medium" class="sr-only">
-                                    <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-yellow-500 to-yellow-600 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                                        <i class="fas fa-exclamation-circle text-white"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-semibold text-gray-900">Medium</p>
-                                        <p class="text-xs text-gray-500">Within 1 week</p>
-                                    </div>
-                                    <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                                </label>
-
-                                <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-green-300 transition-all duration-200 group bg-white hover:bg-green-50">
-                                    <input type="radio" name="urgency" value="Low" class="sr-only">
-                                    <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
-                                        <i class="fas fa-exclamation-circle text-white"></i>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-semibold text-gray-900">Low</p>
-                                        <p class="text-xs text-gray-500">Within 2 weeks</p>
-                                    </div>
-                                    <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full"></div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- District and Hospital -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-3">District *</label>
-                            <div class="relative mb-8">
-                                <select id="districtSelect" required 
-                                        class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 hover:border-gray-400 transition-colors bg-white appearance-none">
-                                    <option value="">Select District</option>
-                                    <!-- Province 1 -->
-                                    <option value="Bhojpur">Bhojpur</option>
-                                    <option value="Dhankuta">Dhankuta</option>
-                                    <option value="Ilam">Ilam</option>
-                                    <option value="Jhapa">Jhapa</option>
-                                    <option value="Khotang">Khotang</option>
-                                    <option value="Morang">Morang</option>
-                                    <option value="Okhaldhunga">Okhaldhunga</option>
-                                    <option value="Panchthar">Panchthar</option>
-                                    <option value="Sankhuwasabha">Sankhuwasabha</option>
-                                    <option value="Solukhumbu">Solukhumbu</option>
-                                    <option value="Sunsari">Sunsari</option>
-                                    <option value="Taplejung">Taplejung</option>
-                                    <option value="Terhathum">Terhathum</option>
-                                    <option value="Udayapur">Udayapur</option>
-
-                                    <!-- Madhesh Province -->
-                                    <option value="Bara">Bara</option>
-                                    <option value="Dhanusha">Dhanusha</option>
-                                    <option value="Mahottari">Mahottari</option>
-                                    <option value="Parsa">Parsa</option>
-                                    <option value="Rautahat">Rautahat</option>
-                                    <option value="Saptari">Saptari</option>
-                                    <option value="Sarlahi">Sarlahi</option>
-                                    <option value="Siraha">Siraha</option>
-
-                                    <!-- Bagmati Province -->
-                                    <option value="Bhaktapur">Bhaktapur</option>
-                                    <option value="Chitwan">Chitwan</option>
-                                    <option value="Dhading">Dhading</option>
-                                    <option value="Dolakha">Dolakha</option>
-                                    <option value="Kathmandu">Kathmandu</option>
-                                    <option value="Kavrepalanchok">Kavrepalanchok</option>
-                                    <option value="Lalitpur">Lalitpur</option>
-                                    <option value="Makwanpur">Makwanpur</option>
-                                    <option value="Nuwakot">Nuwakot</option>
-                                    <option value="Ramechhap">Ramechhap</option>
-                                    <option value="Rasuwa">Rasuwa</option>
-                                    <option value="Sindhuli">Sindhuli</option>
-                                    <option value="Sindhupalchok">Sindhupalchok</option>
-
-                                    <!-- Gandaki Province -->
-                                    <option value="Baglung">Baglung</option>
-                                    <option value="Gorkha">Gorkha</option>
-                                    <option value="Kaski">Kaski</option>
-                                    <option value="Lamjung">Lamjung</option>
-                                    <option value="Manang">Manang</option>
-                                    <option value="Mustang">Mustang</option>
-                                    <option value="Myagdi">Myagdi</option>
-                                    <option value="Nawalpur">Nawalpur</option>
-                                    <option value="Parbat">Parbat</option>
-                                    <option value="Syangja">Syangja</option>
-                                    <option value="Tanahun">Tanahun</option>
-
-                                    <!-- Lumbini Province -->
-                                    <option value="Arghakhanchi">Arghakhanchi</option>
-                                    <option value="Banke">Banke</option>
-                                    <option value="Bardiya">Bardiya</option>
-                                    <option value="Dang">Dang</option>
-                                    <option value="Gulmi">Gulmi</option>
-                                    <option value="Kapilvastu">Kapilvastu</option>
-                                    <option value="Parasi">Parasi</option>
-                                    <option value="Palpa">Palpa</option>
-                                    <option value="Pyuthan">Pyuthan</option>
-                                    <option value="Rolpa">Rolpa</option>
-                                    <option value="Rukum East">Rukum East</option>
-                                    <option value="Rupandehi">Rupandehi</option>
-
-                                    <!-- Karnali Province -->
-                                    <option value="Dailekh">Dailekh</option>
-                                    <option value="Dolpa">Dolpa</option>
-                                    <option value="Humla">Humla</option>
-                                    <option value="Jajarkot">Jajarkot</option>
-                                    <option value="Jumla">Jumla</option>
-                                    <option value="Kalikot">Kalikot</option>
-                                    <option value="Mugu">Mugu</option>
-                                    <option value="Rukum West">Rukum West</option>
-                                    <option value="Salyan">Salyan</option>
-                                    <option value="Surkhet">Surkhet</option>
-
-                                    <!-- Sudurpashchim Province -->
-                                    <option value="Achham">Achham</option>
-                                    <option value="Baitadi">Baitadi</option>
-                                    <option value="Bajhang">Bajhang</option>
-                                    <option value="Bajura">Bajura</option>
-                                    <option value="Dadeldhura">Dadeldhura</option>
-                                    <option value="Darchula">Darchula</option>
-                                    <option value="Doti">Doti</option>
-                                    <option value="Kailali">Kailali</option>
-                                    <option value="Kanchanpur">Kanchanpur</option>
-
-                                    <!-- Other Option -->
-                                    <option value="Other">Other</option>
-                                </select>
-                                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                    <i class="fas fa-map-marker-alt text-gray-400"></i>
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                <div class="space-y-3">
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Hospital *</label>
-                                    <div class="relative">
-                                        <select id="hospitalSelect" required
-                                                class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors bg-white appearance-none">
-                                            <option value="">Select hospital</option>
-                                        </select>
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                            <i class="fas fa-hospital text-gray-400"></i>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="space-y-3">
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Required Date *</label>
-                                    <div class="relative">
-                                        <input type="date" id="requiredDate" required
-                                               class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors">
-                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                            <i class="fas fa-calendar-alt text-gray-400"></i>
-                                        </div>
-                                    </div>
-                                    <p class="text-xs text-gray-500">Select when the blood is needed</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Reason for Request -->
-                       <div class="space-y-3">
-    <label class="block text-sm font-semibold text-gray-700 mb-2">
-        Reason for Blood Request 
-        <span class="text-gray-400 font-normal text-xs">(optional)</span>
-    </label>
-    <textarea rows="4" id="reason"
-        class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
-        placeholder="Describe the reason (surgery, accident, medical condition, etc.)"></textarea>
-    <p class="text-xs text-gray-500">Providing a reason helps admin approve faster</p>
-</div>
-
-                        <!-- Contact Information -->
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <div class="space-y-3">
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Contact Person *</label>
-                                <div class="relative">
-                                    <input type="text" id="contactName" required 
-                                           class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
-                                           placeholder="Name of contact person">
-                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <i class="fas fa-user text-gray-400"></i>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="space-y-3">
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Contact Phone *</label>
-                                <div class="relative">
-                                    <input type="tel" id="contactPhone" required 
-                                           class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
-                                           placeholder="Contact phone number">
-                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <i class="fas fa-phone text-gray-400"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Document Upload -->
-                        <div class="space-y-8">
-                            <div class="border-t border-gray-200 pt-8">
-                                <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                        <i class="fas fa-file-upload text-blue-600"></i>
-                                    </div>
-                                    Required Documents
-                                </h3>
-                                
-                                <!-- Hospital Document -->
-                                <div class="mb-8">
-                                    <label class="block mb-4">
-                                        <span class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                            Hospital Verification Document *
-                                            <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">PDF, JPG, PNG up to 5MB</span>
-                                        </span>
-                                    </label>
-                                    <div class="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-red-400 transition-colors duration-200 bg-gradient-to-br from-gray-50 to-white">
-                                        <i class="fas fa-hospital text-gray-400 text-5xl mb-4"></i>
-                                        <h4 class="text-lg font-semibold text-gray-700 mb-2">Upload Hospital Document</h4>
-                                        <p class="text-gray-500 mb-6">Medical certificate or hospital admission proof</p>
-                                        <label class="bg-[var(--brand-red)] hover:bg-[var(--brand-red-dark)] text-white px-8 py-3 rounded-xl hover:shadow-lg transition-all duration-200 cursor-pointer inline-flex items-center space-x-2 hover:scale-105">
-                                            <i class="fas fa-cloud-upload-alt"></i>
-                                            <span>Choose File</span>
-                                            <input type="file" id="hospitalDoc" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="handleFileUpload('hospitalDoc', this)">
-                                        </label>
-                                    </div>
-                                    <div id="hospitalDoc-status" class="mt-4 hidden text-sm text-green-600 flex items-center bg-green-50 px-4 py-3 rounded-xl">
-                                        <i class="fas fa-check-circle mr-3"></i>
-                                        <div>
-                                            <span class="font-medium">File uploaded successfully: </span>
-                                            <span class="ml-2" id="hospitalDoc-name"></span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Doctor's Note -->
-                                <div>
-                                    <label class="block mb-4">
-                                        <span class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                                            Doctor's Note / Prescription 
-                                            <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">PDF, JPG, PNG up to 5MB</span>
-                                        </span>
-                                    </label>
-                                    <div class="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-red-400 transition-colors duration-200 bg-gradient-to-br from-gray-50 to-white">
-                                        <i class="fas fa-file-medical text-gray-400 text-5xl mb-4"></i>
-                                        <h4 class="text-lg font-semibold text-gray-700 mb-2">Upload Doctor's Note</h4>
-                                        <p class="text-gray-500 mb-6">Doctor's prescription or medical recommendation</p>
-                                        <label class="bg-[var(--brand-red)] hover:bg-[var(--brand-red-dark)] text-white px-8 py-3 rounded-xl hover:shadow-lg transition-all duration-200 cursor-pointer inline-flex items-center space-x-2 hover:scale-105">
-                                            <i class="fas fa-cloud-upload-alt"></i>
-                                            <span>Choose File</span>
-                                            <input type="file" id="doctorNote" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="handleFileUpload('doctorNote', this)">
-                                        </label>
-                                    </div>
-                                    <div id="doctorNote-status" class="mt-4 hidden text-sm text-green-600 flex items-center bg-green-50 px-4 py-3 rounded-xl">
-                                        <i class="fas fa-check-circle mr-3"></i>
-                                        <div>
-                                            <span class="font-medium">File uploaded successfully: </span>
-                                            <span class="ml-2" id="doctorNote-name"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Compatible Donors Info -->
-                        <div id="compatibleInfo" class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6 hidden animate-fade-in">
-                            <div class="flex items-start space-x-4">
-                                <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-heart text-white"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <h4 class="text-lg font-bold text-blue-900 mb-2">Compatible Blood Groups</h4>
-                                    <p class="text-blue-700 mb-4">Based on your selected blood type, these are the compatible donor groups:</p>
-                                    <div id="compatibleList" class="flex flex-wrap gap-3 mb-4"></div>
-                                    <p class="text-sm text-blue-700">We will match you with donors having these compatible blood groups. This increases your chances of finding a match quickly.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Submit Buttons -->
-                        <div class="border-t border-gray-200 pt-8">
-                            <div class="flex flex-col sm:flex-row justify-end space-y-4 sm:space-y-0 sm:space-x-4">
-                                <button type="button" onclick="window.location.href='dashboard.html'" 
-                                        class="px-8 py-3.5 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium hover:scale-105">
-                                    <i class="fas fa-times mr-2"></i>
-                                    Cancel
-                                </button>
-                                <button type="button" id="submitBtn"
-        class="bg-[var(--brand-red)] hover:bg-[var(--brand-red-dark)] text-white px-8 py-3.5 rounded-xl hover:shadow-lg transition-all duration-200 font-semibold hover:scale-105 flex items-center justify-center space-x-2">
-    <i class="fas fa-paper-plane"></i>
-    <span>Submit Request for Review</span>
-</button>
-                            </div>
-                            <p class="text-sm text-gray-500 text-center mt-6">
-                                <i class="fas fa-shield-alt mr-1 text-green-500"></i>
-                                Your information is secure and will only be used for blood matching purposes
-                            </p>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Help Card -->
-                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-8 text-white">
-                    <div class="flex items-center space-x-4">
-                        <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                            <i class="fas fa-question-circle text-3xl"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="text-xl font-bold mb-2">Need Help with Your Request?</h3>
-                            <p class="text-blue-100/90 mb-4">Contact our support team for assistance with the blood request process</p>
-                            <div class="flex flex-wrap gap-4">
-                                <div class="flex items-center space-x-2">
-                                    <i class="fas fa-phone"></i>
-                                    <span>+977-1-1234567</span>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <i class="fas fa-envelope"></i>
-                                    <span>support@reddrop.com</span>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <i class="fas fa-clock"></i>
-                                    <span>24/7 Emergency Support</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <!-- </div>
-        </div> -->
-    </div>
-    </main>
-
-    <!-- Notification Toast -->
-    <div class="relative">
-    <button onclick="toggleNotifications()" 
-        class="relative text-white text-xl hover:text-yellow-300 transition-all duration-300 transform hover:scale-110 hover:rotate-12 p-3 hover:bg-white/10 rounded-xl">
-        <i class="fas fa-bell"></i>
-        <span id="notificationBadge" 
-            class="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black text-xs px-2 py-1 rounded-full hidden animate-bounce font-bold shadow-lg">
-            0
-        </span>
-    </button>
-
-    <div id="notificationDropdown" 
-        class="hidden absolute right-0 mt-3 w-96 bg-white/95 backdrop-blur-md text-gray-800 rounded-2xl shadow-2xl border border-red-200 z-50">
-        <div class="p-5 border-b bg-gradient-to-r from-red-50 to-white rounded-t-2xl">
-            <div class="flex items-center justify-between">
-                <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
-                    <i class="fas fa-bell text-red-600"></i> Notifications
-                </h3>
-                <span onclick="markAllRead()"
-    class="text-xs text-red-600 cursor-pointer hover:underline flex items-center gap-1">
-    <i class="fas fa-check-circle"></i>Mark all as read
-</span>
+      <!-- Page Header -->
+      <div class="relative overflow-hidden bg-[var(--brand-red)] rounded-2xl shadow-lg">
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cdefs%3E%3Cpattern id=\"grid\" width=\"60\" height=\"60\" patternUnits=\"userSpaceOnUse\"%3E%3Cpath d=\"M 60 0 L 0 0 0 60\" fill=\"none\" stroke=\"rgba(255,255,255,0.1)\" stroke-width=\"1\"/%3E%3C/pattern%3E%3C/defs%3E%3Crect width=\"100%25\" height=\"100%25\" fill=\"url(%23grid)\"/%3E%3C/svg%3E')] opacity-20"></div>
+        <div class="relative p-8 text-white">
+          <div class="flex items-center space-x-4">
+            <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+              <i class="fas fa-plus-circle text-4xl"></i>
             </div>
-        </div>
-        <div id="notificationList" class="max-h-80 overflow-y-auto">
-            <div class="p-6 text-center text-gray-400 text-sm">
-                <i class="fas fa-bell-slash text-2xl mb-2 block"></i>
-                No notifications yet
+            <div class="flex-1">
+              <h1 class="text-3xl font-bold mb-2">Request Blood</h1>
+              <p class="text-red-100/90 text-lg">Submit a new blood request with required documentation. Fill all required fields marked with *</p>
             </div>
+          </div>
+          <div class="mt-6 flex items-center space-x-4">
+            <div class="flex items-center space-x-2">
+              <div class="w-3 h-3 bg-white rounded-full"></div>
+              <span class="text-sm font-medium">Basic Information</span>
+            </div>
+            <div class="flex-1 h-1 bg-white/30 rounded-full"></div>
+            <div class="flex items-center space-x-2">
+              <div class="w-3 h-3 bg-white/30 rounded-full"></div>
+              <span class="text-sm text-white/70">Documents</span>
+            </div>
+            <div class="flex-1 h-1 bg-white/30 rounded-full"></div>
+            <div class="flex items-center space-x-2">
+              <div class="w-3 h-3 bg-white/30 rounded-full"></div>
+              <span class="text-sm text-white/70">Review & Submit</span>
+            </div>
+          </div>
         </div>
-        <div class="p-3 border-t text-center">
-            <a href="dashboard.html" class="text-sm text-red-600 hover:text-red-800 font-medium hover:underline">
-                View all in dashboard
-            </a>
+      </div>
+
+      <!-- Request Form Card -->
+      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="p-8 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+          <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 bg-[var(--brand-red-light)] rounded-xl flex items-center justify-center">
+              <i class="fas fa-file-medical text-[var(--brand-red)] text-2xl"></i>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold text-gray-900">Blood Request Details</h2>
+              <p class="text-gray-600 mt-1">Please fill in all required fields. Your request will be reviewed by admin.</p>
+            </div>
+          </div>
         </div>
+
+        <!-- ✅ novalidate prevents ALL browser-native validation / submission -->
+        <form id="bloodRequestForm" class="p-8 space-y-8" novalidate>
+
+          <!-- Blood Group and Units -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="space-y-3">
+              <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                Required Blood Group *
+                <span class="ml-2 px-2 py-0.5 bg-[var(--brand-red-light)] text-[var(--brand-red)] text-xs font-medium rounded-full">Important</span>
+              </label>
+              <div class="relative">
+                <!-- ✅ no "required" attribute -->
+                <select id="bloodGroup"
+                        class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white appearance-none hover:border-gray-400 transition-colors">
+                  <option value="">Select blood group</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <i class="fas fa-chevron-down text-gray-400"></i>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500">Select the required blood type for patient</p>
+            </div>
+
+            <div class="space-y-3">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Units Required *</label>
+              <div class="relative">
+                <input type="number" min="1" max="10" id="unitsRequired" value="1"
+                       class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
+                       placeholder="Enter number of units (1-10)">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                  <span class="text-gray-500">units</span>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500">Each unit is approximately 450ml of blood</p>
+            </div>
+          </div>
+
+          <!-- Urgency Level -->
+          <div class="space-y-4">
+            <label class="block text-sm font-semibold text-gray-700 mb-3">Urgency Level *</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-[var(--brand-red)] transition-all duration-200 group bg-white hover:bg-[var(--brand-red-light)]">
+                <input type="radio" name="urgency" value="Critical" class="sr-only">
+                <div class="w-10 h-10 rounded-lg bg-[var(--brand-red)] flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                  <i class="fas fa-exclamation-circle text-white"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900">Critical</p>
+                  <p class="text-xs text-gray-500">Within 24 hours</p>
+                </div>
+                <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+              </label>
+
+              <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-300 transition-all duration-200 group bg-white hover:bg-orange-50">
+                <input type="radio" name="urgency" value="High" class="sr-only">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                  <i class="fas fa-exclamation-circle text-white"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900">High</p>
+                  <p class="text-xs text-gray-500">Within 48 hours</p>
+                </div>
+                <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+              </label>
+
+              <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-yellow-300 transition-all duration-200 group bg-white hover:bg-yellow-50">
+                <input type="radio" name="urgency" value="Medium" class="sr-only">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-yellow-500 to-yellow-600 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                  <i class="fas fa-exclamation-circle text-white"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900">Medium</p>
+                  <p class="text-xs text-gray-500">Within 1 week</p>
+                </div>
+                <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+              </label>
+
+              <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-green-300 transition-all duration-200 group bg-white hover:bg-green-50">
+                <input type="radio" name="urgency" value="Low" class="sr-only">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                  <i class="fas fa-exclamation-circle text-white"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900">Low</p>
+                  <p class="text-xs text-gray-500">Within 2 weeks</p>
+                </div>
+                <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+              </label>
+            </div>
+          </div>
+
+          <!-- District and Hospital -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-3">District *</label>
+            <div class="relative mb-8">
+              <!-- ✅ no "required" attribute -->
+              <select id="districtSelect"
+                      class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 hover:border-gray-400 transition-colors bg-white appearance-none">
+                <option value="">Select District</option>
+                <option value="Bhojpur">Bhojpur</option>
+                <option value="Dhankuta">Dhankuta</option>
+                <option value="Ilam">Ilam</option>
+                <option value="Jhapa">Jhapa</option>
+                <option value="Khotang">Khotang</option>
+                <option value="Morang">Morang</option>
+                <option value="Okhaldhunga">Okhaldhunga</option>
+                <option value="Panchthar">Panchthar</option>
+                <option value="Sankhuwasabha">Sankhuwasabha</option>
+                <option value="Solukhumbu">Solukhumbu</option>
+                <option value="Sunsari">Sunsari</option>
+                <option value="Taplejung">Taplejung</option>
+                <option value="Terhathum">Terhathum</option>
+                <option value="Udayapur">Udayapur</option>
+                <option value="Bara">Bara</option>
+                <option value="Dhanusha">Dhanusha</option>
+                <option value="Mahottari">Mahottari</option>
+                <option value="Parsa">Parsa</option>
+                <option value="Rautahat">Rautahat</option>
+                <option value="Saptari">Saptari</option>
+                <option value="Sarlahi">Sarlahi</option>
+                <option value="Siraha">Siraha</option>
+                <option value="Bhaktapur">Bhaktapur</option>
+                <option value="Chitwan">Chitwan</option>
+                <option value="Dhading">Dhading</option>
+                <option value="Dolakha">Dolakha</option>
+                <option value="Kathmandu">Kathmandu</option>
+                <option value="Kavrepalanchok">Kavrepalanchok</option>
+                <option value="Lalitpur">Lalitpur</option>
+                <option value="Makwanpur">Makwanpur</option>
+                <option value="Nuwakot">Nuwakot</option>
+                <option value="Ramechhap">Ramechhap</option>
+                <option value="Rasuwa">Rasuwa</option>
+                <option value="Sindhuli">Sindhuli</option>
+                <option value="Sindhupalchok">Sindhupalchok</option>
+                <option value="Baglung">Baglung</option>
+                <option value="Gorkha">Gorkha</option>
+                <option value="Kaski">Kaski</option>
+                <option value="Lamjung">Lamjung</option>
+                <option value="Manang">Manang</option>
+                <option value="Mustang">Mustang</option>
+                <option value="Myagdi">Myagdi</option>
+                <option value="Nawalpur">Nawalpur</option>
+                <option value="Parbat">Parbat</option>
+                <option value="Syangja">Syangja</option>
+                <option value="Tanahun">Tanahun</option>
+                <option value="Arghakhanchi">Arghakhanchi</option>
+                <option value="Banke">Banke</option>
+                <option value="Bardiya">Bardiya</option>
+                <option value="Dang">Dang</option>
+                <option value="Gulmi">Gulmi</option>
+                <option value="Kapilvastu">Kapilvastu</option>
+                <option value="Parasi">Parasi</option>
+                <option value="Palpa">Palpa</option>
+                <option value="Pyuthan">Pyuthan</option>
+                <option value="Rolpa">Rolpa</option>
+                <option value="Rukum East">Rukum East</option>
+                <option value="Rupandehi">Rupandehi</option>
+                <option value="Dailekh">Dailekh</option>
+                <option value="Dolpa">Dolpa</option>
+                <option value="Humla">Humla</option>
+                <option value="Jajarkot">Jajarkot</option>
+                <option value="Jumla">Jumla</option>
+                <option value="Kalikot">Kalikot</option>
+                <option value="Mugu">Mugu</option>
+                <option value="Rukum West">Rukum West</option>
+                <option value="Salyan">Salyan</option>
+                <option value="Surkhet">Surkhet</option>
+                <option value="Achham">Achham</option>
+                <option value="Baitadi">Baitadi</option>
+                <option value="Bajhang">Bajhang</option>
+                <option value="Bajura">Bajura</option>
+                <option value="Dadeldhura">Dadeldhura</option>
+                <option value="Darchula">Darchula</option>
+                <option value="Doti">Doti</option>
+                <option value="Kailali">Kailali</option>
+                <option value="Kanchanpur">Kanchanpur</option>
+                <option value="Other">Other</option>
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <i class="fas fa-map-marker-alt text-gray-400"></i>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div class="space-y-3">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Hospital *</label>
+                <div class="relative">
+                  <!-- ✅ no "required" attribute -->
+                  <select id="hospitalSelect"
+                          class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors bg-white appearance-none">
+                    <option value="">Select hospital</option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <i class="fas fa-hospital text-gray-400"></i>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-3">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Required Date *</label>
+                <div class="relative">
+                  <!-- ✅ no "required" attribute -->
+                  <input type="date" id="requiredDate"
+                         class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors">
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <i class="fas fa-calendar-alt text-gray-400"></i>
+                  </div>
+                </div>
+                <p class="text-xs text-gray-500">Select when the blood is needed</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reason for Request -->
+          <div class="space-y-3">
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+              Reason for Blood Request
+              <span class="text-gray-400 font-normal text-xs">(optional)</span>
+            </label>
+            <textarea rows="4" id="reason"
+              class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
+              placeholder="Describe the reason (surgery, accident, medical condition, etc.)"></textarea>
+            <p class="text-xs text-gray-500">Providing a reason helps admin approve faster</p>
+          </div>
+
+          <!-- Contact Information -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="space-y-3">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Contact Person *</label>
+              <div class="relative">
+                <!-- ✅ no "required" attribute -->
+                <input type="text" id="contactName"
+                       class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
+                       placeholder="Name of contact person">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <i class="fas fa-user text-gray-400"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Contact Phone *</label>
+              <div class="relative">
+                <!-- ✅ no "required" attribute -->
+                <input type="tel" id="contactPhone"
+                       class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
+                       placeholder="Contact phone number">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <i class="fas fa-phone text-gray-400"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Document Upload -->
+          <div class="space-y-8">
+            <div class="border-t border-gray-200 pt-8">
+              <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                  <i class="fas fa-file-upload text-blue-600"></i>
+                </div>
+                Required Documents
+              </h3>
+
+              <!-- Hospital Document -->
+              <div class="mb-8">
+                <label class="block mb-4">
+                  <span class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                    Hospital Verification Document *
+                    <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">PDF, JPG, PNG up to 5MB</span>
+                  </span>
+                </label>
+                <div class="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-red-400 transition-colors duration-200 bg-gradient-to-br from-gray-50 to-white">
+                  <i class="fas fa-hospital text-gray-400 text-5xl mb-4"></i>
+                  <h4 class="text-lg font-semibold text-gray-700 mb-2">Upload Hospital Document</h4>
+                  <p class="text-gray-500 mb-6">Medical certificate or hospital admission proof</p>
+                  <label class="bg-[var(--brand-red)] hover:bg-[var(--brand-red-dark)] text-white px-8 py-3 rounded-xl hover:shadow-lg transition-all duration-200 cursor-pointer inline-flex items-center space-x-2 hover:scale-105">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Choose File</span>
+                    <input type="file" id="hospitalDoc" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="handleFileUpload('hospitalDoc', this)">
+                  </label>
+                </div>
+                <div id="hospitalDoc-status" class="mt-4 hidden text-sm text-green-600 flex items-center bg-green-50 px-4 py-3 rounded-xl">
+                  <i class="fas fa-check-circle mr-3"></i>
+                  <div>
+                    <span class="font-medium">File uploaded successfully: </span>
+                    <span class="ml-2" id="hospitalDoc-name"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Doctor's Note -->
+              <div>
+                <label class="block mb-4">
+                  <span class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                    Doctor's Note / Prescription
+                    <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">PDF, JPG, PNG up to 5MB</span>
+                  </span>
+                </label>
+                <div class="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:border-red-400 transition-colors duration-200 bg-gradient-to-br from-gray-50 to-white">
+                  <i class="fas fa-file-medical text-gray-400 text-5xl mb-4"></i>
+                  <h4 class="text-lg font-semibold text-gray-700 mb-2">Upload Doctor's Note</h4>
+                  <p class="text-gray-500 mb-6">Doctor's prescription or medical recommendation</p>
+                  <label class="bg-[var(--brand-red)] hover:bg-[var(--brand-red-dark)] text-white px-8 py-3 rounded-xl hover:shadow-lg transition-all duration-200 cursor-pointer inline-flex items-center space-x-2 hover:scale-105">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Choose File</span>
+                    <input type="file" id="doctorNote" accept=".pdf,.jpg,.jpeg,.png" class="hidden" onchange="handleFileUpload('doctorNote', this)">
+                  </label>
+                </div>
+                <div id="doctorNote-status" class="mt-4 hidden text-sm text-green-600 flex items-center bg-green-50 px-4 py-3 rounded-xl">
+                  <i class="fas fa-check-circle mr-3"></i>
+                  <div>
+                    <span class="font-medium">File uploaded successfully: </span>
+                    <span class="ml-2" id="doctorNote-name"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Compatible Donors Info -->
+          <div id="compatibleInfo" class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6 hidden animate-fade-in">
+            <div class="flex items-start space-x-4">
+              <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-heart text-white"></i>
+              </div>
+              <div class="flex-1">
+                <h4 class="text-lg font-bold text-blue-900 mb-2">Compatible Blood Groups</h4>
+                <p class="text-blue-700 mb-4">Based on your selected blood type, these are the compatible donor groups:</p>
+                <div id="compatibleList" class="flex flex-wrap gap-3 mb-4"></div>
+                <p class="text-sm text-blue-700">We will match you with donors having these compatible blood groups.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Buttons -->
+          <div class="border-t border-gray-200 pt-8">
+            <div class="flex flex-col sm:flex-row justify-end space-y-4 sm:space-y-0 sm:space-x-4">
+              <button type="button" onclick="window.location.href='dashboard.html'"
+                      class="px-8 py-3.5 border-2 border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-medium hover:scale-105">
+                <i class="fas fa-times mr-2"></i>Cancel
+              </button>
+              <!-- ✅ type="button" explicitly set in HTML -->
+              <button type="button" id="submitBtn"
+                      class="bg-[var(--brand-red)] hover:bg-[var(--brand-red-dark)] text-white px-8 py-3.5 rounded-xl hover:shadow-lg transition-all duration-200 font-semibold hover:scale-105 flex items-center justify-center space-x-2">
+                <i class="fas fa-paper-plane"></i>
+                <span>Submit Request for Review</span>
+              </button>
+            </div>
+            <p class="text-sm text-gray-500 text-center mt-6">
+              <i class="fas fa-shield-alt mr-1 text-green-500"></i>
+              Your information is secure and will only be used for blood matching purposes
+            </p>
+          </div>
+        </form>
+      </div>
+
+      <!-- Help Card -->
+      <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-8 text-white">
+        <div class="flex items-center space-x-4">
+          <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+            <i class="fas fa-question-circle text-3xl"></i>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-xl font-bold mb-2">Need Help with Your Request?</h3>
+            <p class="text-blue-100/90 mb-4">Contact our support team for assistance with the blood request process</p>
+            <div class="flex flex-wrap gap-4">
+              <div class="flex items-center space-x-2"><i class="fas fa-phone"></i><span>+977-1-1234567</span></div>
+              <div class="flex items-center space-x-2"><i class="fas fa-envelope"></i><span>support@reddrop.com</span></div>
+              <div class="flex items-center space-x-2"><i class="fas fa-clock"></i><span>24/7 Emergency Support</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </main>
 </div>
+
 <!-- Blood Request Flow Modal -->
 <div id="brfModal" class="brf-backdrop" style="display:none" onclick="brfBackdropClick(event)">
-    <div id="brfCard" class="brf-card"></div>
+  <div id="brfCard" class="brf-card"></div>
 </div>
-  <script>
 
+<!-- Toast Notification (legacy) -->
+<div id="notification" class="fixed bottom-4 right-4 hidden z-50">
+  <div class="bg-green-500 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3">
+    <i class="fas fa-check-circle"></i>
+    <span id="notificationText"></span>
+  </div>
+</div>
+
+<!-- ✅ Script is INSIDE </body>, AFTER all DOM elements -->
+<script>
+// DIAGNOSTIC — remove after fixing
+window.addEventListener('beforeunload', function(e) {
+    console.trace('PAGE IS UNLOADING — stack trace:');
+});
+
+window.addEventListener('unhandledrejection', function(e) {
+    console.error('Unhandled promise rejection:', e.reason);
+});
 // ============================================================
 // BLOOD GROUP COMPATIBILITY
 // ============================================================
 const bloodGroupCompatibility = {
-    'A+': ['A+', 'A-', 'O+', 'O-'],
-    'A-': ['A-', 'O-'],
-    'B+': ['B+', 'B-', 'O+', 'O-'],
-    'B-': ['B-', 'O-'],
+    'A+':  ['A+', 'A-', 'O+', 'O-'],
+    'A-':  ['A-', 'O-'],
+    'B+':  ['B+', 'B-', 'O+', 'O-'],
+    'B-':  ['B-', 'O-'],
     'AB+': ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
     'AB-': ['A-', 'B-', 'AB-', 'O-'],
-    'O+': ['O+', 'O-'],
-    'O-': ['O-']
+    'O+':  ['O+', 'O-'],
+    'O-':  ['O-']
 };
 
 // ============================================================
@@ -917,19 +865,19 @@ const hospitalsByDistrict = {
 };
 
 // ============================================================
-// TOAST (replaces showNotification — no missing DOM needed)
+// TOAST
 // ============================================================
 function showToast(message, isError = false) {
     document.getElementById('_toast')?.remove();
     const toast = document.createElement('div');
     toast.id = '_toast';
     toast.style.cssText = `
-        position:fixed; bottom:1.5rem; right:1.5rem; z-index:99999;
-        padding:.85rem 1.25rem; border-radius:12px; font-size:14px;
-        font-weight:600; color:#fff; max-width:360px;
+        position:fixed;bottom:1.5rem;right:1.5rem;z-index:99999;
+        padding:.85rem 1.25rem;border-radius:12px;font-size:14px;
+        font-weight:600;color:#fff;max-width:360px;
         box-shadow:0 8px 24px rgba(0,0,0,.2);
         background:${isError ? 'linear-gradient(135deg,#B91C1C,#991B1B)' : 'linear-gradient(135deg,#16a34a,#15803d)'};
-        display:flex; align-items:center; gap:10px;
+        display:flex;align-items:center;gap:10px;
         animation:_toastIn .3s ease;
     `;
     toast.innerHTML = `
@@ -949,10 +897,7 @@ function showToast(message, isError = false) {
     setTimeout(() => toast.remove(), 3500);
 }
 
-// Keep old name working too (called from a few places)
-function showNotification(message, isError = false) {
-    showToast(message, isError);
-}
+function showNotification(message, isError = false) { showToast(message, isError); }
 
 // ============================================================
 // VALIDATION HELPERS
@@ -976,7 +921,7 @@ function clearFieldError(inputEl) {
 }
 
 function setUrgencyError(show) {
-    const grid = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4');
+    const grid     = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4');
     const existing = document.getElementById('urgency-error-msg');
     if (show) {
         if (!existing) {
@@ -986,9 +931,7 @@ function setUrgencyError(show) {
             msg.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please select an urgency level.';
             grid?.parentElement.appendChild(msg);
         }
-    } else {
-        existing?.remove();
-    }
+    } else { existing?.remove(); }
 }
 
 function setFileError(fieldId, message) {
@@ -1003,79 +946,58 @@ function setFileError(fieldId, message) {
 }
 
 // ============================================================
-// FULL FORM VALIDATION
+// FORM VALIDATION
 // ============================================================
 function validateForm() {
     let isValid = true;
     const today = new Date(); today.setHours(0, 0, 0, 0);
 
     const bloodGroupEl = document.getElementById('bloodGroup');
-    if (!bloodGroupEl.value) {
-        setFieldError(bloodGroupEl, 'Please select a blood group.');
-        isValid = false;
-    } else { clearFieldError(bloodGroupEl); }
+    if (!bloodGroupEl.value) { setFieldError(bloodGroupEl, 'Please select a blood group.'); isValid = false; }
+    else { clearFieldError(bloodGroupEl); }
 
     const unitsEl = document.getElementById('unitsRequired');
-    const units = parseInt(unitsEl.value);
+    const units   = parseInt(unitsEl.value);
     if (!unitsEl.value || isNaN(units) || units < 1 || units > 10) {
-        setFieldError(unitsEl, 'Please enter a number between 1 and 10.');
-        isValid = false;
+        setFieldError(unitsEl, 'Please enter a number between 1 and 10.'); isValid = false;
     } else { clearFieldError(unitsEl); }
 
     const urgency = document.querySelector('input[name="urgency"]:checked')?.value;
-    if (!urgency) { setUrgencyError(true); isValid = false; }
-    else { setUrgencyError(false); }
+    if (!urgency) { setUrgencyError(true); isValid = false; } else { setUrgencyError(false); }
 
     const districtEl = document.getElementById('districtSelect');
-    if (!districtEl.value) {
-        setFieldError(districtEl, 'Please select a district.');
-        isValid = false;
-    } else { clearFieldError(districtEl); }
+    if (!districtEl.value) { setFieldError(districtEl, 'Please select a district.'); isValid = false; }
+    else { clearFieldError(districtEl); }
 
     const hospitalEl = document.getElementById('hospitalSelect');
-    if (!hospitalEl.value) {
-        setFieldError(hospitalEl, 'Please select a hospital.');
-        isValid = false;
-    } else { clearFieldError(hospitalEl); }
+    if (!hospitalEl.value) { setFieldError(hospitalEl, 'Please select a hospital.'); isValid = false; }
+    else { clearFieldError(hospitalEl); }
 
     const dateEl = document.getElementById('requiredDate');
     if (dateEl.value) {
-        const selectedDate = new Date(dateEl.value);
-        selectedDate.setHours(0, 0, 0, 0);
-        if (selectedDate < today) {
-            setFieldError(dateEl, 'Please select today or a future date.');
-            isValid = false;
-        } else { clearFieldError(dateEl); }
-    } else {
-        setFieldError(dateEl, 'Please select the required date.');
-        isValid = false;
-    }
+        const sel = new Date(dateEl.value); sel.setHours(0, 0, 0, 0);
+        if (sel < today) { setFieldError(dateEl, 'Please select today or a future date.'); isValid = false; }
+        else { clearFieldError(dateEl); }
+    } else { setFieldError(dateEl, 'Please select the required date.'); isValid = false; }
 
     const nameEl = document.getElementById('contactName');
     if (!nameEl.value.trim() || !/^[A-Za-z\s'.]{2,}$/.test(nameEl.value.trim())) {
-        setFieldError(nameEl, 'Enter a valid name (letters and spaces only).');
-        isValid = false;
+        setFieldError(nameEl, 'Enter a valid name (letters and spaces only).'); isValid = false;
     } else { clearFieldError(nameEl); }
 
     const phoneEl = document.getElementById('contactPhone');
     if (!/^(97|98)\d{8}$/.test(phoneEl.value.trim())) {
-        setFieldError(phoneEl, 'Enter a valid 10-digit Nepal mobile number (starts with 97 or 98).');
-        isValid = false;
+        setFieldError(phoneEl, 'Enter a valid 10-digit Nepal mobile number (starts with 97 or 98).'); isValid = false;
     } else { clearFieldError(phoneEl); }
 
     const hospitalDoc = document.getElementById('hospitalDoc')?.files[0];
-    if (!hospitalDoc) {
-        setFileError('hospitalDoc', 'Please upload the hospital verification document.');
-        isValid = false;
-    } else if (hospitalDoc.size > 5 * 1024 * 1024) {
-        setFileError('hospitalDoc', 'File size exceeds 5MB limit.');
-        isValid = false;
-    } else { setFileError('hospitalDoc', null); }
+    if (!hospitalDoc) { setFileError('hospitalDoc', 'Please upload the hospital verification document.'); isValid = false; }
+    else if (hospitalDoc.size > 5 * 1024 * 1024) { setFileError('hospitalDoc', 'File size exceeds 5MB limit.'); isValid = false; }
+    else { setFileError('hospitalDoc', null); }
 
     const doctorNote = document.getElementById('doctorNote')?.files[0];
     if (doctorNote && doctorNote.size > 5 * 1024 * 1024) {
-        setFileError('doctorNote', 'File size exceeds 5MB limit.');
-        isValid = false;
+        setFileError('doctorNote', 'File size exceeds 5MB limit.'); isValid = false;
     } else { setFileError('doctorNote', null); }
 
     return isValid;
@@ -1101,6 +1023,23 @@ function handleFileUpload(fieldId, input) {
 }
 
 // ============================================================
+// MANUAL FORM CLEAR  (✅ replaces form.reset() which caused reload)
+// ============================================================
+function clearForm() {
+    document.getElementById('bloodGroup').value       = '';
+    document.getElementById('unitsRequired').value    = '1';
+    document.getElementById('districtSelect').value   = '';
+    document.getElementById('hospitalSelect').innerHTML = '<option value="">Select hospital</option>';
+    document.getElementById('requiredDate').value     = '';
+    document.getElementById('reason').value           = '';
+    document.getElementById('contactName').value      = '';
+    document.getElementById('contactPhone').value     = '';
+    document.querySelectorAll('input[name="urgency"]').forEach(r => r.checked = false);
+    document.getElementById('hospitalDoc-status')?.classList.add('hidden');
+    document.getElementById('doctorNote-status')?.classList.add('hidden');
+}
+
+// ============================================================
 // DOM CONTENT LOADED
 // ============================================================
 document.addEventListener("DOMContentLoaded", function () {
@@ -1108,18 +1047,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const form      = document.getElementById("bloodRequestForm");
     const submitBtn = document.getElementById("submitBtn");
 
-    if (!form || !submitBtn) {
-        console.error("Form or submit button not found");
-        return;
-    }
+    if (!form || !submitBtn) { console.error("Form or submit button not found"); return; }
 
-    // ── Block ALL native form submission ──────────────────────
+    // ── Belt-and-suspenders: block ALL native form submission ─
+    form.onsubmit = () => false;
     form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        return false;
+        e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); return false;
     });
+
+    // ── Ensure button can never submit the form ───────────────
+    submitBtn.type = 'button';
 
     // ── District → Hospital ───────────────────────────────────
     const districtSelect = document.getElementById("districtSelect");
@@ -1149,12 +1086,8 @@ document.addEventListener("DOMContentLoaded", function () {
         dateInput.min = `${yy}-${mm}-${dd}`;
     }
 
-    // ── Clone button to remove any prior listeners ────────────
-    submitBtn.replaceWith(submitBtn.cloneNode(true));
-    const btn = document.getElementById("submitBtn");
-
     // ── Submit handler ────────────────────────────────────────
-    btn.addEventListener("click", async function (e) {
+    submitBtn.addEventListener("click", async function (e) {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
@@ -1175,11 +1108,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Lock
+        // Lock button
         form.dataset.submitting = "true";
-        const originalHTML = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = `
+        const originalHTML = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
             <svg class="animate-spin inline h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
@@ -1215,13 +1148,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 const payload = await response.json();
                 console.log("✅ Request created:", payload);
 
-                // Reset form
-                form.reset();
-                document.getElementById("hospitalDoc-status")?.classList.add("hidden");
-                document.getElementById("doctorNote-status")?.classList.add("hidden");
+                // ✅ Manual clear — NO form.reset() which caused page reload
+                clearForm();
 
-                // Show BRF modal — stays on page, NO redirect
-                showBloodRequestFlow("submitted", { requestId: payload?.id });
+                // Show success modal
+                showBloodRequestFlow("submitted", {
+                    requestId: payload?.id,
+                    requiredDate: document.getElementById("requiredDate")?.value || "",
+                    bloodType: document.getElementById("bloodGroup")?.value || "",
+                    hospital: document.getElementById("hospitalSelect")?.value || ""
+                });
 
             } else {
                 let errorMsg = "Submission failed. Please try again.";
@@ -1238,12 +1174,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         } finally {
             form.dataset.submitting = "false";
-            btn.disabled  = false;
-            btn.innerHTML = originalHTML;
+            submitBtn.disabled  = false;
+            submitBtn.innerHTML = originalHTML;
         }
     });
 
-    // ── Load notification badge on page load ──────────────────
+    // ── Load notification badge ───────────────────────────────
     const token = localStorage.getItem('access_token');
     if (token) {
         fetch('http://127.0.0.1:8000/blood_requests/api/patient-notifications/', {
@@ -1254,10 +1190,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!Array.isArray(data)) return;
             const unread = data.filter(n => !n.is_read).length;
             const badge  = document.getElementById('notificationBadge');
-            if (unread > 0 && badge) {
-                badge.textContent = unread;
-                badge.classList.remove('hidden');
-            }
+            if (unread > 0 && badge) { badge.textContent = unread; badge.classList.remove('hidden'); }
         })
         .catch(() => {});
     }
@@ -1276,8 +1209,8 @@ function showBloodRequestFlow(stage, payload = {}) {
     if (payload.requestId) BRF.requestId = payload.requestId;
     const modal = document.getElementById('brfModal');
     const card  = document.getElementById('brfCard');
-    card.className  = `brf-card brf-stage-${stage}`;
-    card.innerHTML  = brfRender(stage, payload);
+    card.className = `brf-card brf-stage-${stage}`;
+    card.innerHTML = brfRender(stage, payload);
     modal.style.display = 'flex';
     if (stage === 'approved' || stage === 'searching') brfStartPolling();
 }
@@ -1293,7 +1226,7 @@ function brfBackdropClick(e) {
 
 function brfRender(stage, payload) {
     switch (stage) {
-        case 'submitted': return brfSubmitted();
+        case 'submitted': return brfSubmitted(payload);
         case 'approved':  return brfApproved(payload);
         case 'searching': return brfSearching(payload);
         case 'found':     return brfFound(payload);
@@ -1301,7 +1234,63 @@ function brfRender(stage, payload) {
     }
 }
 
-function brfSubmitted() {
+function brfSubmitted(payload = {}) {
+    const requiredDateRaw = payload.requiredDate || "";
+    const reqDate = requiredDateRaw ? new Date(requiredDateRaw + "T00:00:00") : null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (reqDate && !Number.isNaN(reqDate.getTime())) {
+      const daysAway = Math.ceil((reqDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysAway >= 3) {
+        const viewDate = new Date(reqDate);
+        viewDate.setDate(viewDate.getDate() - 1);
+        const viewDateStr = viewDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        const reqDateStr = reqDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        const bloodType = payload.bloodType || "selected";
+        const hospital = payload.hospital || "the selected hospital";
+        return `
+        <div class="brf-header">
+          <div class="brf-icon-wrap">
+            <div class="brf-icon-ring" style="background:rgba(59,130,246,.18)"></div>
+            <div class="brf-icon-circle" style="background:#3b82f6">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
+          </div>
+          <h2 class="brf-title">Request Saved!</h2>
+          <p class="brf-sub">Your blood request for <strong>${bloodType}</strong> at <strong>${hospital}</strong> has been saved for <strong>${reqDateStr}</strong>.</p>
+        </div>
+        <div style="padding:0 1.75rem">
+          ${brfStep('done',   '1', 'Request saved',      'Recorded in the system')}
+          ${brfStep('idle',   '2', 'Admin review',       'Will begin closer to your date')}
+          ${brfStep('idle',   '3', 'Donor search',       'Starts 1 day before needed')}
+          ${brfStep('idle',   '4', 'Donor matched',      'Confirmation & OTP exchange')}
+        </div>
+        <div style="margin:1.25rem 1.75rem 0;padding:1rem 1.25rem;background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1.5px solid #93c5fd;border-radius:16px;">
+          <div style="display:flex;align-items:flex-start;gap:12px">
+            <div style="font-size:1.5rem;flex-shrink:0">📅</div>
+            <div>
+              <p style="font-size:.88rem;font-weight:700;color:#1e40af;margin:0 0 4px">Come back on ${viewDateStr}</p>
+              <p style="font-size:.8rem;color:#3b82f6;margin:0;line-height:1.5">That's the day before your blood is needed. Donors and blood bank availability will be visible then.</p>
+            </div>
+          </div>
+        </div>
+        <div style="margin:.75rem 1.75rem 0;padding:.85rem 1rem;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;font-size:.82rem;color:#92400e;line-height:1.5">
+          <strong style="color:#78350f">🔔 Reminder:</strong>
+          We'll notify you the day before <strong>${reqDateStr}</strong> so you don't miss checking donor availability.
+        </div>
+        <div class="brf-actions">
+          <button class="brf-btn-ghost" onclick="brfGoToDashboard()">View dashboard</button>
+          <button class="brf-btn-primary" onclick="brfClose()">Got it</button>
+        </div>`;
+      }
+    }
+
     return `
     <div class="brf-header">
       <div class="brf-icon-wrap">
@@ -1317,9 +1306,9 @@ function brfSubmitted() {
     </div>
     <div style="padding:0 1.75rem">
       ${brfStep('done',   '1', 'Request submitted', 'Received by the system')}
-      ${brfStep('active', '2', 'Admin review',       'An admin will verify your documents')}
-      ${brfStep('idle',   '3', 'Searching donors',   'Nearby compatible donors alerted')}
-      ${brfStep('idle',   '4', 'Donor matched',      'Confirmation & OTP exchange')}
+      ${brfStep('active', '2', 'Admin review',      'An admin will verify your documents')}
+      ${brfStep('idle',   '3', 'Searching donors',  'Nearby compatible donors alerted')}
+      ${brfStep('idle',   '4', 'Donor matched',     'Confirmation & OTP exchange')}
     </div>
     <div style="margin:1.25rem 1.75rem 0;padding:.9rem 1rem;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;font-size:.82rem;color:#92400e;line-height:1.5">
       <strong style="color:#78350f">⏱ Typical wait:</strong> Admin reviews usually complete within 30 minutes during business hours.
@@ -1464,7 +1453,7 @@ function brfFound(payload = {}) {
 }
 
 function brfStep(state, num, label, sub) {
-    const c = { done:'#16a34a', active:'#B91C1C', idle:'#d1d5db' }[state];
+    const c    = { done:'#16a34a', active:'#B91C1C', idle:'#d1d5db' }[state];
     const icon = state === 'done'
         ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="5,13 10,18 19,7"/></svg>`
         : state === 'active'
@@ -1494,18 +1483,9 @@ function brfTierDot(num, state, range, unit) {
     </div>`;
 }
 
-// ── BRF Navigation ───────────────────────────────────────────
-function brfGoToDashboard() {
-    brfClose();
-    window.location.href = 'dashboard.html';
-}
+function brfGoToDashboard() { brfClose(); window.location.href = 'dashboard.html'; }
+function brfGoToHistory()   { brfClose(); window.location.href = 'dashboard.html?tab=history'; }
 
-function brfGoToHistory() {
-    brfClose();
-    window.location.href = 'dashboard.html?tab=history';
-}
-
-// ── BRF Polling ──────────────────────────────────────────────
 function brfStartPolling() {
     brfStopPolling();
     if (!BRF.requestId) return;
@@ -1543,10 +1523,10 @@ async function brfPollEscalation() {
         );
         if (!escRes.ok) return;
         const esc = await escRes.json();
-        const t1 = esc.tier_1?.donors_notified || 0;
-        const t2 = esc.tier_2?.donors_notified || 0;
-        const t3 = esc.tier_3?.donors_notified || 0;
-        const t4 = esc.tier_4?.donors_notified || 0;
+        const t1  = esc.tier_1?.donors_notified || 0;
+        const t2  = esc.tier_2?.donors_notified || 0;
+        const t3  = esc.tier_3?.donors_notified || 0;
+        const t4  = esc.tier_4?.donors_notified || 0;
         let currentTier = 1;
         if      (esc.tier_4?.completed) currentTier = 4;
         else if (esc.tier_3?.completed) currentTier = 4;
@@ -1570,9 +1550,7 @@ function toggleNotifications() {
 document.addEventListener('click', (e) => {
     const dropdown = document.getElementById('notificationDropdown');
     const bell = e.target.closest('button[onclick="toggleNotifications()"]');
-    if (!bell && dropdown && !dropdown.contains(e.target)) {
-        dropdown.classList.add('hidden');
-    }
+    if (!bell && dropdown && !dropdown.contains(e.target)) dropdown.classList.add('hidden');
 });
 
 async function loadNotifications() {
@@ -1597,12 +1575,8 @@ async function loadNotifications() {
         }
 
         const unread = data.filter(n => !n.is_read).length;
-        if (unread > 0 && badge) {
-            badge.textContent = unread;
-            badge.classList.remove('hidden');
-        } else {
-            badge?.classList.add('hidden');
-        }
+        if (unread > 0 && badge) { badge.textContent = unread; badge.classList.remove('hidden'); }
+        else { badge?.classList.add('hidden'); }
 
         if (list) list.innerHTML = data.slice(0, 10).map(n => {
             const iconBg    = n.type === 'blood_request_approved' ? 'bg-green-100' : n.type === 'donor_accept' ? 'bg-blue-100' : 'bg-red-100';
@@ -1634,8 +1608,7 @@ async function markAllRead() {
     if (!token) return;
     try {
         await fetch('http://127.0.0.1:8000/blood_requests/api/patient-notifications/mark-all-read/', {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}` }
+            method: 'POST', headers: { Authorization: `Bearer ${token}` }
         });
         document.getElementById('notificationBadge')?.classList.add('hidden');
         loadNotifications();
@@ -1645,17 +1618,11 @@ async function markAllRead() {
 function timeAgo(iso) {
     if (!iso) return '';
     const h = Math.floor((Date.now() - new Date(iso).getTime()) / 3600000);
-    if (h < 1) return 'Just now';
+    if (h < 1)  return 'Just now';
     if (h < 24) return `${h}h ago`;
     return `${Math.floor(h / 24)}d ago`;
 }
 
-</script><!-- Toast Notification -->
-<div id="notification" class="fixed bottom-4 right-4 hidden z-50">
-  <div class="bg-green-500 text-white px-6 py-4 rounded-xl shadow-lg flex items-center space-x-3">
-    <i class="fas fa-check-circle"></i>
-    <span id="notificationText"></span>
-  </div>
-</div>
+</script>
 </body>
 </html>

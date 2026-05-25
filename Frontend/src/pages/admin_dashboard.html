@@ -1483,6 +1483,13 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                     </div>
 
                     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div class="px-6 pt-5">
+                            <div class="inline-flex rounded-xl border border-gray-200 bg-gray-50 p-1 gap-1">
+                                <button id="bloodReqView_urgent" onclick="setBloodRequestView('urgent')" class="px-4 py-2 text-sm font-semibold rounded-lg bg-red-600 text-white">Urgent (0-48h)</button>
+                                <button id="bloodReqView_upcoming" onclick="setBloodRequestView('upcoming')" class="px-4 py-2 text-sm font-semibold rounded-lg bg-white text-gray-700">Upcoming (3+ days)</button>
+                                <button id="bloodReqView_past" onclick="setBloodRequestView('past')" class="px-4 py-2 text-sm font-semibold rounded-lg bg-white text-gray-700">Past</button>
+                            </div>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full">
                                 <thead class="bg-gray-50">
@@ -4067,6 +4074,39 @@ function setRequestChartType(type) {
 }
 
         /* ---------- FETCH BLOOD REQUESTS ---------- */
+        let bloodRequestViewMode = "urgent";
+
+        function getRequestDaysAway(requiredDate) {
+            if (!requiredDate) return 0;
+            const req = new Date(requiredDate + "T00:00:00");
+            if (Number.isNaN(req.getTime())) return 0;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return Math.ceil((req.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        }
+
+        function classifyBloodRequestForAdmin(item) {
+            const urgency = (item.urgency || "").toLowerCase();
+            const daysAway = getRequestDaysAway(item.date);
+            if (daysAway < 0) return "past";
+            if (daysAway >= 3 && !["critical", "high"].includes(urgency)) return "upcoming";
+            return "urgent";
+        }
+
+        function setBloodRequestView(mode) {
+            bloodRequestViewMode = mode;
+            ["urgent", "upcoming", "past"].forEach((m) => {
+                const btn = document.getElementById(`bloodReqView_${m}`);
+                if (!btn) return;
+                const active = m === mode;
+                btn.classList.toggle("bg-red-600", active);
+                btn.classList.toggle("text-white", active);
+                btn.classList.toggle("bg-white", !active);
+                btn.classList.toggle("text-gray-700", !active);
+            });
+            loadBloodRequests();
+        }
+
         async function loadBloodRequests() {
             const body = document.getElementById('bloodRequestsBody');
             body.innerHTML = `
@@ -4086,7 +4126,19 @@ function setRequestChartType(type) {
                 if (json.data && json.data.length > 0) {
     body.innerHTML = '';
 
-    json.data
+    const filteredRequests = json.data
+        .filter(r => classifyBloodRequestForAdmin(r) === bloodRequestViewMode);
+
+    if (!filteredRequests.length) {
+        body.innerHTML = `
+            <tr>
+                <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+                    No ${bloodRequestViewMode} requests in this section.
+                </td>
+            </tr>`;
+    }
+
+    filteredRequests
         .sort((a, b) => {
             const da = parseAdminDate(a.created_at || a.date);
             const db = parseAdminDate(b.created_at || b.date);
@@ -4095,6 +4147,9 @@ function setRequestChartType(type) {
             return tb - ta;
         })
         .forEach(r => {
+            const daysAway = getRequestDaysAway(r.date);
+            const isUpcoming = classifyBloodRequestForAdmin(r) === "upcoming";
+            const isPast = classifyBloodRequestForAdmin(r) === "past";
 
             const urgencyClass = r.urgency === 'Critical' ? 'bg-red-100 text-red-800' : 
                                r.urgency === 'High' ? 'bg-orange-100 text-orange-800' :
@@ -4132,36 +4187,40 @@ function setRequestChartType(type) {
                                 </td>
                                 <td class="px-6 py-4">
     <div class="flex space-x-2">
-        ${r.hospital_doc ? 
+        ${isUpcoming ? '<span class="text-blue-600 text-xs font-medium">Available 1 day before</span>' : (r.hospital_doc ? 
             `<a href="${API_BASE}${r.hospital_doc}" target="_blank"
                class="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800">
                 <i class="ri-file-text-line"></i>
                 <span>Doc</span>
             </a>` : 
             '<span class="text-gray-400">-</span>'
-        }
-        ${r.doctor_note ? 
+        )}
+        ${isUpcoming ? '' : (r.doctor_note ? 
             `<a href="${API_BASE}${r.doctor_note}" target="_blank"
                class="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800">
                 <i class="ri-stethoscope-line"></i>
                 <span>Note</span>
             </a>` : ''
-        }
+        )}
     </div>
 </td>
 
                                 <td class="px-6 py-4">
+    ${isUpcoming ? `<p class="text-blue-700 text-xs font-semibold mb-2">Scheduled - ${daysAway} day(s) away</p>` : ""}
+    ${isPast ? `<p class="text-gray-600 text-xs font-semibold mb-2">Past request date</p>` : ""}
     <p class="text-gray-900 font-medium">${timeAgo(r.created_at || r.date)}</p>
     <p class="text-xs text-gray-400">${formatAdminDateTime(r.created_at || r.date)}</p>
 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center space-x-2">
                                         <button onclick="approveBloodRequest(${r.id})" 
+                                                ${isUpcoming || isPast ? "disabled" : ""}
                                                 class="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 flex items-center space-x-1">
                                             <i class="ri-check-line"></i>
-                                            <span>Approve</span>
+                                            <span>${isUpcoming ? "Queued" : (isPast ? "Locked" : "Approve")}</span>
                                         </button>
                                         <button onclick="showRejectBloodRequest(${r.id})" 
+                                                ${isPast ? "disabled" : ""}
                                                 class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 flex items-center space-x-1">
                                             <i class="ri-close-line"></i>
                                             <span>Reject</span>
@@ -4173,11 +4232,15 @@ function setRequestChartType(type) {
                     
                     // Update badge count
                     const badge = document.getElementById('blood-badge');
-                    badge.textContent = json.data.length;
-                    badge.classList.remove('hidden');
+                    if (filteredRequests.length > 0) {
+                        badge.textContent = filteredRequests.length;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
                     
                     // Update overview count
-                    document.getElementById('pendingRequestsCount').textContent = json.data.length;
+                    document.getElementById('pendingRequestsCount').textContent = filteredRequests.length;
                     
                 } else {
                     body.innerHTML = `
@@ -5772,6 +5835,10 @@ async function loadUsers(){
               onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
               View
             </button>
+            <button onclick="toggleUserStatus(${u.id}, ${u.active ? "true" : "false"}, '${(u.name || "User").replace(/'/g, "\\'")}')"
+              style="padding:6px 14px;background:${u.active ? "#fef3c7" : "#dcfce7"};color:${u.active ? "#b45309" : "#15803d"};border-radius:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:opacity 0.2s;margin-left:8px;">
+              ${u.active ? "Deactivate" : "Activate"}
+            </button>
           </td>
         </tr>`;
     });
@@ -5780,6 +5847,38 @@ async function loadUsers(){
     body.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-red-400">Failed to load users: ${err.message}</td></tr>`;
   }
 }
+
+async function toggleUserStatus(id, isCurrentlyActive, name) {
+  const action = isCurrentlyActive ? "deactivate" : "activate";
+  const reason = prompt(`Enter reason to ${action} ${name}:`);
+
+  if (reason === null) return;
+  const trimmed = reason.trim();
+  if (!trimmed) {
+    showToast("warning", "Reason Required", "Please provide a reason.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/users/${id}/toggle/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason: trimmed })
+    });
+
+    const data = await res.json();
+    if (!res.ok || data.success === false) {
+      throw new Error(data.message || "Failed to update user status");
+    }
+
+    showToast("success", "User Updated", `${name} is now ${data.active ? "active" : "inactive"}.`);
+    await loadUsers();
+  } catch (error) {
+    console.error("Toggle user failed:", error);
+    showToast("error", "Toggle Failed", error.message || "Could not update user status.");
+  }
+}
+
 async function viewUser(id) {
     const modal = document.getElementById("userDetailModal");
     const body = document.getElementById("userDetailBody");

@@ -57,6 +57,22 @@ BLOOD_COMPATIBILITY = {
 logger = logging.getLogger(__name__)
 
 # ================= ACCOUNT STATUS EMAIL HELPERS =================
+def _parse_bool(value, default=False):
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return value != 0
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "1", "yes", "y", "on"}:
+            return True
+        if normalized in {"false", "0", "no", "n", "off", ""}:
+            return False
+    return default
+
+
 def _send_hospital_status_email(hospital, is_active):
     profile = getattr(hospital, "profile", None)
     recipient = profile.email if profile and profile.email else None
@@ -78,16 +94,18 @@ def _send_hospital_status_email(hospital, is_active):
     )
 
 
-def _send_user_status_email(user, is_active):
+def _send_user_status_email(user, is_active, reason=""):
     if not user.emailaddress:
         return
 
     state = "activated" if is_active else "deactivated"
+    reason_text = reason.strip() if isinstance(reason, str) else ""
     send_mail(
         subject=f"RedDrop: User account {state}",
         message=(
             f"Hello {user.fullname},\n\n"
             f"Your RedDrop user account has been {state} by admin.\n"
+            f"{f'Reason: {reason_text}\\n' if reason_text else ''}"
             f"{'You can now log in again.' if is_active else 'You will not be able to log in until the account is reactivated.'}\n\n"
             "- RedDrop Team"
         ),
@@ -274,21 +292,36 @@ def admin_approve_blood_request(request, request_id):
     blood_request.approved_at = timezone.now()
     blood_request.save()
 
+    required_date = blood_request.required_date
+    today_date = timezone.localdate()
+    days_until_required = (required_date - today_date).days if required_date else 0
+    is_future_scheduled = (
+        days_until_required >= 3 and
+        (blood_request.urgency or "").lower() not in {"critical", "high"}
+    )
+
     if blood_request.patient:
         patient_user = User.objects.filter(
             username=blood_request.patient.emailaddress
         ).first()
 
         if patient_user:
+            patient_msg = (
+                f"Your blood request for {blood_request.blood_type} blood at "
+                f"{blood_request.hospital_location.name if blood_request.hospital_location else 'the hospital'} "
+            )
+            if is_future_scheduled:
+                patient_msg += (
+                    "has been approved and scheduled. Donor and blood bank matching will start one day before the required date."
+                )
+            else:
+                patient_msg += "has been approved. Searching for donors..."
+
             Notification.objects.create(
                 user=patient_user,
                 blood_request=blood_request,
                 title="Blood Request Approved by Admin",
-                message=(
-                    f"Your blood request for {blood_request.blood_type} blood at "
-                    f"{blood_request.hospital_location.name if blood_request.hospital_location else 'the hospital'} "
-                    "has been approved. Searching for donors..."
-                ),
+                message=patient_msg,
                 type="blood_request_approved_by_admin",
             )
 
@@ -298,8 +331,12 @@ def admin_approve_blood_request(request, request_id):
                 message=(
                     f"Hi {blood_request.patient.fullname},\n\n"
                     f"Your blood request for {blood_request.blood_type} blood has been approved.\n"
-                    "We are now searching for compatible donors.\n\n"
-                    "- RedDrop Team"
+                    + (
+                        "Your request is scheduled and donor/blood bank matching will begin one day before your required date.\n\n"
+                        if is_future_scheduled else
+                        "We are now searching for compatible donors.\n\n"
+                    )
+                    + "- RedDrop Team"
                 ),
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[blood_request.patient.emailaddress],
@@ -320,25 +357,30 @@ def admin_approve_blood_request(request, request_id):
             type="blood_request_approved",
         )
 
-    escalation, created = BloodRequestEscalation.objects.get_or_create(
-        blood_request=blood_request,
-        defaults={"hospital": blood_request.created_by_hospital}
-    )
-    logger.info(
-        f"Escalation record {'created' if created else 'exists'} "
-        f"for request #{blood_request.id}"
-    )
+    if not is_future_scheduled:
+        escalation, created = BloodRequestEscalation.objects.get_or_create(
+            blood_request=blood_request,
+            defaults={"hospital": blood_request.created_by_hospital}
+        )
+        logger.info(
+            f"Escalation record {'created' if created else 'exists'} "
+            f"for request #{blood_request.id}"
+        )
 
-    try:
-        from celery_task import orchestrate_tiered_notification
-        orchestrate_tiered_notification.delay(blood_request.id)
-        logger.info(f"Tiered notification started for request #{blood_request.id}")
-    except Exception as exc:
-        logger.error(f"Failed to start notifications for #{blood_request.id}: {exc}")
+        try:
+            from celery_task import orchestrate_tiered_notification
+            orchestrate_tiered_notification.delay(blood_request.id)
+            logger.info(f"Tiered notification started for request #{blood_request.id}")
+        except Exception as exc:
+            logger.error(f"Failed to start notifications for #{blood_request.id}: {exc}")
+    else:
+        logger.info(
+            f"Request #{blood_request.id} queued for day-before matching (required in {days_until_required} days)."
+        )
 
     return Response({
         "success": True,
-        "message": "Blood request approved. Tiered notifications started.",
+        "message": "Blood request approved and scheduled for day-before matching." if is_future_scheduled else "Blood request approved. Tiered notifications started.",
     })
 
 # ================= REJECT BLOOD REQUEST =================
@@ -559,6 +601,13 @@ def admin_toggle_user(request, user_id):
             status=404
         )
 
+    reason = (request.data.get("reason") or "").strip()
+    if not reason:
+        return Response(
+            {"success": False, "message": "Reason is required"},
+            status=400
+        )
+
     user.is_active = not user.is_active
     user.save(update_fields=["is_active"])
 
@@ -568,11 +617,22 @@ def admin_toggle_user(request, user_id):
         donor.is_approved = donor.is_approved and user.is_active
         donor.save(update_fields=["is_approved"])
 
-    _send_user_status_email(user, user.is_active)
+    auth_user = User.objects.filter(username=user.emailaddress).first()
+    status_word = "activated" if user.is_active else "deactivated"
+    if auth_user:
+        Notification.objects.create(
+            user=auth_user,
+            title=f"Account {status_word.title()} by Admin",
+            message=f"Your account was {status_word} by admin. Reason: {reason}",
+            type="alert",
+        )
+
+    _send_user_status_email(user, user.is_active, reason)
 
     return Response({
         "success": True,
-        "active": user.is_active
+        "active": user.is_active,
+        "reason": reason
     })
 
 
@@ -1411,7 +1471,7 @@ def admin_donation_camps(request):
         location=location,
         contact_number=contact_number,
         map_link=map_link,
-        is_urgent=bool(request.data.get("is_urgent", False)),
+        is_urgent=_parse_bool(request.data.get("is_urgent"), default=False),
         is_approved=False,
         created_by="admin"
     )
@@ -1460,7 +1520,7 @@ def admin_donation_camp_detail(request, camp_id):
         camp.location      = data.get("location", "").strip()
         camp.contact_number = data.get("contact_number", "")
         camp.map_link       = data.get("map_link", "")
-        camp.is_urgent     = bool(data.get("is_urgent", False))
+        camp.is_urgent     = _parse_bool(data.get("is_urgent"), default=False)
 
         camp.save()
         camp.refresh_from_db()
@@ -1483,7 +1543,7 @@ def admin_donation_camp_detail(request, camp_id):
             camp.map_link = data["map_link"]
 
         if "is_urgent" in data:
-            camp.is_urgent = bool(data["is_urgent"])
+            camp.is_urgent = _parse_bool(data.get("is_urgent"), default=False)
 
         camp.save()
         camp.refresh_from_db()
@@ -1644,7 +1704,7 @@ def create_camp_by_partner(request):
         location=request.data.get("location"),
         contact_number=request.data.get("contact_number"),
         map_link=request.data.get("map_link"),
-        is_urgent=request.data.get("is_urgent", False),
+        is_urgent=_parse_bool(request.data.get("is_urgent"), default=False),
         is_approved=False,
         created_by="corporate",
         authorization_letter=request.FILES.get("authorization_letter"),  # ← new
