@@ -43,6 +43,7 @@ path("api/public-requests/", views.public_blood_requests, name="api_public_blood
 path("api/patient-notifications/", views.api_patient_notifications, name="api_patient_notifications"),
 path("api/patient-notifications/mark-all-read/", views.api_patient_notifications_mark_all_read, name="api_patient_notifications_mark_all_read"),
 path("api/patient-notifications/<int:notification_id>/read/", views.api_patient_notification_mark_read, name="api_patient_notification_mark_read"),
+path("api/confirm-day-before/<int:request_id>/", views.api_patient_confirm_day_before_request, name="api_patient_confirm_day_before_request"),
 path("api/request-status/<int:request_id>/", views.api_request_status, name="api_request_status"),
 path("api/confirm-bank/<int:request_id>/", views.api_patient_confirm_bank_fulfillment, name="api_patient_confirm_bank_fulfillment"),
 ]

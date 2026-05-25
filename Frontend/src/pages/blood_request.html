@@ -1148,15 +1148,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 const payload = await response.json();
                 console.log("✅ Request created:", payload);
 
+                const submittedRequiredDate = document.getElementById("requiredDate")?.value || "";
+                const submittedBloodType = document.getElementById("bloodGroup")?.value || "";
+                const submittedHospital = document.getElementById("hospitalSelect")?.value || "";
+
                 // ✅ Manual clear — NO form.reset() which caused page reload
                 clearForm();
 
                 // Show success modal
                 showBloodRequestFlow("submitted", {
                     requestId: payload?.id,
-                    requiredDate: document.getElementById("requiredDate")?.value || "",
-                    bloodType: document.getElementById("bloodGroup")?.value || "",
-                    hospital: document.getElementById("hospitalSelect")?.value || ""
+                    requiredDate: submittedRequiredDate,
+                    bloodType: submittedBloodType,
+                    hospital: submittedHospital
                 });
 
             } else {
@@ -1276,7 +1280,7 @@ function brfSubmitted(payload = {}) {
             <div style="font-size:1.5rem;flex-shrink:0">📅</div>
             <div>
               <p style="font-size:.88rem;font-weight:700;color:#1e40af;margin:0 0 4px">Come back on ${viewDateStr}</p>
-              <p style="font-size:.8rem;color:#3b82f6;margin:0;line-height:1.5">That's the day before your blood is needed. Donors and blood bank availability will be visible then.</p>
+              <p style="font-size:.8rem;color:#3b82f6;margin:0;line-height:1.5">Your blood request is saved. Please confirm the request one day before the blood needed date.</p>
             </div>
           </div>
         </div>

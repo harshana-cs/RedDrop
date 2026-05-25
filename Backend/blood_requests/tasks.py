@@ -31,20 +31,20 @@ def send_day_before_reminders():
             already = Notification.objects.filter(
                 user=patient_user,
                 blood_request=req,
-                type="alert",
-                title="Blood Needed Tomorrow",
+                type="day_before_request_confirm",
+                title="Blood Needed Tomorrow - Please Confirm",
                 created_at__date=timezone.localdate(),
             ).exists()
             if not already:
                 Notification.objects.create(
                     user=patient_user,
                     blood_request=req,
-                    title="Blood Needed Tomorrow",
+                    title="Blood Needed Tomorrow - Please Confirm",
                     message=(
-                        f"Your {req.blood_type} request at {hospital_name} is needed tomorrow. "
-                        "Log in to view donor and blood bank availability."
+                        f"You requested {req.blood_type} blood at {hospital_name} for tomorrow. "
+                        "Do you still confirm this request?"
                     ),
-                    type="alert",
+                    type="day_before_request_confirm",
                 )
 
         if req.status == "approved":
@@ -55,4 +55,3 @@ def send_day_before_reminders():
                 pass
 
     return f"Processed day-before reminders for {requests.count()} request(s)."
-

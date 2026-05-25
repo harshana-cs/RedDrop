@@ -653,6 +653,55 @@ def api_patient_notifications_mark_all_read(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+def api_patient_confirm_day_before_request(request, request_id):
+    patient = Patient.objects.filter(emailaddress=request.user.username).first()
+    if not patient:
+        return Response({"success": False, "message": "Patient not found"}, status=403)
+
+    blood_request = get_object_or_404(BloodRequest, id=request_id, patient=patient)
+    if blood_request.fulfilled:
+        return Response({"success": False, "message": "This request is already fulfilled."}, status=400)
+    if blood_request.status not in ["pending", "approved"]:
+        return Response({"success": False, "message": "Only pending/approved requests can be confirmed."}, status=400)
+
+    today = timezone.localdate()
+    req_date = blood_request.required_date
+    if req_date and req_date != today + timedelta(days=1):
+        return Response({"success": False, "message": "Day-before confirmation is only allowed one day before required date."}, status=400)
+
+    Notification.objects.filter(
+        user=request.user,
+        blood_request=blood_request,
+        type="day_before_request_confirm",
+        is_read=False
+    ).update(is_read=True)
+
+    admin_users = User.objects.filter(is_staff=True)
+    for admin in admin_users:
+        Notification.objects.create(
+            user=admin,
+            blood_request=blood_request,
+            title="Patient Confirmed Day-Before Request",
+            message=(
+                f"{patient.fullname} confirmed blood request #{blood_request.id} "
+                f"for {blood_request.blood_type} required on {blood_request.required_date}."
+            ),
+            type="alert",
+        )
+
+    Notification.objects.create(
+        user=request.user,
+        blood_request=blood_request,
+        title="Request Confirmed",
+        message="Thank you. Your request is confirmed for tomorrow and matching will proceed.",
+        type="alert",
+    )
+
+    return Response({"success": True, "message": "Request confirmed successfully."})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def api_patient_confirm_bank_fulfillment(request, request_id):
     """
     Completion path when the blood bank / hospital stock route was used.

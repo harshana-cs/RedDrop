@@ -5692,6 +5692,8 @@ async function loadNotifications() {
       // Clicking opens the request-flow modal directly at the tier view
       if (n.type === "blood_request_approved" || n.type === "blood_request_approved_by_admin") {
         action = `handleApprovedNotificationClick(${n.id}, ${n.request_id || 'null'})`;
+      } else if (n.type === "day_before_request_confirm") {
+        action = `handleDayBeforeRequestConfirm(${n.id}, ${n.request_id || 'null'})`;
 
       // ─── CASE 2: A donor accepted YOUR blood request ──────────────────────
       // Clicking opens the donor details modal showing name, phone, distance
@@ -5712,6 +5714,7 @@ async function loadNotifications() {
       // Icon per notification type
       const icon =
         (n.type === "blood_request_approved" || n.type === "blood_request_approved_by_admin") ? "fa-check-circle text-green-500" :
+        n.type === "day_before_request_confirm" ? "fa-calendar-check text-blue-600" :
         n.type === "donor_accept"           ? "fa-user-check text-blue-500"    :
         n.type === "donor_request" ||
         n.type === "blood_request"          ? "fa-heartbeat text-red-500"      :
@@ -5724,6 +5727,7 @@ async function loadNotifications() {
           <div class="flex items-start gap-3">
             <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5
               ${(n.type === 'blood_request_approved' || n.type === 'blood_request_approved_by_admin') ? 'bg-green-100' :
+                n.type === 'day_before_request_confirm' ? 'bg-blue-100' :
                 n.type === 'donor_accept'           ? 'bg-blue-100'  :
                 n.type === 'donor_request' ||
                 n.type === 'blood_request'          ? 'bg-red-100'   : 'bg-gray-100'}">
@@ -5790,6 +5794,33 @@ async function handleApprovedNotificationClick(notificationId, requestId) {
     }
 
     loadNotifications();
+}
+
+async function handleDayBeforeRequestConfirm(notificationId, requestId) {
+    if (!requestId) return;
+    const ok = confirm("You requested blood for tomorrow. Do you confirm this request is still needed?");
+    if (!ok) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/blood_requests/api/confirm-day-before/${requestId}/`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data.success === false) {
+            showNotification(data.message || "Could not confirm request.", "warning");
+            return;
+        }
+        await fetch(`${API_BASE}/blood_requests/api/patient-notifications/${notificationId}/read/`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        showNotification("Request confirmed. Thank you.", "success");
+        loadNotifications();
+        loadDashboard();
+    } catch (_) {
+        showNotification("Network error while confirming request.", "error");
+    }
 }
  
 // ─────────────────────────────────────────────────────────────────────────────
@@ -6447,7 +6478,7 @@ function brfSubmitted(payload = {}) {
           <div style="font-size:1.5rem;flex-shrink:0">📅</div>
           <div>
             <p style="font-size:.88rem;font-weight:700;color:#1e40af;margin:0 0 4px">Come back on ${viewDateStr}</p>
-            <p style="font-size:.8rem;color:#3b82f6;margin:0;line-height:1.5">That's the day before your blood is needed. Donors and blood bank availability will be visible then.</p>
+            <p style="font-size:.8rem;color:#3b82f6;margin:0;line-height:1.5">Your blood request is saved. Please confirm the request one day before the blood needed date.</p>
           </div>
         </div>
       </div>

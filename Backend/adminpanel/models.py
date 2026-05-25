@@ -50,6 +50,7 @@ class Notification(models.Model):
         ("donor_request_rejected", "Donor Declined"),
         ("request_completed", "Request Completed"),
         ("donation_eligibility_reminder", "Donation Eligibility Reminder"),
+        ("day_before_request_confirm", "Day-Before Request Confirmation"),
     ]
 
     title = models.CharField(max_length=255)
