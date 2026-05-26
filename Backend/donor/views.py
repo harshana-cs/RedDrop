@@ -685,6 +685,7 @@ from io import BytesIO
 from django.http import FileResponse
 
 import os
+import random
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -825,12 +826,22 @@ def api_download_donation_certificate(request, donation_id):
         c.setLineWidth(1)
         c.setStrokeColor(dark_text)
         c.line(sig_x1, sig_y, sig_x1 + 1.5*inch, sig_y)
+        left_signatures = ["Dr. S. Pradhan", "Dr. R. Karki", "Dr. A. Shrestha", "Dr. N. Bista"]
+        c.setFont("Helvetica-Oblique", 12)
+        c.setFillColor(colors.HexColor("#374151"))
+        c.drawString(sig_x1 + 0.1*inch, sig_y + 0.08*inch, random.choice(left_signatures))
         c.setFont("Helvetica-Bold", 9)
         c.setFillColor(dark_text)
         c.drawString(sig_x1, sig_y - 0.25*inch, "Medical Director")
         
         # Right signature
         c.line(sig_x2, sig_y, sig_x2 + 1.5*inch, sig_y)
+        right_signatures = ["A. Gautam", "K. Singh", "M. Adhikari", "P. Thapa", "R. Rana"]
+        c.setFont("Helvetica-Oblique", 12)
+        c.setFillColor(colors.HexColor("#374151"))
+        c.drawString(sig_x2 + 0.1*inch, sig_y + 0.08*inch, random.choice(right_signatures))
+        c.setFont("Helvetica-Bold", 9)
+        c.setFillColor(dark_text)
         c.drawString(sig_x2, sig_y - 0.25*inch, "Authorized Officer")
         
         # Serial number

@@ -2482,7 +2482,7 @@ table th, table td {
           </div>
          
           <!-- ================= PENDING DONATION TAB ================= -->
-          <div id="pendingDonationContent" class="tab-content p-8">
+          <div id="pendingDonationContent" class="tab-content hidden p-8">
             <!-- OTP DIRECT CONFIRMATION -->
 <div id="otpDirectSection">
   <div class="bg-white rounded-xl shadow p-6 mt-6">
@@ -3786,7 +3786,10 @@ async function loadDashboard() {
  
     if (tbody && requests) {
       tbody.innerHTML = "";
-      const active = requests.filter(r => r.status === 'pending' || r.status === 'approved');
+      const active = requests.filter(r =>
+        (r.status === "pending" || r.status === "approved") &&
+        !isPastDueUnresolvedRequest(r)
+      );
  
       if (!active.length) {
         noActive?.classList.remove("hidden");
@@ -3869,6 +3872,7 @@ function applyActiveFilters() {
     const toDate   = toVal   ? new Date(toVal   + "T23:59:59") : null;
 
     const filtered = _allActiveData.filter(req => {
+        if (isPastDueUnresolvedRequest(req)) return false;
         const itemDate = req.created_at ? new Date(req.created_at) : null;
         if (fromDate && itemDate && itemDate < fromDate) return false;
         if (toDate   && itemDate && itemDate > toDate)   return false;
@@ -4558,6 +4562,16 @@ function getDaysAwayFromRequiredDate(requiredDate) {
   return Math.ceil((req.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
+function isPastDueUnresolvedRequest(req) {
+  if (!req || !req.required_date) return false;
+  if (!(req.status === "pending" || req.status === "approved")) return false;
+  const reqDate = new Date(req.required_date + "T00:00:00");
+  if (Number.isNaN(reqDate.getTime())) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return reqDate < today;
+}
+
 function isScheduledFutureRequest(req) {
   const urgency = (req?.urgency || "").toLowerCase();
   const urgentNow = urgency === "critical" || urgency === "high";
@@ -4746,14 +4760,32 @@ async function loadUserCapabilities() {
 // ─────────────────────────────────────────────────────────────────────────────
 function showDonationTab(tab) {
   currentDonationTab = tab;
-  ['stats','history','pending'].forEach(t => {
-    const btn = document.getElementById(`donation${t.charAt(0).toUpperCase()+t.slice(1)}Tab`);
-    if (btn) btn.className = `pb-4 px-1 text-sm font-medium border-b-2 ${tab===t ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`;
+
+  // Update tab button styles
+  ['stats', 'history', 'pending'].forEach(t => {
+    const btn = document.getElementById(
+      `donation${t.charAt(0).toUpperCase() + t.slice(1)}Tab`
+    );
+    if (btn) btn.className = `pb-4 px-1 text-lg font-medium border-b-2 ${
+      tab === t
+        ? 'border-red-500 text-red-600'
+        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+    } transition-all duration-300`;
   });
-  ['Stats','History','Pending'].forEach(t => {
-    document.getElementById(`donation${t}Content`)?.classList.toggle('hidden', tab !== t.toLowerCase());
+
+  // ✅ Map tab names to their actual HTML element IDs
+  const contentIds = {
+    stats:   'donationStatsContent',
+    history: 'donationHistoryContent',
+    pending: 'pendingDonationContent',   // ← was the bug
+  };
+
+  Object.entries(contentIds).forEach(([key, id]) => {
+    document.getElementById(id)?.classList.toggle('hidden', tab !== key);
   });
-  if (tab === 'stats')   loadDonationStats();
+
+  // Load data for the active tab
+  if (tab === 'stats')        loadDonationStats();
   else if (tab === 'history') loadDonationHistory();
   else if (tab === 'pending') loadPendingDonations();
 }

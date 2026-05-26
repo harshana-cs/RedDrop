@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from datetime import timedelta
 from corsheaders.defaults import default_headers
 from celery.schedules import crontab
 from dotenv import load_dotenv
@@ -232,6 +233,14 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'blood_requests.tasks.send_day_before_reminders',
         'schedule': crontab(hour=8, minute=0),
     },
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 # =====================

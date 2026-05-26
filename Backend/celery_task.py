@@ -6,7 +6,7 @@
 #   - Tier 1 → wait 75s → Tier 2 → wait 75s → Tier 3 → wait 75s → Tier 4
 #   - Total: ~5 minutes across all 4 tiers
 #   - Each tier checks if the request was already fulfilled before running
-#   - Stock check runs after Tier 2 completes
+#   - Stock is polled repeatedly during each tier so newly uploaded stock is caught
 #   - finalize_escalation runs ~30s after Tier 4
 # =======================================================================
 
@@ -24,6 +24,7 @@ TIER_2_DELAY   = 75   # 1m 15s after Tier 1 completes
 TIER_3_DELAY   = 75   # 1m 15s after Tier 2 completes
 TIER_4_DELAY   = 75   # 1m 15s after Tier 3 completes
 FINALIZE_DELAY = 30   # 30s after Tier 4 completes
+STOCK_POLL_INTERVAL = 5  # re-check stock every 5s while a tier is running
 
 MIN_GAP_DAYS = 56     # donor cooldown period
 
@@ -118,6 +119,45 @@ def _mark_escalation_complete(blood_request_id):
         pass
 
 
+def _run_stock_check_and_finalize_if_found(blood_request_id):
+    """Refresh stock state from the database and finalize early if stock is found."""
+    try:
+        check_blood_stock(blood_request_id)
+
+        from adminpanel.models import BloodRequestEscalation
+        esc = BloodRequestEscalation.objects.filter(
+            blood_request_id=blood_request_id
+        ).first()
+        stock_found = bool(
+            esc and (
+                (esc.blood_bank_units or 0) > 0
+                or bool(esc.hospital_stock_details)
+            )
+        )
+        if stock_found:
+            finalize_escalation(blood_request_id)
+    except Exception as exc:
+        logger.warning(f"[StockCheck] finalize hook failed for #{blood_request_id}: {exc}")
+
+
+def _sleep_with_realtime_stock_checks(blood_request_id, total_seconds):
+    """Sleep in short intervals so the tier can react to newly uploaded stock."""
+    remaining = total_seconds
+    while remaining > 0:
+        if _should_stop_search(blood_request_id):
+            return True
+
+        chunk = min(STOCK_POLL_INTERVAL, remaining)
+        time.sleep(chunk)
+        remaining -= chunk
+
+        _run_stock_check_and_finalize_if_found(blood_request_id)
+        if _should_stop_search(blood_request_id):
+            return True
+
+    return _should_stop_search(blood_request_id)
+
+
 # =======================================================================
 # TASK 1 — orchestrate_tiered_notification
 # Entry point called from admin_approve_blood_request().
@@ -174,12 +214,19 @@ def orchestrate_tiered_notification(blood_request_id):
         )
 
         logger.info(f"[Escalation] 5-minute tiered search starting for #{blood_request_id}")
+        threading.Thread(
+            target=lambda: _run_stock_check_and_finalize_if_found(blood_request_id),
+            daemon=True
+        ).start()
 
         # ── TIER 1: 0–5 km (immediate) ───────────────────────────────
         _notify_tier(blood_request_id, "tier_1", 0, 5)
 
         # ── Wait → TIER 2: 5–15 km ───────────────────────────────────
-        time.sleep(TIER_2_DELAY)
+        if _sleep_with_realtime_stock_checks(blood_request_id, TIER_2_DELAY):
+            logger.info(f"[Escalation] #{blood_request_id} stopped before Tier 2 (donor accepted or stock found)")
+            _mark_escalation_complete(blood_request_id)
+            return
         if _should_stop_search(blood_request_id):
             logger.info(f"[Escalation] #{blood_request_id} stopped after Tier 1 (donor accepted or stock found)")
             _mark_escalation_complete(blood_request_id)
@@ -188,13 +235,12 @@ def orchestrate_tiered_notification(blood_request_id):
         _notify_tier(blood_request_id, "tier_2", 5, 15)
 
         # Stock check runs in parallel from Tier 2 onwards
-        threading.Thread(
-            target=lambda: check_blood_stock(blood_request_id),
-            daemon=True
-        ).start()
 
         # ── Wait → TIER 3: 15–30 km ──────────────────────────────────
-        time.sleep(TIER_3_DELAY)
+        if _sleep_with_realtime_stock_checks(blood_request_id, TIER_3_DELAY):
+            logger.info(f"[Escalation] #{blood_request_id} stopped before Tier 3 (donor accepted or stock found)")
+            _mark_escalation_complete(blood_request_id)
+            return
         if _should_stop_search(blood_request_id):
             logger.info(f"[Escalation] #{blood_request_id} stopped after Tier 2 (donor accepted or stock found)")
             _mark_escalation_complete(blood_request_id)
@@ -203,7 +249,10 @@ def orchestrate_tiered_notification(blood_request_id):
         _notify_tier(blood_request_id, "tier_3", 15, 30)
 
         # ── Wait → TIER 4: 30+ km ────────────────────────────────────
-        time.sleep(TIER_4_DELAY)
+        if _sleep_with_realtime_stock_checks(blood_request_id, TIER_4_DELAY):
+            logger.info(f"[Escalation] #{blood_request_id} stopped before Tier 4 (donor accepted or stock found)")
+            _mark_escalation_complete(blood_request_id)
+            return
         if _should_stop_search(blood_request_id):
             logger.info(f"[Escalation] #{blood_request_id} stopped after Tier 3 (donor accepted or stock found)")
             _mark_escalation_complete(blood_request_id)

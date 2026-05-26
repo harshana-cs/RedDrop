@@ -1198,11 +1198,6 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                     </div>
                     <div class="flex items-center space-x-4">
                         <div class="relative">
-                            <input type="text" placeholder="Search..." 
-                                   class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent w-64">
-                            <i class="ri-search-line absolute left-3 top-2.5 text-gray-400"></i>
-                        </div>
-                        <div class="relative">
     <button id="notificationBtn" class="p-2 hover:bg-gray-100 rounded-lg relative">
         <i class="ri-notification-3-line text-xl"></i>
         <span id="notificationBadge"
@@ -1230,9 +1225,29 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
     </div>
 </div>
 </div>
-                        <button class="p-2 hover:bg-gray-100 rounded-lg">
-                            <i class="ri-settings-3-line text-xl"></i>
-                        </button>
+                        <div class="relative dropdown">
+                            <button onclick="toggleAdminSettingsMenu(event)" class="p-2 hover:bg-gray-100 rounded-lg">
+                                <i class="ri-settings-3-line text-xl"></i>
+                            </button>
+                            <div id="adminSettingsMenu" class="dropdown-menu hidden absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl z-50">
+                                <div class="px-4 py-2 border-b border-gray-100">
+                                    <p class="text-xs text-gray-500">Admin Settings</p>
+                                </div>
+                                <button onclick="refreshAdminData()" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                    <i class="ri-refresh-line"></i><span>Refresh All Data</span>
+                                </button>
+                                <button onclick="openAdminNotifications()" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                    <i class="ri-notification-3-line"></i><span>Open Notifications</span>
+                                </button>
+                                <button onclick="goToOverviewTab()" class="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                                    <i class="ri-dashboard-line"></i><span>Go To Overview</span>
+                                </button>
+                                <div class="border-t border-gray-100"></div>
+                                <button onclick="adminLogout()" class="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
+                                    <i class="ri-logout-box-r-line"></i><span>Logout</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -4929,6 +4944,52 @@ function setRequestChartType(type) {
                 });
             }
         });
+
+function toggleAdminSettingsMenu(e) {
+    e?.stopPropagation?.();
+    const menu = document.getElementById("adminSettingsMenu");
+    if (!menu) return;
+    menu.classList.toggle("hidden");
+}
+
+async function refreshAdminData() {
+    document.getElementById("adminSettingsMenu")?.classList.add("hidden");
+    try {
+        await Promise.allSettled([
+            loadBloodRequests?.(),
+            loadDonors?.(),
+            loadHospitals?.(),
+            loadUsers?.(),
+            loadNotifications?.()
+        ]);
+        showToast("success", "Refreshed", "Admin data refreshed.");
+    } catch (_) {
+        showToast("warning", "Partial Refresh", "Some sections could not refresh.");
+    }
+}
+
+function openAdminNotifications() {
+    document.getElementById("adminSettingsMenu")?.classList.add("hidden");
+    document.getElementById("notificationDropdown")?.classList.remove("hidden");
+    loadNotifications?.();
+}
+
+function goToOverviewTab() {
+    document.getElementById("adminSettingsMenu")?.classList.add("hidden");
+    const firstTab = document.querySelector(".tab-btn");
+    if (firstTab) firstTab.click();
+}
+
+function adminLogout() {
+    document.getElementById("adminSettingsMenu")?.classList.add("hidden");
+    try {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("admin_token");
+    } catch (_) {}
+    window.location.href = "index.html";
+}
+
         async function loadProcessedBloodRequests() {
     const body = document.getElementById("processedBloodRequestsBody");
     body.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center">Loading...</td></tr>`;
