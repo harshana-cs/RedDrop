@@ -18,12 +18,12 @@ from math import radians, sin, cos, sqrt, atan2
 logger = logging.getLogger(__name__)
 
 # ── Timing (seconds between tiers) ───────────────────────────────────
-# 4 tiers over ~5 minutes = ~75s per tier gap
+# Keep donor-tier progression within ~5 minutes total wall clock.
 TIER_1_DELAY   = 0    # starts immediately
-TIER_2_DELAY   = 75   # 1m 15s after Tier 1 completes
-TIER_3_DELAY   = 75   # 1m 15s after Tier 2 completes
-TIER_4_DELAY   = 75   # 1m 15s after Tier 3 completes
-FINALIZE_DELAY = 30   # 30s after Tier 4 completes
+TIER_2_DELAY   = 60   # 1m after Tier 1 completes
+TIER_3_DELAY   = 60   # 1m after Tier 2 completes
+TIER_4_DELAY   = 60   # 1m after Tier 3 completes
+FINALIZE_DELAY = 0    # finalize immediately after Tier 4
 STOCK_POLL_INTERVAL = 5  # re-check stock every 5s while a tier is running
 
 MIN_GAP_DAYS = 56     # donor cooldown period
@@ -102,8 +102,8 @@ def _is_stock_found(blood_request_id):
 
 
 def _should_stop_search(blood_request_id):
-    """Stop donor search when donor already accepted OR stock is already found."""
-    return _is_already_fulfilled(blood_request_id) or _is_stock_found(blood_request_id)
+    """Stop donor search only when donor path is fulfilled/completed."""
+    return _is_already_fulfilled(blood_request_id)
 
 
 def _mark_escalation_complete(blood_request_id):
@@ -120,22 +120,9 @@ def _mark_escalation_complete(blood_request_id):
 
 
 def _run_stock_check_and_finalize_if_found(blood_request_id):
-    """Refresh stock state from the database and finalize early if stock is found."""
+    """Refresh stock state from the database without stopping donor tiers early."""
     try:
         check_blood_stock(blood_request_id)
-
-        from adminpanel.models import BloodRequestEscalation
-        esc = BloodRequestEscalation.objects.filter(
-            blood_request_id=blood_request_id
-        ).first()
-        stock_found = bool(
-            esc and (
-                (esc.blood_bank_units or 0) > 0
-                or bool(esc.hospital_stock_details)
-            )
-        )
-        if stock_found:
-            finalize_escalation(blood_request_id)
     except Exception as exc:
         logger.warning(f"[StockCheck] finalize hook failed for #{blood_request_id}: {exc}")
 
@@ -260,6 +247,7 @@ def orchestrate_tiered_notification(blood_request_id):
 
         _notify_tier(blood_request_id, "tier_4", 30, None)
         _mark_escalation_complete(blood_request_id)
+        _broadcast_to_all_donors_after_tiers(blood_request_id)
         logger.info(f"[Escalation] All 4 tiers completed for #{blood_request_id}")
 
         # ── Finalize after letting stock check finish ─────────────────
@@ -610,6 +598,70 @@ def _notify_tier(blood_request_id, tier_label, min_km, max_km):
 
     logger.info(f"[{tier_label}] Done — {alerted_count} alerted for #{blood_request_id}")
     return alerted_count
+
+
+def _broadcast_to_all_donors_after_tiers(blood_request_id):
+    """
+    After tiered eligible-only search is complete, notify all approved donors.
+    Eligible donors are asked to accept/decline.
+    Non-eligible donors are informed with contact details only.
+    """
+    from django.contrib.auth.models import User
+    from django.db.models import Q
+    from blood_requests.models import BloodRequest
+    from register_donor.models import Donor
+    from adminpanel.models import Notification
+
+    try:
+        blood_request = BloodRequest.objects.get(id=blood_request_id)
+    except BloodRequest.DoesNotExist:
+        return
+
+    hospital_name = blood_request.hospital_location.name if blood_request.hospital_location else "the hospital"
+    contact_name = blood_request.contact_name or "Hospital"
+    contact_phone = blood_request.contact_phone or "N/A"
+
+    donors = Donor.objects.filter(is_approved=True)
+    sent_count = 0
+
+    for donor in donors:
+        donor_user = User.objects.filter(
+            Q(email__iexact=donor.email) | Q(username__iexact=donor.email)
+        ).first()
+        if not donor_user:
+            continue
+
+        already = Notification.objects.filter(
+            user=donor_user,
+            blood_request=blood_request,
+            type="donor_request",
+            title="Urgent Blood Request Update",
+        ).exists()
+        if already:
+            continue
+
+        eligible = _is_donor_eligible(donor)
+        if eligible:
+            msg = (
+                f"{blood_request.blood_type} blood needed at {hospital_name}. "
+                "You are eligible to donate now. Open request to accept or decline."
+            )
+        else:
+            msg = (
+                f"{blood_request.blood_type} blood needed at {hospital_name}. "
+                f"You are currently not eligible to donate. Contact {contact_name} ({contact_phone}) for coordination."
+            )
+
+        Notification.objects.create(
+            user=donor_user,
+            blood_request=blood_request,
+            title="Urgent Blood Request Update",
+            message=msg,
+            type="donor_request",
+        )
+        sent_count += 1
+
+    logger.info(f"[Broadcast] Post-tier donor notification sent to {sent_count} donors for #{blood_request_id}")
 
 
 # ── Donor eligibility ─────────────────────────────────────────────────

@@ -5911,7 +5911,11 @@ async function openRequestModal(requestId) {
       document.querySelector("#requestModal .btn-accept")?.classList.add("hidden");
       document.querySelector("#requestModal .btn-decline")?.classList.add("hidden");
     } else {
-      // ✅ FIX: show full request details so donor knows what they're accepting
+      const canRespond = data.donor_can_respond !== false;
+      const contactName = data.contact_name || "Hospital";
+      const contactPhone = data.contact_phone || "N/A";
+      const daysRemaining = Number(data.donor_days_remaining || 0);
+
       details.innerHTML = `
         <div class="space-y-3 p-4 bg-red-50 rounded-xl border border-red-200">
           <p class="text-sm font-semibold text-gray-800">
@@ -5926,12 +5930,24 @@ async function openRequestModal(requestId) {
             <i class="fas fa-hashtag text-gray-500 mr-2"></i>
             Request ID: <strong>#${requestId}</strong>
           </p>
-          <p class="text-sm text-blue-700 bg-blue-50 p-3 rounded-lg mt-2">
-            Do you want to accept this blood donation request?
-          </p>
+          ${canRespond ? `
+            <p class="text-sm text-blue-700 bg-blue-50 p-3 rounded-lg mt-2">
+              Do you want to accept this blood donation request?
+            </p>
+          ` : `
+            <div class="text-sm text-amber-800 bg-amber-50 border border-amber-200 p-3 rounded-lg mt-2">
+              You are currently not eligible to donate (${daysRemaining} day(s) remaining).
+              You can still contact ${contactName} at ${contactPhone} for coordination.
+            </div>
+          `}
         </div>`;
-      document.querySelector("#requestModal .btn-accept")?.classList.remove("hidden");
-      document.querySelector("#requestModal .btn-decline")?.classList.remove("hidden");
+      if (canRespond) {
+        document.querySelector("#requestModal .btn-accept")?.classList.remove("hidden");
+        document.querySelector("#requestModal .btn-decline")?.classList.remove("hidden");
+      } else {
+        document.querySelector("#requestModal .btn-accept")?.classList.add("hidden");
+        document.querySelector("#requestModal .btn-decline")?.classList.add("hidden");
+      }
     }
   } catch(err) {
     details.innerHTML = `<p class="text-sm text-red-500">Failed to load request details. Request ID: #${requestId}</p>`;

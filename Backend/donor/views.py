@@ -276,6 +276,23 @@ def api_donor_accept_request(request):
             status=400
         )
 
+    last_verified = (
+        Donation.objects
+        .filter(donor=donor, status="verified")
+        .order_by("-date")
+        .first()
+    )
+    if last_verified:
+        days_since = (timezone.now().date() - last_verified.date).days
+        if days_since < MIN_GAP_DAYS:
+            return Response(
+                {
+                    "success": False,
+                    "message": f"You are not eligible yet. Please wait {MIN_GAP_DAYS - days_since} more day(s).",
+                },
+                status=400,
+            )
+
     # ✅ assign donor + lock request
     blood_request.accepted_donor = donor
     blood_request.fulfilled = True

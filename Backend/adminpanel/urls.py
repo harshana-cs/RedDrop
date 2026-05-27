@@ -60,6 +60,7 @@ from .views import (
     admin_all_donations,
     admin_donation_detail,
     admin_complete_donation,
+    test_sms_view,
 )
 
 urlpatterns = [
@@ -136,5 +137,5 @@ urlpatterns = [
 path("donations/",                              admin_all_donations),
 path("donations/<int:donation_id>/",            admin_donation_detail),
 path("donations/<int:donation_id>/complete/",   admin_complete_donation),
-
+path("test-sms/", test_sms_view)
 ]

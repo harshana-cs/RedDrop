@@ -10,7 +10,7 @@ from .models import BloodRequest
 from .serializers import BloodRequestSerializer
 import random
 from loginsignup.models import Patient
-from donor.models import DonationConfirmation
+from donor.models import Donation, DonationConfirmation
 from django.utils import timezone
 from register_donor.models import Donor
 from datetime import timedelta
@@ -781,11 +781,38 @@ def api_request_status(request, request_id):
             "distance_km": round(distance, 2) if distance else None,
         }
 
+    donor_can_respond = True
+    donor_eligible = None
+    donor_days_remaining = 0
+    try:
+        donor = Donor.objects.filter(email=request.user.email).first()
+        if donor:
+            last_verified = (
+                Donation.objects
+                .filter(donor=donor, status="verified")
+                .order_by("-date")
+                .first()
+            )
+            if last_verified:
+                days_since = (timezone.now().date() - last_verified.date).days
+                donor_days_remaining = max(56 - days_since, 0)
+                donor_eligible = donor_days_remaining == 0
+            else:
+                donor_eligible = True
+            donor_can_respond = bool(donor_eligible)
+    except Exception:
+        pass
+
     return Response({
         "request_id": blood_request.id,
         "status": blood_request.status,
         "fulfilled": blood_request.fulfilled,
         "blood_type": blood_request.blood_type,
         "hospital": blood_request.hospital_location.name if blood_request.hospital_location else None,
+        "contact_name": blood_request.contact_name,
+        "contact_phone": blood_request.contact_phone,
+        "donor_can_respond": donor_can_respond,
+        "donor_eligible": donor_eligible,
+        "donor_days_remaining": donor_days_remaining,
         "accepted_donor": donor_data,   # ✅ added
     })
