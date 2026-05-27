@@ -6896,6 +6896,8 @@ function brfAllDonorTiersCompleted(esc = {}) {
 }
 
 function brfBuildStockSources(esc = {}, statusData = {}) {
+  if (!brfAllDonorTiersCompleted(esc)) return [];
+
   const sources = [];
   const bloodType = statusData?.blood_type || '—';
   const bankUnits = Number(esc?.stock_check?.blood_bank_units || 0);
