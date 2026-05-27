@@ -281,3 +281,6 @@ LOGGING = {
         },
     },
 }
+
+SMS_TOKEN = os.getenv("SMS_TOKEN")
+SMS_FROM = os.getenv("SMS_FROM", "Demo")

@@ -192,6 +192,9 @@ def hospital_profile(request):
             "registration_number": application.registration_number if application else profile.registration_number,
             "hospital_type": application.hospital_type if application else profile.hospital_type,
             "bed_capacity": application.bed_capacity if application else profile.bed_capacity,
+            "year_established": application.year_established if application else profile.year_established,
+            "blood_bank_type": application.blood_bank_type if application else profile.blood_bank_type,
+            "website": application.website if application else profile.website,
             "email": application.email if application else profile.email,
             "contact_number": application.phone if application else profile.contact_number,
             "address": application.address if application else profile.address,
@@ -244,9 +247,11 @@ def hospital_dashboard(request):
     description=f"{hospital.name} opened hospital dashboard"
 )
 
-    # total_requests = BloodRequest.objects.filter(hospital=hospital).count()
-    # approved_requests = BloodRequest.objects.filter(hospital=hospital, status="approved").count()
-    # pending_requests = BloodRequest.objects.filter(hospital=hospital, status="pending").count()
+    req_qs = BloodRequest.objects.filter(created_by_hospital=hospital)
+    total_requests = req_qs.count()
+    approved_requests = req_qs.filter(status="approved").count()
+    pending_requests = req_qs.filter(status="pending").count()
+    completed_requests = req_qs.filter(status="completed").count()
 
     stock_qs = BloodStock.objects.filter(hospital=hospital)
     stock_map = {s.blood_type: s for s in stock_qs}
@@ -293,9 +298,10 @@ def hospital_dashboard(request):
     ]
 
     return Response({
-        # "total_requests": total_requests,
-        # "approved_requests": approved_requests,
-        # "pending_requests": pending_requests,
+        "total_requests": total_requests,
+        "approved_requests": approved_requests,
+        "pending_requests": pending_requests,
+        "completed_requests": completed_requests,
         "total_stock": total_stock,
         "critical_stock": critical_stock,
         "stock_by_type": stock_by_type,
@@ -450,21 +456,24 @@ def hospital_create_blood_request(request):
             )
 
         if not hospital.location:
-
-    # get hospital address
-            address = hospital.profile.address
+            # Get hospital address and normalize to match unique constraint values.
+            address = (hospital.profile.address or "").strip()
 
             lat, lon = get_coordinates_from_osm(hospital.name, address)
 
-            hospital_location = HospitalLocation.objects.create(
-        name=hospital.name,
-        district=address,
-        latitude=lat,
-        longitude=lon
-    )
+            hospital_location, created = HospitalLocation.objects.get_or_create(
+                name=hospital.name,
+                district=address,
+                defaults={"latitude": lat, "longitude": lon},
+            )
+
+            if not created and (hospital_location.latitude is None or hospital_location.longitude is None):
+                hospital_location.latitude = lat
+                hospital_location.longitude = lon
+                hospital_location.save(update_fields=["latitude", "longitude"])
 
             hospital.location = hospital_location
-            hospital.save()
+            hospital.save(update_fields=["location"])
 
         # Create blood request
         new_request = BloodRequest.objects.create(
@@ -708,3 +717,138 @@ def hospital_request_escalation_status(request, request_id):
         "total_donors_alerted": escalation.total_donors_alerted or 0,
         "completed_at": escalation.completed_at,
     })
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def hospital_confirm_donor_receipt(request, request_id):
+    hospital = get_hospital_from_token(request)
+    if not hospital:
+        return Response({"detail": "Unauthorized"}, status=401)
+
+    blood_request = BloodRequest.objects.filter(
+        id=request_id,
+        created_by_hospital=hospital,
+        status="approved",
+    ).first()
+    if not blood_request:
+        return Response({"success": False, "message": "Approved request not found."}, status=404)
+
+    if blood_request.patient_confirmed:
+        return Response({"success": False, "message": "OTP already generated for this request."}, status=400)
+
+    if not blood_request.accepted_donor:
+        return Response(
+            {"success": False, "message": "No donor has accepted this request yet."},
+            status=400,
+        )
+
+    import random
+    from datetime import timedelta
+    from donor.models import DonationConfirmation
+
+    otp = str(random.randint(1000, 9999))
+    blood_request.patient_confirmed = True
+    blood_request.otp = otp
+    blood_request.otp_expires_at = timezone.now() + timedelta(hours=24)
+    blood_request.save(update_fields=["patient_confirmed", "otp", "otp_expires_at"])
+
+    DonationConfirmation.objects.update_or_create(
+        request=blood_request,
+        defaults={
+            "donor": blood_request.accepted_donor,
+            "patient_confirmed": True,
+            "donor_confirmed": False,
+        },
+    )
+
+    donor = blood_request.accepted_donor
+    if donor and donor.email:
+        try:
+            from django.core.mail import send_mail
+            send_mail(
+                subject="RedDrop: Your Donation OTP - Please Verify",
+                message=(
+                    f"Hi {donor.first_name or 'Donor'},\n\n"
+                    f"The hospital has confirmed blood handover for request "
+                    f"#{blood_request.id} ({blood_request.blood_type}).\n\n"
+                    f"Your verification OTP is:\n\n"
+                    f"    {otp}\n\n"
+                    f"Please open your RedDrop donor dashboard and enter this OTP.\n"
+                    f"This OTP expires in 24 hours.\n\n"
+                    f"- RedDrop Team"
+                ),
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[donor.email],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
+
+    try:
+        from django.contrib.auth.models import User
+        donor_user = User.objects.filter(email__iexact=donor.email).first() if donor else None
+        if donor_user:
+            Notification.objects.create(
+                user=donor_user,
+                blood_request=blood_request,
+                title="Donation OTP Ready",
+                message=f"Hospital confirmed receipt. Your OTP is {otp}. Enter it in your donor dashboard.",
+                type="donation_otp",
+            )
+    except Exception:
+        pass
+
+    return Response({"success": True, "confirmation_code": otp})
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def hospital_confirm_bank_fulfillment(request, request_id):
+    hospital = get_hospital_from_token(request)
+    if not hospital:
+        return Response({"detail": "Unauthorized"}, status=401)
+
+    blood_request = BloodRequest.objects.filter(
+        id=request_id,
+        created_by_hospital=hospital,
+        status="approved",
+    ).first()
+    if not blood_request:
+        return Response({"success": False, "message": "Approved request not found."}, status=404)
+
+    esc = BloodRequestEscalation.objects.filter(blood_request=blood_request).first()
+    has_stock = bool(
+        esc
+        and (
+            (esc.blood_bank_units or 0) > 0
+            or bool(esc.hospital_stock_details)
+        )
+    )
+    if not has_stock:
+        return Response(
+            {"success": False, "message": "No blood bank / hospital stock has been confirmed for this request yet."},
+            status=400,
+        )
+
+    blood_request.status = "completed"
+    blood_request.donation_date = timezone.now()
+    blood_request.fulfilled = True
+    blood_request.patient_confirmed = True
+    blood_request.otp = None
+    blood_request.otp_expires_at = None
+    blood_request.save()
+
+    try:
+        Notification.objects.create(
+            title="Request Completed (Hospital Stock)",
+            message=f"Hospital request #{blood_request.id} completed via blood bank / nearby hospital stock.",
+            type="request_completed",
+            blood_request=blood_request,
+        )
+    except Exception:
+        pass
+
+    return Response({"success": True, "message": "Request marked as completed."})

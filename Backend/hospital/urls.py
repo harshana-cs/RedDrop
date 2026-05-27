@@ -29,5 +29,13 @@ path(
     "request/<int:request_id>/escalation-status/",
     views.hospital_request_escalation_status
 ),
+path(
+    "request/<int:request_id>/confirm-donor-receipt/",
+    views.hospital_confirm_donor_receipt
+),
+path(
+    "request/<int:request_id>/confirm-bank-fulfillment/",
+    views.hospital_confirm_bank_fulfillment
+),
     
 ]

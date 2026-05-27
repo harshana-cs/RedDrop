@@ -32,8 +32,11 @@ class Patient(models.Model):
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
 
-    def check_password(self, raw_password):
-        return django_check_password(raw_password, self.password)
+    # AFTER
+def check_password(self, raw_password):
+    if not self.password:   # ← this line added
+        return False
+    return django_check_password(raw_password, self.password)
 
     def __str__(self):
         return self.emailaddress

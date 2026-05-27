@@ -984,6 +984,7 @@ def get_notifications(request):
             "title": n.title,
             "message": n.message,
             "type": n.type,
+            "blood_request_id": n.blood_request_id,
             "created_at": n.created_at.strftime("%Y-%m-%d %H:%M"),
             "is_read": n.is_read
         }

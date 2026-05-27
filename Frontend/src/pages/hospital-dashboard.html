@@ -252,6 +252,18 @@
     .main-content {
       scroll-behavior: smooth;
     }
+
+    /* Request details modal should scroll internally on smaller screens */
+    #requestDetailsModal .modal-card {
+      max-height: calc(100vh - 2rem);
+      overflow: hidden;
+    }
+
+    #requestDetailsModal #requestDetailsContent {
+      max-height: calc(100vh - 12rem);
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
   </style>
 </head>
 
@@ -990,8 +1002,8 @@
 </div>
 
 <!-- ================= MODALS ================= -->
-<div id="requestDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
-  <div class="bg-white rounded-xl w-full max-w-2xl">
+<div id="requestDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+  <div class="modal-card bg-white rounded-xl w-full max-w-2xl">
     <div class="p-6 border-b">
       <h3 class="text-xl font-semibold">Request Details</h3>
     </div>
@@ -1002,7 +1014,7 @@
   </div>
 </div>
 
-<div id="stockAlertModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+<div id="stockAlertModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
   <div class="bg-white rounded-xl w-full max-w-md">
     <div class="p-6 border-b">
       <h3 class="text-xl font-semibold">Stock Alert</h3>
@@ -1010,6 +1022,34 @@
     <div class="p-6" id="stockAlertContent"></div>
     <div class="p-6 border-t flex justify-end">
       <button onclick="closeModal('stockAlertModal')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Acknowledge</button>
+    </div>
+  </div>
+</div>
+
+<div id="statusModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+  <div class="bg-white rounded-xl w-full max-w-md">
+    <div class="p-6 border-b">
+      <h3 id="statusModalTitle" class="text-xl font-semibold">Status</h3>
+    </div>
+    <div class="p-6" id="statusModalContent"></div>
+    <div class="p-6 border-t flex justify-end">
+      <button onclick="closeModal('statusModal')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">OK</button>
+    </div>
+  </div>
+</div>
+
+<div id="hospitalOtpModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+  <div class="bg-white rounded-xl w-full max-w-md">
+    <div class="p-6 border-b">
+      <h3 class="text-xl font-semibold">Donor OTP Generated</h3>
+      <p class="text-sm text-gray-500 mt-1">Share this OTP with the donor for dashboard confirmation</p>
+    </div>
+    <div class="p-6">
+      <div id="hospitalOtpCode" class="text-5xl font-bold tracking-widest text-red-600 text-center bg-red-50 border-2 border-red-200 rounded-xl py-5"></div>
+      <p class="text-xs text-gray-500 mt-3 text-center">OTP expires in 24 hours</p>
+    </div>
+    <div class="p-6 border-t flex justify-end">
+      <button onclick="closeModal('hospitalOtpModal')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Close</button>
     </div>
   </div>
 </div>
@@ -1151,6 +1191,22 @@
     window.location.href = "hospital-login.html";
   }
 
+  function showStatusModal(title, message, type = 'info') {
+    const titleEl = document.getElementById('statusModalTitle');
+    const contentEl = document.getElementById('statusModalContent');
+    if (!titleEl || !contentEl) return;
+
+    const tone = type === 'error'
+      ? 'text-red-700 bg-red-50 border-red-200'
+      : type === 'success'
+        ? 'text-green-700 bg-green-50 border-green-200'
+        : 'text-blue-700 bg-blue-50 border-blue-200';
+
+    titleEl.textContent = title || 'Status';
+    contentEl.innerHTML = `<div class="p-3 rounded-lg border ${tone} text-sm">${message}</div>`;
+    document.getElementById('statusModal').classList.remove('hidden');
+  }
+
   async function loadHospitalData() {
     try {
       const response = await fetch("http://127.0.0.1:8000/api/hospital/profile/", {
@@ -1187,6 +1243,8 @@
       document.getElementById('pendingRequests').textContent = data.pending_requests || 0;
       document.getElementById('totalStock').textContent = data.total_stock || 0;
       document.getElementById('criticalStock').textContent = data.critical_stock || 0;
+      document.getElementById('profilePendingStat').textContent = data.pending_requests || 0;
+      document.getElementById('profileDonationStat').textContent = data.completed_requests || 0;
       
       // Update stock chart
       if (data.stock_by_type) {
@@ -1607,14 +1665,18 @@ function updateOverviewRequestCharts(requests) {
   const hospitalDoc = document.getElementById('hospitalDoc').files[0];
 
   if (!bloodType || !units || units <= 0) {
-    alert("Please select blood type and valid units.");
+    showStatusModal("Invalid Request", "Please select blood type and valid units.", "error");
     return;
   }
 
   const ownStock = (rawStockData || []).find(s => s.blood_type === bloodType);
   const ownUnits = Number(ownStock?.units || 0);
   if (ownUnits >= units) {
-    alert(`Request blocked: You already have ${ownUnits} units of ${bloodType} in stock (requested ${units}).`);
+    showStatusModal(
+      "Request Blocked",
+      `You already have ${ownUnits} units of ${bloodType} in stock (requested ${units}).`,
+      "error"
+    );
     return;
   }
 
@@ -1649,11 +1711,13 @@ function updateOverviewRequestCharts(requests) {
       throw new Error("Server responded with error");
     }
 
-    alert("Blood request submitted successfully!");
+    showStatusModal("Request Submitted", "Blood request submitted successfully.", "success");
+    loadRequests();
+    loadOverviewData();
 
   } catch (err) {
     console.error("Fetch error:", err);
-    alert("Blood request submission failed.");
+    showStatusModal("Request Failed", "Blood request submission failed.", "error");
   }
 }
   async function loadRequests() {
@@ -1675,7 +1739,7 @@ function updateOverviewRequestCharts(requests) {
     }
   }
 
-  function updateRequestsTable(requests) {
+function updateRequestsTable(requests) {
     const table = document.getElementById('requestTable');
     table.innerHTML = '';
     
@@ -1693,6 +1757,24 @@ function updateOverviewRequestCharts(requests) {
     requests.forEach(request => {
       const statusClass = getRequestStatusClass(request.status);
       const urgencyClass = getUrgencyClass(request.urgency);
+      let actionsHtml = `
+        <button onclick="showRequestDetails(${request.id})"
+          class="px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200">
+          View
+        </button>
+      `;
+      if (request.status === "approved") {
+        actionsHtml += `
+          <button onclick="confirmDonorReceipt(${request.id})"
+            class="mt-2 w-full px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700">
+            Donor Fulfilled (OTP)
+          </button>
+          <button onclick="confirmBankStockFulfillment(${request.id})"
+            class="mt-2 w-full px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+            Blood Bank/Hospital Fulfilled
+          </button>
+        `;
+      }
       
       const row = `
         <tr class="border-b hover:bg-gray-50">
@@ -1722,15 +1804,64 @@ function updateOverviewRequestCharts(requests) {
             ${new Date(request.created_at).toLocaleDateString()}
           </td>
           <td class="px-4 py-3">
-            <button onclick="showRequestDetails(${request.id})"
-              class="px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200">
-              View
-            </button>
+            ${actionsHtml}
           </td>
         </tr>
       `;
       table.innerHTML += row;
     });
+}
+
+  async function confirmDonorReceipt(requestId) {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/hospital/request/${requestId}/confirm-donor-receipt/`,
+        {
+          method: "POST",
+          headers: authHeaders(),
+        }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        showStatusModal("OTP Generation Failed", data.message || "Could not generate donor OTP.", "error");
+        return;
+      }
+
+      document.getElementById("hospitalOtpCode").textContent = data.confirmation_code || "----";
+      document.getElementById("hospitalOtpModal").classList.remove("hidden");
+      showStatusModal("OTP Sent", "OTP generated and sent to donor notification/email.", "success");
+      loadRequests();
+      loadOverviewData();
+    } catch (error) {
+      console.error("Error generating donor OTP:", error);
+      showStatusModal("Network Error", "Could not generate donor OTP.", "error");
+    }
+  }
+
+  async function confirmBankStockFulfillment(requestId) {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/hospital/request/${requestId}/confirm-bank-fulfillment/`,
+        {
+          method: "POST",
+          headers: authHeaders(),
+        }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        showStatusModal("Completion Failed", data.message || "Could not mark request completed.", "error");
+        return;
+      }
+
+      showStatusModal("Request Completed", data.message || "Request marked as completed.", "success");
+      loadRequests();
+      loadOverviewData();
+    } catch (error) {
+      console.error("Error confirming bank fulfillment:", error);
+      showStatusModal("Network Error", "Could not confirm completion.", "error");
+    }
   }
 
   async function loadDonors() {
@@ -1975,7 +2106,7 @@ function updateOverviewRequestCharts(requests) {
     const expiryDate = document.getElementById('addExpiryDate').value;
     
     if (!bloodType || !units || units < 1 || !expiryDate) {
-      alert('Please fill in all required fields correctly');
+      showStatusModal('Invalid Input', 'Please fill in all required fields correctly.', 'error');
       return;
     }
     
@@ -1993,7 +2124,7 @@ function updateOverviewRequestCharts(requests) {
       });
       
       if (response.ok) {
-        alert("Blood stock added successfully!");
+        showStatusModal("Stock Added", "Blood stock added successfully.", "success");
         // Clear form
         document.getElementById('addBloodType').value = '';
         document.getElementById('addUnits').value = '';
@@ -2004,11 +2135,11 @@ function updateOverviewRequestCharts(requests) {
         loadStockHistory();
       } else {
         const error = await response.json();
-        alert("Error: " + (error.detail || "Failed to add stock"));
+        showStatusModal("Add Stock Failed", error.detail || "Failed to add stock", "error");
       }
     } catch (error) {
       console.error('Error adding stock:', error);
-      alert("Network error. Please try again.");
+      showStatusModal("Network Error", "Network error. Please try again.", "error");
     }
   }
 
@@ -2018,7 +2149,7 @@ function updateOverviewRequestCharts(requests) {
     const reason = document.getElementById('removeReason').value;
     
     if (!bloodType || !units || units < 1) {
-      alert('Please fill in all required fields correctly');
+      showStatusModal('Invalid Input', 'Please fill in all required fields correctly.', 'error');
       return;
     }
     
@@ -2040,7 +2171,7 @@ function updateOverviewRequestCharts(requests) {
       });
       
       if (response.ok) {
-        alert("Blood stock removed successfully!");
+        showStatusModal("Stock Removed", "Blood stock removed successfully.", "success");
         // Clear form
         document.getElementById('removeBloodType').value = '';
         document.getElementById('removeUnits').value = '';
@@ -2050,11 +2181,11 @@ function updateOverviewRequestCharts(requests) {
         loadStockHistory();
       } else {
         const error = await response.json();
-        alert("Error: " + (error.detail || "Failed to remove stock"));
+        showStatusModal("Remove Stock Failed", error.detail || "Failed to remove stock", "error");
       }
     } catch (error) {
       console.error('Error removing stock:', error);
-      alert("Network error. Please try again.");
+      showStatusModal("Network Error", "Network error. Please try again.", "error");
     }
   }
 
@@ -2510,10 +2641,10 @@ async function updateHospitalProfile() {
     );
 
     if(response.ok){
-      alert("Profile updated successfully");
+      showStatusModal("Profile Updated", "Profile updated successfully.", "success");
       loadHospitalData();
     } else {
-      alert("Failed to update profile");
+      showStatusModal("Update Failed", "Failed to update profile.", "error");
     }
 
   } catch(err){
@@ -2686,7 +2817,11 @@ function renderDonorTierStatus(esc, requestId) {
     { name: 'Tier 4', d: esc.tier_4 },
   ];
   const bankUnits = Number(esc?.stock_check?.blood_bank_units || 0);
-  const hospitalsFound = Object.keys(esc?.stock_check?.hospital_stock || {}).length;
+  const hospitalStockMap = esc?.stock_check?.hospital_stock || {};
+  const ownHospitalName = (hospitalData?.name || '').trim().toLowerCase();
+  const hospitalStockRows = Object.entries(hospitalStockMap)
+    .filter(([name]) => (name || '').trim().toLowerCase() !== ownHospitalName);
+  const hospitalsFound = hospitalStockRows.length;
 
   box.classList.remove('hidden');
   box.innerHTML = `
@@ -2706,8 +2841,21 @@ function renderDonorTierStatus(esc, requestId) {
           </div>
         `).join('')}
       </div>
-      <div class="mt-2 text-xs text-blue-900">
-        Blood bank units: <b>${bankUnits}</b> | Other hospitals with stock: <b>${hospitalsFound}</b>
+      <div class="mt-3 p-3 rounded-lg border border-blue-100 bg-white">
+        <p class="text-xs text-blue-900">
+          Blood bank units found: <b>${bankUnits}</b> | Other hospitals with stock: <b>${hospitalsFound}</b>
+        </p>
+        <div class="mt-2 space-y-2 max-h-44 overflow-y-auto pr-1">
+          ${hospitalStockRows.length ? hospitalStockRows.map(([name, info]) => `
+            <div class="flex items-center justify-between rounded border border-gray-200 bg-gray-50 p-2">
+              <div>
+                <p class="text-xs font-semibold text-gray-800">${name || 'Hospital'}</p>
+                <p class="text-xs text-gray-500">${info?.district || 'District N/A'}</p>
+              </div>
+              <p class="text-xs font-semibold text-red-600">${info?.units || 0} units</p>
+            </div>
+          `).join('') : `<p class="text-xs text-gray-500">No nearby hospital stock found yet.</p>`}
+        </div>
       </div>
     </div>
   `;

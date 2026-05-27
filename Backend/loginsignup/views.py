@@ -19,10 +19,13 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from blood_requests.models import BloodRequest
 from donor.models import Donation
+
 GOOGLE_CLIENT_ID = "320231613519-n8ppnf9bof8r6js60el89rar1mvtl8lo.apps.googleusercontent.com"
+
 
 def generate_code():
     return ''.join(random.choices(string.digits, k=6))
+
 
 def get_tokens(user):
     refresh = RefreshToken.for_user(user)
@@ -30,6 +33,8 @@ def get_tokens(user):
         "access": str(refresh.access_token),
         "refresh": str(refresh),
     }
+
+
 @csrf_exempt
 def google_signup(request):
     if request.method != "POST":
@@ -65,6 +70,8 @@ def google_signup(request):
 
     except Exception:
         return JsonResponse({"success": False, "message": "Invalid Google token"})
+
+
 @csrf_exempt
 def verify_code(request):
     if request.method != "POST":
@@ -84,16 +91,22 @@ def verify_code(request):
     google_user.is_verified = True
     google_user.save()
 
-    # ── Create Patient account ───────────────────────────────
+    # ── Create or get Patient account ────────────────────────
     patient, _ = Patient.objects.get_or_create(
         emailaddress=email,
         defaults={"fullname": google_user.fullname}
     )
+
     if not patient.is_active:
         return JsonResponse({
             "success": False,
             "message": "Your account has been deactivated by admin"
         })
+
+    # ── FIX: Save password to Patient model ──────────────────
+    if google_user.pending_password:
+        patient.password = google_user.pending_password
+        patient.save()
 
     # ── Create Django User ───────────────────────────────────
     user, created = User.objects.get_or_create(
@@ -127,6 +140,7 @@ def verify_code(request):
             "refresh": str(refresh),
         }
     })
+
 
 @csrf_exempt
 def google_login(request):
@@ -179,7 +193,7 @@ def google_login(request):
             user.set_password(get_random_string(12))
             user.save()
 
-        # 4️⃣ Generate JWT tokens (NOW SAFE)
+        # 4️⃣ Generate JWT tokens
         refresh = RefreshToken.for_user(user)
 
         return JsonResponse({
@@ -199,6 +213,7 @@ def google_login(request):
             "message": "Login failed"
         })
 
+
 @csrf_exempt
 def patient_signup_manually(request):
     if request.method != "POST":
@@ -214,15 +229,14 @@ def patient_signup_manually(request):
 
     code = ''.join(random.choices(string.digits, k=6))
 
-    # Store pending signup with hashed password
     from django.contrib.auth.hashers import make_password as hash_pw
     GoogleSignup.objects.update_or_create(
         email=data["emailaddress"],
         defaults={
-            "fullname":         data["fullname"],
+            "fullname":          data["fullname"],
             "verification_code": code,
-            "is_verified":      False,
-            "pending_password": hash_pw(data["password"]),
+            "is_verified":       False,
+            "pending_password":  hash_pw(data["password"]),
         }
     )
 
@@ -242,6 +256,8 @@ def patient_signup_manually(request):
         "email": data["emailaddress"],
         "message": "Verification code sent to your email"
     })
+
+
 @csrf_exempt
 def patient_login(request):
     if request.method != "POST":
@@ -251,11 +267,20 @@ def patient_login(request):
 
     try:
         patient = Patient.objects.get(emailaddress=data["emailaddress"])
+
         if not patient.is_active:
             return JsonResponse({
                 "success": False,
                 "message": "Your account has been deactivated by admin"
             })
+
+        # ── FIX: Guard against None password (e.g. Google-only accounts) ──
+        if not patient.password:
+            return JsonResponse({
+                "success": False,
+                "message": "No password set for this account. Please use Google login or reset your password."
+            })
+
         if not patient.check_password(data["password"]):
             return JsonResponse({"success": False, "message": "Wrong password"})
 
@@ -272,6 +297,10 @@ def patient_login(request):
 
     except Patient.DoesNotExist:
         return JsonResponse({"success": False, "message": "Account not found"})
+
+    except User.DoesNotExist:
+        return JsonResponse({"success": False, "message": "Auth account missing. Please re-register."})
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
@@ -303,14 +332,11 @@ def api_user_capabilities(request):
             timezone.now().date() - last_donation.date
         ).days
 
-    # ---------------- BLOOD TYPE (CORRECT LOGIC) ----------------
+    # ---------------- BLOOD TYPE ----------------
     blood_type = ""
 
-    # 1️⃣ Prefer donor blood type
     if donor and donor.blood_type:
         blood_type = donor.blood_type
-
-    # 2️⃣ Fallback to latest blood request
     elif patient:
         latest_request = (
             BloodRequest.objects
@@ -328,36 +354,32 @@ def api_user_capabilities(request):
 
     # ---------------- RESPONSE ----------------
     return Response({
-        # ===== PROFILE INFO =====
         "name": patient.fullname if patient else "",
         "email": email,
-        "blood_type": blood_type,                # ✅ FIXED
+        "blood_type": blood_type,
         "patient_id": patient.id if patient else None,
         "member_since": member_since,
 
-        # ===== ROLES =====
         "is_patient": bool(patient),
         "is_donor": bool(donor),
 
-        # ===== REQUEST STATS =====
         "requests": {
             "total": requests_qs.count(),
             "completed": requests_qs.filter(status="completed").count(),
             "pending": requests_qs.filter(status="pending").count(),
         },
 
-        # ===== DONATION STATS =====
         "donations": {
             "total": donations_qs.count(),
             "last_date": last_donation.date if last_donation else None,
             "days_since_last": days_since_last,
         },
 
-        # ===== DONOR STATUS =====
         "donor_approved": donor.is_approved if donor else False,
         "donor_available": donor.is_approved if donor else False,
         "donor_score": donations_qs.count() * 10 if donor else 0,
     })
+
 
 @api_view(["PATCH", "PUT"])
 @permission_classes([IsAuthenticated])
