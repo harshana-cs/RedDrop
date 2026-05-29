@@ -27,9 +27,21 @@ from adminpanel.models import HospitalAuditLog
 from blood_requests.models import HospitalLocation
 from blood_requests.utils import get_coordinates_from_osm
 from register_donor.models import Donor
+from donor.models import Donation
 from adminpanel.models import BloodRequestEscalation
 
+from datetime import date
 
+MIN_GAP_DAYS = 56
+
+
+def get_last_verified_donation_date(donor):
+    last_verified = (
+        Donation.objects.filter(donor=donor, status="verified")
+        .order_by("-date")
+        .first()
+    )
+    return last_verified.date if last_verified else None
 
 # ======================================================
 # HOSPITAL REGISTRATION (PUBLIC)
@@ -198,6 +210,8 @@ def hospital_profile(request):
             "email": application.email if application else profile.email,
             "contact_number": application.phone if application else profile.contact_number,
             "address": application.address if application else profile.address,
+            "latitude": float(hospital.location.latitude) if hospital.location and hospital.location.latitude else None,
+            "longitude": float(hospital.location.longitude) if hospital.location and hospital.location.longitude else None,
         })
 
     # =========================
@@ -400,7 +414,63 @@ def hospital_donors(request):
     if not hospital:
         return Response({"detail": "Unauthorized"}, status=401)
 
-    return Response([])
+    # Need hospital location to calculate distances
+    hospital_location = hospital.location
+    if not hospital_location or not hospital_location.latitude or not hospital_location.longitude:
+        # Try to geocode if missing
+        address = (hospital.profile.address or "").strip()
+        lat, lon = get_coordinates_from_osm(hospital.name, address)
+        if lat and lon:
+            hospital_location, created = HospitalLocation.objects.get_or_create(
+                name=hospital.name,
+                district=address,
+                defaults={"latitude": lat, "longitude": lon},
+            )
+            if not created and (hospital_location.latitude is None):
+                hospital_location.latitude = lat
+                hospital_location.longitude = lon
+                hospital_location.save(update_fields=["latitude", "longitude"])
+            hospital.location = hospital_location
+            hospital.save(update_fields=["location"])
+        else:
+            return Response({"detail": "Hospital location not available"}, status=400)
+
+    hosp_lat = hospital_location.latitude
+    hosp_lon = hospital_location.longitude
+
+    donors = Donor.objects.filter(is_approved=True)
+
+    result = []
+    for donor in donors:
+        if not donor.latitude or not donor.longitude:
+            continue
+
+        distance = haversine(hosp_lat, hosp_lon, donor.latitude, donor.longitude)
+
+        last_donation = get_last_verified_donation_date(donor)
+        if last_donation is None:
+            is_available = True  
+        else:
+            days_since = (date.today() - last_donation).days
+            is_available = days_since >= MIN_GAP_DAYS
+        result.append({
+    "id": donor.id,
+    "name": f"{donor.first_name} {donor.last_name}",
+    "blood_type": donor.blood_type,
+    "phone": donor.phone_number,
+    "email": donor.email,
+    "latitude": float(donor.latitude),
+    "longitude": float(donor.longitude),
+    "distance_km": round(distance, 2),
+    "availability": "Available" if is_available else "Unavailable",
+    "is_available": is_available,
+    "last_donation": last_donation.isoformat() if last_donation else None,
+    "city": donor.city if hasattr(donor, 'city') else None,
+    "address": donor.address if hasattr(donor, 'address') else None,
+})
+
+    result.sort(key=lambda x: x["distance_km"])
+    return Response(result)
 
 
 # ======================================================
@@ -599,9 +669,6 @@ def hospital_request_donors(request, request_id):
         if not donor.latitude or not donor.longitude:
             continue
 
-        if not is_donor_eligible(donor):
-            continue
-
         distance = haversine(
             request_lat,
             request_lon,
@@ -609,16 +676,28 @@ def hospital_request_donors(request, request_id):
             donor.longitude
         )
 
-        if distance <= 15:
+        last_donation = get_last_verified_donation_date(donor)
+        if last_donation is None:
+            is_available = True
+        else:
+            days_since = (date.today() - last_donation).days
+            is_available = days_since >= MIN_GAP_DAYS
 
-            matched.append({
-                "id": donor.id,
-                "name": f"{donor.first_name} {donor.last_name}",
-                "blood_type": donor.blood_type,
-                "distance_km": round(distance,2),
-                "phone": donor.phone_number,
-                "email": donor.email
-            })
+        matched.append({
+    "id": donor.id,
+    "name": f"{donor.first_name} {donor.last_name}",
+    "blood_type": donor.blood_type,
+    "distance_km": round(distance, 2),
+    "phone": donor.phone_number,
+    "email": donor.email,
+    "latitude": float(donor.latitude),
+    "longitude": float(donor.longitude),
+    "availability": "Available" if is_available else "Unavailable",
+    "is_available": is_available,
+    "last_donation": last_donation.isoformat() if last_donation else None,
+    "city": donor.city if hasattr(donor, 'city') else None,
+    "address": donor.address if hasattr(donor, 'address') else None,
+})
 
     matched.sort(key=lambda x: x["distance_km"])
 

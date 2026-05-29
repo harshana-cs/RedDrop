@@ -299,9 +299,8 @@ def api_donor_accept_request(request):
     blood_request.save()
 
     from django.contrib.auth.models import User
-    patient_user = User.objects.filter(
-        username=blood_request.patient.emailaddress
-    ).first()
+    patient_email = blood_request.patient.emailaddress if blood_request.patient else None
+    patient_user = User.objects.filter(username=patient_email).first() if patient_email else None
 
     if patient_user:
         # ✅ Guard: notify patient only once
@@ -338,7 +337,27 @@ def api_donor_accept_request(request):
                 # no user= field → admin only
             )
     else:
-        print("Patient user not found:", blood_request.patient.emailaddress)
+        print("Patient user not found for request:", blood_request.id)
+
+    request_hospital = blood_request.created_by_hospital
+    if request_hospital:
+        hospital_notified = Notification.objects.filter(
+            hospital=request_hospital,
+            blood_request=blood_request,
+            type="donor_accept"
+        ).exists()
+
+        if not hospital_notified:
+            Notification.objects.create(
+                hospital=request_hospital,
+                blood_request=blood_request,
+                title="Donor Accepted Request",
+                message=(
+                    f"{donor.first_name} ({donor.blood_type}) accepted request #{blood_request.id}. "
+                    f"Contact: {donor.phone_number}"
+                ),
+                type="donor_accept"
+            )
 
     return Response({
         "success": True,
@@ -896,3 +915,4 @@ def api_download_donation_certificate(request, donation_id):
             "success": False,
             "message": f"Error generating certificate: {str(e)}"
         }, status=500)
+
