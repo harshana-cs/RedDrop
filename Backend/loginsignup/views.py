@@ -362,6 +362,9 @@ def api_user_capabilities(request):
 
         "is_patient": bool(patient),
         "is_donor": bool(donor),
+        "donor_rejected": bool(donor and donor.rejected_at and not donor.is_approved),
+        "donor_rejection_reason": donor.rejection_reason if donor else "",
+        "donor_rejected_at": donor.rejected_at.isoformat() if donor and donor.rejected_at else None,
 
         "requests": {
             "total": requests_qs.count(),

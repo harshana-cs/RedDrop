@@ -129,6 +129,8 @@ class HospitalApplication(models.Model):
         default="pending"
     )
     admin_remark = models.TextField(blank=True, null=True)
+    rejection_reason = models.TextField(blank=True, null=True)
+    rejected_at = models.DateTimeField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

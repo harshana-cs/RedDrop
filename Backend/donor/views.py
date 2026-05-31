@@ -372,7 +372,7 @@ def api_donor_accept_request(request):
 def api_donor_notifications(request):
     donor = Donor.objects.filter(email=request.user.email).first()
 
-    if not donor or not donor.is_approved:
+    if not donor:
         return Response([])
 
     notifications = Notification.objects.filter(

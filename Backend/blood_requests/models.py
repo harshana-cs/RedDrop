@@ -100,6 +100,8 @@ class BloodRequest(models.Model):
     fulfilled = models.BooleanField(default=False)
     patient_confirmed = models.BooleanField(default=False)
     is_escalated = models.BooleanField(default=False)
+    rejection_reason = models.TextField(null=True, blank=True)
+    rejected_at = models.DateTimeField(null=True, blank=True)
     otp = models.CharField(max_length=6, null=True, blank=True)
     otp_expires_at = models.DateTimeField(null=True, blank=True)
 

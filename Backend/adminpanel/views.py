@@ -2,7 +2,7 @@ from datetime import timedelta
 from urllib import request
 from django.conf import settings
 from django.core.mail import send_mail
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.timezone import datetime, now
 from .models import DonationCamp
@@ -260,7 +260,7 @@ def admin_pending_donor_registrations(request):
             "phone": d.phone_number,
             "email": d.email,
             "city": d.city,
-            "created_on": d.created_on.strftime("%Y-%m-%d") if d.created_on else None,
+            "created_on": d.created_on.isoformat() if d.created_on else None,
             "citizenship_id": d.citizenship_id.url if d.citizenship_id else None,
             "photo": d.photo.url if d.photo else None,
         })
@@ -293,6 +293,8 @@ def admin_approve_blood_request(request, request_id):
         return Response({"success": False, "message": "Request already processed"}, status=400)
 
     blood_request.status = "approved"
+    blood_request.rejection_reason = ""
+    blood_request.rejected_at = None
     blood_request.patient_confirmed = False
     blood_request.fulfilled = False
     blood_request.approved_at = timezone.now()
@@ -393,7 +395,7 @@ def admin_approve_blood_request(request, request_id):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def admin_reject_blood_request(request, request_id):
-    reason = request.data.get("reason", "")
+    reason = (request.data.get("reason", "") or "").strip()
     try:
         blood_request = BloodRequest.objects.get(id=request_id)
     except BloodRequest.DoesNotExist:
@@ -403,9 +405,8 @@ def admin_reject_blood_request(request, request_id):
         )
 
     blood_request.status = "rejected"
-
-    if hasattr(blood_request, "rejection_reason"):
-        blood_request.rejection_reason = reason
+    blood_request.rejection_reason = reason
+    blood_request.rejected_at = timezone.now()
 
     blood_request.save()
 
@@ -458,7 +459,7 @@ def admin_reject_blood_request(request, request_id):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def admin_reject_donor_registration(request, donor_id):
-    reason = request.data.get("reason", "")
+    reason = (request.data.get("reason", "") or "").strip()
     try:
         donor = Donor.objects.get(id=donor_id)
     except Donor.DoesNotExist:
@@ -469,11 +470,41 @@ def admin_reject_donor_registration(request, donor_id):
 
     donor.is_approved = False
     donor.is_profile_completed = False
-
-    if hasattr(donor, "rejection_reason"):
-        donor.rejection_reason = reason
+    donor.rejection_reason = reason
+    donor.rejected_at = timezone.now()
 
     donor.save()
+
+    donor_user = User.objects.filter(username=donor.email).first() if donor.email else None
+    if donor_user:
+        Notification.objects.create(
+            user=donor_user,
+            title="Donor Registration Rejected",
+            message=(
+                "Your donor registration was rejected by admin."
+                + (f" Reason: {reason}" if reason else "")
+                + " Please register again with the corrected details."
+            ),
+            type="donor_registration_rejected",
+        )
+
+    if donor.email:
+        try:
+            send_mail(
+                subject="RedDrop: Your donor registration was rejected",
+                message=(
+                    f"Hello {donor.first_name or 'Donor'},\n\n"
+                    "Your donor registration was rejected by admin."
+                    + (f"\nReason: {reason}\n\n" if reason else "\n\n")
+                    + "If you believe this is a mistake, please update your details and reapply.\n\n"
+                    + "- RedDrop Team"
+                ),
+                from_email=settings.EMAIL_HOST_USER,
+                recipient_list=[donor.email],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
 
     return Response({
         "success": True,
@@ -500,6 +531,8 @@ def admin_approve_donor_registration(request, donor_id):
         })
 
     donor.is_approved = True
+    donor.rejection_reason = ""
+    donor.rejected_at = None
     donor.save()
 
     if donor.email:
@@ -697,6 +730,7 @@ def admin_processed_blood_requests(request):
     data = []
     for r in blood_requests:
         patient = r.patient
+        processed_dt = r.rejected_at if r.status == "rejected" and r.rejected_at else (r.donation_date or r.created_at)
         data.append({
             "id": r.id,
             "patient_name": patient.fullname if patient else "Unknown",
@@ -704,11 +738,13 @@ def admin_processed_blood_requests(request):
             "hospital": r.hospital_location.name if r.hospital_location else None,
             "urgency": r.urgency,
             "status": r.status,
+            "rejection_reason": r.rejection_reason or "",
+            "rejected_at": r.rejected_at.isoformat() if r.rejected_at else None,
             "created_at": r.created_at.isoformat(),
-            "processed_at": (r.donation_date or r.created_at).isoformat(),
+            "processed_at": processed_dt.isoformat() if processed_dt else r.created_at.isoformat(),
             "processed_on": (
-                r.donation_date.strftime("%Y-%m-%d %H:%M")
-                if r.donation_date
+                processed_dt.strftime("%Y-%m-%d %H:%M")
+                if processed_dt
                 else r.created_at.strftime("%Y-%m-%d %H:%M")
             )
         })
@@ -723,15 +759,22 @@ def admin_processed_blood_requests(request):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def admin_processed_donor_registrations(request):
-    donors = Donor.objects.filter(is_approved=True).order_by("-created_on")
+    donors = (
+        Donor.objects
+        .filter(Q(is_approved=True) | (Q(rejection_reason__isnull=False) & ~Q(rejection_reason="")))
+        .order_by("-created_on")
+    )
     data = []
     for d in donors:
+        status_value = "approved" if d.is_approved else "rejected"
         data.append({
             "id": d.id,
             "name": f"{d.first_name or ''} {d.last_name or ''}".strip(),
             "blood_type": d.blood_type,
-            "status": "approved",
-            "processed_on": d.created_on.strftime("%Y-%m-%d %H:%M")
+            "status": status_value,
+            "rejection_reason": d.rejection_reason or "",
+            "rejected_at": d.rejected_at.isoformat() if d.rejected_at else None,
+            "processed_on": d.rejected_at.strftime("%Y-%m-%d %H:%M") if d.rejected_at else d.created_on.strftime("%Y-%m-%d %H:%M")
         })
     return Response({
         "success": True,
@@ -758,6 +801,8 @@ def admin_hospital_requests(request):
             "email": r.email,
             "phone": r.phone,
             "status": r.status,
+            "rejection_reason": r.rejection_reason or "",
+            "rejected_at": r.rejected_at.isoformat() if getattr(r, "rejected_at", None) else None,
         })
     return Response(data, status=status.HTTP_200_OK)
 
@@ -844,6 +889,7 @@ def reject_hospital_request(request, pk):
         )
 
     application.status = "rejected"
+    application.rejection_reason = (request.data.get("reason", "") or "").strip()
     application.rejected_at = timezone.now()
     application.save()
 
@@ -865,6 +911,9 @@ def hospital_request_detail(request, pk):
         "phone": h.phone,
         "address": h.address,
         "bed_capacity": h.bed_capacity,
+        "status": h.status,
+        "rejection_reason": h.rejection_reason or "",
+        "rejected_at": h.rejected_at.isoformat() if h.rejected_at else None,
         "registration_certificate": h.registration_certificate.url,
         "medical_license": h.medical_license.url,
         "id_proof": h.id_proof.url,
@@ -1427,9 +1476,12 @@ def _serialize_camp(camp):
         "is_urgent": camp.is_urgent,
         "is_past": camp.date < today,
         "is_approved": camp.is_approved,
+        "is_rejected": getattr(camp, "is_rejected", False),
         "created_by": camp.created_by,
         "contact_number": camp.contact_number or "",   
         "map_link": camp.map_link or "", 
+        "rejection_reason": getattr(camp, "rejection_reason", "") or "",
+        "rejected_at": camp.rejected_at.isoformat() if getattr(camp, "rejected_at", None) else None,
     }
 
 
@@ -1731,6 +1783,9 @@ def approve_camp(request, camp_id):
     try:
         camp = DonationCamp.objects.get(id=camp_id)
         camp.is_approved = True
+        camp.is_rejected = False
+        camp.rejection_reason = ""
+        camp.rejected_at = None
         camp.save()
 
         return Response({"success": True, "message": "Camp approved"})
@@ -1738,12 +1793,17 @@ def approve_camp(request, camp_id):
         return Response({"success": False, "message": "Not found"}, status=404)
 
     
-@api_view(["DELETE"])
+@api_view(["POST", "DELETE"])
 @permission_classes([AllowAny])
 def reject_camp(request, camp_id):
     try:
         camp = DonationCamp.objects.get(id=camp_id)
-        camp.delete()
+        reason = (request.data.get("reason", "") or "").strip()
+        camp.is_approved = False
+        camp.is_rejected = True
+        camp.rejection_reason = reason
+        camp.rejected_at = timezone.now()
+        camp.save(update_fields=["is_approved", "is_rejected", "rejection_reason", "rejected_at"])
 
         return Response({"success": True, "message": "Camp rejected"})
     except DonationCamp.DoesNotExist:
@@ -2312,15 +2372,17 @@ def analytics_kpi(request):
             return 100 if current > 0 else 0
         return round(((current - previous) / previous) * 100, 1)
 
+    completed_statuses = ["completed", "donation_complete", "donation_approved", "request_completed", "donation_completed"]
+
     # Current period
     cur_requests  = BloodRequest.objects.filter(created_at__gte=start, created_at__lte=end).count()
-    cur_completed = BloodRequest.objects.filter(created_at__gte=start, created_at__lte=end, status="completed").count()
+    cur_completed = BloodRequest.objects.filter(created_at__gte=start, created_at__lte=end, status__in=completed_statuses).count()
     cur_donors    = Donor.objects.filter(created_on__gte=start, created_on__lte=end).count()
     cur_hospitals = Hospital.objects.filter(created_at__gte=start, created_at__lte=end).count()
 
     # Previous period
     prev_requests  = BloodRequest.objects.filter(created_at__gte=prev_start, created_at__lte=prev_end).count()
-    prev_completed = BloodRequest.objects.filter(created_at__gte=prev_start, created_at__lte=prev_end, status="completed").count()
+    prev_completed = BloodRequest.objects.filter(created_at__gte=prev_start, created_at__lte=prev_end, status__in=completed_statuses).count()
     prev_donors    = Donor.objects.filter(created_on__gte=prev_start, created_on__lte=prev_end).count()
     prev_hospitals = Hospital.objects.filter(created_at__gte=prev_start, created_at__lte=prev_end).count()
 

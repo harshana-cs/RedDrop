@@ -1166,6 +1166,38 @@ nav button span:last-child {
         </div>
     </div>
 
+    <div id="rejectReasonModal" class="fixed inset-0 hidden z-[10000] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100">
+            <div class="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-red-50 to-white">
+                <div class="flex items-start gap-3">
+                    <div class="w-11 h-11 rounded-xl flex items-center justify-center bg-red-100 text-red-600 flex-shrink-0">
+                        <i class="ri-error-warning-line text-lg"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h3 id="reject-modal-title" class="text-lg font-bold text-gray-900">Reject Request</h3>
+                        <p id="reject-modal-message" class="text-sm text-gray-500 leading-snug"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-5">
+                <label for="rejectReasonInput" class="block text-sm font-medium text-gray-700 mb-2">Rejection reason *</label>
+                <textarea id="rejectReasonInput" rows="4"
+                          class="w-full h-32 border border-gray-300 rounded-xl px-4 py-3 text-sm leading-6 focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none outline-none bg-white shadow-sm"
+                          placeholder="Tell the requester why this was rejected"></textarea>
+                <p id="rejectReasonError" class="hidden mt-2 text-sm text-red-600"></p>
+                <div class="mt-5 flex items-center justify-end gap-3">
+                    <button onclick="hideRejectReasonModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">
+                        Cancel
+                    </button>
+                    <button id="rejectReasonConfirmBtn" onclick="handleRejectReasonConfirm()"
+                            class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 text-sm font-medium shadow-sm">
+                        Reject Request
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Stock Scarcity Popup -->
     <div id="stockScarcityModal" aria-hidden="true">
         <div class="stock-scarcity-card">
@@ -1658,12 +1690,13 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                         <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Blood</th>
                         <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
                         <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Rejection Reason</th>
                         <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Processed On</th>
                     </tr>
                 </thead>
                 <tbody id="processedBloodRequestsBody" class="divide-y divide-gray-200">
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                             Processed requests will appear here
                         </td>
                     </tr>
@@ -1766,12 +1799,13 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                         <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Donor</th>
                         <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Blood Type</th>
                         <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Rejection Reason</th>
                         <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Processed On</th>
                     </tr>
                 </thead>
                 <tbody id="processedDonorsBody" class="divide-y divide-gray-200">
                     <tr>
-                        <td colspan="4" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
                             Processed donors will appear here
                         </td>
                     </tr>
@@ -1932,12 +1966,13 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
           <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
           <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
           <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+          <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Reason</th>
           <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Rejected On</th>
         </tr>
       </thead>
       <tbody id="rejectedHospitalTable" class="divide-y divide-gray-200">
         <tr>
-          <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+          <td colspan="5" class="px-6 py-8 text-center text-gray-500">
             Loading rejected requests...
           </td>
         </tr>
@@ -3460,6 +3495,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                             <option value="upcoming">Upcoming</option>
                             <option value="past">Past</option>
                             <option value="urgent">Urgent Only</option>
+                            <option value="rejected">Rejected Only</option>
                         </select>
                         <button onclick="loadCamps()"
                                 class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">
@@ -3724,7 +3760,8 @@ function formatAdminDateTime(dateInput) {
         let currentHospitalRequest = null;
 
         // Global state
-        let currentAction = { type: '', id: null, data: null };
+        let currentAction = { type: '', id: null, data: null, callback: null };
+        let currentRejectAction = null;
 let bloodTypeChart, requestStatusChart;
 
         /* ---------- UTILITY FUNCTIONS ---------- */
@@ -3784,6 +3821,66 @@ let bloodTypeChart, requestStatusChart;
         function hideModal() {
             document.getElementById('confirmModal').classList.add('hidden');
             currentAction = { type: '', id: null, data: null, callback: null };
+        }
+
+        function showRejectReasonModal(title, message, confirmText, confirmCallback, placeholder = 'Tell the requester why this was rejected') {
+            const modal = document.getElementById('rejectReasonModal');
+            const modalTitle = document.getElementById('reject-modal-title');
+            const modalMessage = document.getElementById('reject-modal-message');
+            const input = document.getElementById('rejectReasonInput');
+            const error = document.getElementById('rejectReasonError');
+            const confirmBtn = document.getElementById('rejectReasonConfirmBtn');
+
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            input.value = '';
+            input.placeholder = placeholder;
+            error.textContent = '';
+            error.classList.add('hidden');
+            confirmBtn.textContent = confirmText;
+            confirmBtn.disabled = false;
+
+            currentRejectAction = { callback: confirmCallback };
+            modal.classList.remove('hidden');
+            setTimeout(() => input.focus(), 0);
+        }
+
+        function hideRejectReasonModal() {
+            document.getElementById('rejectReasonModal').classList.add('hidden');
+            currentRejectAction = null;
+            const error = document.getElementById('rejectReasonError');
+            error.textContent = '';
+            error.classList.add('hidden');
+        }
+
+        async function handleRejectReasonConfirm() {
+            const input = document.getElementById('rejectReasonInput');
+            const error = document.getElementById('rejectReasonError');
+            const confirmBtn = document.getElementById('rejectReasonConfirmBtn');
+            const reason = (input.value || '').trim();
+
+            if (!reason) {
+                error.textContent = 'Please enter a rejection reason.';
+                error.classList.remove('hidden');
+                input.focus();
+                return;
+            }
+
+            if (!currentRejectAction?.callback) return;
+
+            const originalText = confirmBtn.textContent;
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = `<span class="inline-flex items-center gap-2"><i class="ri-loader-4-line animate-spin"></i>Processing...</span>`;
+            try {
+                await currentRejectAction.callback(reason);
+                hideRejectReasonModal();
+            } catch (err) {
+                error.textContent = 'Could not process the rejection. Please try again.';
+                error.classList.remove('hidden');
+            } finally {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = originalText;
+            }
         }
 
         async function handleModalConfirm() {
@@ -4408,12 +4505,13 @@ function setRequestChartType(type) {
 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center space-x-2">
-                                        <button onclick="approveBloodRequest(${r.id})" 
-                                                ${isUpcoming || isPast ? "disabled" : ""}
-                                                class="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 flex items-center space-x-1">
-                                            <i class="ri-check-line"></i>
-                                            <span>${isUpcoming ? "Queued" : (isPast ? "Locked" : "Approve")}</span>
-                                        </button>
+                                       <button onclick="approveBloodRequest(${r.id})" 
+        ${isUpcoming || isPast ? "disabled" : ""}
+        id="approve-btn-${r.id}"
+        class="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 flex items-center space-x-1">
+    <i class="ri-check-line"></i>
+    <span>${isUpcoming ? "Queued" : (isPast ? "Locked" : "Approve")}</span>
+</button>
                                         <button onclick="showRejectBloodRequest(${r.id})" 
                                                 ${isPast ? "disabled" : ""}
                                                 class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 flex items-center space-x-1">
@@ -4471,8 +4569,7 @@ function setRequestChartType(type) {
             }
         }
 
-        /* ---------- BLOOD REQUEST ACTIONS ---------- */
-        async function approveBloodRequest(id) {
+       async function approveBloodRequest(id) {
     showConfirmModal(
         'success',
         'Approve Blood Request',
@@ -4480,6 +4577,16 @@ function setRequestChartType(type) {
         'Accept',
         async () => {
             try {
+                const btn = document.getElementById(`approve-btn-${id}`);
+                const row = btn ? btn.closest('tr') : null;
+
+                // Show processing state
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = `<i class="ri-loader-4-line animate-spin"></i><span>Processing...</span>`;
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+
                 const response = await fetch(
                     `http://127.0.0.1:8000/api/admin/blood-request/${id}/approve/`,
                     { method: "POST" }
@@ -4488,10 +4595,75 @@ function setRequestChartType(type) {
                 const data = await response.json();
 
                 if (response.ok) {
+                    // Show accepted state briefly
+                    if (btn) {
+                        btn.innerHTML = `<i class="ri-check-double-line"></i><span>Accepted</span>`;
+                        btn.classList.remove('bg-green-100', 'text-green-700', 'opacity-50');
+                        btn.classList.add('bg-green-600', 'text-white');
+                    }
+
+                    // Also hide reject button
+                    const rejectBtn = row ? row.querySelector('button:not([id])') : null;
+                    if (rejectBtn) {
+                        rejectBtn.disabled = true;
+                        rejectBtn.classList.add('opacity-30', 'cursor-not-allowed');
+                    }
+
+                    // Show success modal
                     showResultModal('success', 'Accepted', 'Blood request accepted successfully.');
-                    await loadBloodRequests();
-                    await loadProcessedBloodRequests();
+
+                    // Remove the row after modal is closed or after short delay
+                    setTimeout(() => {
+                        if (row) {
+                            row.style.transition = 'opacity 0.4s ease';
+                            row.style.opacity = '0';
+                            setTimeout(() => {
+                                row.remove();
+
+                                // Check if table is now empty
+                                const tbody = document.getElementById('bloodRequestsBody');
+                                if (tbody && tbody.querySelectorAll('tr').length === 0) {
+                                    tbody.innerHTML = `
+                                        <tr>
+                                            <td colspan="7" class="px-6 py-12 text-center">
+                                                <div class="flex flex-col items-center justify-center space-y-3">
+                                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                                                        <i class="ri-inbox-line text-2xl text-gray-400"></i>
+                                                    </div>
+                                                    <h4 class="text-lg font-semibold text-gray-700">No Pending Requests</h4>
+                                                    <p class="text-gray-500">All blood requests have been processed</p>
+                                                </div>
+                                            </td>
+                                        </tr>`;
+                                }
+
+                                // Update badge count
+                                const remaining = document.querySelectorAll('#bloodRequestsBody tr[class]').length;
+                                const badge = document.getElementById('blood-badge');
+                                const countEl = document.getElementById('pendingRequestsCount');
+                                if (badge) {
+                                    if (remaining > 0) {
+                                        badge.textContent = remaining;
+                                    } else {
+                                        badge.classList.add('hidden');
+                                    }
+                                }
+                                if (countEl) countEl.textContent = remaining;
+
+                            }, 400);
+                        }
+                    }, 1500); // wait 1.5s so user sees "Accepted" state
+
+                    // Refresh processed table in background
+                    loadProcessedBloodRequests();
+
                 } else {
+                    // Re-enable on failure
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = `<i class="ri-check-line"></i><span>Approve</span>`;
+                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
                     showResultModal('error', 'Action Failed', data.message || 'Failed to accept request.');
                 }
             } catch (error) {
@@ -4503,19 +4675,20 @@ function setRequestChartType(type) {
 
 
         function showRejectBloodRequest(id) {
-            showConfirmModal(
-                'error',
+            showRejectReasonModal(
                 'Reject Blood Request',
-                'Do you really want to reject this blood request?',
+                'Add a reason so the requester knows why the request was rejected.',
                 'Reject Request',
-                () => rejectBloodRequest(id)
+                (reason) => rejectBloodRequest(id, reason)
             );
         }
 
-        async function rejectBloodRequest(id) {
+        async function rejectBloodRequest(id, reason) {
             try {
                 const response = await fetch(`http://127.0.0.1:8000/api/admin/blood-request/${id}/reject/`, {
-                    method: "POST"
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
                 });
 
                 const data = await response.json();
@@ -4648,7 +4821,7 @@ function setRequestChartType(type) {
                         </td>
                         <td class="px-6 py-4">
                             <p class="text-gray-900 font-medium">${timeAgo(d.created_on || d.created_at)}</p>
-                            <p class="text-xs text-gray-400">${d.created_on || '-'}</p>
+                            <p class="text-xs text-gray-400">${formatAdminDateTime(d.created_on || d.created_at)}</p>
                             <p class="text-xs text-gray-400">${d.age ? `${d.age} years old` : ''}</p>
                         </td>
                         <td class="px-6 py-4">
@@ -4688,19 +4861,20 @@ function setRequestChartType(type) {
         }
 
         function showRejectDonor(id) {
-            showConfirmModal(
-                'error',
+            showRejectReasonModal(
                 'Reject Donor Registration',
-                'Do you really want to reject this donor registration?',
+                'Add a reason so the donor can understand the rejection.',
                 'Reject Donor',
-                () => rejectDonor(id)
+                (reason) => rejectDonor(id, reason)
             );
         }
 
-        async function rejectDonor(id) {
+        async function rejectDonor(id, reason) {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/api/admin/donor/${id}/reject/`, { 
-                    method: "POST" 
+                const response = await fetch(`http://127.0.0.1:8000/api/admin/donor/${id}/reject/`, {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
                 });
 
                 const data = await response.json();
@@ -4841,6 +5015,15 @@ function setRequestChartType(type) {
                             <p class="font-medium text-gray-700">Bed Capacity:</p>
                             <p class="text-gray-900">${data.bed_capacity || 'Not specified'}</p>
                         </div>
+                        <div>
+                            <p class="font-medium text-gray-700">Status:</p>
+                            <p class="text-gray-900 capitalize">${data.status || '-'}</p>
+                        </div>
+                        ${data.status === 'rejected' ? `
+                        <div class="md:col-span-2">
+                            <p class="font-medium text-gray-700">Rejection Reason:</p>
+                            <p class="text-gray-900">${data.rejection_reason || '-'}</p>
+                        </div>` : ''}
                     </div>
                     
                    <div class="mt-6 pt-6 border-t">
@@ -4987,31 +5170,37 @@ function setRequestChartType(type) {
             }
         }
 
-        async function rejectHospitalRequest(id) {
-            showConfirmModal(
-                'error',
+        function rejectHospitalRequest(id) {
+            showRejectReasonModal(
                 'Reject Hospital Request',
-                'Are you sure you want to reject this hospital registration request? This action cannot be undone.',
+                'Add a reason so the hospital knows why the registration was rejected.',
                 'Reject Request',
-                async () => {
-                    try {
-                        const res = await fetch(
-                            `http://127.0.0.1:8000/api/admin/hospital-request/${id}/reject/`,
-                            { method: "POST" }
-                        );
-
-                        if (res.ok) {
-                            showToast("success", "Request Rejected", "Hospital request has been rejected");
-                            loadHospitalRequests();
-                        } else {
-                            showToast("error", "Rejection Failed", "Failed to reject request");
-                        }
-                    } catch (error) {
-                        console.error('Error rejecting hospital:', error);
-                        showToast("error", "Network Error", "Failed to connect to server");
-                    }
-                }
+                (reason) => doRejectHospitalRequest(id, reason)
             );
+        }
+
+        async function doRejectHospitalRequest(id, reason) {
+            try {
+                const res = await fetch(
+                    `http://127.0.0.1:8000/api/admin/hospital-request/${id}/reject/`,
+                    {
+                        method: "POST",
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reason })
+                    }
+                );
+
+                if (res.ok) {
+                    showToast("success", "Request Rejected", "Hospital request has been rejected");
+                    loadHospitalRequests();
+                    loadRejectedHospitalRequests();
+                } else {
+                    showToast("error", "Rejection Failed", "Failed to reject request");
+                }
+            } catch (error) {
+                console.error('Error rejecting hospital:', error);
+                showToast("error", "Network Error", "Failed to connect to server");
+            }
         }
 
         /* ---------- CREATE HOSPITAL (Manual) ---------- */
@@ -5169,7 +5358,7 @@ function adminLogout() {
 
         async function loadProcessedBloodRequests() {
     const body = document.getElementById("processedBloodRequestsBody");
-    body.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center">Loading...</td></tr>`;
+    body.innerHTML = `<tr><td colspan="6" class="px-6 py-6 text-center">Loading...</td></tr>`;
 
     try {
         const res = await fetch("http://127.0.0.1:8000/api/admin/blood-requests/processed/");
@@ -5181,10 +5370,10 @@ function adminLogout() {
             renderProcessedBloodRequests(json.data);
         } else {
             window._processedBloodRequests = [];
-            body.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-gray-500">No records</td></tr>`;
+            body.innerHTML = `<tr><td colspan="6" class="px-6 py-6 text-center text-gray-500">No records</td></tr>`;
         }
     } catch {
-        body.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-red-600">Failed to load</td></tr>`;
+        body.innerHTML = `<tr><td colspan="6" class="px-6 py-6 text-center text-red-600">Failed to load</td></tr>`;
     }
 }
 
@@ -5192,7 +5381,7 @@ function renderProcessedBloodRequests(data) {
     const body = document.getElementById("processedBloodRequestsBody");
 
     if (!data.length) {
-        body.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-gray-500">No records found</td></tr>`;
+        body.innerHTML = `<tr><td colspan="6" class="px-6 py-6 text-center text-gray-500">No records found</td></tr>`;
         return;
     }
 
@@ -5220,6 +5409,9 @@ function renderProcessedBloodRequests(data) {
                     <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
                         ${r.status.toUpperCase()}
                     </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600">
+                    ${r.status === "rejected" ? (r.rejection_reason || "-") : "-"}
                 </td>
                 <td class="px-6 py-4 text-gray-500">
                     <p class="font-medium">${timeAgo(r.processed_at || r.processed_on)}</p>
@@ -5251,7 +5443,7 @@ function filterProcessedBloodRequests() {
 }
 async function loadProcessedDonors() {
     const body = document.getElementById("processedDonorsBody");
-    body.innerHTML = `<tr><td colspan="4" class="px-6 py-6 text-center">Loading...</td></tr>`;
+    body.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center">Loading...</td></tr>`;
 
     try {
         const res = await fetch("http://127.0.0.1:8000/api/admin/donors/processed/");
@@ -5262,16 +5454,22 @@ async function loadProcessedDonors() {
             filterProcessedDonors();
         } else {
             window._processedDonors = [];
-            body.innerHTML = `<tr><td colspan="4" class="px-6 py-6 text-center text-gray-500">No records</td></tr>`;
+            body.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-gray-500">No records</td></tr>`;
         }
     } catch {
-        body.innerHTML = `<tr><td colspan="4" class="px-6 py-6 text-center text-red-600">Failed to load</td></tr>`;
+        body.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-red-600">Failed to load</td></tr>`;
     }
 }
 
 function filterProcessedDonors() {
     const body = document.getElementById("processedDonorsBody");
-    const all = window._processedDonors || [];
+    const all = (window._processedDonors || []).slice().sort((a, b) => {
+        const da = parseAdminDate(a.processed_at || a.processed_on);
+        const db = parseAdminDate(b.processed_at || b.processed_on);
+        const ta = da ? da.getTime() : 0;
+        const tb = db ? db.getTime() : 0;
+        return tb - ta;
+    });
     const status = document.getElementById("donorProcessedStatusFilter")?.value || "all";
     const query = (document.getElementById("processedDonorSearch")?.value || "").toLowerCase().trim();
     const from = document.getElementById("processedDonorDateFrom")?.value || "";
@@ -5289,7 +5487,7 @@ function filterProcessedDonors() {
     });
 
     if (!filtered.length) {
-        body.innerHTML = `<tr><td colspan="4" class="px-6 py-6 text-center text-gray-500">No records found</td></tr>`;
+        body.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-gray-500">No records found</td></tr>`;
         return;
     }
 
@@ -5307,6 +5505,9 @@ function filterProcessedDonors() {
                     <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
                         ${d.status.toUpperCase()}
                     </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600">
+                    ${d.status === "rejected" ? (d.rejection_reason || "-") : "-"}
                 </td>
                 <td class="px-6 py-4 text-gray-500">${d.processed_on}</td>
             </tr>
@@ -5481,7 +5682,7 @@ async function loadRejectedHospitalRequests() {
     if (!data.length) {
       table.innerHTML = `
         <tr>
-          <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+          <td colspan="5" class="px-6 py-8 text-center text-gray-500">
             No rejected hospital requests
           </td>
         </tr>`;
@@ -5498,8 +5699,9 @@ async function loadRejectedHospitalRequests() {
             <span class="text-sm text-gray-500">${h.phone}</span>
           </td>
           <td class="px-6 py-4 capitalize">${h.hospital_type}</td>
+          <td class="px-6 py-4 text-sm text-gray-600">${h.rejection_reason || "-"}</td>
           <td class="px-6 py-4 text-sm text-gray-500">
-            ${h.rejected_at || "-"}
+            ${h.rejected_at ? formatAdminDateTime(h.rejected_at) : "-"}
           </td>
         </tr>`;
     });
@@ -6359,6 +6561,7 @@ async function viewUser(id) {
                         <div><p class="text-gray-500">Required Date</p><p class="font-medium text-gray-900">${r.required_date || "-"}</p></div>
                         <div><p class="text-gray-500">Contact</p><p class="font-medium text-gray-900">${r.contact_name || "-"} (${r.contact_phone || "-"})</p></div>
                         <div><p class="text-gray-500">Reason</p><p class="font-medium text-gray-900">${r.reason || "-"}</p></div>
+                        <div><p class="text-gray-500">Rejection Reason</p><p class="font-medium text-gray-900">${r.rejection_reason || "-"}</p></div>
                       </div>
                       <div class="mt-3 flex flex-wrap gap-2">
                         ${docButton(r.hospital_doc, "Hospital Document")}
@@ -7140,7 +7343,7 @@ async function loadCamps() {
             grid.innerHTML = `<p class="text-red-500 text-center py-10 col-span-full">Failed to load camps</p>`;
         }
         if (table) {
-            table.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-6">Failed to load</td></tr>`;
+            table.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-6">Failed to load</td></tr>`;
         }
     }
 }
@@ -7150,12 +7353,12 @@ function updateCampStats(camps) {
     const today = new Date().toISOString().split('T')[0];
 
     document.getElementById('campTotalCount').textContent  = camps.length;
-    document.getElementById('campActiveCount').textContent = camps.filter(c => c.date >= today).length;
-    document.getElementById('campUrgentCount').textContent = camps.filter(c => c.is_urgent).length;
+    document.getElementById('campActiveCount').textContent = camps.filter(c => c.date >= today && !c.is_rejected).length;
+    document.getElementById('campUrgentCount').textContent = camps.filter(c => c.is_urgent && !c.is_rejected).length;
 
 
     const badge    = document.getElementById('camps-badge');
-    const upcoming = camps.filter(c => c.date >= today).length;
+    const upcoming = camps.filter(c => c.date >= today && !c.is_rejected).length;
 
     if (badge) {
         if (upcoming > 0) {
@@ -7175,11 +7378,13 @@ function filterCamps() {
     let filtered = [...allCamps];
 
     if (filter === 'upcoming') {
-        filtered = allCamps.filter(c => c.date >= today);
+        filtered = allCamps.filter(c => c.date >= today && !c.is_rejected);
     } else if (filter === 'past') {
-        filtered = allCamps.filter(c => c.date < today);
+        filtered = allCamps.filter(c => c.date < today && !c.is_rejected);
     } else if (filter === 'urgent') {
-        filtered = allCamps.filter(c => c.is_urgent);
+        filtered = allCamps.filter(c => c.is_urgent && !c.is_rejected);
+    } else if (filter === 'rejected') {
+        filtered = allCamps.filter(c => c.is_rejected);
     }
 
     renderCampCards(filtered);
@@ -7206,14 +7411,21 @@ function renderCampCards(camps) {
 
     grid.innerHTML = camps.map(c => {
         const isUpcoming   = c.date >= today;
+        const isRejected = !!c.is_rejected;
+        const statusLabel = isRejected ? 'Rejected' : (c.is_approved ? 'Approved' : (isUpcoming ? 'Upcoming' : 'Past'));
+        const statusClass = isRejected
+            ? 'bg-red-100 text-red-700'
+            : (c.is_approved ? 'bg-green-100 text-green-800' : (isUpcoming ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'));
 
         return `
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col">
 
                 <!-- Card Header -->
-                <div class="px-5 py-4 ${isUpcoming
-                    ? 'bg-gradient-to-r from-red-500 to-red-400'
-                    : 'bg-gradient-to-r from-gray-400 to-gray-500'}">
+                <div class="px-5 py-4 ${isRejected
+                    ? 'bg-gradient-to-r from-red-600 to-red-500'
+                    : (isUpcoming
+                        ? 'bg-gradient-to-r from-red-500 to-red-400'
+                        : 'bg-gradient-to-r from-gray-400 to-gray-500')}">
                     <div class="flex items-start justify-between gap-2">
                         <h4 class="font-bold text-white text-base leading-tight line-clamp-2">${c.title}</h4>
                         <div class="flex flex-col gap-1 flex-shrink-0 items-end">
@@ -7221,10 +7433,8 @@ function renderCampCards(camps) {
                                 ? `<span class="px-2 py-0.5 bg-yellow-400 text-yellow-900 text-xs font-bold rounded-full">URGENT</span>`
                                 : ''}
                             <span class="px-2 py-0.5 text-xs font-medium rounded-full
-                                ${isUpcoming
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-gray-200 text-gray-700'}">
-                                ${isUpcoming ? 'Upcoming' : 'Past'}
+                                ${statusClass}">
+                                ${statusLabel}
                             </span>
                         </div>
                     </div>
@@ -7273,6 +7483,9 @@ function renderCampCards(camps) {
     ${c.description
         ? `<p class="text-xs text-gray-500 line-clamp-2 border-t pt-2">${c.description}</p>`
         : ''}
+    ${isRejected && c.rejection_reason
+        ? `<p class="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">Reason: ${c.rejection_reason}</p>`
+        : ''}
         
 ${c.authorization_letter
   ? `<div class="mt-2">
@@ -7292,7 +7505,9 @@ ${c.authorization_letter
     <!-- STATUS -->
     <div>
         ${
-            c.is_approved
+            c.is_rejected
+            ? '<span class="text-red-600 text-xs font-semibold">Rejected</span>'
+            : c.is_approved
             ? '<span class="text-green-600 text-xs font-semibold">Approved</span>'
             : '<span class="text-yellow-600 text-xs font-semibold">Pending</span>'
         }
@@ -7302,7 +7517,7 @@ ${c.authorization_letter
     <div class="flex gap-2">
       
 ${
-  !c.is_approved && (c.created_by === "corporate" || c.created_by === "partner")
+  !c.is_approved && !c.is_rejected && (c.created_by === "corporate" || c.created_by === "partner")
     ? `
       <button onclick="approveCamp(${c.id})"
           class="px-3 py-1.5 text-xs bg-green-600 text-white rounded-lg">
@@ -7316,6 +7531,10 @@ ${
     : c.is_approved
     ? `<span class="text-green-600 text-xs font-semibold flex items-center gap-1">
          <i class="ri-checkbox-circle-fill"></i> Approved
+       </span>`
+    : c.is_rejected
+    ? `<span class="text-red-600 text-xs font-semibold flex items-center gap-1">
+         <i class="ri-close-circle-fill"></i> Rejected
        </span>`
     : `
       <button onclick="editCamp(${c.id})"
@@ -7355,12 +7574,16 @@ function renderCampTable(camps) {
 
     table.innerHTML = camps.map(c => {
         const isUpcoming = c.date >= today;
+        const isRejected = !!c.is_rejected;
         return `
             <tr class="hover:bg-gray-50 transition">
                 <td class="px-6 py-4">
                     <p class="font-medium text-gray-900">${c.title}</p>
                     ${c.is_urgent
                         ? `<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Urgent</span>`
+                        : ''}
+                    ${isRejected && c.rejection_reason
+                        ? `<p class="text-xs text-red-600 mt-1">${c.rejection_reason}</p>`
                         : ''}
                 </td>
                 <td class="px-6 py-4 text-gray-600">${c.hospital_name || '—'}</td>
@@ -7371,20 +7594,22 @@ function renderCampTable(camps) {
                 <td class="px-6 py-4 text-gray-600">${c.location}</td>
                 <td class="px-6 py-4">
                     <span class="px-2 py-1 rounded-full text-xs font-medium
-                        ${isUpcoming ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}">
-                        ${isUpcoming ? 'Upcoming' : 'Past'}
+                        ${isRejected ? 'bg-red-100 text-red-700' : (c.is_approved ? 'bg-green-100 text-green-700' : (isUpcoming ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'))}">
+                        ${isRejected ? 'Rejected' : (c.is_approved ? 'Approved' : (isUpcoming ? 'Upcoming' : 'Past'))}
                     </span>
                 </td>
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-2">
                         ${
-                            !c.is_approved && (c.created_by === "partner" || c.created_by === "corporate")
+                            !c.is_approved && !c.is_rejected && (c.created_by === "partner" || c.created_by === "corporate")
                             ? `<button onclick="approveCamp(${c.id})"
                                    class="px-2 py-1 text-xs bg-green-600 text-white rounded">Accept</button>
                                <button onclick="rejectCamp(${c.id})"
                                    class="px-2 py-1 text-xs bg-red-600 text-white rounded">Decline</button>`
                             : c.is_approved
                             ? `<span class="text-green-600 text-xs font-semibold">✓ Approved</span>`
+                            : c.is_rejected
+                            ? `<span class="text-red-600 text-xs font-semibold">Rejected</span>`
                             : `<button onclick="editCamp(${c.id})"
                                    class="px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded">Edit</button>
                                <button onclick="deleteCamp(${c.id})"
@@ -7632,12 +7857,21 @@ async function approveCamp(id) {
     }
 }
 // ================= DELETE =================
-async function rejectCamp(id) {
-    if (!confirm('Reject this camp request? This action cannot be undone.')) return;
-    
+function rejectCamp(id) {
+    showRejectReasonModal(
+        'Reject Donation Camp',
+        'Add a reason so the organizer knows why this camp was rejected.',
+        'Reject Camp',
+        (reason) => doRejectCamp(id, reason)
+    );
+}
+
+async function doRejectCamp(id, reason) {
     try {
         const response = await fetch(`${API_BASE}/api/admin/reject-camp/${id}/`, {
-            method: 'DELETE'
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason })
         });
         
         if (response.ok) {
@@ -8689,6 +8923,13 @@ async function initAnalytics() {
 // ── DONATIONS STATE ──────────────────────────────────────────
 let allDonations = [];
 let filteredDonations = [];
+const COMPLETED_DONATION_STATUSES = new Set([
+    'completed',
+    'donation_complete',
+    'donation_approved',
+    'request_completed',
+    'donation_completed',
+]);
 
 // ── LOAD ALL DONATIONS ───────────────────────────────────────
 async function loadDonations() {
@@ -8716,10 +8957,15 @@ async function loadDonations() {
 
 // ── STATS ────────────────────────────────────────────────────
 function updateDonationStats(data) {
+    const isCompletedDonation = (d) => {
+        const status = (d?.status || '').trim().toLowerCase();
+        return COMPLETED_DONATION_STATUSES.has(status) || !!d?.completed_at || !!d?.donation_date;
+    };
+
     document.getElementById('donStatTotal').textContent =
         data.length;
     document.getElementById('donStatCompleted').textContent =
-        data.filter(d => d.status === 'completed').length;
+        data.filter(isCompletedDonation).length;
     document.getElementById('donStatPending').textContent =
         data.filter(d => d.status === 'pending').length;
     document.getElementById('donStatDonorSource').textContent =

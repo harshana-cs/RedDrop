@@ -4637,8 +4637,17 @@ async function loadUserCapabilities() {
     // Register as Donor button
     const registerBtn        = document.getElementById("registerDonorBtn");
     const profileRegisterBtn = document.getElementById("profileRegisterDonorBtn");
-    if (!data.is_donor) { registerBtn?.classList.remove("hidden"); profileRegisterBtn?.classList.remove("hidden"); }
-    else                { registerBtn?.classList.add("hidden");    profileRegisterBtn?.classList.add("hidden"); }
+    const registerMobile     = document.getElementById("registerDonorMobileBtn");
+    if (!data.is_donor || data.donor_rejected) {
+      [registerBtn, profileRegisterBtn, registerMobile].forEach(btn => {
+        if (!btn) return;
+        btn.classList.remove("hidden");
+      });
+      _setRegisterLabel(data.donor_rejected ? "Register Again" : "Register as Donor");
+    } else {
+      [registerBtn, profileRegisterBtn, registerMobile].forEach(btn => btn?.classList.add("hidden"));
+      _setRegisterLabel("Register as Donor");
+    }
  
     // Always reveal All Donors nav for every user
     revealAllDonorsNav();
@@ -4657,8 +4666,9 @@ async function loadUserCapabilities() {
 
     // ── NEW: Donor registered but NOT yet approved by admin ──────────────────
     if (!data.donor_approved) {
-      _s("profileRole", "Donor (Pending Approval)");
-      _s("userStatus",  "Donor (Pending)");
+      const isRejected = !!data.donor_rejected;
+      _s("profileRole", isRejected ? "Donor (Rejected)" : "Donor (Pending Approval)");
+      _s("userStatus",  isRejected ? "Donor (Rejected)" : "Donor (Pending)");
 
       // Hide all donor-only UI
       document.getElementById("donorNav")?.classList.add("hidden");
@@ -4674,7 +4684,34 @@ async function loadUserCapabilities() {
       const notDonorMsg = document.getElementById("notDonorMsg");
       if (notDonorMsg) {
         notDonorMsg.classList.remove("hidden");
-        notDonorMsg.innerHTML = `
+        if (isRejected) {
+          notDonorMsg.innerHTML = `
+          <div class="flex items-center gap-6 relative z-10">
+            <div class="w-20 h-20 bg-red-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-times-circle text-red-600 text-3xl"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-2xl mb-2 text-gray-800">Registration Rejected</h4>
+              <p class="text-gray-600 mb-4 text-lg">
+                Your donor registration was rejected by admin.
+              </p>
+              <div class="flex flex-wrap items-center gap-3">
+                <span class="inline-flex items-center gap-2 px-5 py-2 bg-red-100 text-red-800 rounded-full text-sm font-semibold border border-red-300">
+                  <i class="fas fa-exclamation-circle"></i> Rejected
+                </span>
+                ${data.donor_rejection_reason ? `
+                  <span class="inline-flex items-center gap-2 px-5 py-2 bg-gray-100 text-gray-700 rounded-full text-sm font-medium border border-gray-200">
+                    <i class="fas fa-comment-dots"></i> ${data.donor_rejection_reason}
+                  </span>
+                ` : ""}
+                <button onclick="window.location.href='donor_register.html'" class="inline-flex items-center gap-2 px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full text-sm font-semibold shadow-sm transition">
+                  <i class="fas fa-user-plus"></i> Register Again
+                </button>
+              </div>
+            </div>
+          </div>`;
+        } else {
+          notDonorMsg.innerHTML = `
           <div class="flex items-center gap-6 relative z-10">
             <div class="w-20 h-20 bg-yellow-200 rounded-2xl flex items-center justify-center flex-shrink-0">
               <i class="fas fa-hourglass-half text-yellow-600 text-3xl"></i>
@@ -4691,6 +4728,7 @@ async function loadUserCapabilities() {
               </span>
             </div>
           </div>`;
+        }
       }
       return;  // ← stop here, do not unlock any donor UI
     }
@@ -5792,6 +5830,8 @@ async function loadNotifications() {
       // ─── CASE 3: Someone needs blood and YOU are the donor ────────────────
       } else if (n.type === "blood_bank_found") {
         action = `handleBloodBankFoundNotificationClick(${n.id}, ${n.request_id || 'null'})`;
+      } else if (n.type === "donor_registration_rejected") {
+        action = `window.location.href='donor_register.html'`;
 
       // Clicking opens the Accept/Decline request modal
       } else if (
@@ -5807,6 +5847,7 @@ async function loadNotifications() {
         n.type === "day_before_request_confirm" ? "fa-calendar-check text-blue-600" :
         n.type === "donor_accept"           ? "fa-user-check text-blue-500"    :
         n.type === "blood_bank_found"       ? "fa-building-columns text-cyan-600" :
+        n.type === "donor_registration_rejected" ? "fa-times-circle text-red-600" :
         n.type === "donor_request" ||
         n.type === "blood_request"          ? "fa-heartbeat text-red-500"      :
                                               "fa-bell text-gray-400";
@@ -5821,6 +5862,7 @@ async function loadNotifications() {
                 n.type === 'day_before_request_confirm' ? 'bg-blue-100' :
                 n.type === 'donor_accept'           ? 'bg-blue-100'  :
                 n.type === 'blood_bank_found'       ? 'bg-cyan-100'  :
+                n.type === 'donor_registration_rejected' ? 'bg-red-100' :
                 n.type === 'donor_request' ||
                 n.type === 'blood_request'          ? 'bg-red-100'   : 'bg-gray-100'}">
               <i class="fas ${icon} text-sm"></i>
@@ -6235,6 +6277,18 @@ function hideEditProfileMsg() { document.getElementById("editProfileMsg")?.class
 // Utility: safely sets the textContent of an element by ID.
 // ─────────────────────────────────────────────────────────────────────────────
 function _setText(id, value) { const el=document.getElementById(id); if(el) el.textContent=value; }
+
+function _setRegisterLabel(label) {
+  [
+    document.getElementById("registerDonorBtn"),
+    document.getElementById("profileRegisterDonorBtn"),
+    document.getElementById("registerDonorMobileBtn")
+  ].forEach(btn => {
+    if (!btn) return;
+    const labelEl = btn.querySelector("span:last-of-type");
+    if (labelEl) labelEl.textContent = label;
+  });
+}
  
 // ─────────────────────────────────────────────────────────────────────────────
 // applyDonationCooldownUI(data)
@@ -6250,6 +6304,7 @@ function _setText(id, value) { const el=document.getElementById(id); if(el) el.t
 function applyDonationCooldownUI(data) {
   const isDonor    = !!data.is_donor;
   const isApproved = !!data.donor_approved;
+  const isRejected = !!data.donor_rejected;
   const lastRaw    = data.donations?.last_date || null;
  
   const show = el => el?.classList.remove("hidden");
@@ -6278,24 +6333,25 @@ function applyDonationCooldownUI(data) {
      compatSection, compatChart, quickDonateBtn, quickCompatBtn,
      openReqNav, openReqDesktop, openReqMobile].forEach(hide);
     [registerBtn, profileRegBtn, registerMobile].forEach(show);
+    _setRegisterLabel("Register as Donor");
     return;
   }
  
   // Case 2: Donor registered but NOT yet approved by admin
-  // → hide everything on home, no donor alerts shown
-  // → the "Awaiting Admin Approval" message is already shown
-  //   inside the Donor section by loadUserCapabilities()
+  // Rejected donors get a different message and the register button is shown again.
   if (!isApproved) {
     [cooldownAlert, firstDonorAlert, eligibleAlert, progressSection,
      compatSection, compatChart, quickDonateBtn, quickCompatBtn,
      openReqNav, openReqDesktop, openReqMobile].forEach(hide);
-    [registerBtn, profileRegBtn, registerMobile].forEach(hide);
+    [registerBtn, profileRegBtn, registerMobile].forEach(isRejected ? show : hide);
+    _setRegisterLabel(isRejected ? "Register Again" : "Register as Donor");
     return;
   }
 
   // Case 3: Approved donor → unlock home page donor UI
   show(quickDonateBtn);
   [registerBtn, profileRegBtn, registerMobile].forEach(hide);
+  _setRegisterLabel("Register as Donor");
   [openReqNav, openReqDesktop, openReqMobile, quickCompatBtn,
    compatSection, compatChart].forEach(show);
  

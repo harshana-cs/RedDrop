@@ -40,6 +40,8 @@ class Donor(models.Model):
 
     is_profile_completed = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
+    rejection_reason = models.TextField(blank=True, null=True)
+    rejected_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name or ''}"

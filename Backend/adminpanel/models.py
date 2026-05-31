@@ -12,9 +12,12 @@ class DonationCamp(models.Model):
     location = models.CharField(max_length=200)
     is_urgent = models.BooleanField(default=False)
     is_approved = models.BooleanField(default=False)
+    is_rejected = models.BooleanField(default=False)
     created_by = models.CharField(max_length=100, blank=True, null=True)
     contact_number = models.CharField(max_length=15, blank=True, null=True)
     map_link = models.URLField(max_length=500, blank=True, null=True)
+    rejection_reason = models.TextField(blank=True, null=True)
+    rejected_at = models.DateTimeField(blank=True, null=True)
     # ── New document field ──────────────────────────────────
     authorization_letter = models.FileField(
         upload_to='camp_documents/',
@@ -43,6 +46,7 @@ class Notification(models.Model):
         ("blood_bank_found", "Blood Bank Found"),
         ("follow_up_24h", "24h Follow-up"),
         ("donor_registration", "Donor Registration"),
+        ("donor_registration_rejected", "Donor Registration Rejected"),
         ("hospital_registration", "Hospital Registration"),
         ("blood_request_approved", "Blood Request Approved"),
         ("donor_request", "Donor Request"),
