@@ -11,6 +11,7 @@ from donor.views import (
     api_donor_leaderboard,
     api_leaderboard_certificate,
 )
+from backend_project.chatbot_views import chatbot_ask
 
 
 urlpatterns = [
@@ -35,6 +36,7 @@ urlpatterns = [
     # Escalation monitoring (used by frontend dashboard flow modal)
     path("api/escalation/<int:request_id>/status/", admin_escalation_status, name="escalation_status"),
     path("api/escalation/<int:request_id>/logs/", admin_notification_logs, name="notification_logs"),
+    path("api/chatbot/ask/", chatbot_ask, name="chatbot_ask"),
 
     # Root redirect
     path('', lambda request: redirect('home')),

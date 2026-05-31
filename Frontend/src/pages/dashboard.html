@@ -5150,12 +5150,60 @@ function closeRequestDetailsModal() {
   if (modal) modal.classList.add("hidden");
 }
 
-function viewRequestDetails(requestId) {
+function buildLiveRequestDetail(data, requestId) {
+  return {
+    id: data.request_id || requestId,
+    status: data.status || (data.fulfilled ? "completed" : "pending"),
+    blood_type: data.blood_type || "N/A",
+    units_required: data.units_required ?? data.units ?? 0,
+    urgency: data.urgency || "N/A",
+    district: data.district || "N/A",
+    hospital: data.hospital || "N/A",
+    contact_name: data.contact_name || "N/A",
+    contact_phone: data.contact_phone || "N/A",
+    created_at: data.created_at || data.requested_at || null,
+    needed_by: data.required_date || data.needed_by || null,
+    donation_date: data.donation_date || null,
+    hospital_doc_url: data.hospital_doc_url || "",
+    doctor_note_url: data.doctor_note_url || "",
+    completion_source: data.accepted_donor ? "donor" : null,
+    accepted_donor_name: data.accepted_donor?.name || "",
+    accepted_donor_blood_type: data.accepted_donor?.blood_type || "",
+    accepted_donor_phone: data.accepted_donor?.phone || "",
+    accepted_donor_distance_km: data.accepted_donor?.distance_km ?? null,
+  };
+}
+
+function brfViewBloodRequest() {
+  const requestId = BRF.requestId;
+  if (!requestId) {
+    showNotification("Blood request details are not available yet.", "warning");
+    return;
+  }
+  brfHideNoMatchNotice();
+  viewRequestDetails(requestId);
+}
+
+async function viewRequestDetails(requestId) {
   const modal = document.getElementById("requestDetailsModal");
   const content = document.getElementById("requestDetailsContent");
   if (!modal || !content) return;
 
-  const req = (_allHistoryData || []).find(r => Number(r.id) === Number(requestId));
+  let req = (_allHistoryData || []).find(r => Number(r.id) === Number(requestId));
+  if (!req) {
+    try {
+      const res = await fetch(`${API_BASE}/blood_requests/api/request-status/${requestId}/`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data) {
+        req = buildLiveRequestDetail(data, requestId);
+      }
+    } catch (err) {
+      console.error("Failed to load request details", err);
+    }
+  }
+
   if (!req) {
     showNotification("Request details not found", "warning");
     return;
@@ -5614,7 +5662,7 @@ async function markInterest(requestId) {
 // loadNotifications()
 // Polls both donor and patient notification endpoints and merges results.
 // Shows unread count badge on the bell icon. Wires up click handlers per
-// notification type: donor_request → openRequestModal, donor_accept → openDonorModal.
+// notification type: donor_request → openRequestModal, donor_accept → openDonorModal, blood_bank_found → openBloodBankModal.
 // ─────────────────────────────────────────────────────────────────────────────
 async function loadNotifications() {
   const list  = document.getElementById("notificationList");
@@ -5669,6 +5717,17 @@ async function loadNotifications() {
         // KEPT: donor_accept           → a donor accepted your blood request
       );
     }
+
+    // Merge duplicate rows that come back from the patient + donor feeds.
+    const seenNotificationKeys = new Set();
+    notifications = notifications.filter(n => {
+      const key = n.id != null
+        ? `id:${n.id}`
+        : `${n.type || ""}|${n.request_id || ""}|${n.title || ""}|${n.message || ""}`;
+      if (seenNotificationKeys.has(key)) return false;
+      seenNotificationKeys.add(key);
+      return true;
+    });
 
     notifications.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
  
@@ -5731,6 +5790,9 @@ async function loadNotifications() {
         action = `openDonorModal(${n.id},'${nm}','${ph}','${n.distance || ""}',${n.is_accepted ? "true" : "false"})`;
 
       // ─── CASE 3: Someone needs blood and YOU are the donor ────────────────
+      } else if (n.type === "blood_bank_found") {
+        action = `handleBloodBankFoundNotificationClick(${n.id}, ${n.request_id || 'null'})`;
+
       // Clicking opens the Accept/Decline request modal
       } else if (
         n.type === "donor_request" ||
@@ -5744,6 +5806,7 @@ async function loadNotifications() {
         (n.type === "blood_request_approved" || n.type === "blood_request_approved_by_admin") ? "fa-check-circle text-green-500" :
         n.type === "day_before_request_confirm" ? "fa-calendar-check text-blue-600" :
         n.type === "donor_accept"           ? "fa-user-check text-blue-500"    :
+        n.type === "blood_bank_found"       ? "fa-building-columns text-cyan-600" :
         n.type === "donor_request" ||
         n.type === "blood_request"          ? "fa-heartbeat text-red-500"      :
                                               "fa-bell text-gray-400";
@@ -5757,6 +5820,7 @@ async function loadNotifications() {
               ${(n.type === 'blood_request_approved' || n.type === 'blood_request_approved_by_admin') ? 'bg-green-100' :
                 n.type === 'day_before_request_confirm' ? 'bg-blue-100' :
                 n.type === 'donor_accept'           ? 'bg-blue-100'  :
+                n.type === 'blood_bank_found'       ? 'bg-cyan-100'  :
                 n.type === 'donor_request' ||
                 n.type === 'blood_request'          ? 'bg-red-100'   : 'bg-gray-100'}">
               <i class="fas ${icon} text-sm"></i>
@@ -5822,6 +5886,60 @@ async function handleApprovedNotificationClick(notificationId, requestId) {
     }
 
     loadNotifications();
+}
+
+async function handleBloodBankFoundNotificationClick(notificationId, requestId) {
+    try {
+        await fetch(`${API_BASE}/blood_requests/api/patient-notifications/${notificationId}/read/`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+    } catch (_) {}
+
+    document.getElementById("notificationDropdown")?.classList.add("hidden");
+
+    if (!requestId) {
+        showNotification("Stock details are not available for this notification.", "warning");
+        return;
+    }
+
+    try {
+        const [statusRes, escRes] = await Promise.all([
+            fetch(`${API_BASE}/blood_requests/api/request-status/${requestId}/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            }),
+            fetch(`${API_BASE}/api/escalation/${requestId}/status/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            }),
+        ]);
+
+        if (!statusRes.ok || !escRes.ok) {
+            throw new Error("Failed to load stock details");
+        }
+
+        const statusData = await statusRes.json();
+        const esc = await escRes.json();
+        const sources = brfBuildStockSources(esc, statusData);
+
+        showSection("home");
+        BRF.lastAutoKey = null;
+
+        if (sources.length) {
+            showBloodRequestFlow("bank-found", {
+                requestId,
+                bloodType: statusData?.blood_type || "—",
+                totalUnits: sources.reduce((sum, source) => sum + (source.units || 0), 0),
+                sources,
+            });
+        } else {
+            showBloodRequestFlow("bank-searching", {
+                totalDonorsAlerted: esc.total_donors_alerted || 0,
+            });
+        }
+    } catch (err) {
+        console.error("Failed to open blood bank notification", err);
+        showNotification("Could not load blood stock details right now.", "error");
+    }
 }
 
 async function handleDayBeforeRequestConfirm(notificationId, requestId) {
@@ -6420,6 +6538,7 @@ const BRF = {
   requestId: null,
   pollTimer: null,
   lastAutoKey: null,
+  noMatchNoticeShown: false,
 };
  
 /* ─── Entry points ───────────────────────────────────────────────────── */
@@ -6438,6 +6557,9 @@ const BRF = {
  *   stock fallback        → showBloodRequestFlow('bank-found', bankData)
  */
 function showBloodRequestFlow(stage, payload = {}) {
+  if (payload.requestId && payload.requestId !== BRF.requestId) {
+    BRF.noMatchNoticeShown = false;
+  }
   BRF.stage = stage;
   if (payload.requestId) BRF.requestId = payload.requestId;
  
@@ -6453,14 +6575,43 @@ function showBloodRequestFlow(stage, payload = {}) {
     brfStartPolling();
   }
 }
- 
+function brfShowNoMatchNotice(payload = {}) {
+  const modal = document.getElementById('brfNoticeModal');
+  if (!modal) return;
+
+  const titleEl   = document.getElementById('brfNoticeTitle');
+  const msgEl     = document.getElementById('brfNoticeMessage');
+  const detailsEl = document.getElementById('brfNoticeDetails');
+
+  if (titleEl)   titleEl.textContent   = payload.title   || "We couldn't find a donor yet";
+  if (msgEl)     msgEl.textContent     = payload.message || "We apologize for the delay.";
+  if (detailsEl) detailsEl.textContent = payload.details || "Your request stays active while we keep searching.";
+
+  modal.style.display = 'flex';
+}
+
+function brfHideNoMatchNotice() {
+  const modal = document.getElementById('brfNoticeModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function brfViewBloodRequest() {
+  brfHideNoMatchNotice();
+  if (typeof showSection === 'function') {
+    showSection('history');
+    if (typeof switchHistoryTab === 'function') switchHistoryTab('requests');
+    if (typeof showRequestTab === 'function') showRequestTab('active');
+  } else {
+    window.location.href = 'dashboard.html?tab=history';
+  }
+}
+
 function brfClose() {
   document.getElementById('brfModal').style.display = 'none';
   brfStopPolling();
 }
- 
+
 function brfBackdropClick(e) {
-  /* Only close on backdrop, not card — unless stage is a terminal state */
   if (e.target.id === 'brfModal' && ['submitted', 'found', 'bank-found'].includes(BRF.stage)) {
     brfClose();
   }
@@ -6747,15 +6898,15 @@ function brfBankSearching(payload = {}) {
   return `
     <div class="brf-header">
       <div class="brf-icon-wrap">
-        <div class="brf-icon-ring" style="background:rgba(37,99,235,.16)"></div>
-        <div class="brf-icon-circle" style="background:#2563eb">
+        <div class="brf-icon-ring" style="background:rgba(185,28,28,.16)"></div>
+        <div class="brf-icon-circle" style="background:#B91C1C">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 21h18"/><path d="M5 21V7l8-4 6 4v14"/><path d="M9 9h.01"/><path d="M9 12h.01"/><path d="M9 15h.01"/><path d="M15 9h.01"/><path d="M15 12h.01"/>
+            <path d="M12 22s7-4.35 7-11a7 7 0 10-14 0c0 6.65 7 11 7 11z"/>
+            <path d="M9.5 9.5h5"/><path d="M10 13h4"/>
           </svg>
         </div>
       </div>
-      <h2 class="brf-title">No donor yet, checking blood banks</h2>
-      <p class="brf-sub">All nearby donor tiers have been alerted. We are now checking central blood bank stock and nearby hospitals for available units.</p>
+      <p class="brf-sub">All donor tiers are complete, so we are now checking the central blood bank and nearby hospitals for available stock.</p>
     </div>
 
     <div style="padding:0 1.75rem">
@@ -6765,15 +6916,21 @@ function brfBankSearching(payload = {}) {
       ${brfStep('active','4','Searching blood banks','Checking central blood bank and hospital stock')}
     </div>
 
+    <div style="margin:1rem 1.75rem 0;padding:.95rem 1rem;background:linear-gradient(135deg,#fff1f2,#fff);border:1px solid #fecdd3;border-radius:14px;">
+      <p style="font-size:.8rem;color:#be123c;line-height:1.55;margin:0">
+        No compatible donor responded yet. We’re continuing the search automatically and will update you the moment a match or stock source is found.
+      </p>
+    </div>
+
     <div class="brf-stats">
       <div class="brf-stat"><div class="brf-stat-val">${totalDonorsAlerted}</div><div class="brf-stat-lbl">Donors alerted</div></div>
       <div class="brf-stat"><div class="brf-stat-val">4/4</div><div class="brf-stat-lbl">Tiers finished</div></div>
-      <div class="brf-stat"><div class="brf-stat-val">Live</div><div class="brf-stat-lbl">Stock check</div></div>
+      <div class="brf-stat"><div class="brf-stat-val">Live</div><div class="brf-stat-lbl">Still searching</div></div>
     </div>
 
     <div style="padding:.7rem 1.75rem 0;text-align:center">
       <div class="brf-spinner"></div>
-      <p style="font-size:.78rem;color:#999;margin:.45rem 0 0">We will update this screen as soon as stock is confirmed in a blood bank or hospital.</p>
+      <p style="font-size:.78rem;color:#999;margin:.45rem 0 0">We’ll update this screen as soon as a donor, blood bank, or nearby hospital match is confirmed.</p>
     </div>
 
     <div class="brf-actions" style="padding-top:1rem">
@@ -6804,6 +6961,13 @@ function brfBankFound(payload = {}) {
             <div class="brf-donor-meta" style="margin-top:4px">
               ${src.location || 'Location available from dashboard'}
             </div>
+            ${(src.contactPhone || src.contactEmail) ? `
+              <div class="brf-donor-meta" style="margin-top:4px">
+                ${src.contactPhone ? `Contact: ${src.contactPhone}` : ''}
+                ${src.contactPhone && src.contactEmail ? ' · ' : ''}
+                ${src.contactEmail ? src.contactEmail : ''}
+              </div>
+            ` : ''}
           </div>
           <div class="brf-donor-badge"
                style="background:${src.kind === 'bank' ? '#2563eb' : '#0891b2'}">
@@ -6913,6 +7077,7 @@ function brfBuildStockSources(esc = {}, statusData = {}) {
   const sources = [];
   const bloodType = statusData?.blood_type || '—';
   const bankUnits = Number(esc?.stock_check?.blood_bank_units || 0);
+  const bloodBankContact = esc?.stock_check?.blood_bank_contact || {};
 
   if (bankUnits > 0) {
     sources.push({
@@ -6921,6 +7086,8 @@ function brfBuildStockSources(esc = {}, statusData = {}) {
       units: bankUnits,
       bloodType,
       location: 'Central stock pool',
+      contactPhone: bloodBankContact.contact_phone || '',
+      contactEmail: bloodBankContact.contact_email || '',
     });
   }
 
@@ -6934,6 +7101,8 @@ function brfBuildStockSources(esc = {}, statusData = {}) {
         units,
         bloodType,
         location: details?.district || 'Hospital stock available',
+        contactPhone: details?.contact_phone || '',
+        contactEmail: details?.contact_email || '',
       });
     }
   });
@@ -7033,6 +7202,21 @@ async function brfPollEscalation() {
       });
       return;
     }
+
+    if (statusData.no_match_found) {
+      brfStopPolling();
+      brfClose();
+
+      if (!BRF.noMatchNoticeShown) {
+        BRF.noMatchNoticeShown = true;
+        brfShowNoMatchNotice({
+          title: "We couldn't find a donor yet",
+          message: statusData.final_message || "We apologize for the delay.",
+          details: "Your request stays active while we keep searching in the background.",
+        });
+      }
+      return;
+    }
  
     /* Check tier escalation progress */
     const escRes = await fetch(
@@ -7066,12 +7250,35 @@ async function brfPollEscalation() {
     }
 
     if (brfAllDonorTiersCompleted(esc)) {
-      showBloodRequestFlow('bank-searching', {
-        requestId: BRF.requestId,
-        totalDonorsAlerted: esc.total_donors_alerted || (t1 + t2 + t3 + t4),
-      });
-      return;
+    const stockSources = brfBuildStockSources(esc, statusData);
+    
+    if (stockSources.length > 0) {
+        brfStopPolling();
+        showBloodRequestFlow('bank-found', {
+            requestId: BRF.requestId,
+            bloodType: statusData?.blood_type || '—',
+            totalUnits: stockSources.reduce((s, x) => s + (x.units || 0), 0),
+            sources: stockSources,
+        });
+        return;
     }
+
+    // All tiers done, no stock found
+    // Keep polling until the backend confirms no stock was found.
+    showBloodRequestFlow('bank-searching', {
+        totalDonorsAlerted: t1 + t2 + t3 + t4,
+    });
+
+    if (false && !BRF.noMatchNoticeShown) {
+        BRF.noMatchNoticeShown = true; 
+        brfShowNoMatchNotice({
+            title: "We couldn't find a donor yet",
+            message: "We apologize for the delay. All donor tiers have been completed. We're checking blood bank and hospital stock.",
+            details: "Your request stays active while we keep searching in the background.",
+        });
+    }
+    return;
+}
 
     showBloodRequestFlow('searching', { currentTier, t1, t2, t3, t4, total: t1+t2+t3+t4 });
 
@@ -7328,8 +7535,61 @@ async function brfPollEscalation() {
 <div id="brfModal" class="brf-backdrop" style="display:none;" onclick="brfBackdropClick(event)">
   <div class="brf-card" id="brfCard"></div>
 </div>
+<div id="brfNoticeModal" class="fixed inset-0 z-[10000] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4" onclick="if(event.target.id==='brfNoticeModal') brfHideNoMatchNotice()">
+  <div class="w-full max-w-md overflow-hidden rounded-3xl border border-red-200 bg-white shadow-2xl">
+    <div class="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-5 text-white">
+      <div class="flex items-center gap-3">
+        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
+          <i class="fas fa-heart-crack text-xl"></i>
+        </div>
+        <div>
+          <h3 id="brfNoticeTitle" class="text-xl font-bold">We couldn't find a donor yet</h3>
+          <p class="text-sm text-red-100 mt-1">We’re still trying to help.</p>
+        </div>
+      </div>
+    </div>
+    <div class="px-6 py-5">
+      <p id="brfNoticeMessage" class="text-gray-700 leading-6">We apologize for the delay.</p>
+      <div class="mt-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-4">
+        <p id="brfNoticeDetails" class="text-sm text-red-800 leading-6">Your request stays active while we continue searching in the background.</p>
+      </div>
+    </div>
+    <div class="flex justify-end gap-3 border-t border-gray-100 bg-gray-50 px-6 py-4">
+      <button onclick="brfViewBloodRequest()" class="rounded-xl border border-red-200 bg-white px-5 py-2.5 font-semibold text-red-700 hover:bg-red-50">View Blood Request</button>
+      <button onclick="brfHideNoMatchNotice()" class="rounded-xl bg-red-600 px-5 py-2.5 font-semibold text-white hover:bg-red-700">OK</button>
+    </div>
+  </div>
+</div><div id="brfNoticeModal" 
+     class="fixed inset-0 z-[10000] items-center justify-center bg-black/60 backdrop-blur-sm p-4" 
+     style="display:none;"
+     onclick="if(event.target.id==='brfNoticeModal') brfHideNoMatchNotice()">
+  <div class="w-full max-w-md overflow-hidden rounded-3xl border border-red-200 bg-white shadow-2xl">
+    <div class="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-5 text-white">
+      <div class="flex items-center gap-3">
+        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
+          <i class="fas fa-heart-crack text-xl"></i>
+        </div>
+        <div>
+          <h3 id="brfNoticeTitle" class="text-xl font-bold">We couldn't find a donor yet</h3>
+          <p class="text-sm text-red-100 mt-1">We're still trying to help.</p>
+        </div>
+      </div>
+    </div>
+    <div class="px-6 py-5">
+      <p id="brfNoticeMessage" class="text-gray-700 leading-6">We apologize for the delay.</p>
+      <div class="mt-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-4">
+        <p id="brfNoticeDetails" class="text-sm text-red-800 leading-6">Your request stays active while we continue searching in the background.</p>
+      </div>
+    </div>
+    <div class="flex justify-end gap-3 border-t border-gray-100 bg-gray-50 px-6 py-4">
+      <button onclick="brfViewBloodRequest()" class="rounded-xl border border-red-200 bg-white px-5 py-2.5 font-semibold text-red-700 hover:bg-red-50">View Blood Request</button>
+      <button onclick="brfHideNoMatchNotice()" class="rounded-xl bg-red-600 px-5 py-2.5 font-semibold text-white hover:bg-red-700">OK</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
+
 
 
 

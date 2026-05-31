@@ -450,47 +450,6 @@
           </div>
         </div>
 
-        <div class="bg-white p-4 rounded-xl shadow flex flex-wrap gap-3 items-center">
-          <p class="text-sm font-medium text-gray-700">Overview Filters:</p>
-          <select id="overviewDaysFilter" class="border p-2 rounded text-sm" onchange="loadOverviewData()">
-            <option value="7">Last 7 days</option>
-            <option value="30">Last 30 days</option>
-            <option value="90">Last 90 days</option>
-            <option value="all">All time</option>
-          </select>
-          <select id="overviewRequestStatusFilter" class="border p-2 rounded text-sm" onchange="loadOverviewData()">
-            <option value="all">All request statuses</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-            <option value="completed">Completed</option>
-          </select>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div class="bg-white p-6 rounded-xl shadow">
-            <h3 class="text-lg font-semibold mb-4">Blood Stock Overview</h3>
-            <canvas id="stockChart" height="250"></canvas>
-          </div>
-          <div class="bg-white p-6 rounded-xl shadow">
-            <h3 class="text-lg font-semibold mb-4">Recent Activity</h3>
-            <div id="recentActivity" class="space-y-3">
-              <!-- dynamic -->
-            </div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div class="bg-white p-6 rounded-xl shadow">
-            <h3 class="text-lg font-semibold mb-4">Request Status Distribution</h3>
-            <canvas id="requestStatusChart" height="260"></canvas>
-          </div>
-          <div class="bg-white p-6 rounded-xl shadow">
-            <h3 class="text-lg font-semibold mb-4">Request Urgency Breakdown</h3>
-            <canvas id="requestUrgencyChart" height="260"></canvas>
-          </div>
-        </div>
-
         <div class="bg-white p-6 rounded-xl shadow">
           <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -516,6 +475,57 @@
             </button>
           </div>
         </div>
+
+        <div class="bg-white p-4 rounded-xl shadow flex flex-wrap gap-3 items-center">
+          <p class="text-sm font-medium text-gray-700">Overview Filters:</p>
+          <select id="overviewDaysFilter" class="border p-2 rounded text-sm" onchange="loadOverviewData()">
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="all">All time</option>
+          </select>
+          <select id="overviewRequestStatusFilter" class="border p-2 rounded text-sm" onchange="loadOverviewData()">
+            <option value="all">All request statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <h3 class="text-lg font-semibold">Blood Stock Overview</h3>
+              <select id="overviewStockTypeFilter" class="border p-2 rounded text-sm" onchange="applyOverviewStockFilter()">
+                <option value="all">All Blood Types</option>
+                <option value="A+">A+</option><option value="A-">A-</option>
+                <option value="B+">B+</option><option value="B-">B-</option>
+                <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                <option value="O+">O+</option><option value="O-">O-</option>
+              </select>
+            </div>
+            <canvas id="stockChart" height="250"></canvas>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow">
+            <h3 class="text-lg font-semibold mb-4">Recent Activity</h3>
+            <div id="recentActivity" class="space-y-3">
+              <!-- dynamic -->
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow">
+            <h3 class="text-lg font-semibold mb-4">Request Status Distribution</h3>
+            <canvas id="requestStatusChart" height="260"></canvas>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow">
+            <h3 class="text-lg font-semibold mb-4">Request Urgency Breakdown</h3>
+            <canvas id="requestUrgencyChart" height="260"></canvas>
+          </div>
+        </div>
+
       </section>
 
       <!-- ================= BLOOD REQUEST ================= -->
@@ -976,6 +986,34 @@
               </div>
             </div>
 
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
+              <h3 class="text-xl font-bold mb-6 flex items-center">
+                <i class="fas fa-pen-to-square text-red-600 mr-3"></i> Editable Profile Details
+              </h3>
+              <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium mb-1">Hospital Name</label>
+                  <input id="profileName" class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Hospital ID</label>
+                  <input id="profileHospitalIdField" class="w-full border p-3 rounded bg-gray-100 text-gray-600" readonly />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Email</label>
+                  <input id="profileEmail" type="email" class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Phone</label>
+                  <input id="profilePhone" class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent" />
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium mb-1">Address</label>
+                  <input id="profileAddress" class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent" />
+                </div>
+              </div>
+            </div>
+
             <div class="bg-white p-6 rounded-xl shadow-lg">
   <h3 class="text-xl font-bold mb-6 flex items-center">
     <i class="fas fa-info-circle text-red-600 mr-3"></i> Hospital Information
@@ -1145,11 +1183,13 @@
   let rawStockData = [];
   let overviewRequestsData = [];
   let requestsData = [];
-  let showMatchedDonors = false;
-  let stockChartInstance = null;
+	  let showMatchedDonors = false;
+	  let stockChartInstance = null;
+	  let overviewStockByTypeData = {};
   let stockDistributionChartInstance = null;
   let stockMinCompareChartInstance = null;
   let shownHospitalPopupKeys = new Set();
+  let shownNoMatchEscalationModal = new Set();
   let requestStatusChartInstance = null;
   let requestUrgencyChartInstance = null;
   
@@ -1352,10 +1392,9 @@ function isDonorAvailable(donor) {
       document.getElementById('profilePendingStat').textContent = data.pending_requests || 0;
       document.getElementById('profileDonationStat').textContent = data.completed_requests || 0;
       
-      // Update stock chart
-      if (data.stock_by_type) {
-        updateStockChart(data.stock_by_type);
-      }
+      // Update stock chart with overview filter support
+      overviewStockByTypeData = data.stock_by_type || {};
+      applyOverviewStockFilter();
 
       // Show backend-driven stock scarcity/expiry popups
       maybeShowBackendStockPopups(data);
@@ -1671,6 +1710,22 @@ function updateStockDistributionChart(stock) {
   });
 }
 
+function applyOverviewStockFilter() {
+  const typeFilter = document.getElementById('overviewStockTypeFilter')?.value || 'all';
+  const source = overviewStockByTypeData || {};
+
+  if (typeFilter === 'all') {
+    updateStockChart(source);
+    return;
+  }
+
+  const filtered = {};
+  if (source[typeFilter] !== undefined) {
+    filtered[typeFilter] = source[typeFilter];
+  }
+  updateStockChart(filtered);
+}
+
 function updateStockMinCompareChart(stock) {
   const canvas = document.getElementById('stockMinCompareChart');
   if (!canvas) return;
@@ -1866,11 +1921,11 @@ function updateRequestsTable(requests) {
       if (request.status === "approved") {
         actionsHtml += `
           <button onclick="confirmDonorReceipt(${request.id})"
-            class="mt-2 w-full px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700">
+            class="mt-2 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">
             Donor Fulfilled (OTP)
           </button>
           <button onclick="confirmBankStockFulfillment(${request.id})"
-            class="mt-2 w-full px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+            class="mt-2 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
             Blood Bank/Hospital Fulfilled
           </button>
         `;
@@ -2306,6 +2361,7 @@ function renderDonorTierStatus(esc, requestId) {
   const ownName = (hospitalData?.name || '').trim().toLowerCase();
   const hospitalStockRows = Object.entries(hospitalStockMap)
     .filter(([name]) => (name || '').trim().toLowerCase() !== ownName);
+  const noMatchFound = !!esc?.no_match_found;
 
   box.classList.remove('hidden');
   box.innerHTML = `
@@ -2347,8 +2403,17 @@ function renderDonorTierStatus(esc, requestId) {
           Stock details will appear after all donor tiers are completed.
         </div>
       `}
+      ${noMatchFound ? `
+        <div class="mt-3 p-3 rounded-lg border border-red-200 bg-red-50 text-sm text-red-700">
+          We tried all donor tiers and stock checks for request #${requestId}, but no donor or stock was found yet.
+        </div>
+      ` : ``}
     </div>
   `;
+
+  if (noMatchFound && !shownNoMatchEscalationModal.has(requestId)) {
+    shownNoMatchEscalationModal.add(requestId);
+  }
 }
 
   async function loadStockHistory() {
@@ -2552,11 +2617,23 @@ function renderDonorTierStatus(esc, requestId) {
 
   async function removeBloodStock() {
   const bloodType = document.getElementById('removeBloodType').value;
-  const units = document.getElementById('removeUnits').value;
+  const unitsRaw = document.getElementById('removeUnits').value;
   const reason = document.getElementById('removeReason').value;
+  const units = Number(unitsRaw);
 
-  if (!bloodType || !units || units < 1) {
-    showStatusModal('Invalid Input', 'Please fill in all required fields correctly.', 'error');
+  if (!bloodType || !Number.isFinite(units) || units <= 0 || !Number.isInteger(units)) {
+    showStatusModal('Invalid Input', 'Please enter a valid positive whole number of units.', 'error');
+    return;
+  }
+
+  const stockItem = (rawStockData || []).find(s => s.blood_type === bloodType);
+  const availableUnits = Number(stockItem?.units || 0);
+  if (availableUnits <= 0) {
+    showStatusModal('No Stock Available', `No ${bloodType} units available to remove.`, 'error');
+    return;
+  }
+  if (units > availableUnits) {
+    showStatusModal('Insufficient Stock', `You only have ${availableUnits} unit(s) of ${bloodType}.`, 'error');
     return;
   }
 
@@ -2571,7 +2648,7 @@ function renderDonorTierStatus(esc, requestId) {
       headers: authHeaders(),
       body: JSON.stringify({
         blood_type: bloodType,
-        units: parseInt(units),
+        units: units,
         reason: reason,
         notes: "Removed via hospital dashboard"
       })
@@ -2596,7 +2673,7 @@ function renderDonorTierStatus(esc, requestId) {
   }
 }
 
-  async function showRequestDetails(requestId) {
+  async function showRequestDetails(requestId, options = {}) {
     const request = requestsData.find(r => r.id === requestId);
     if (!request) return;
 
@@ -2624,10 +2701,26 @@ function renderDonorTierStatus(esc, requestId) {
     const ownHospitalName = (hospitalData?.name || '').trim().toLowerCase();
     const hospitalStockRows = Object.entries(hospitalStockMap)
       .filter(([name]) => (name || '').trim().toLowerCase() !== ownHospitalName);
+    const noMatchFound = !!options.noMatch || !!escalation?.no_match_found;
 
     const content = document.getElementById('requestDetailsContent');
     content.innerHTML = `
       <div class="space-y-4">
+        ${noMatchFound ? `
+        <div class="rounded-2xl border border-red-200 bg-gradient-to-r from-red-50 to-rose-50 px-4 py-4">
+          <div class="flex items-start gap-3">
+            <div class="w-11 h-11 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-user-slash"></i>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-red-800">No donor or stock found</p>
+              <p class="text-sm text-red-700 mt-1">
+                We completed all donor tiers and stock checks for this request, but no match was found yet.
+              </p>
+            </div>
+          </div>
+        </div>
+        ` : ''}
         <div class="grid grid-cols-2 gap-4">
           <div>
             <p class="text-sm text-gray-600">Patient Name</p>
@@ -2700,17 +2793,27 @@ function renderDonorTierStatus(esc, requestId) {
               <div class="text-sm text-gray-600">
                 Total donors alerted: <span class="font-semibold text-gray-900">${escalation.total_donors_alerted || 0}</span>
               </div>
-              ${tiers.map(t => `
-                <div class="p-3 rounded-lg border ${t.data?.completed ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}">
-                  <div class="flex items-center justify-between">
-                    <p class="font-medium">${t.name}</p>
-                    <span class="text-xs px-2 py-1 rounded ${t.data?.completed ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
-                      ${t.data?.completed ? 'Completed' : 'In Progress'}
+              ${tiers.map((t, index) => {
+                const notified = t.data?.donors_notified || 0;
+                const isDone = !!t.data?.completed;
+                const progress = isDone ? 100 : (notified > 0 ? 100 : 0);
+                return `
+                <div class="p-4 rounded-xl border ${isDone ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}">
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <p class="font-semibold text-gray-900">${t.name}</p>
+                      <p class="text-xs text-gray-500 mt-0.5">Tier ${index + 1} donor search</p>
+                    </div>
+                    <span class="text-xs px-2 py-1 rounded-full ${isDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                      ${isDone ? 'Completed' : 'In Progress'}
                     </span>
                   </div>
-                  <p class="text-sm text-gray-600 mt-1">Donors notified: ${t.data?.donors_notified || 0}</p>
-                </div>
-              `).join('')}
+                  <div class="mt-3 h-2 rounded-full bg-gray-200 overflow-hidden">
+                    <div class="h-full rounded-full ${isDone ? 'bg-green-500' : 'bg-yellow-400'}" style="width:${progress}%"></div>
+                  </div>
+                  <p class="text-sm text-gray-600 mt-2">Donors notified: <span class="font-semibold text-gray-900">${notified}</span></p>
+                </div>`;
+              }).join('')}
             </div>
           ` : `
             <p class="text-sm text-gray-500">Escalation details are not available yet.</p>
@@ -2727,16 +2830,24 @@ function renderDonorTierStatus(esc, requestId) {
                     Blood bank units found:
                     <span class="font-semibold">${stockCheck.blood_bank_units || 0}</span>
                   </p>
+                  <p class="text-xs text-blue-600 mt-1">
+                    ${stockCheck.blood_bank_contact?.contact_phone ? `Contact: ${stockCheck.blood_bank_contact.contact_phone}` : 'Contact: N/A'}
+                    ${stockCheck.blood_bank_contact?.contact_email ? ` · ${stockCheck.blood_bank_contact.contact_email}` : ''}
+                  </p>
                 </div>
                 <div class="p-3 rounded-lg border border-gray-200 bg-gray-50">
                   <p class="text-sm font-medium mb-2">Other hospitals stock:</p>
                   ${hospitalStockRows.length ? `
                     <div class="space-y-2">
                       ${hospitalStockRows.map(([name, info]) => `
-                        <div class="flex items-center justify-between bg-white border rounded p-2">
+                        <div class="flex items-center justify-between bg-white border rounded p-2 gap-3">
                           <div>
                             <p class="font-medium text-sm">${name}</p>
                             <p class="text-xs text-gray-500">${info?.district || 'District N/A'}</p>
+                            <p class="text-xs text-gray-500">
+                              ${info?.contact_phone ? `Contact: ${info.contact_phone}` : 'Contact: N/A'}
+                              ${info?.contact_email ? ` · ${info.contact_email}` : ''}
+                            </p>
                           </div>
                           <div class="text-sm font-semibold text-red-600">${info?.units || 0} units</div>
                         </div>
@@ -2982,17 +3093,20 @@ function renderDonorTierStatus(esc, requestId) {
     const nameDisplay = document.getElementById("profileNameDisplay");
     if (nameDisplay) nameDisplay.textContent = data.name || "N/A";
 
-    const hospitalId = document.getElementById("profileHospitalId");
-    if (hospitalId) hospitalId.textContent = data.hospital_id || "-";
+    const hospitalId = document.getElementById("profileHospitalIdField");
+    if (hospitalId) hospitalId.value = data.hospital_id || "-";
 
     const email = document.getElementById("profileEmail");
-    if (email) email.textContent = data.email || "-";
+    if (email) email.value = data.email || "";
 
     const phone = document.getElementById("profilePhone");
-    if (phone) phone.textContent = data.contact_number || "-";
+    if (phone) phone.value = data.contact_number || "";
 
     const address = document.getElementById("profileAddress");
-    if (address) address.textContent = data.address || "-";
+    if (address) address.value = data.address || "";
+
+    const editableName = document.getElementById("profileName");
+    if (editableName) editableName.value = data.name || "";
 
     document.getElementById("profileRegistrationNumber").textContent =
       data.registration_number || "-";
@@ -3106,8 +3220,11 @@ async function loadHospitalNotifications() {
 
     data.forEach(n => {
       const rowClass = n.is_read ? "bg-white" : "bg-blue-50";
-      const clickTarget = (n.type === "blood_request_approved" && n.request_id)
-        ? `onclick="handleHospitalNotificationClick(${n.id}, ${n.request_id})"`
+      const clickTarget = (
+        (n.type === "blood_request_approved" || n.type === "blood_request_failed" || n.type === "system_alert")
+        && n.request_id
+      )
+        ? `onclick="handleHospitalNotificationClick(${n.id}, ${n.request_id}, '${n.type || ""}')"`
         : `onclick="markHospitalNotificationRead(${n.id})"`;
 
       container.innerHTML += `
@@ -3152,12 +3269,16 @@ async function markAllHospitalNotificationsRead() {
     console.error("Failed to mark all notifications read", err);
   }
 }
-async function handleHospitalNotificationClick(notificationId, requestId) {
+async function handleHospitalNotificationClick(notificationId, requestId, notificationType = "") {
   await markHospitalNotificationRead(notificationId);
   if (requestId) {
     await openDonorMatch(requestId);
     const box = document.getElementById("notificationBox");
     box.classList.add("hidden");
+  }
+  const nType = (notificationType || "").toLowerCase();
+  if (nType === "blood_request_failed" || nType === "system_alert") {
+    await showRequestDetails(requestId, { noMatch: true });
   }
 }
 function toggleNotifications(){
@@ -3237,6 +3358,7 @@ function renderDonorTierStatus(esc, requestId) {
   const hospitalStockRows = Object.entries(hospitalStockMap)
     .filter(([name]) => (name || '').trim().toLowerCase() !== ownHospitalName);
   const hospitalsFound = hospitalStockRows.length;
+  const noMatchFound = !!esc?.no_match_found;
 
   box.classList.remove('hidden');
   box.innerHTML = `
@@ -3261,12 +3383,20 @@ function renderDonorTierStatus(esc, requestId) {
           <p class="text-xs text-blue-900">
             Blood bank units found: <b>${bankUnits}</b> | Other hospitals with stock: <b>${hospitalsFound}</b>
           </p>
+          <p class="text-xs text-blue-700 mt-1">
+            ${stockCheck?.blood_bank_contact?.contact_phone ? `Central blood bank contact: ${stockCheck.blood_bank_contact.contact_phone}` : 'Central blood bank contact: N/A'}
+            ${stockCheck?.blood_bank_contact?.contact_email ? ` · ${stockCheck.blood_bank_contact.contact_email}` : ''}
+          </p>
           <div class="mt-2 space-y-2 max-h-44 overflow-y-auto pr-1">
             ${hospitalStockRows.length ? hospitalStockRows.map(([name, info]) => `
-              <div class="flex items-center justify-between rounded border border-gray-200 bg-gray-50 p-2">
+              <div class="flex items-center justify-between rounded border border-gray-200 bg-gray-50 p-2 gap-3">
                 <div>
                   <p class="text-xs font-semibold text-gray-800">${name || 'Hospital'}</p>
                   <p class="text-xs text-gray-500">${info?.district || 'District N/A'}</p>
+                  <p class="text-xs text-gray-500">
+                    ${info?.contact_phone ? `Contact: ${info.contact_phone}` : 'Contact: N/A'}
+                    ${info?.contact_email ? ` · ${info.contact_email}` : ''}
+                  </p>
                 </div>
                 <p class="text-xs font-semibold text-red-600">${info?.units || 0} units</p>
               </div>
@@ -3278,8 +3408,17 @@ function renderDonorTierStatus(esc, requestId) {
           Stock details will appear after Tier 1-4 donor search is completed.
         </div>
       `}
+      ${noMatchFound ? `
+        <div class="mt-3 p-3 rounded-lg border border-red-200 bg-red-50 text-sm text-red-700">
+          ${esc?.final_message || "We tried all donor tiers and stock checks, but no donor or stock was found yet."}
+        </div>
+      ` : ``}
     </div>
   `;
+
+  if (noMatchFound && !shownNoMatchEscalationModal.has(requestId)) {
+    shownNoMatchEscalationModal.add(requestId);
+  }
 }
 </script>
 <!-- LOADING OVERLAY -->

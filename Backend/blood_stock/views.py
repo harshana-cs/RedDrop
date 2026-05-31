@@ -11,6 +11,28 @@ from adminpanel.models import HospitalAuditLog   # ✅ ADD
 from django.utils.dateparse import parse_date
 from django.utils import timezone
 from .stock_utils import BLOOD_TYPES, available_units, is_nearing_expiry
+from django.conf import settings
+
+
+def _stock_contact_details(stock):
+    if not stock:
+        return {
+            "contact_phone": getattr(settings, "BLOOD_BANK_CONTACT", ""),
+            "contact_email": getattr(settings, "BLOOD_BANK_EMAIL", ""),
+            "address": "",
+            "district": "",
+            "source_name": "Central Blood Bank",
+        }
+
+    hospital = stock.hospital
+    profile = getattr(hospital, "profile", None) if hospital else None
+    return {
+        "contact_phone": getattr(profile, "contact_number", "") if profile else getattr(settings, "BLOOD_BANK_CONTACT", ""),
+        "contact_email": getattr(profile, "email", "") if profile else getattr(settings, "BLOOD_BANK_EMAIL", ""),
+        "address": getattr(profile, "address", "") if profile else "",
+        "district": getattr(profile, "district", "") if profile else "",
+        "source_name": hospital.name if hospital else "Central Blood Bank",
+    }
 
 
 # ================= BLOOD STOCK =================
@@ -38,6 +60,7 @@ def hospital_blood_stock(request):
             "last_updated": stock.last_updated if stock else None,
             "expired": bool(stock and stock.expiry_date and stock.expiry_date < timezone.localdate()),
             "nearing_expiry": bool(stock and available_units(stock) > 0 and is_nearing_expiry(stock.expiry_date, days=5, today=today)),
+            **_stock_contact_details(stock),
         })
 
     return Response(data, status=200)
@@ -214,6 +237,7 @@ def blood_bank_stock(request):
             "last_updated": stock.last_updated if stock else None,
             "expired": bool(stock and stock.expiry_date and stock.expiry_date < timezone.localdate()),
             "nearing_expiry": bool(stock and available_units(stock) > 0 and is_nearing_expiry(stock.expiry_date, days=5, today=today)),
+            **_stock_contact_details(stock),
         })
 
     return Response(data)
@@ -242,6 +266,7 @@ def admin_combined_stock(request):
             "expiry_date": s.expiry_date,
             "expired": bool(s.expiry_date and s.expiry_date < timezone.localdate()),
             "nearing_expiry": bool(available_units(s) > 0 and is_nearing_expiry(s.expiry_date, days=5, today=timezone.localdate())),
+            **_stock_contact_details(s),
         })
 
     result = []

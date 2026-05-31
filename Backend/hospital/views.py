@@ -769,6 +769,14 @@ def hospital_request_escalation_status(request, request_id):
         defaults={"hospital": hospital}
     )
 
+    stock_found = bool((escalation.blood_bank_units or 0) > 0 or (escalation.hospital_stock_details or {}))
+    no_match_found = bool(
+        escalation.completed_at
+        and not escalation.success
+        and not stock_found
+        and not blood_request.accepted_donor_id
+    )
+
     return Response({
         "request_id": request_id,
         "status": "completed" if escalation.completed_at else "escalating",
@@ -791,8 +799,19 @@ def hospital_request_escalation_status(request, request_id):
         "stock_check": {
             "completed": escalation.blood_bank_checked is not None,
             "blood_bank_units": escalation.blood_bank_units or 0,
+            "blood_bank_contact": {
+                "contact_phone": getattr(settings, "BLOOD_BANK_CONTACT", ""),
+                "contact_email": getattr(settings, "BLOOD_BANK_EMAIL", ""),
+                "source_name": "Central Blood Bank",
+            },
             "hospital_stock": escalation.hospital_stock_details or {},
         },
+        "success": bool(escalation.success),
+        "no_match_found": no_match_found,
+        "final_message": (
+            "We tried all donor tiers and stock checks, but no donor or stock was found yet."
+            if no_match_found else ""
+        ),
         "total_donors_alerted": escalation.total_donors_alerted or 0,
         "completed_at": escalation.completed_at,
     })

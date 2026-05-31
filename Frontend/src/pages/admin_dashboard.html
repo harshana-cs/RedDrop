@@ -363,10 +363,84 @@
 }
 
 /* Modal upgrades */
-#inventorySection #addStockOverlay > div,
-#inventorySection #adjustOverlay > div {
-  border-radius: 20px;
-  box-shadow: var(--shadow-lg);
+
+/* Inventory visual refresh */
+#inventorySection .page { position: relative; isolation: isolate; }
+#inventorySection .page::before {
+  content: "";
+  position: absolute;
+  inset: -18px -8px auto -8px;
+  height: 250px;
+  border-radius: 24px;
+  z-index: -1;
+  background:
+    radial-gradient(1200px 190px at 10% 0%, rgba(226,75,74,.14), transparent 60%),
+    radial-gradient(900px 180px at 90% 0%, rgba(55,138,221,.12), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,.96) 0%, rgba(255,255,255,.6) 100%);
+}
+#inventorySection .page-header {
+  padding: 1.05rem 1.15rem;
+  border: 1px solid rgba(255,255,255,.66);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(121,31,31,.94) 0%, rgba(226,75,74,.88) 54%, rgba(239,159,39,.83) 100%);
+  box-shadow: 0 16px 44px rgba(121,31,31,.22);
+}
+#inventorySection .page-header h1 { color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.18); }
+#inventorySection .page-header p { color: rgba(255,255,255,.92); }
+#inventorySection .hdr-actions .btn {
+  background: rgba(255,255,255,.9);
+  color: #422f2f;
+  border-color: rgba(255,255,255,.64);
+}
+#inventorySection .hdr-actions .btn:hover { background: #fff; }
+#inventorySection .hdr-actions .btn-primary {
+  background: #fff;
+  color: #a01f1f;
+  border-color: #fff;
+}
+#inventorySection .summary-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: .85rem;
+}
+#inventorySection .scard {
+  background: linear-gradient(160deg, #fff 0%, #fdfcfc 56%, #f7f4f4 100%);
+  border-color: #ebe6e6;
+}
+#inventorySection .scard:nth-child(1) { box-shadow: 0 10px 26px rgba(226,75,74,.11); }
+#inventorySection .scard:nth-child(2) { box-shadow: 0 10px 26px rgba(55,138,221,.10); }
+#inventorySection .scard:nth-child(3) { box-shadow: 0 10px 26px rgba(226,75,74,.09); }
+#inventorySection .scard:nth-child(4) { box-shadow: 0 10px 26px rgba(239,159,39,.10); }
+#inventorySection .scard:nth-child(5) { box-shadow: 0 10px 26px rgba(99,153,34,.10); }
+#inventorySection .tabs { background: linear-gradient(180deg, #fff 0%, #f9f7f5 100%); }
+#inventorySection .tab.active { background: linear-gradient(135deg, #e24b4a 0%, #cf3c3b 100%); }
+#inventorySection .filter-bar {
+  border-radius: 16px;
+  background: linear-gradient(160deg, #fff 0%, #faf8f6 100%);
+}
+#inventorySection .filter-bar label {
+  font-weight: 700;
+  color: #7c2a2a;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+#inventorySection .card { background: linear-gradient(170deg, #fff 0%, #fbfaf9 100%); }
+#inventorySection .table-card {
+  border: 1px solid #eae5e5;
+  box-shadow: 0 12px 28px rgba(17,24,39,.06);
+}
+#inventorySection .table-hd { background: linear-gradient(135deg, #fff3f3 0%, #fff8ef 100%); }
+#inventorySection .table-scroll { max-height: 520px; overflow: auto; }
+#inventorySection table thead th { position: sticky; top: 0; z-index: 2; }
+#inventorySection .bt-badge {
+  background: linear-gradient(145deg, #ffe6e6 0%, #ffd4d4 100%);
+  border: 1px solid #f7b8b8;
+}
+#inventorySection .alert { border-left: 5px solid #e24b4a; }
+@media (max-width: 1200px) { #inventorySection .summary-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+  #inventorySection .summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #inventorySection .page-header { padding: .95rem; }
 }
         /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1071,13 +1145,23 @@ nav button span:last-child {
                 </div>
                 <p id="modal-message" class="text-gray-600 mb-6"></p>
                 <div class="flex justify-end space-x-3">
-                    <button onclick="hideModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    <button id="modal-cancel" onclick="hideModal()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
                         Cancel
                     </button>
                     <button id="modal-confirm" onclick="handleModalConfirm()" 
                             class="px-4 py-2 rounded-lg text-white">
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+    <div id="resultModal" class="fixed inset-0 bg-black/50 hidden z-[220] flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
+            <div class="p-6 text-center">
+                <div id="result-icon" class="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center"></div>
+                <h3 id="result-title" class="text-lg font-semibold mb-2"></h3>
+                <p id="result-message" class="text-gray-600 mb-5"></p>
+                <button onclick="hideResultModal()" class="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black">OK</button>
             </div>
         </div>
     </div>
@@ -1536,18 +1620,33 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                 
                 <!-- ================= PROCESSED BLOOD REQUESTS ================= -->
 <div class="mt-10">
-    <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <div>
             <h3 class="text-xl font-bold text-gray-900">Processed Blood Requests</h3>
             <p class="text-gray-600">Approved and rejected blood requests</p>
         </div>
-        <select id="bloodStatusFilter"
-        onchange="filterProcessedBloodRequests()"
-        class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
-    <option value="all">All</option>
-    <option value="approved">Approved</option>
-    <option value="rejected">Rejected</option>
-</select>
+        <div class="flex items-center gap-2">
+            <input id="processedBloodSearch"
+                   type="text"
+                   placeholder="Search patient/hospital"
+                   oninput="filterProcessedBloodRequests()"
+                   class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-56">
+            <input id="processedBloodDateFrom"
+                   type="date"
+                   onchange="filterProcessedBloodRequests()"
+                   class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <input id="processedBloodDateTo"
+                   type="date"
+                   onchange="filterProcessedBloodRequests()"
+                   class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <select id="bloodStatusFilter"
+                    onchange="filterProcessedBloodRequests()"
+                    class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <option value="all">All</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+            </select>
+        </div>
     </div>
 
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -1580,7 +1679,15 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                             <h3 class="text-2xl font-bold text-gray-900">Pending Donor Registrations</h3>
                             <p class="text-gray-600">Review and verify new donor applications</p>
                         </div>
-                        <div class="flex items-center space-x-3">
+                        <div class="flex items-center space-x-3 flex-wrap justify-end">
+                            <input id="pendingDonorDateFrom"
+                                   type="date"
+                                   onchange="filterPendingDonors()"
+                                   class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                            <input id="pendingDonorDateTo"
+                                   type="date"
+                                   onchange="filterPendingDonors()"
+                                   class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
                             <button onclick="exportToCSV('donorRequestsBody', 'donor-registrations.csv')" 
                                     class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center space-x-2">
                                 <i class="ri-download-line"></i>
@@ -1625,7 +1732,31 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                  
 <!-- ================= PROCESSED DONOR REGISTRATIONS ================= -->
 <div class="mt-10">
-    <h3 class="text-xl font-bold text-gray-900 mb-4">Processed Donor Registrations</h3>
+    <div class="flex items-center justify-between mb-4 gap-3 flex-wrap">
+        <h3 class="text-xl font-bold text-gray-900">Processed Donor Registrations</h3>
+        <div class="flex items-center gap-2">
+            <input id="processedDonorSearch"
+                   type="text"
+                   placeholder="Search donor name"
+                   oninput="filterProcessedDonors()"
+                   class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-56">
+            <input id="processedDonorDateFrom"
+                   type="date"
+                   onchange="filterProcessedDonors()"
+                   class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <input id="processedDonorDateTo"
+                   type="date"
+                   onchange="filterProcessedDonors()"
+                   class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <select id="donorProcessedStatusFilter"
+                    onchange="filterProcessedDonors()"
+                    class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <option value="all">All</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+            </select>
+        </div>
+    </div>
 
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
@@ -3513,7 +3644,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                     class="hidden px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 font-medium flex items-center gap-2">
                 <i class="ri-checkbox-circle-line"></i> Mark Complete
             </button>
-            <button onclick="closeDonationDetail()"
+            <button id="donDetailCloseBtn" onclick="closeDonationDetail()"
                     class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 font-medium">
                 Close
             </button>
@@ -3628,6 +3759,7 @@ let bloodTypeChart, requestStatusChart;
             const modalTitle = document.getElementById('modal-title');
             const modalMessage = document.getElementById('modal-message');
             const modalConfirm = document.getElementById('modal-confirm');
+            const modalCancel = document.getElementById('modal-cancel');
             
             const styles = {
                 success: 'bg-green-100 text-green-600',
@@ -3641,6 +3773,9 @@ let bloodTypeChart, requestStatusChart;
             modalMessage.textContent = message;
             modalConfirm.textContent = confirmText;
             modalConfirm.className = `px-4 py-2 rounded-lg text-white ${type === 'error' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`;
+            modalConfirm.disabled = false;
+            modalCancel.disabled = false;
+            modalCancel.classList.remove('opacity-50', 'cursor-not-allowed');
             
             currentAction.callback = confirmCallback;
             modal.classList.remove('hidden');
@@ -3651,12 +3786,57 @@ let bloodTypeChart, requestStatusChart;
             currentAction = { type: '', id: null, data: null, callback: null };
         }
 
-        function handleModalConfirm() {
-            if (currentAction.callback) {
-                currentAction.callback();
+        async function handleModalConfirm() {
+            if (!currentAction.callback) return;
+            const modalConfirm = document.getElementById('modal-confirm');
+            const modalCancel = document.getElementById('modal-cancel');
+            const originalText = modalConfirm.textContent;
+            modalConfirm.disabled = true;
+            modalCancel.disabled = true;
+            modalCancel.classList.add('opacity-50', 'cursor-not-allowed');
+            modalConfirm.innerHTML = `<span class="inline-flex items-center gap-2"><i class="ri-loader-4-line animate-spin"></i>Processing...</span>`;
+            try {
+                await currentAction.callback();
+            } finally {
+                modalConfirm.innerHTML = originalText;
+                hideModal();
             }
-            hideModal();
         }
+
+        function showResultModal(type, title, message) {
+            const modal = document.getElementById('resultModal');
+            const icon = document.getElementById('result-icon');
+            const t = document.getElementById('result-title');
+            const m = document.getElementById('result-message');
+            if (!modal || !icon || !t || !m) return;
+
+            if (type === 'success') {
+                icon.className = 'w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center bg-green-100 text-green-700';
+                icon.innerHTML = '<i class="ri-checkbox-circle-line text-2xl"></i>';
+            } else {
+                icon.className = 'w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center bg-red-100 text-red-700';
+                icon.innerHTML = '<i class="ri-close-circle-line text-2xl"></i>';
+            }
+
+            t.textContent = title;
+            m.textContent = message;
+            modal.classList.remove('hidden');
+        }
+
+       function hideResultModal() {
+    const modal = document.getElementById('resultModal');
+    modal?.classList.add('hidden');
+    // Restore original OK button
+    const btnArea = modal.querySelector('.flex.gap-3.justify-center, button');
+    if (btnArea && btnArea.tagName !== 'BUTTON') {
+        btnArea.outerHTML = `<button onclick="hideResultModal()" class="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black">OK</button>`;
+    }
+}
+
+        // Route legacy browser alerts to the same UI modal for consistent UX.
+        window.alert = function(message) {
+            showResultModal('error', 'Notice', String(message || 'Something went wrong.'));
+        };
 
         function toggleHospitalForm() {
             const form = document.getElementById('hospitalForm');
@@ -4296,8 +4476,8 @@ function setRequestChartType(type) {
     showConfirmModal(
         'success',
         'Approve Blood Request',
-        'Are you sure you want to approve this blood request?',
-        'Approve',
+        'Do you really want to accept this blood request?',
+        'Accept',
         async () => {
             try {
                 const response = await fetch(
@@ -4308,25 +4488,14 @@ function setRequestChartType(type) {
                 const data = await response.json();
 
                 if (response.ok) {
-                    showToast(
-                        'success',
-                        'Request Approved',
-                        'Blood request approved successfully.'
-                    );
-                    loadBloodRequests();
+                    showResultModal('success', 'Accepted', 'Blood request accepted successfully.');
+                    await loadBloodRequests();
+                    await loadProcessedBloodRequests();
                 } else {
-                    showToast(
-                        'error',
-                        'Approval Failed',
-                        data.message || 'Failed to approve request.'
-                    );
+                    showResultModal('error', 'Action Failed', data.message || 'Failed to accept request.');
                 }
             } catch (error) {
-                showToast(
-                    'error',
-                    'Network Error',
-                    'Failed to connect to server.'
-                );
+                showResultModal('error', 'Network Error', 'Failed to connect to server.');
             }
         }
     );
@@ -4337,7 +4506,7 @@ function setRequestChartType(type) {
             showConfirmModal(
                 'error',
                 'Reject Blood Request',
-                'Are you sure you want to reject this blood request? This action cannot be undone.',
+                'Do you really want to reject this blood request?',
                 'Reject Request',
                 () => rejectBloodRequest(id)
             );
@@ -4352,13 +4521,14 @@ function setRequestChartType(type) {
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showToast('success', 'Request Rejected', 'Blood request has been rejected.');
-                    loadBloodRequests();
+                    showResultModal('success', 'Rejected', 'Blood request rejected successfully.');
+                    await loadBloodRequests();
+                    await loadProcessedBloodRequests();
                 } else {
-                    showToast('error', 'Rejection Failed', data.message || 'Failed to reject request.');
+                    showResultModal('error', 'Action Failed', data.message || 'Failed to reject request.');
                 }
             } catch (error) {
-                showToast('error', 'Network Error', 'Failed to connect to server.');
+                showResultModal('error', 'Network Error', 'Failed to connect to server.');
             }
         }
 
@@ -4379,85 +4549,11 @@ function setRequestChartType(type) {
                 const res = await fetch('http://127.0.0.1:8000/api/admin/pending-donor-registrations/');
                 const json = await res.json();
                 
-               if (json.data && json.data.length > 0) {
-    body.innerHTML = '';
-
-    json.data
-        .sort((a, b) => new Date(b.created_on || b.created_at) - new Date(a.created_on || a.created_at))
-        .forEach(d => {
-
-            body.innerHTML += `
-                <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                            <i class="ri-user-line text-blue-600"></i>
-                                        </div>
-                                        <div>
-                                            <p class="font-medium text-gray-900">${d.name}</p>
-                                            <p class="text-sm text-gray-500">ID: ${d.id}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
-                                        ${d.blood_type || 'Unknown'}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <p class="font-medium">${d.phone || '-'}</p>
-                                    <p class="text-sm text-gray-500">${d.email || 'No email'}</p>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex space-x-2">
-                                        ${d.citizenship_id ? 
-                                            `<a href="${API_BASE}${d.citizenship_id}" target="_blank" 
-                                               class="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800">
-                                                <i class="ri-id-card-line"></i>
-                                                <span>Citizenship</span>
-                                            </a>` : 
-                                            '<span class="text-gray-400">-</span>'
-                                        }
-                                        ${d.photo ? 
-                                            `<a href="${API_BASE}${d.photo}" target="_blank" 
-                                               class="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800">
-                                                <i class="ri-image-line"></i>
-                                                <span>Photo</span>
-                                            </a>` : ''
-                                        }
-                                    </div>
-                                </td>
-                               <td class="px-6 py-4">
-    <p class="text-gray-900 font-medium">${timeAgo(d.created_on || d.created_at)}</p>
-    <p class="text-xs text-gray-400">${d.created_on || '-'}</p>
-    <p class="text-xs text-gray-400">${d.age ? `${d.age} years old` : ''}</p>
-</td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center space-x-2">
-                                        <button onclick="approveDonor(${d.id})" 
-                                                class="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 flex items-center space-x-1">
-                                            <i class="ri-check-line"></i>
-                                            <span>Approve</span>
-                                        </button>
-                                        <button onclick="showRejectDonor(${d.id})" 
-                                                class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 flex items-center space-x-1">
-                                            <i class="ri-close-line"></i>
-                                            <span>Reject</span>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>`;
-                    });
-                    
-                    // Update badge count
-                    const badge = document.getElementById('donor-badge');
-                    badge.textContent = json.data.length;
-                    badge.classList.remove('hidden');
-                    
-                    // Update overview count
-                    document.getElementById('pendingDonorsCount').textContent = json.data.length;
-                    
+                if (json.data && json.data.length > 0) {
+                    window._pendingDonors = json.data;
+                    filterPendingDonors();
                 } else {
+                    window._pendingDonors = [];
                     body.innerHTML = `
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center">
@@ -4492,22 +4588,102 @@ function setRequestChartType(type) {
         }
 
         /* ---------- DONOR ACTIONS ---------- */
-        async function approveDonor(id) {
+        function approveDonor(id) {
+            showConfirmModal(
+                'success',
+                'Approve Donor Registration',
+                'Do you really want to accept this donor registration?',
+                'Accept',
+                () => doApproveDonor(id)
+            );
+        }
+
+        function filterPendingDonors() {
+            const body = document.getElementById('donorRequestsBody');
+            const all = (window._pendingDonors || [])
+                .slice()
+                .sort((a, b) => new Date(b.created_on || b.created_at) - new Date(a.created_on || a.created_at));
+            const from = document.getElementById('pendingDonorDateFrom')?.value || '';
+            const to = document.getElementById('pendingDonorDateTo')?.value || '';
+            const fromDate = from ? new Date(from + 'T00:00:00') : null;
+            const toDate = to ? new Date(to + 'T23:59:59') : null;
+
+            const filtered = all.filter(d => {
+                const dt = parseAdminDate(d.created_on || d.created_at);
+                if (!dt) return true;
+                const day = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+                return (!fromDate || day >= fromDate) && (!toDate || day <= toDate);
+            });
+
+            if (!filtered.length) {
+                body.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">No pending donors for selected date range</td></tr>`;
+            } else {
+                body.innerHTML = '';
+                filtered.forEach(d => {
+                    body.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="ri-user-line text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">${d.name}</p>
+                                    <p class="text-sm text-gray-500">ID: ${d.id}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">${d.blood_type || 'Unknown'}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="font-medium">${d.phone || '-'}</p>
+                            <p class="text-sm text-gray-500">${d.email || 'No email'}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex space-x-2">
+                                ${d.citizenship_id ? `<a href="${API_BASE}${d.citizenship_id}" target="_blank" class="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800"><i class="ri-id-card-line"></i><span>Citizenship</span></a>` : '<span class="text-gray-400">-</span>'}
+                                ${d.photo ? `<a href="${API_BASE}${d.photo}" target="_blank" class="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-800"><i class="ri-image-line"></i><span>Photo</span></a>` : ''}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-gray-900 font-medium">${timeAgo(d.created_on || d.created_at)}</p>
+                            <p class="text-xs text-gray-400">${d.created_on || '-'}</p>
+                            <p class="text-xs text-gray-400">${d.age ? `${d.age} years old` : ''}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center space-x-2">
+                                <button onclick="approveDonor(${d.id})" class="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 flex items-center space-x-1"><i class="ri-check-line"></i><span>Approve</span></button>
+                                <button onclick="showRejectDonor(${d.id})" class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 flex items-center space-x-1"><i class="ri-close-line"></i><span>Reject</span></button>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+            }
+
+            const badge = document.getElementById('donor-badge');
+            badge.textContent = filtered.length;
+            badge.classList.toggle('hidden', filtered.length === 0);
+            document.getElementById('pendingDonorsCount').textContent = filtered.length;
+        }
+
+        async function doApproveDonor(id) {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/api/admin/donor/${id}/approve/`, { 
-                    method: "POST" 
+                const response = await fetch(`http://127.0.0.1:8000/api/admin/donor/${id}/approve/`, {
+                    method: "POST"
                 });
 
                 const data = await response.json();
-                
+
                 if (response.ok) {
-                    showToast('success', 'Donor Approved', 'Donor registration has been approved successfully.');
-                    loadDonors();
+                    showResultModal('success', 'Accepted', 'Donor registration accepted successfully.');
+                    await loadDonors();
+                    await loadProcessedDonors();
                 } else {
-                    showToast('error', 'Approval Failed', data.message || 'Failed to approve donor.');
+                    showResultModal('error', 'Action Failed', data.message || 'Failed to accept donor.');
                 }
             } catch (error) {
-                showToast('error', 'Network Error', 'Failed to connect to server.');
+                showResultModal('error', 'Network Error', 'Failed to connect to server.');
             }
         }
 
@@ -4515,7 +4691,7 @@ function setRequestChartType(type) {
             showConfirmModal(
                 'error',
                 'Reject Donor Registration',
-                'Are you sure you want to reject this donor registration? This action cannot be undone.',
+                'Do you really want to reject this donor registration?',
                 'Reject Donor',
                 () => rejectDonor(id)
             );
@@ -4530,13 +4706,14 @@ function setRequestChartType(type) {
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showToast('success', 'Donor Rejected', 'Donor registration has been rejected.');
-                    loadDonors();
+                    showResultModal('success', 'Rejected', 'Donor registration rejected successfully.');
+                    await loadDonors();
+                    await loadProcessedDonors();
                 } else {
-                    showToast('error', 'Rejection Failed', data.message || 'Failed to reject donor.');
+                    showResultModal('error', 'Action Failed', data.message || 'Failed to reject donor.');
                 }
             } catch (error) {
-                showToast('error', 'Network Error', 'Failed to connect to server.');
+                showResultModal('error', 'Network Error', 'Failed to connect to server.');
             }
         }
 
@@ -5052,12 +5229,23 @@ function renderProcessedBloodRequests(data) {
     }).join('');
 }
 function filterProcessedBloodRequests() {
-    const status = document.getElementById("bloodStatusFilter").value;
+    const status = document.getElementById("bloodStatusFilter")?.value || "all";
+    const query = (document.getElementById("processedBloodSearch")?.value || "").toLowerCase().trim();
+    const from = document.getElementById("processedBloodDateFrom")?.value || "";
+    const to = document.getElementById("processedBloodDateTo")?.value || "";
     const all    = window._processedBloodRequests || [];
 
-    const filtered = status === "all"
-        ? all
-        : all.filter(r => r.status === status);
+    const filtered = all.filter(r => {
+        const statusOk = status === "all" ? true : r.status === status;
+        const dt = parseAdminDate(r.processed_at || r.processed_on);
+        const day = dt ? new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()) : null;
+        const fromDate = from ? new Date(from + "T00:00:00") : null;
+        const toDate = to ? new Date(to + "T23:59:59") : null;
+        const dateOk = !day || ((!fromDate || day >= fromDate) && (!toDate || day <= toDate));
+        if (!query) return statusOk && dateOk;
+        const hay = `${r.patient_name || ""} ${r.hospital || ""}`.toLowerCase();
+        return statusOk && dateOk && hay.includes(query);
+    });
 
     renderProcessedBloodRequests(filtered);
 }
@@ -5070,31 +5258,60 @@ async function loadProcessedDonors() {
         const json = await res.json();
 
         if (json.data && json.data.length) {
-            body.innerHTML = "";
-            json.data.forEach(d => {
-                const statusClass = d.status === "approved"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700";
-
-                body.innerHTML += `
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 font-medium">${d.name}</td>
-                        <td class="px-6 py-4">${d.blood_type}</td>
-                        <td class="px-6 py-4">
-                            <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
-                                ${d.status.toUpperCase()}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-gray-500">${d.processed_on}</td>
-                    </tr>
-                `;
-            });
+            window._processedDonors = json.data;
+            filterProcessedDonors();
         } else {
+            window._processedDonors = [];
             body.innerHTML = `<tr><td colspan="4" class="px-6 py-6 text-center text-gray-500">No records</td></tr>`;
         }
     } catch {
         body.innerHTML = `<tr><td colspan="4" class="px-6 py-6 text-center text-red-600">Failed to load</td></tr>`;
     }
+}
+
+function filterProcessedDonors() {
+    const body = document.getElementById("processedDonorsBody");
+    const all = window._processedDonors || [];
+    const status = document.getElementById("donorProcessedStatusFilter")?.value || "all";
+    const query = (document.getElementById("processedDonorSearch")?.value || "").toLowerCase().trim();
+    const from = document.getElementById("processedDonorDateFrom")?.value || "";
+    const to = document.getElementById("processedDonorDateTo")?.value || "";
+
+    const filtered = all.filter(d => {
+        const statusOk = status === "all" ? true : d.status === status;
+        const searchOk = !query ? true : `${d.name || ""}`.toLowerCase().includes(query);
+        const dt = parseAdminDate(d.processed_at || d.processed_on);
+        const day = dt ? new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()) : null;
+        const fromDate = from ? new Date(from + "T00:00:00") : null;
+        const toDate = to ? new Date(to + "T23:59:59") : null;
+        const dateOk = !day || ((!fromDate || day >= fromDate) && (!toDate || day <= toDate));
+        return statusOk && searchOk && dateOk;
+    });
+
+    if (!filtered.length) {
+        body.innerHTML = `<tr><td colspan="4" class="px-6 py-6 text-center text-gray-500">No records found</td></tr>`;
+        return;
+    }
+
+    body.innerHTML = "";
+    filtered.forEach(d => {
+        const statusClass = d.status === "approved"
+            ? "bg-green-100 text-green-700"
+            : "bg-red-100 text-red-700";
+
+        body.innerHTML += `
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 font-medium">${d.name}</td>
+                <td class="px-6 py-4">${d.blood_type}</td>
+                <td class="px-6 py-4">
+                    <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
+                        ${d.status.toUpperCase()}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-gray-500">${d.processed_on}</td>
+            </tr>
+        `;
+    });
 }
 /* ---------- LOAD ACTIVE HOSPITALS ---------- */
 async function loadHospitals() {
@@ -5338,6 +5555,8 @@ list.innerHTML += `
 
 </div>
 `;
+        // No-donor notifications are handled when opened from the list,
+        // so the dashboard does not spam an automatic modal on every refresh.
 });
 
         if (data.unread > 0) {
@@ -5411,13 +5630,29 @@ async function handleNotificationClick(id, type, donationId = null) {
 
     type = (type || "").trim().toLowerCase();
     const donationTypes = new Set(["completed", "donation_complete", "donation_approved", "request_completed"]);
-    const bloodTypes = new Set(["blood_request", "blood", "request_approved", "request_rejected"]);
+    const bloodTypes = new Set(["blood_request", "blood", "request_approved", "request_rejected", "blood_request_failed"]);
     const donorTypes = new Set(["donor_registration", "donor", "donor_accept", "donation_otp"]);
     const hospitalTypes = new Set(["hospital_registration", "hospital"]);
     const campTypes = new Set(["camp", "donation_camp", "camp_registration"]);
-    const auditTypes = new Set(["alert", "audit", "system", "security_alert"]);
+    const auditTypes = new Set(["alert", "audit", "system", "security_alert", "system_alert"]);
 
-    if (donationTypes.has(type)) {
+   if (type === "blood_request_failed" || type === "system_alert") {
+    showNoMatchModal();
+    return;  // ← important: stop here, don't run anything else
+}
+    if (type === "blood_request_failed" || type === "system_alert") {
+        if (donationId) {
+            await openDonationsSection(donationId);
+            await viewDonationDetail(Number(donationId), { noMatch: true });
+        } else {
+            openBloodRequests();
+            showResultModal(
+                "error",
+                "No Donor Found",
+                "This request finished escalation without a donor or stock match."
+            );
+        }
+    } else if (donationTypes.has(type)) {
         await openDonationsSection(donationId);
     } else if (bloodTypes.has(type)) {
         openBloodRequests();
@@ -6767,7 +7002,7 @@ async function submitAddStock() {
  
 // ── QUICK ADJUST MODAL ───────────────────────────────────────────────────────
 function openAdjust(bt, loc, action, current) {
-  adjustState = { bt, loc, action };
+  adjustState = { bt, loc, action, current: Number(current || 0) };
   const isAdd = action === 'add';
   const header = document.getElementById('adjustHeader');
   header.style.background = isAdd ? 'var(--green)' : 'var(--red)';
@@ -6787,9 +7022,23 @@ function closeAdjust() {
   adjustState = {};
 }
 async function submitAdjust() {
-  const { bt, loc, action } = adjustState;
+  const { bt, loc, action, current } = adjustState;
   const units = parseInt(document.getElementById('adjustUnits').value);
-  if (!units || units < 1) { alert('Please enter a valid number of units.'); return; }
+  if (!units || units < 1) {
+    closeAdjust();
+    showResultModal('error', 'Invalid Input', 'Please enter a valid positive number of units.');
+    return;
+  }
+  if (action === 'remove' && Number(current || 0) <= 0) {
+    closeAdjust();
+    showResultModal('error', 'No Stock Available', `No ${bt} stock available at ${loc} to remove.`);
+    return;
+  }
+  if (action === 'remove' && units > Number(current || 0)) {
+    closeAdjust();
+    showResultModal('error', 'Insufficient Stock', `Cannot remove ${units} units. Only ${Number(current || 0)} unit(s) available at ${loc}.`);
+    return;
+  }
  
   const endpoint = action === 'add' ? 'add' : 'remove';
   try {
@@ -6799,7 +7048,7 @@ async function submitAdjust() {
       body: JSON.stringify({ blood_type: bt, units, hospital_name: loc === 'Blood Bank' ? null : loc, notes: `${action} by admin` })
     });
     if (res.ok) { closeAdjust(); loadInventory(); }
-    else { alert('Operation failed. Please try again.'); }
+    else { showResultModal('error', 'Operation Failed', 'Operation failed. Please try again.'); }
   } catch {
     // Optimistic UI
     const idx = allStock.findIndex(r => r.bt === bt && r.loc === loc);
@@ -8661,11 +8910,13 @@ function renderDonationsTable(data) {
 }
 
 // ── DETAIL MODAL ─────────────────────────────────────────────
-async function viewDonationDetail(id) {
+async function viewDonationDetail(id, options = {}) {
     const modal = document.getElementById('donationDetailModal');
     const body  = document.getElementById('donationDetailBody');
     const idEl  = document.getElementById('donDetailId');
     const completeBtn = document.getElementById('donDetailCompleteBtn');
+    const closeBtn = document.getElementById('donDetailCloseBtn');
+    const noMatchView = !!options.noMatch;
 
     idEl.textContent = id;
     modal.classList.remove('hidden');
@@ -8686,8 +8937,30 @@ async function viewDonationDetail(id) {
             completeBtn.classList.add('hidden');
         }
 
+        if (closeBtn) {
+            closeBtn.textContent = noMatchView ? 'OK' : 'Close';
+            closeBtn.className = noMatchView
+                ? 'px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 font-medium'
+                : 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 font-medium';
+        }
+
         // ── Donor block ──
         const donor = data.donor || {};
+        const noDonorBanner = noMatchView
+            ? `<div class="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4">
+                 <div class="flex items-start gap-3">
+                   <div class="w-11 h-11 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                     <i class="ri-alert-line text-xl"></i>
+                   </div>
+                   <div>
+                     <h5 class="font-bold text-amber-900">No donor matched</h5>
+                     <p class="text-sm text-amber-800 mt-1">
+                       All donor tiers and stock checks were exhausted for this request.
+                     </p>
+                   </div>
+                 </div>
+               </div>`
+            : '';
         const donorHtml = donor.id
             ? `<div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
                  <h5 class="font-bold text-blue-800 mb-3 flex items-center gap-2">
@@ -8787,6 +9060,7 @@ async function viewDonationDetail(id) {
 
         body.innerHTML = `
             <div class="space-y-4">
+                ${noDonorBanner}
                 ${donorHtml}
                 ${confHtml}
                 ${timelineHtml}
@@ -8842,6 +9116,41 @@ function exportDonationsCSV() {
     });
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     showToast('success', 'Exported', `${allDonations.length} records exported`);
+}
+function showNoMatchModal(requestId) {
+    showResultModal('error', 'No Donor/Stock Found', 
+        'This blood request completed all donor tiers and stock checks, but no match was found.');
+    
+    // Replace the OK button with two buttons
+    const modal = document.getElementById('resultModal');
+    const okBtn = modal.querySelector('button');
+    if (okBtn && requestId) {
+        okBtn.outerHTML = `
+            <div class="flex gap-3 justify-center">
+                <button onclick="hideResultModal()" 
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                    Dismiss
+                </button>
+                <button onclick="hideResultModal(); openBloodRequests();" 
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2">
+                    <i class="ri-eye-line"></i> View Blood Request
+                </button>
+            </div>`;
+    }
+    
+    document.getElementById('notificationDropdown').classList.add('hidden');
+}
+function showNoMatchModal() {
+    const modal = document.getElementById('noMatchModal');
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+    document.getElementById('notificationDropdown').classList.add('hidden');
+}
+
+function closeNoMatchModal() {
+    const modal = document.getElementById('noMatchModal');
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
 }
     </script>
 <!-- User Detail Modal - FIXED VERSION with proper scrolling -->
@@ -9021,8 +9330,29 @@ function exportDonationsCSV() {
         </div>
     </div>
 </div>
+<div id="noMatchModal" class="fixed inset-0 z-[999] hidden items-center justify-center" style="background: rgba(0,0,0,0.6);">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6 text-center" onclick="event.stopPropagation()">
+        <div class="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center bg-red-100">
+            <i class="ri-close-circle-line text-2xl text-red-600"></i>
+        </div>
+        <h3 class="text-lg font-semibold mb-2">No Donor/Stock Found</h3>
+        <p class="text-gray-600 mb-6">This blood request completed all donor tiers and stock checks, but no match was found.</p>
+        <div class="flex gap-3 justify-center">
+            <button onclick="closeNoMatchModal()"
+                    class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium cursor-pointer">
+                Dismiss
+            </button>
+            <button onclick="closeNoMatchModal(); openBloodRequests();"
+                    class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium cursor-pointer flex items-center gap-2">
+                <i class="ri-eye-line"></i> View Blood Request
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
+
+
 
 
 

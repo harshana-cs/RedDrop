@@ -100,13 +100,19 @@ def _send_user_status_email(user, is_active, reason=""):
 
     state = "activated" if is_active else "deactivated"
     reason_text = reason.strip() if isinstance(reason, str) else ""
+    reason_line = f"Reason: {reason_text}\n" if reason_text else ""
+    access_line = (
+        "You can now log in again."
+        if is_active
+        else "You will not be able to log in until the account is reactivated."
+    )
     send_mail(
         subject=f"RedDrop: User account {state}",
         message=(
             f"Hello {user.fullname},\n\n"
             f"Your RedDrop user account has been {state} by admin.\n"
-            f"{f'Reason: {reason_text}\\n' if reason_text else ''}"
-            f"{'You can now log in again.' if is_active else 'You will not be able to log in until the account is reactivated.'}\n\n"
+            f"{reason_line}"
+            f"{access_line}\n\n"
             "- RedDrop Team"
         ),
         from_email=settings.EMAIL_HOST_USER,
@@ -334,7 +340,7 @@ def admin_approve_blood_request(request, request_id):
                     + (
                         "Your request is scheduled and donor/blood bank matching will begin one day before your required date.\n\n"
                         if is_future_scheduled else
-                        "We are now searching for compatible donors.\n\n"
+                        "We are now searching for compatible donors only.\n\n"
                     )
                     + "- RedDrop Team"
                 ),
@@ -1792,6 +1798,14 @@ def admin_escalation_status(request, request_id):
             except Exception as exc:
                 logger.error(f"Could not start notification for #{request_id}: {exc}")
  
+    stock_found = bool((escalation.blood_bank_units or 0) > 0 or (escalation.hospital_stock_details or {}))
+    no_match_found = bool(
+        escalation.completed_at
+        and not escalation.success
+        and not stock_found
+        and not blood_request.accepted_donor_id
+    )
+
     return Response({
         "request_id": request_id,
         "status": "completed" if escalation.completed_at else "escalating",
@@ -1814,8 +1828,19 @@ def admin_escalation_status(request, request_id):
         "stock_check": {
             "completed": escalation.blood_bank_checked is not None,
             "blood_bank_units": escalation.blood_bank_units or 0,
+            "blood_bank_contact": {
+                "contact_phone": getattr(settings, "BLOOD_BANK_CONTACT", ""),
+                "contact_email": getattr(settings, "BLOOD_BANK_EMAIL", ""),
+                "source_name": "Central Blood Bank",
+            },
             "hospital_stock": escalation.hospital_stock_details or {},
         },
+        "success": bool(escalation.success),
+        "no_match_found": no_match_found,
+        "final_message": (
+            "No compatible donor or stock found after all 4 tiers completed."
+            if no_match_found else ""
+        ),
         "total_donors_alerted": escalation.total_donors_alerted or 0,
         "completed_at": escalation.completed_at,
     })
