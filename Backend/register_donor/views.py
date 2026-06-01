@@ -10,6 +10,7 @@ from blood_requests.models import Patient
 from adminpanel.models import Notification
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from common.upload_screening import screen_uploaded_files, notify_suspicious_upload
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def register_donor(request):
@@ -17,6 +18,31 @@ def register_donor(request):
         user = request.user
         data = request.data
         files = request.FILES
+
+        screening = screen_uploaded_files(
+            {
+                "citizenship_id": files.get("citizenship_id"),
+                "photo": files.get("photo"),
+            },
+            upload_type="donor_registration",
+        )
+
+        if screening["verdict"] == "BLOCK":
+            notify_suspicious_upload(
+                title="Blocked Donor Document",
+                message=(
+                    f"Blocked donor upload for {data.get('first_name', '').strip()} {data.get('last_name', '').strip()} "
+                    f"due to suspicious or AI-generated documents. Risk score: {screening['risk_score']}. "
+                    f"Flags: {', '.join(screening['flags']) or 'None'}."
+                ),
+                upload_result=screening,
+                metadata={"email": user.email or user.username},
+            )
+            return Response({
+                "success": False,
+                "message": "Your uploaded document looks suspicious or AI-generated. Please upload a clear original document.",
+                "screening": screening,
+            }, status=400)
 
         email = user.email or user.username
 
@@ -99,6 +125,17 @@ def register_donor(request):
             type="donor_registration",
             is_read=False
         )
+
+        if screening["verdict"] == "REVIEW":
+            notify_suspicious_upload(
+                title="Suspicious Donor Document",
+                message=(
+                    f"Donor registration for {donor.first_name} {donor.last_name} needs document review. "
+                    f"Risk score: {screening['risk_score']}. Flags: {', '.join(screening['flags']) or 'None'}."
+                ),
+                upload_result=screening,
+                metadata={"email": donor.email},
+            )
 
         return Response({
             "success": True,

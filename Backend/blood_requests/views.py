@@ -21,6 +21,7 @@ from .utils import get_coordinates_from_osm
 from common.email_utils import send_branded_email
 from rest_framework import status
 from .notifications import is_donor_eligible, get_compatible_donors, send_donor_alert
+from common.upload_screening import screen_uploaded_files, notify_suspicious_upload
 
 from .models import HospitalLocation
 
@@ -245,6 +246,38 @@ def api_create_request(request):
         print("\n📍 STEP 2: Getting hospital and district...")
         hospital_name = request.data.get("hospital")
         district      = request.data.get("district")
+        screening = screen_uploaded_files(
+            {
+                "hospital_doc": request.FILES.get("hospital_doc"),
+                "doctor_note": request.FILES.get("doctor_note"),
+            },
+            upload_type="blood_request_document",
+        )
+
+        if screening["verdict"] == "BLOCK":
+            print("⚠️ Upload screening failed:", screening)
+            notify_suspicious_upload(
+                title="Blocked Blood Request Documents",
+                message=(
+                    f"Blood request upload for {request.user.username} was blocked because the uploaded "
+                    f"documents look suspicious or AI-generated. Risk score: {screening['risk_score']}. "
+                    f"Flags: {', '.join(screening['flags']) or 'None'}."
+                ),
+                upload_result=screening,
+                metadata={
+                    "patient_email": request.user.username,
+                    "hospital": hospital_name,
+                    "district": district,
+                },
+            )
+            return Response(
+                {
+                    "success": False,
+                    "message": "Uploaded documents look suspicious or AI-generated. Please upload original hospital documents.",
+                    "screening": screening,
+                },
+                status=400,
+            )
  
         if not hospital_name or not district:
             print(f"❌ Missing: hospital={hospital_name}, district={district}")
@@ -318,6 +351,22 @@ def api_create_request(request):
         print(f"✅ Blood request saved! ID: {blood_request.id}")
         print(f"   Blood Type: {blood_request.blood_type}")
         print(f"   Units: {blood_request.units_required}")
+
+        if screening["verdict"] == "REVIEW":
+            notify_suspicious_upload(
+                title="Suspicious Blood Request Documents",
+                message=(
+                    f"Blood request #{blood_request.id} needs document review. "
+                    f"Risk score: {screening['risk_score']}. Flags: {', '.join(screening['flags']) or 'None'}."
+                ),
+                upload_result=screening,
+                blood_request=blood_request,
+                metadata={
+                    "patient_email": request.user.username,
+                    "hospital": hospital_name,
+                    "district": district,
+                },
+            )
         print(f"   Status: {blood_request.status}")
  
         # ========================================

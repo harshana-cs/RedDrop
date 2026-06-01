@@ -7,6 +7,7 @@ from rest_framework import status
 from django.utils import timezone
 import jwt
 import traceback
+import logging
 from django.conf import settings
 from blood_requests.views import is_donor_eligible, BLOOD_COMPATIBILITY,haversine
 from .models import Hospital, HospitalApplication
@@ -30,6 +31,10 @@ from blood_requests.utils import get_coordinates_from_osm
 from register_donor.models import Donor
 from donor.models import Donation
 from adminpanel.models import BloodRequestEscalation
+from celery_task import orchestrate_tiered_notification
+from common.upload_screening import screen_uploaded_files, notify_suspicious_upload
+
+logger = logging.getLogger(__name__)
 
 from datetime import date
 
@@ -53,6 +58,40 @@ def get_last_verified_donation_date(donor):
 def hospital_register(request):
     data = request.data
     files = request.FILES
+
+    screening = screen_uploaded_files(
+        {
+            "registration_certificate": files.get("registration_certificate"),
+            "medical_license": files.get("medical_license"),
+            "blood_bank_license": files.get("blood_bank_license"),
+            "id_proof": files.get("id_proof"),
+            "authority_letter": files.get("authority_letter"),
+        },
+        upload_type="hospital_application",
+    )
+
+    if screening["verdict"] == "BLOCK":
+        notify_suspicious_upload(
+            title="Blocked Hospital Documents",
+            message=(
+                f"Hospital application '{data.get('hospital_name', '').strip()}' was blocked because the uploaded "
+                f"documents look suspicious or AI-generated. Risk score: {screening['risk_score']}. "
+                f"Flags: {', '.join(screening['flags']) or 'None'}."
+            ),
+            upload_result=screening,
+            metadata={
+                "registration_number": data.get("registration_number"),
+                "email": data.get("email"),
+            },
+        )
+        return Response(
+            {
+                "success": False,
+                "error": "One or more uploaded documents look suspicious or AI-generated. Please upload original files.",
+                "screening": screening,
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     required_fields = [
         "hospital_name", "registration_number", "hospital_type",
@@ -117,6 +156,20 @@ def hospital_register(request):
     message=f"{application.hospital_name} submitted a registration request",
     type="hospital"
 )
+
+        if screening["verdict"] == "REVIEW":
+            notify_suspicious_upload(
+                title="Suspicious Hospital Documents",
+                message=(
+                    f"Hospital application '{application.hospital_name}' needs document review. "
+                    f"Risk score: {screening['risk_score']}. Flags: {', '.join(screening['flags']) or 'None'}."
+                ),
+                upload_result=screening,
+                metadata={
+                    "registration_number": application.registration_number,
+                    "email": application.email,
+                },
+            )
     return Response(
         {"success": True, "application_id": application.id},
         status=status.HTTP_201_CREATED
@@ -519,6 +572,36 @@ def hospital_create_blood_request(request):
     try:
         blood_type = request.data.get("blood_type")
         units = request.data.get("units")
+        screening = screen_uploaded_files(
+            {
+                "hospital_doc": request.FILES.get("hospital_doc"),
+                "doctor_note": request.FILES.get("doctor_note"),
+            },
+            upload_type="hospital_request_document",
+        )
+
+        if screening["verdict"] == "BLOCK":
+            notify_suspicious_upload(
+                title="Blocked Hospital Request Documents",
+                message=(
+                    f"Blood request document upload for hospital {hospital.name} was blocked. "
+                    f"Risk score: {screening['risk_score']}. Flags: {', '.join(screening['flags']) or 'None'}."
+                ),
+                upload_result=screening,
+                hospital=hospital,
+                metadata={
+                    "blood_type": blood_type,
+                    "units": units,
+                },
+            )
+            return Response(
+                {
+                    "success": False,
+                    "error": "One or more uploaded hospital documents look suspicious or AI-generated.",
+                    "screening": screening,
+                },
+                status=400,
+            )
 
         if not blood_type or not units:
             return Response(
@@ -563,6 +646,8 @@ def hospital_create_blood_request(request):
             contact_phone=hospital.profile.contact_number,
             hospital_doc=request.FILES.get("hospital_doc"),
             doctor_note=request.FILES.get("doctor_note"),
+            status="approved",
+            approved_at=timezone.now(),
         )
         HospitalAuditLog.objects.create(
     hospital=hospital,
@@ -583,6 +668,31 @@ def hospital_create_blood_request(request):
             user=None,
             blood_request=new_request
         )
+
+        if screening["verdict"] == "REVIEW":
+            notify_suspicious_upload(
+                title="Suspicious Hospital Request Documents",
+                message=(
+                    f"Blood request #{new_request.id} from {hospital.name} needs document review. "
+                    f"Risk score: {screening['risk_score']}. Flags: {', '.join(screening['flags']) or 'None'}."
+                ),
+                upload_result=screening,
+                hospital=hospital,
+                blood_request=new_request,
+                metadata={
+                    "blood_type": blood_type,
+                    "units": units,
+                },
+            )
+
+        try:
+            orchestrate_tiered_notification.delay(new_request.id)
+        except Exception as exc:
+            logger.warning(
+                "Failed to start tiered notification for hospital request #%s: %s",
+                new_request.id,
+                exc,
+            )
 
         return Response({
             "success": True,

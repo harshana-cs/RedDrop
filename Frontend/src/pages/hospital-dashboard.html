@@ -1192,6 +1192,8 @@
   let shownNoMatchEscalationModal = new Set();
   let requestStatusChartInstance = null;
   let requestUrgencyChartInstance = null;
+  let hospitalTierPollTimer = null;
+  let activeTierRequestId = null;
   
   // Sidebar collapse state
   let isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
@@ -1211,6 +1213,42 @@ function showLoading(message = "Processing...") {
 function hideLoading() {
   document.getElementById("loadingOverlay").classList.add("hidden");
 }
+function stopHospitalTierPolling() {
+  if (hospitalTierPollTimer) {
+    clearInterval(hospitalTierPollTimer);
+    hospitalTierPollTimer = null;
+  }
+  activeTierRequestId = null;
+}
+
+function startHospitalTierPolling(requestId) {
+  if (!requestId) return;
+
+  if (activeTierRequestId !== requestId) {
+    stopHospitalTierPolling();
+    activeTierRequestId = requestId;
+  }
+
+  const refreshTierStatus = async () => {
+    try {
+      if (activeTierRequestId !== requestId) return;
+      const escRes = await fetch(
+        `http://127.0.0.1:8000/api/hospital/request/${requestId}/escalation-status/`,
+        { headers: authHeaders() }
+      );
+      if (!escRes.ok || activeTierRequestId !== requestId) return;
+      const esc = await escRes.json();
+      renderDonorTierStatus(esc, requestId);
+    } catch (err) {
+      console.error("Tier polling failed:", err);
+    }
+  };
+
+  refreshTierStatus();
+  if (hospitalTierPollTimer) clearInterval(hospitalTierPollTimer);
+  hospitalTierPollTimer = setInterval(refreshTierStatus, 5000);
+}
+
 function isDonorAvailable(donor) {
   const availability = String(donor?.availability || '').trim().toLowerCase();
   if (availability === 'available') return true;
@@ -2274,6 +2312,7 @@ function focusDonorOnMap(lat, lng) {
 
 // ── Reset to "all donors" view ─────────────────────────────────
 function resetDonorView() {
+  stopHospitalTierPolling();
   isMatchedView = false;
   matchedDonorIds = new Set();
   showMatchedDonors = false;
@@ -2328,6 +2367,7 @@ async function openDonorMatch(requestId) {
     // Apply filters with matched data
     applyDonorFilters();
     renderDonorTierStatus(esc, requestId);
+    startHospitalTierPolling(requestId);
 
   } catch (err) {
     console.error('openDonorMatch error:', err);
@@ -2356,6 +2396,9 @@ function renderDonorTierStatus(esc, requestId) {
     { name: 'Tier 4', d: esc.tier_4 },
   ];
   const tiersCompleted = tiers.every(t => !!t.d?.completed);
+  const completedCount = tiers.filter(t => !!t.d?.completed).length;
+  const progressPct = tiersCompleted ? 100 : Math.max(10, Math.round((completedCount / 4) * 100));
+  const stockCheck = esc?.stock_check || {};
   const bankUnits = Number(esc?.stock_check?.blood_bank_units || 0);
   const hospitalStockMap = esc?.stock_check?.hospital_stock || {};
   const ownName = (hospitalData?.name || '').trim().toLowerCase();
@@ -3352,6 +3395,8 @@ function renderDonorTierStatus(esc, requestId) {
     { name: 'Tier 4', d: esc.tier_4 },
   ];
   const tiersCompleted = tiers.every(t => !!t.d?.completed);
+  const completedCount = tiers.filter(t => !!t.d?.completed).length;
+  const progressPct = tiersCompleted ? 100 : Math.max(10, Math.round((completedCount / 4) * 100));
   const bankUnits = Number(esc?.stock_check?.blood_bank_units || 0);
   const hospitalStockMap = esc?.stock_check?.hospital_stock || {};
   const ownHospitalName = (hospitalData?.name || '').trim().toLowerCase();
@@ -3368,6 +3413,15 @@ function renderDonorTierStatus(esc, requestId) {
         <span class="text-xs px-2 py-1 rounded ${esc.completed_at ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
           ${esc.completed_at ? 'Completed' : 'In Progress'}
         </span>
+      </div>
+      <div class="mb-3">
+        <div class="flex items-center justify-between mb-1.5">
+          <p class="text-xs font-medium text-blue-900">Search progress</p>
+          <p class="text-xs text-blue-700">${completedCount}/4 tiers complete</p>
+        </div>
+        <div class="h-2 rounded-full bg-blue-100 overflow-hidden">
+          <div class="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-700 ${tiersCompleted ? '' : 'animate-pulse'}" style="width:${progressPct}%"></div>
+        </div>
       </div>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
         ${tiers.map(t => `

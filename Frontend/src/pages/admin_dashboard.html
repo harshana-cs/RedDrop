@@ -3757,21 +3757,27 @@ nav button span:last-child {
                     </div>
 
                     <!-- Summary Stats -->
-                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                            <div class="p-2 bg-red-50 rounded-lg w-fit mb-2"><i class="ri-flag-2-line text-xl text-red-600"></i></div>
-                            <h3 class="text-3xl font-bold text-gray-900" id="campTotalCount">0</h3>
-                            <p class="text-gray-500 text-sm mt-1">Total Camps</p>
+                    <div class="grid grid-cols-3 gap-3 sm:gap-4">
+                        <div class="bg-white rounded-xl border border-gray-200 p-3 sm:p-4 shadow-sm min-h-[96px] flex items-center gap-3">
+                            <div class="p-2 bg-red-50 rounded-lg flex-shrink-0"><i class="ri-flag-2-line text-lg sm:text-xl text-red-600"></i></div>
+                            <div>
+                                <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 leading-none" id="campTotalCount">0</h3>
+                                <p class="text-gray-500 text-xs sm:text-sm mt-1">Total Camps</p>
+                            </div>
                         </div>
-                        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                            <div class="p-2 bg-green-50 rounded-lg w-fit mb-2"><i class="ri-calendar-check-line text-xl text-green-600"></i></div>
-                            <h3 class="text-3xl font-bold text-gray-900" id="campActiveCount">0</h3>
-                            <p class="text-gray-500 text-sm mt-1">Upcoming Camps</p>
+                        <div class="bg-white rounded-xl border border-gray-200 p-3 sm:p-4 shadow-sm min-h-[96px] flex items-center gap-3">
+                            <div class="p-2 bg-green-50 rounded-lg flex-shrink-0"><i class="ri-calendar-check-line text-lg sm:text-xl text-green-600"></i></div>
+                            <div>
+                                <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 leading-none" id="campActiveCount">0</h3>
+                                <p class="text-gray-500 text-xs sm:text-sm mt-1">Upcoming Camps</p>
+                            </div>
                         </div>
-                        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                            <div class="p-2 bg-orange-50 rounded-lg w-fit mb-2"><i class="ri-alarm-warning-line text-xl text-orange-600"></i></div>
-                            <h3 class="text-3xl font-bold text-gray-900" id="campUrgentCount">0</h3>
-                            <p class="text-gray-500 text-sm mt-1">Urgent Camps</p>
+                        <div class="bg-white rounded-xl border border-gray-200 p-3 sm:p-4 shadow-sm min-h-[96px] flex items-center gap-3">
+                            <div class="p-2 bg-orange-50 rounded-lg flex-shrink-0"><i class="ri-alarm-warning-line text-lg sm:text-xl text-orange-600"></i></div>
+                            <div>
+                                <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 leading-none" id="campUrgentCount">0</h3>
+                                <p class="text-gray-500 text-xs sm:text-sm mt-1">Urgent Camps</p>
+                            </div>
                         </div>
                     </div>
 
@@ -8208,16 +8214,13 @@ function renderCampCards(camps) {
     ${isRejected && c.rejection_reason
         ? `<p class="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">Reason: ${c.rejection_reason}</p>`
         : ''}
-        
-${c.authorization_letter
-  ? `<div class="mt-2">
-       <a href="http://127.0.0.1:8000${c.authorization_letter}" target="_blank"
-          class="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm">
-         <i class="ri-file-text-line"></i> View Authorization Letter
-       </a>
-     </div>`
-  : '<p class="text-xs text-amber-600 mt-2"><i class="ri-alert-line mr-1"></i>No document attached</p>'
-}
+    <div class="mt-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs sm:text-sm flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+            <i class="ri-file-list-3-line text-red-500 flex-shrink-0"></i>
+            <span class="text-gray-600 truncate">${c.authorization_letter ? 'Authorization document attached' : 'No document attached'}</span>
+        </div>
+        ${c.authorization_letter ? `<a href="http://127.0.0.1:8000${c.authorization_letter}" target="_blank" class="shrink-0 text-blue-600 hover:underline font-medium">View</a>` : ''}
+    </div>
 
 </div>
 
@@ -8357,6 +8360,12 @@ function openCampModal() {
     document.getElementById('campLocation').value = '';
     document.getElementById('campContactNumber').value = '';
     document.getElementById('campMapLink').value = '';
+    document.getElementById('campAuthorizationLetter').value = '';
+    const campDocPreviewCreate = document.getElementById('campDocPreview');
+    if (campDocPreviewCreate) {
+        campDocPreviewCreate.classList.add('hidden');
+        campDocPreviewCreate.innerHTML = '';
+    }
     document.getElementById('campIsUrgent').checked = false;
     
     // Update modal title and button text
@@ -8399,7 +8408,23 @@ function editCamp(id) {
     document.getElementById('campLocation').value = camp.location || '';
     document.getElementById('campContactNumber').value = camp.contact_number || '';
     document.getElementById('campMapLink').value = camp.map_link || '';
+    document.getElementById('campAuthorizationLetter').value = '';
     document.getElementById('campIsUrgent').checked = camp.is_urgent || false;
+    const campDocPreviewEdit = document.getElementById('campDocPreview');
+    if (campDocPreviewEdit) {
+        if (camp.authorization_letter) {
+            campDocPreviewEdit.innerHTML = `
+                <span class="font-medium text-gray-700">Current document:</span>
+                <a href="http://127.0.0.1:8000${camp.authorization_letter}" target="_blank" class="ml-2 text-blue-600 hover:underline">
+                    Open authorization letter
+                </a>
+            `;
+            campDocPreviewEdit.classList.remove('hidden');
+        } else {
+            campDocPreviewEdit.classList.add('hidden');
+            campDocPreviewEdit.innerHTML = '';
+        }
+    }
     
     // Update modal title and button text
     document.getElementById('campModalTitle').textContent = 'Edit Donation Camp';
@@ -8438,6 +8463,13 @@ function closeCampModal() {
         if (inner) {
             inner.classList.remove('scale-95', 'opacity-0');
             inner.classList.add('scale-100', 'opacity-100');
+        }
+        const fileInput = document.getElementById('campAuthorizationLetter');
+        if (fileInput) fileInput.value = '';
+        const docPreview = document.getElementById('campDocPreview');
+        if (docPreview) {
+            docPreview.classList.add('hidden');
+            docPreview.innerHTML = '';
         }
     }, 200);
 }
@@ -8514,6 +8546,7 @@ async function saveCamp() {
         map_link: document.getElementById('campMapLink').value.trim(),
         is_urgent: document.getElementById('campIsUrgent').checked
     };
+    const authorizationLetter = document.getElementById('campAuthorizationLetter')?.files?.[0];
     
     const btn = document.getElementById('campSaveBtn');
     const btnText = document.getElementById('campSaveBtnText');
@@ -8529,10 +8562,17 @@ async function saveCamp() {
             : `${API_BASE}/api/admin/donation-camps/`;
         const method = id ? 'PUT' : 'POST';
         
+        const formData = new FormData();
+        Object.entries(payload).forEach(([key, value]) => {
+            formData.append(key, typeof value === 'boolean' ? String(value) : value);
+        });
+        if (authorizationLetter) {
+            formData.append('authorization_letter', authorizationLetter);
+        }
+
         const response = await fetch(url, {
             method: method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: formData
         });
         
         const data = await response.json();
@@ -8558,25 +8598,31 @@ async function saveCamp() {
 
 // ================= APPROVE =================
 async function approveCamp(id) {
-    if (!confirm('Approve this camp request? It will become visible to users.')) return;
-    
-    try {
-        const response = await fetch(`${API_BASE}/api/admin/approve-camp/${id}/`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        
-        if (response.ok) {
-            showToast('success', 'Approved', 'Camp approved successfully');
-            loadCamps();
-        } else {
-            const error = await response.json();
-            showToast('error', 'Failed', error.message || 'Could not approve camp');
+    showConfirmModal(
+        'info',
+        'Approve Donation Camp',
+        'Approve this camp request? It will become visible to users.',
+        'Approve Camp',
+        async () => {
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/approve-camp/${id}/`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    showToast('success', 'Approved', 'Camp approved successfully');
+                    loadCamps();
+                } else {
+                    const error = await response.json();
+                    showToast('error', 'Failed', error.message || 'Could not approve camp');
+                }
+            } catch (error) {
+                console.error('Error approving camp:', error);
+                showToast('error', 'Network Error', 'Failed to connect to server');
+            }
         }
-    } catch (error) {
-        console.error('Error approving camp:', error);
-        showToast('error', 'Network Error', 'Failed to connect to server');
-    }
+    );
 }
 // ================= DELETE =================
 function rejectCamp(id) {
@@ -10493,6 +10539,17 @@ function closeNoMatchModal() {
                     <input id="campLocation" type="text"
                            placeholder="Full address or venue name"
                            class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition" />
+                </div>
+
+                <!-- Authorization Letter -->
+                <div class="mb-5">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        Authorization Letter / Document
+                    </label>
+                    <input id="campAuthorizationLetter" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp"
+                           class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-red-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-red-700 hover:file:bg-red-100" />
+                    <p class="mt-2 text-xs text-gray-500">Upload the approval letter or supporting document for this camp.</p>
+                    <div id="campDocPreview" class="mt-3 hidden rounded-lg border border-dashed border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-600"></div>
                 </div>
 
                 <!-- Contact Number and Map Link (2 columns) -->

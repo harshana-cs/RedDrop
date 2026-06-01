@@ -5113,7 +5113,9 @@ async function submitOtp(event) {
     body:JSON.stringify({request_id:currentPendingDonationId, otp})
   });
   const data = await res.json();
-  if (res.ok) { showNotification(data.message,"success"); closeOtpModal(); loadPendingDonations(); loadDonationStats(); }
+  if (res.ok) {
+    completeDonationConfirmationFlow(data.message || "Donation completed successfully. Thank you for your donation.");
+  }
   else showNotification(data.message||"Invalid OTP","error");
 }
  
@@ -7464,6 +7466,34 @@ function closePublicRequestModal() {
   if (modal) {
     modal.classList.add("hidden");
     modal.style.display = "none";
+  }
+}
+
+function completeDonationConfirmationFlow(message) {
+  showNotification(message || "Donation completed successfully. Thank you for your donation.", "success");
+  closeOtpModal();
+  loadPendingDonations();
+  loadDonationStats();
+  loadNotifications();  // just call once, no setInterval here
+  showDonationTab("history");
+  loadDonationHistory();
+}
+
+async function submitOtpDirect() {
+  const otp = document.getElementById("otpCode")?.value;
+  if (!otp) { showNotification("Enter OTP", "warning"); return; }
+  try {
+    const res = await fetch(`${API_BASE}/api/donor/confirm/`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ otp })
+    });
+    const data = await res.json();
+    if (!res.ok) { showNotification(data.message || "Invalid OTP", "error"); return; }
+    completeDonationConfirmationFlow(data.message || "Donation completed successfully. Thank you for your donation.");
+  } catch (err) {
+    console.error(err);
+    showNotification("OTP verification failed", "error");
   }
 }
 

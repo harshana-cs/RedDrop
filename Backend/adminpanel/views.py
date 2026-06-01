@@ -38,6 +38,7 @@ from .models import BloodRequestEscalation, NotificationLog
 import random
 import requests
 from common.email_utils import send_branded_email
+from common.upload_screening import screen_uploaded_file, notify_suspicious_upload
 # Add this with your other imports at the top
 from blood_requests.notifications import is_donor_eligible
 from celery_task import orchestrate_tiered_notification
@@ -1607,6 +1608,7 @@ def _serialize_camp(camp):
         "created_by": camp.created_by,
         "contact_number": camp.contact_number or "",   
         "map_link": camp.map_link or "", 
+        "authorization_letter": camp.authorization_letter.url if camp.authorization_letter else "",
         "rejection_reason": getattr(camp, "rejection_reason", "") or "",
         "rejected_at": camp.rejected_at.isoformat() if getattr(camp, "rejected_at", None) else None,
     }
@@ -1632,6 +1634,32 @@ def admin_donation_camps(request):
 
     contact_number = request.data.get("contact_number", "").strip()
     map_link       = request.data.get("map_link", "").strip()
+    authorization_letter = request.FILES.get("authorization_letter")
+
+    screening = screen_uploaded_file(
+        authorization_letter,
+        upload_label="Authorization Letter",
+        upload_type="camp_document",
+    )
+
+    if screening["verdict"] == "BLOCK":
+        notify_suspicious_upload(
+            title="Blocked Camp Document",
+            message=(
+                f'Donation camp "{title}" was blocked because the authorization letter looks suspicious or AI-generated. '
+                f"Risk score: {screening['risk_score']}. Flags: {', '.join(screening['flags']) or 'None'}."
+            ),
+            upload_result=screening,
+            metadata={"hospital_name": hospital, "location": location},
+        )
+        return Response(
+            {
+                "success": False,
+                "message": "The uploaded authorization letter looks suspicious or AI-generated.",
+                "screening": screening,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     missing = []
     if not title:      missing.append("title")
@@ -1659,7 +1687,8 @@ def admin_donation_camps(request):
         map_link=map_link,
         is_urgent=_parse_bool(request.data.get("is_urgent"), default=False),
         is_approved=False,
-        created_by="admin"
+        created_by="admin",
+        authorization_letter=authorization_letter,
     )
 
     camp.refresh_from_db()
@@ -1672,6 +1701,17 @@ def admin_donation_camps(request):
         )
     except:
         pass
+
+    if screening["verdict"] == "REVIEW":
+        notify_suspicious_upload(
+            title="Suspicious Camp Document",
+            message=(
+                f'Donation camp "{camp.title}" uploaded a document that needs review. '
+                f"Risk score: {screening['risk_score']}. Flags: {', '.join(screening['flags']) or 'None'}."
+            ),
+            upload_result=screening,
+            metadata={"camp_id": camp.id, "title": camp.title},
+        )
 
     return Response(_serialize_camp(camp), status=status.HTTP_201_CREATED)
 
@@ -1694,6 +1734,31 @@ def admin_donation_camp_detail(request, camp_id):
         return Response({"success": True, "message": "Deleted"}, status=204)
 
     data = request.data
+    uploaded_letter = request.FILES.get("authorization_letter")
+    screening = screen_uploaded_file(
+        uploaded_letter,
+        upload_label="Authorization Letter",
+        upload_type="camp_document",
+    )
+
+    if uploaded_letter and screening["verdict"] == "BLOCK":
+        notify_suspicious_upload(
+            title="Blocked Camp Document",
+            message=(
+                f'Donation camp "{camp.title}" update was blocked because the authorization letter looks suspicious or AI-generated. '
+                f"Risk score: {screening['risk_score']}. Flags: {', '.join(screening['flags']) or 'None'}."
+            ),
+            upload_result=screening,
+            metadata={"camp_id": camp.id, "title": camp.title},
+        )
+        return Response(
+            {
+                "success": False,
+                "message": "The uploaded authorization letter looks suspicious or AI-generated.",
+                "screening": screening,
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     # �"��"� PUT (FULL UPDATE) �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
     if request.method == "PUT":
@@ -1707,6 +1772,8 @@ def admin_donation_camp_detail(request, camp_id):
         camp.contact_number = data.get("contact_number", "")
         camp.map_link       = data.get("map_link", "")
         camp.is_urgent     = _parse_bool(data.get("is_urgent"), default=False)
+        if uploaded_letter:
+            camp.authorization_letter = uploaded_letter
 
         camp.save()
         camp.refresh_from_db()
@@ -1730,9 +1797,22 @@ def admin_donation_camp_detail(request, camp_id):
 
         if "is_urgent" in data:
             camp.is_urgent = _parse_bool(data.get("is_urgent"), default=False)
+        if uploaded_letter:
+            camp.authorization_letter = uploaded_letter
 
         camp.save()
         camp.refresh_from_db()
+
+    if uploaded_letter and screening["verdict"] == "REVIEW":
+        notify_suspicious_upload(
+            title="Suspicious Camp Document",
+            message=(
+                f'Donation camp "{camp.title}" uploaded a document that needs review. '
+                f"Risk score: {screening['risk_score']}. Flags: {', '.join(screening['flags']) or 'None'}."
+            ),
+            upload_result=screening,
+            metadata={"camp_id": camp.id, "title": camp.title},
+        )
 
     return Response(_serialize_camp(camp))
 
