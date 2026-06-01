@@ -189,6 +189,31 @@ window.addEventListener('beforeunload', function() {
 .brf-stage-searching .brf-header { background: linear-gradient(160deg,#fff1f2,#fff); }
 .brf-stage-found     .brf-header { background: linear-gradient(160deg,#f0fdf4,#fff); }
 
+.urgency-option {
+  transition: all 0.2s ease;
+}
+
+.urgency-option.active {
+  border-color: var(--brand-red) !important;
+  background: linear-gradient(180deg, #fff5f5, #ffffff);
+  box-shadow: 0 12px 28px rgba(185, 28, 28, 0.12);
+  transform: translateY(-1px);
+}
+
+.urgency-option .urgency-dot {
+  transition: all 0.2s ease;
+}
+
+.urgency-option.active .urgency-dot {
+  border-color: var(--brand-red);
+  background: var(--brand-red);
+}
+
+.urgency-option.active .urgency-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
 /* ── Shimmer skeleton ───────────────────────────────────────────────── */
 @keyframes brf-shimmer {
   from { background-position: -600px 0; }
@@ -391,10 +416,21 @@ window.addEventListener('beforeunload', function() {
               <label class="block text-sm font-semibold text-gray-700 mb-2">Units Required *</label>
               <div class="relative">
                 <input type="number" min="1" max="10" id="unitsRequired" value="1"
-                       class="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors"
+                       step="1" inputmode="numeric"
+                       class="w-full px-14 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent hover:border-gray-400 transition-colors text-center font-semibold text-lg"
                        placeholder="Enter number of units (1-10)">
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <span class="text-gray-500">units</span>
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <button type="button" id="unitsMinus"
+                          class="w-8 h-8 rounded-lg border border-gray-200 text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors flex items-center justify-center">
+                    <i class="fas fa-minus text-xs"></i>
+                  </button>
+                </div>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 gap-2">
+                  <span class="text-gray-500 text-sm">units</span>
+                  <button type="button" id="unitsPlus"
+                          class="w-8 h-8 rounded-lg border border-gray-200 text-gray-600 hover:text-red-600 hover:border-red-300 hover:bg-red-50 transition-colors flex items-center justify-center">
+                    <i class="fas fa-plus text-xs"></i>
+                  </button>
                 </div>
               </div>
               <p class="text-xs text-gray-500">Each unit is approximately 450ml of blood</p>
@@ -405,7 +441,7 @@ window.addEventListener('beforeunload', function() {
           <div class="space-y-4">
             <label class="block text-sm font-semibold text-gray-700 mb-3">Urgency Level *</label>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-[var(--brand-red)] transition-all duration-200 group bg-white hover:bg-[var(--brand-red-light)]">
+              <label class="urgency-option relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-[var(--brand-red)] transition-all duration-200 group bg-white hover:bg-[var(--brand-red-light)]">
                 <input type="radio" name="urgency" value="Critical" class="sr-only">
                 <div class="w-10 h-10 rounded-lg bg-[var(--brand-red)] flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
                   <i class="fas fa-exclamation-circle text-white"></i>
@@ -414,10 +450,12 @@ window.addEventListener('beforeunload', function() {
                   <p class="text-sm font-semibold text-gray-900">Critical</p>
                   <p class="text-xs text-gray-500">Within 24 hours</p>
                 </div>
-                <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+                <div class="urgency-dot absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center">
+                  <i class="urgency-check fas fa-check text-[8px] text-white opacity-0 scale-75 transition-all"></i>
+                </div>
               </label>
 
-              <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-300 transition-all duration-200 group bg-white hover:bg-orange-50">
+              <label class="urgency-option relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-300 transition-all duration-200 group bg-white hover:bg-orange-50">
                 <input type="radio" name="urgency" value="High" class="sr-only">
                 <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
                   <i class="fas fa-exclamation-circle text-white"></i>
@@ -426,10 +464,12 @@ window.addEventListener('beforeunload', function() {
                   <p class="text-sm font-semibold text-gray-900">High</p>
                   <p class="text-xs text-gray-500">Within 48 hours</p>
                 </div>
-                <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+                <div class="urgency-dot absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center">
+                  <i class="urgency-check fas fa-check text-[8px] text-white opacity-0 scale-75 transition-all"></i>
+                </div>
               </label>
 
-              <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-yellow-300 transition-all duration-200 group bg-white hover:bg-yellow-50">
+              <label class="urgency-option relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-yellow-300 transition-all duration-200 group bg-white hover:bg-yellow-50">
                 <input type="radio" name="urgency" value="Medium" class="sr-only">
                 <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-yellow-500 to-yellow-600 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
                   <i class="fas fa-exclamation-circle text-white"></i>
@@ -438,10 +478,12 @@ window.addEventListener('beforeunload', function() {
                   <p class="text-sm font-semibold text-gray-900">Medium</p>
                   <p class="text-xs text-gray-500">Within 1 week</p>
                 </div>
-                <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+                <div class="urgency-dot absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center">
+                  <i class="urgency-check fas fa-check text-[8px] text-white opacity-0 scale-75 transition-all"></i>
+                </div>
               </label>
 
-              <label class="relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-green-300 transition-all duration-200 group bg-white hover:bg-green-50">
+              <label class="urgency-option relative flex items-center p-5 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-green-300 transition-all duration-200 group bg-white hover:bg-green-50">
                 <input type="radio" name="urgency" value="Low" class="sr-only">
                 <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
                   <i class="fas fa-exclamation-circle text-white"></i>
@@ -450,7 +492,9 @@ window.addEventListener('beforeunload', function() {
                   <p class="text-sm font-semibold text-gray-900">Low</p>
                   <p class="text-xs text-gray-500">Within 2 weeks</p>
                 </div>
-                <div class="absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full"></div>
+                <div class="urgency-dot absolute top-3 right-3 w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center">
+                  <i class="urgency-check fas fa-check text-[8px] text-white opacity-0 scale-75 transition-all"></i>
+                </div>
               </label>
             </div>
           </div>
@@ -986,6 +1030,61 @@ function setUrgencyError(show) {
     } else { existing?.remove(); }
 }
 
+function getSelectedUrgencyCard() {
+    return document.querySelector('.urgency-option input[name="urgency"]:checked')?.closest('.urgency-option') || null;
+}
+
+function setUrgencyCardState() {
+    const cards = document.querySelectorAll('.urgency-option');
+    cards.forEach(card => {
+        const radio = card.querySelector('input[name="urgency"]');
+        card.classList.toggle('active', !!radio?.checked);
+    });
+}
+
+function bindUnitsStepper() {
+    const unitsInput = document.getElementById('unitsRequired');
+    const minusBtn = document.getElementById('unitsMinus');
+    const plusBtn = document.getElementById('unitsPlus');
+    if (!unitsInput) return;
+
+    const clampUnits = () => {
+        let value = parseInt(unitsInput.value, 10);
+        if (Number.isNaN(value)) value = 1;
+        value = Math.max(1, Math.min(10, value));
+        unitsInput.value = String(value);
+        return value;
+    };
+
+    minusBtn?.addEventListener('click', () => {
+        const value = clampUnits();
+        unitsInput.value = String(Math.max(1, value - 1));
+    });
+
+    plusBtn?.addEventListener('click', () => {
+        const value = clampUnits();
+        unitsInput.value = String(Math.min(10, value + 1));
+    });
+
+    unitsInput.addEventListener('input', clampUnits);
+    unitsInput.addEventListener('blur', clampUnits);
+}
+
+function bindUrgencyCards() {
+    const cards = document.querySelectorAll('.urgency-option');
+    cards.forEach(card => {
+        const radio = card.querySelector('input[name="urgency"]');
+        if (!radio) return;
+
+        radio.addEventListener('change', setUrgencyCardState);
+        card.addEventListener('click', () => {
+            radio.checked = true;
+            setUrgencyCardState();
+        });
+    });
+    setUrgencyCardState();
+}
+
 function setFileError(fieldId, message) {
     document.getElementById(fieldId + '-error-msg')?.remove();
     if (message) {
@@ -1129,6 +1228,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // ── Set min date to today ─────────────────────────────────
+    bindUnitsStepper();
+    bindUrgencyCards();
+
     const dateInput = document.getElementById('requiredDate');
     if (dateInput) {
         const t  = new Date();

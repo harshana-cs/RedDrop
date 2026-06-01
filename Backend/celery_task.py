@@ -237,6 +237,10 @@ def orchestrate_tiered_notification(blood_request_id):
 
     # Launch background thread — returns immediately so HTTP response is fast
     threading.Thread(target=_run_all_tiers, daemon=True).start()
+    # Safety net: if nothing is resolved after 10 minutes, mark the request incomplete.
+    timeout_timer = threading.Timer(10 * 60, _mark_request_incomplete_after_timeout, args=(blood_request_id,))
+    timeout_timer.daemon = True
+    timeout_timer.start()
     logger.info(f"[Escalation] Background thread started for #{blood_request_id}")
 
 
@@ -436,6 +440,71 @@ def finalize_escalation(blood_request_id):
         _broadcast_sms_to_all_donors_no_match(blood_request)
     except Exception as exc:
         logger.error(f"[BroadcastSMS-NoMatch] failed for #{blood_request.id}: {exc}")
+
+
+# =======================================================================
+# TIMEOUT HELPERS
+# =======================================================================
+def _mark_request_incomplete_after_timeout(blood_request_id):
+    """
+    Final safety net for unresolved approved requests.
+    Marks the request incomplete once the 10-minute search window expires.
+    """
+    try:
+        import django
+        django.setup()
+    except RuntimeError:
+        pass
+    except Exception as exc:
+        logger.error(f"[Timeout] Django setup failed for #{blood_request_id}: {exc}")
+        return
+
+    from blood_requests.models import BloodRequest
+    from adminpanel.models import BloodRequestEscalation, Notification
+    from django.contrib.auth.models import User
+
+    req = BloodRequest.objects.filter(id=blood_request_id).first()
+    if not req or req.status in {"completed", "rejected", "incomplete"} or req.fulfilled:
+        return
+    if req.accepted_donor_id:
+        return
+    if req.approved_at and req.approved_at > timezone.now() - timedelta(minutes=10):
+        return
+
+    esc = BloodRequestEscalation.objects.filter(blood_request=req).first()
+    has_stock = bool(
+        esc and (
+            (esc.blood_bank_units or 0) > 0
+            or bool(esc.hospital_stock_details)
+        )
+    )
+    if has_stock:
+        return
+
+    if req.status not in {"approved", "no_match"}:
+        return
+
+    req.status = "incomplete"
+    req.save(update_fields=["status"])
+    logger.info(f"[Timeout] Request #{req.id} marked incomplete after 10 minutes")
+
+    if req.patient:
+        patient_user = User.objects.filter(username=req.patient.emailaddress).first()
+        if patient_user and not Notification.objects.filter(
+            user=patient_user,
+            blood_request=req,
+            type="blood_request_failed",
+        ).exists():
+            Notification.objects.create(
+                user=patient_user,
+                blood_request=req,
+                title="Request Marked Incomplete",
+                message=(
+                    "No donor or stock was confirmed within the search window, "
+                    "so the request has been marked incomplete."
+                ),
+                type="blood_request_failed",
+            )
 
 
 # =======================================================================
@@ -679,3 +748,94 @@ def _get_compatible_donors(patient_blood_type):
     """Return donor blood types that CAN donate TO the patient's blood type."""
     compatible = [bt for bt, recipients in _COMPAT.items() if patient_blood_type in recipients]
     return compatible if compatible else [patient_blood_type]
+
+
+# Add this import at top of celery_task.py if not already there
+from django.utils import timezone
+from datetime import timedelta
+import logging
+logger = logging.getLogger(__name__)
+
+
+def mark_no_match_requests():
+    """
+    Marks unresolved requests as incomplete after the no-match window.
+    This mirrors the dashboard timeout so unresolved requests stop reopening.
+    """
+    from blood_requests.models import BloodRequest
+    from adminpanel.models import BloodRequestEscalation, Notification
+    from django.contrib.auth.models import User
+
+    cutoff = timezone.now() - timedelta(minutes=10)
+
+    candidates = BloodRequest.objects.filter(
+        status='approved',
+        fulfilled=False,
+        accepted_donor__isnull=True,
+        approved_at__lte=cutoff,
+    )
+
+    updated = []
+
+    for req in candidates:
+        esc = BloodRequestEscalation.objects.filter(
+            blood_request=req
+        ).first()
+
+        # Skip if stock was found — patient still needs to confirm
+        has_stock = bool(
+            esc and (
+                (esc.blood_bank_units or 0) > 0
+                or bool(esc.hospital_stock_details)
+            )
+        )
+        if has_stock:
+            continue
+
+        # Skip if all 4 tiers haven't completed yet — still searching
+        all_tiers_done = bool(
+            esc and
+            esc.tier_1_completed and
+            esc.tier_2_completed and
+            esc.tier_3_completed and
+            esc.tier_4_completed
+        )
+        if not all_tiers_done:
+            continue
+
+        # Mark as incomplete so the dashboard stops reopening it
+        req.status = 'incomplete'
+        req.save(update_fields=['status'])
+        updated.append(req.id)
+
+        logger.info(f"[no_match] Request #{req.id} marked as incomplete")
+
+        # Notify the patient
+        try:
+            patient = req.patient
+            if patient:
+                patient_user = User.objects.filter(
+                    username=patient.emailaddress
+                ).first()
+
+                if patient_user:
+                    Notification.objects.create(
+                        user=patient_user,
+                        blood_request=req,
+                        title="No Donor Found",
+                        message=(
+                            f"We were unable to find a donor for your "
+                            f"{req.blood_type} blood request at "
+                            f"{req.hospital_location.name if req.hospital_location else 'the hospital'}. "
+                            f"Please contact the hospital directly or submit a new request."
+                        ),
+                        type="blood_request_failed",
+                    )
+        except Exception as e:
+            logger.error(f"Failed to notify patient for req {req.id}: {e}")
+
+    logger.info(
+        f"[no_match] Scanned {candidates.count()} candidates, "
+        f"marked {len(updated)} incomplete: {updated}"
+    )
+    return f"Marked {len(updated)} requests as incomplete"

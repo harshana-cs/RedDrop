@@ -96,6 +96,7 @@ def register_donor(request):
         Notification.objects.create(
             title="New Donor Registration",
             message=f"A new donor has registered: {donor.first_name} {donor.last_name}",
+            type="donor_registration",
             is_read=False
         )
 

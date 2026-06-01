@@ -251,13 +251,13 @@ border-right:1px solid #e5e7eb;z-index:1000}
 
     <div>
         <label>Upload Citizenship *</label>
-        <input type="file" name="citizenship_id" id="citizenship" required>
+        <input type="file" name="citizenship_id" id="citizenship" required accept=".pdf,.jpg,.jpeg,.png,image/*">
         <img id="citizenshipPreview" class="preview-img hidden">
     </div>
 
     <div>
         <label>Upload Photo *</label>
-        <input type="file" name="photo" id="photo" required>
+        <input type="file" name="photo" id="photo" required accept="image/*,.jpg,.jpeg,.png">
         <img id="photoPreview" class="preview-img hidden">
     </div>
 
@@ -328,6 +328,12 @@ function preview(input, img){
   input.addEventListener("change",()=>{
       const f=input.files[0];
       if(!f) return img.classList.add("hidden");
+      if (input.id === "photo" && !f.type.startsWith("image/")) {
+          input.value = "";
+          img.classList.add("hidden");
+          alert("Please upload an image file for the photo field.");
+          return;
+      }
       const r=new FileReader();
       r.onload=e=>{img.src=e.target.result;img.classList.remove("hidden")}
       r.readAsDataURL(f);

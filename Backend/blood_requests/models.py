@@ -23,12 +23,14 @@ class HospitalLocation(models.Model):
 class BloodRequest(models.Model):
 
     STATUS_CHOICES = [
-    ('pending', 'Pending'),
-    ('approved', 'Approved'),
-    ('rejected', 'Rejected'),
-    ('completed', 'Completed'),
-    ('escalated', 'Escalated'),  
-]
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('completed', 'Completed'),
+        ('escalated', 'Escalated'),
+        ('no_match', 'No Match Found'),
+        ('incomplete', 'Incomplete'),
+    ]
     
 
     # ACTOR

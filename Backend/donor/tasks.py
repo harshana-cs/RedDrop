@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from adminpanel.models import Notification
 from donor.models import Donation
+from common.email_utils import send_branded_email
 
 
 @shared_task
@@ -65,11 +66,17 @@ def send_donation_eligibility_reminders():
 
         email_sent = False
         if donor.email:
-            sent = send_mail(
-                "RedDrop: Donation Eligibility Reminder",
-                reminder_message,
-                settings.EMAIL_HOST_USER,
-                [donor.email],
+            sent = send_branded_email(
+                subject="RedDrop: Donation Eligibility Reminder",
+                to=donor.email,
+                title="Donation Eligibility Reminder",
+                lines=[
+                    f"Hi {donor_name},",
+                    "Your donation eligibility date is coming up.",
+                    f"Eligibility Date: {reminder_for_date.strftime('%Y-%m-%d')}",
+                ],
+                footer_note="We appreciate your support in saving lives.",
+                from_email=settings.EMAIL_HOST_USER,
                 fail_silently=True,
             )
             email_sent = sent > 0

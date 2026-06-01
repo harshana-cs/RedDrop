@@ -46,4 +46,5 @@ path("api/patient-notifications/<int:notification_id>/read/", views.api_patient_
 path("api/confirm-day-before/<int:request_id>/", views.api_patient_confirm_day_before_request, name="api_patient_confirm_day_before_request"),
 path("api/request-status/<int:request_id>/", views.api_request_status, name="api_request_status"),
 path("api/confirm-bank/<int:request_id>/", views.api_patient_confirm_bank_fulfillment, name="api_patient_confirm_bank_fulfillment"),
+path("api/mark-incomplete/<int:request_id>/", views.api_patient_mark_request_incomplete, name="api_patient_mark_request_incomplete"),
 ]

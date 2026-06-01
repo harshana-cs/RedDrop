@@ -577,12 +577,12 @@ body {
             <div class="form-grid">
                 <div class="file-zone">
                     <div class="file-label"><i class="fas fa-file-alt"></i> Citizenship *</div>
-                    <input type="file" name="citizenship_id" id="citizenship" style="margin-top: 8px; font-size: 0.8rem;">
+                    <input type="file" name="citizenship_id" id="citizenship" accept=".pdf,.jpg,.jpeg,.png,image/*" style="margin-top: 8px; font-size: 0.8rem;">
                     <img id="citizenshipPreview" class="preview-img hidden" style="display:none;">
                 </div>
                 <div class="file-zone">
                     <div class="file-label"><i class="fas fa-camera"></i> Profile Photo *</div>
-                    <input type="file" name="photo" id="photo" style="margin-top: 8px;">
+                    <input type="file" name="photo" id="photo" accept="image/*,.jpg,.jpeg,.png" style="margin-top: 8px;">
                     <img id="photoPreview" class="preview-img hidden" style="display:none;">
                 </div>
             </div>
@@ -633,6 +633,14 @@ function previewFile(input, imgEl) {
     input.addEventListener("change", () => {
         const file = input.files[0];
         if (!file) { imgEl.classList.add("hidden"); imgEl.style.display = "none"; return; }
+        if (input.id === "photo" && !file.type.startsWith("image/")) {
+            input.value = "";
+            imgEl.src = "";
+            imgEl.classList.add("hidden");
+            imgEl.style.display = "none";
+            alert("Please upload an image file for the photo field.");
+            return;
+        }
         const reader = new FileReader();
         reader.onload = e => {
             imgEl.src = e.target.result;
@@ -762,6 +770,7 @@ function validateDonorForm() {
     else if(citizenshipFile.files[0].size > 5*1024*1024) { showFileError(citizenshipFile,"Max 5MB."); valid=false; }
     const photoFile = document.getElementById("photo");
     if(!photoFile.files[0]) { showFileError(photoFile,"Photo required."); valid=false; }
+    else if(!photoFile.files[0].type.startsWith("image/")) { showFileError(photoFile,"Photo must be an image file."); valid=false; }
     else if(photoFile.files[0].size > 5*1024*1024) { showFileError(photoFile,"Photo max 5MB."); valid=false; }
     const terms = document.getElementById("terms");
     if(!terms.checked) { showCheckboxError(terms,"You must accept terms."); valid=false; }

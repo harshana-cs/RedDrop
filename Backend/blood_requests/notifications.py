@@ -8,6 +8,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 
 from adminpanel.sms import send_sms
+from common.email_utils import send_branded_email
 
 MIN_GAP_DAYS = 56
 
@@ -92,14 +93,27 @@ def send_donor_alert(donor, blood_request, distance_km: float, *, tier: dict[str
     )
 
     if getattr(donor, "email", None):
-        sent = send_mail(
-            subject,
-            message,
-            settings.EMAIL_HOST_USER,
-            [donor.email],
+        sent = send_branded_email(
+            subject=subject,
+            to=donor.email,
+            title="Urgent Blood Needed",
+            lines=[
+                f"Hi {getattr(donor, 'first_name', '') or 'Donor'},",
+                f"{blood_request.blood_type} blood is urgently needed near you.",
+            ],
+            bullets=[
+                f"Hospital: {hospital_name}",
+                f"District: {blood_request.district}",
+                f"Distance: {round(distance_km, 1)} km",
+                f"Contact: {blood_request.contact_phone}",
+                f"Required By: {blood_request.required_date.strftime('%Y-%m-%d') if blood_request.required_date else 'ASAP'}",
+            ],
+            cta_text="Open Donor Dashboard",
+            cta_url="http://localhost:5500/donor_dashboard.html",
+            footer_note="Thank you for helping save lives.",
+            from_email=settings.EMAIL_HOST_USER,
             fail_silently=True,
         )
         result["email_sent"] = sent > 0
 
     return result
-

@@ -85,6 +85,23 @@ def add_blood_stock(request):
     if not blood_type or units <= 0:
         return Response({"error": "Invalid input"}, status=400)
 
+    # Validate expiry date
+    MAX_SHELF_DAYS = 42
+    today = timezone.localdate()
+
+    if expiry_date:
+        days_until_expiry = (expiry_date - today).days
+        if days_until_expiry < 0:
+            return Response(
+            {"error": "Expiry date cannot be in the past."},
+            status=400
+        )
+        if days_until_expiry > MAX_SHELF_DAYS:
+            return Response(
+            {"error": f"Blood stock cannot be stored for more than {MAX_SHELF_DAYS} days (42 days max shelf life)."},
+            status=400
+        )
+
     with transaction.atomic():
 
         stock, _ = BloodStock.objects.get_or_create(

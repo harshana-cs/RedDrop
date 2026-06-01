@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -13,17 +13,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* ── Inventory section: neutralize nested .page wrapper ── */
-/* ── Inventory section: neutralize nested .page wrapper ── */
+       
 #inventorySection .page {
     max-width: 100%;
     margin: 0;
     padding: 0;
 }
 
-/* ══════════════════════════════════════════
+/* ==========================================
    ENHANCED INVENTORY STYLES
-══════════════════════════════════════════ */
+========================================== */
 #inventorySection {
   font-family: var(--font-sans);
 }
@@ -442,7 +441,7 @@
   #inventorySection .summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   #inventorySection .page-header { padding: .95rem; }
 }
-        /* ── Reset ── */
+        /* -- Reset -- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --red:       #E24B4A;
@@ -496,10 +495,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
  
-/* ── Layout ── */
+/* -- Layout -- */
 .page { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
  
-/* ── Page header ── */
+/* -- Page header -- */
 .page-header {
   display: flex;
   align-items: flex-start;
@@ -531,7 +530,7 @@ body {
 .btn-primary:hover { background: #c93b3a; border-color: #c93b3a; color: #fff; }
 .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
  
-/* ── Alert banner ── */
+/* -- Alert banner -- */
 .alert {
   display: flex; align-items: flex-start; gap: 10px;
   background: var(--red-light); border: 1px solid #F7C1C1;
@@ -546,7 +545,7 @@ body {
 .alert-dot::after { content: '!'; font-size: 11px; font-weight: 500; color: #fff; }
 .alert p { font-size: 13px; color: var(--red-dark); line-height: 1.5; }
  
-/* ── Summary strip ── */
+/* -- Summary strip -- */
 .summary-strip {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -571,7 +570,7 @@ body {
 .scard-val { font-size: 28px; font-weight: 500; line-height: 1; margin-top: 6px; }
 .scard-lbl { font-size: 12px; color: var(--text2); margin-top: 5px; }
  
-/* ── Filter bar ── */
+/* -- Filter bar -- */
 .filter-bar {
   display: flex; align-items: center; gap: 8px;
   flex-wrap: wrap; margin-bottom: 1.25rem;
@@ -595,7 +594,7 @@ body {
 .filter-sep { width: 1px; height: 20px; background: var(--border2); flex-shrink: 0; }
 .row-count { font-size: 12px; color: var(--text3); margin-left: auto; }
  
-/* ── Charts row ── */
+/* -- Charts row -- */
 .charts-row {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.8fr) minmax(0, 0.7fr);
@@ -616,12 +615,12 @@ body {
 .card-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
 .chart-wrap { position: relative; width: 100%; }
  
-/* ── Legend ── */
+/* -- Legend -- */
 .legend { display: flex; flex-wrap: wrap; gap: 10px; }
 .leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
 .leg-sq { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
  
-/* ── Gauge ring ── */
+/* -- Gauge ring -- */
 .gauge-wrap {
   display: flex; flex-direction: column; align-items: center;
   justify-content: center; padding: .5rem 0;
@@ -629,7 +628,7 @@ body {
 .gauge-val { font-size: 22px; font-weight: 500; }
 .gauge-lbl { font-size: 11px; color: var(--text3); margin-top: 2px; }
  
-/* ── Detailed table ── */
+/* -- Detailed table -- */
 .table-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -674,7 +673,7 @@ tr:hover td { background: #FAFAF8; }
 .bar-fill { height: 5px; border-radius: 3px; transition: width .4s; }
 .units-val { font-size: 15px; font-weight: 500; font-family: var(--font-mono); min-width: 30px; }
  
-/* ── Badges / pills ── */
+/* -- Badges / pills -- */
 .pill {
   display: inline-block; padding: 2px 9px;
   border-radius: 20px; font-size: 11px; font-weight: 500;
@@ -686,11 +685,11 @@ tr:hover td { background: #FAFAF8; }
 .p-optimal  { background: var(--green-lt);  color: var(--green-dk); }
 .p-bank     { background: var(--purple-lt); color: var(--purple-dk); }
  
-/* ── Sortable header indicator ── */
-th.sort-asc::after  { content: ' ↑'; color: var(--red); }
-th.sort-desc::after { content: ' ↓'; color: var(--red); }
+/* -- Sortable header indicator -- */
+th.sort-asc::after  { content: ' ^'; color: var(--red); }
+th.sort-desc::after { content: ' v'; color: var(--red); }
  
-/* ── Hospital accordion ── */
+/* -- Hospital accordion -- */
 .section-title {
   font-size: 13px; font-weight: 500;
   margin-bottom: .75rem;
@@ -731,13 +730,13 @@ th.sort-desc::after { content: ' ↓'; color: var(--red); }
   display: flex; gap: 8px;
 }
  
-/* ── Empty state ── */
+/* -- Empty state -- */
 .empty-state {
   text-align: center; padding: 3rem 1rem;
   color: var(--text3); font-size: 13px;
 }
  
-/* ── Tabs ── */
+/* -- Tabs -- */
 .tabs {
   display: flex; gap: 4px;
   background: var(--surface2);
@@ -756,7 +755,7 @@ th.sort-desc::after { content: ' ↓'; color: var(--red); }
 .tab.active { background: var(--surface); color: var(--text); }
 .tab:hover:not(.active) { color: var(--text2); }
  
-/* ── Responsive ── */
+/* -- Responsive -- */
 @media (max-width: 900px) {
   .charts-row { grid-template-columns: 1fr 1fr; }
   .charts-row .card:last-child { grid-column: 1 / -1; }
@@ -770,7 +769,7 @@ th.sort-desc::after { content: ' ↓'; color: var(--red); }
   .page { padding: 1rem 1rem 3rem; }
 }
  
-/* ── Animations ── */
+/* -- Animations -- */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -876,7 +875,7 @@ th.sort-desc::after { content: ' ↓'; color: var(--red); }
     scrollbar-width: thin;
     scrollbar-color: #cbd5e0 #f1f1f1;
 }
-/* ── Global sidebar & header font unification ── */
+/* -- Global sidebar & header font unification -- */
 .fixed-sidebar,
 .main-content header,
 nav button,
@@ -916,21 +915,27 @@ nav button span:last-child {
             height: 100vh;
             overflow-y: auto;
             z-index: 40;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
         
         .main-content {
             margin-left: 16rem; /* Same as sidebar width */
             width: calc(100% - 16rem);
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            min-height: 0;
+            overflow-y: auto;
         }
-        
+        body.modal-open {
+    overflow: hidden;
+}
         /* Scrollable content area */
         .scrollable-content {
             flex: 1;
-            overflow-y: auto;
-            height: calc(100vh - 73px); /* Viewport height minus header height */
+            min-height: 0;
+            height: auto;
+            padding-bottom: 1.5rem;
         }
         
         /* Custom scrollbar */
@@ -945,6 +950,94 @@ nav button span:last-child {
         .scrollable-content::-webkit-scrollbar-thumb {
             background: #cbd5e0;
             border-radius: 4px;
+        }
+
+        .sidebar-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.35);
+            backdrop-filter: blur(2px);
+            z-index: 35;
+        }
+
+        @media (max-width: 1023px) {
+            .fixed-sidebar {
+                transform: translateX(-100%);
+                width: min(86vw, 18rem);
+                box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+            }
+
+            .fixed-sidebar.sidebar-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                height: 100vh;
+            }
+
+            .main-content header {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            #notificationDropdown {
+                width: min(92vw, 320px) !important;
+                right: 0 !important;
+            }
+
+            .main-content .text-2xl {
+                font-size: 1.25rem;
+            }
+
+            .main-content .grid-cols-4,
+            .main-content .grid-cols-3,
+            .main-content .grid-cols-2 {
+                gap: 0.75rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .main-content header h1 {
+                font-size: 1.25rem;
+                line-height: 1.2;
+            }
+
+            .main-content header p {
+                font-size: 0.875rem;
+            }
+
+            .main-content .grid {
+                gap: 0.75rem;
+            }
+
+            .main-content .bg-white.rounded-xl.border.border-gray-200.p-6.shadow-sm {
+                padding: 1rem;
+            }
+
+            .main-content .bg-white.rounded-xl.border.border-gray-200.shadow-sm {
+                padding: 0.875rem;
+            }
+
+            .main-content .bg-white.rounded-xl.border.border-gray-200.shadow-sm .p-6 {
+                padding: 1rem;
+            }
+
+            .main-content table th,
+            .main-content table td {
+                padding: 0.55rem 0.7rem !important;
+                font-size: 0.75rem;
+            }
+
+            .main-content .overflow-x-auto {
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .main-content .px-6 {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
         }
         
         .scrollable-content::-webkit-scrollbar-thumb:hover {
@@ -1224,7 +1317,7 @@ nav button span:last-child {
 
     <div class="min-h-screen">
         <!-- ================= FIXED SIDEBAR ================= -->
-        <aside class="fixed-sidebar bg-white border-r border-gray-200 shadow-sm flex flex-col">
+        <aside id="adminSidebar" class="fixed-sidebar bg-white border-r border-gray-200 shadow-sm flex flex-col">
             <div class="p-6 border-b border-gray-200">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center">
@@ -1238,52 +1331,52 @@ nav button span:last-child {
             </div>
             
             <nav class="flex-1 p-4 space-y-1">
-                <button data-tab="overview" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
+                <button data-tab="overview" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600 font-semibold">
                     <i class="ri-dashboard-line"></i>
                     <span>Dashboard</span>
                 </button>
-                <button data-tab="blood" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
+                <button data-tab="blood" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600 font-semibold">
                     <i class="ri-heart-pulse-line"></i>
                     <span>Blood Requests</span>
                     <span id="blood-badge" class="ml-auto bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full hidden">0</span>
                 </button>
-                <button data-tab="donor" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
+                <button data-tab="donor" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600 font-semibold">
                     <i class="ri-user-heart-line"></i>
                     <span>Donor Registrations</span>
                     <span id="donor-badge" class="ml-auto bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full hidden">0</span>
                 </button>
-                <button data-tab="hospital" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
+                <button data-tab="hospital" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600 font-semibold">
                     <i class="ri-hospital-line"></i>
                     <span>Hospitals</span>
                 </button>
                 <button data-tab="users"
-class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
+                        class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600 font-semibold">
     <i class="ri-group-line"></i>
     <span>Users</span>
 </button>
 <button data-tab="inventory"
-class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
+        class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600 font-semibold">
     <i class="ri-drop-line"></i>
     <span>Blood Inventory</span>
 </button>
 <!-- Add this button in the sidebar nav section -->
 <button data-tab="donations"
-    class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
+        class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600 font-semibold">
     <i class="ri-hand-heart-line"></i>
     <span>Donations</span>
     <span id="donations-badge" class="ml-auto bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full hidden">0</span>
 </button>
-                <button data-tab="analytics" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
+                <button data-tab="analytics" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600 font-semibold">
                     <i class="ri-bar-chart-line"></i>
                     <span>Analytics</span>
                 </button>
                 <button data-tab="audit"
-class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
+                        class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600 font-semibold">
     <i class="ri-file-list-3-line"></i>
     <span>Audit Logs</span>
 </button>
 <button data-tab="camps"
-        class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600">
+        class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 text-gray-700 hover:text-red-600 font-semibold">
     <i class="ri-flag-2-line"></i>
     <span>Donation Camps</span>
     <span id="camps-badge" class="ml-auto bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full hidden">0</span>
@@ -1304,15 +1397,19 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
         </aside>
 
         <!-- ================= MAIN CONTENT ================= -->
+        <div id="sidebarBackdrop" class="sidebar-backdrop hidden lg:hidden" aria-hidden="true"></div>
+
         <main class="main-content">
             <!-- Fixed Header -->
             <header class="sticky top-0 z-30 bg-white border-b border-gray-200 px-6 py-4">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900" id="page-title">Dashboard Overview</h1>
-                        <p class="text-gray-600" id="page-subtitle">System statistics and quick insights</p>
+                <div class="flex w-full items-start gap-3 sm:items-center">
+                    <div class="min-w-0 flex-1">
+                        <div class="min-w-0">
+                            <h1 class="text-2xl font-bold text-gray-900" id="page-title">Dashboard Overview</h1>
+                            <p class="text-gray-600" id="page-subtitle">System statistics and quick insights</p>
+                        </div>
                     </div>
-                    <div class="flex items-center space-x-4">
+                    <div class="ml-auto flex shrink-0 items-center justify-end gap-3 sm:gap-6 flex-nowrap">
                         <div class="relative">
     <button id="notificationBtn" class="p-2 hover:bg-gray-100 rounded-lg relative">
         <i class="ri-notification-3-line text-xl"></i>
@@ -1367,6 +1464,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                     </div>
                 </div>
             </header>
+            <div class="scrollable-content px-6 py-6">
 
             <div class="p-6">
                 <!-- ================= OVERVIEW ================= -->
@@ -1459,7 +1557,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
     </div>
 </div>
  
-<!-- ─── CHARTS GRID ───────────────────────────────────────────── -->
+<!-- --- CHARTS GRID --------------------------------------------- -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
  
     <!-- Blood Type Distribution -->
@@ -1541,15 +1639,15 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
         <!-- Summary totals -->
         <div id="requestStatusSummary" class="grid grid-cols-3 gap-3 mb-4">
             <div class="bg-yellow-50 rounded-lg p-3 text-center">
-                <p class="text-lg font-bold text-yellow-700" id="summaryPending">—</p>
+                <p class="text-lg font-bold text-yellow-700" id="summaryPending">-</p>
                 <p class="text-xs text-yellow-600">Pending</p>
             </div>
             <div class="bg-green-50 rounded-lg p-3 text-center">
-                <p class="text-lg font-bold text-green-700" id="summaryApproved">—</p>
+                <p class="text-lg font-bold text-green-700" id="summaryApproved">-</p>
                 <p class="text-xs text-green-600">Approved</p>
             </div>
             <div class="bg-red-50 rounded-lg p-3 text-center">
-                <p class="text-lg font-bold text-red-700" id="summaryRejected">—</p>
+                <p class="text-lg font-bold text-red-700" id="summaryRejected">-</p>
                 <p class="text-xs text-red-600">Rejected</p>
             </div>
         </div>
@@ -1991,10 +2089,10 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                                 <select id="activityFilter" onchange="filterHospitalActivities()"
                                         class="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent">
                                     <option value="all">All Activities</option>
-                                    <option value="login">🔵 Logins</option>
-                                    <option value="blood">🔴 Blood Requests</option>
-                                    <option value="profile">🟢 Profile Updates</option>
-                                    <option value="other">⚪ Other</option>
+                            <option value="login">Logins</option>
+                                    <option value="blood"> Blood Requests</option>
+                            <option value="profile">Profile Updates</option>
+                                    <option value="other">Other Other</option>
                                 </select>
                                 <button onclick="loadHospitalAuditLogs()"
                                         class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 flex items-center space-x-2 transition-colors">
@@ -2059,17 +2157,37 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                             </div>
                         </div>
 <!-- Modals -->
-    <div id="hospitalDetailModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
-        <div class="bg-white rounded-xl w-full max-w-xl p-6">
-            <h3 class="text-xl font-semibold mb-4">Hospital Application Details</h3>
-            <div id="hospitalDetailBody" class="space-y-2 text-sm"></div>
-            <div class="mt-6 text-right">
-                <button onclick="closeHospitalDetail()"
-                    class="px-4 py-2 bg-gray-200 rounded">Close</button>
+<div id="hospitalDetailModal" class="fixed inset-0 hidden z-50 items-start justify-center overflow-y-auto bg-black/55 backdrop-blur-sm p-0 sm:p-4">
+    <div class="my-0 flex w-full max-w-5xl flex-col overflow-y-auto rounded-none bg-white shadow-2xl ring-1 ring-black/5 sm:my-6 sm:max-h-[calc(100vh-3rem)] sm:rounded-3xl">
+        
+        <!-- Header — never scrolls -->
+        <div class="flex shrink-0 items-start justify-between gap-4 border-b border-gray-100 bg-gradient-to-r from-red-50 via-white to-white px-5 py-4 sm:px-6 sm:py-5 sm:rounded-t-3xl">
+            <div>
+                <div class="inline-flex items-center gap-2 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                    <i class="ri-hospital-line"></i>
+                    Hospital Application
+                </div>
+                <h3 class="mt-3 text-2xl font-bold text-gray-900">Hospital Application Details</h3>
+                <p class="mt-1 text-sm text-gray-500">Review hospital information, uploaded documents, and application status in one place.</p>
             </div>
+            <button onclick="closeHospitalDetail()"
+                class="rounded-full bg-white p-2 text-gray-500 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50 hover:text-gray-700 shrink-0">
+                <i class="ri-close-line text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div id="hospitalDetailBody" class="px-5 py-5 sm:px-6 sm:py-6"></div>
+
+        <!-- Footer — never scrolls -->
+        <div class="flex shrink-0 items-center justify-end gap-3 border-t border-gray-100 bg-gray-50/70 px-5 py-4 sm:px-6 sm:rounded-b-3xl">
+            <button onclick="closeHospitalDetail()"
+                class="inline-flex items-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
+                Close
+            </button>
         </div>
     </div>
-
+</div>
     <div id="approveHospitalModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
         <div class="bg-white rounded-xl w-full max-w-md p-6">
             <h3 class="text-xl font-semibold mb-4">Approve Hospital</h3>
@@ -2095,17 +2213,24 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
             </div>
         </div>
     </div>
-    <div id="activeHospitalDetailModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-semibold">Hospital Account Details</h3>
-                <button onclick="closeActiveHospitalDetailModal()" class="text-gray-400 hover:text-gray-600">
+    <div id="activeHospitalDetailModal" class="fixed inset-0 hidden z-50 items-start justify-center overflow-y-auto bg-black/55 backdrop-blur-sm p-0 sm:p-4">
+        <div class="my-0 flex w-full max-w-4xl flex-col overflow-y-auto rounded-none bg-white shadow-2xl ring-1 ring-black/5 sm:my-6 sm:max-h-[calc(100vh-3rem)] sm:rounded-3xl">
+            <div class="flex shrink-0 items-start justify-between gap-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 via-white to-white px-5 py-4 sm:px-6 sm:py-5 sm:rounded-t-3xl">
+                <div>
+                    <div class="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+                        <i class="ri-user-3-line"></i>
+                        Active Account
+                    </div>
+                    <h3 class="mt-3 text-2xl font-bold text-gray-900">Hospital Account Details</h3>
+                    <p class="mt-1 text-sm text-gray-500">Quick account snapshot for the selected active hospital.</p>
+                </div>
+                <button onclick="closeActiveHospitalDetailModal()" class="rounded-full bg-white p-2 text-gray-500 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50 hover:text-gray-700">
                     <i class="ri-close-line text-xl"></i>
                 </button>
             </div>
-            <div id="activeHospitalDetailBody" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm"></div>
-            <div class="mt-6 text-right">
-                <button onclick="closeActiveHospitalDetailModal()" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+            <div id="activeHospitalDetailBody" class="px-5 py-5 sm:px-6 sm:py-6"></div>
+            <div class="flex shrink-0 items-center justify-end gap-3 border-t border-gray-100 bg-gray-50/70 px-5 py-4 sm:px-6 sm:rounded-b-3xl">
+                <button onclick="closeActiveHospitalDetailModal()" class="inline-flex items-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
                     Close
                 </button>
             </div>
@@ -2181,7 +2306,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
             <i class="fas fa-users text-rose-500 text-2xl"></i> 
             All Users
           </h3>
-          <p class="text-gray-600 mt-1">Manage users who request or donate blood — view detailed activity logs</p>
+          <p class="text-gray-600 mt-1">Manage users who request or donate blood - view detailed activity logs</p>
         </div>
         <!-- extra info: refresh indicator -->
         <button id="refreshUsersBtn" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">
@@ -2357,27 +2482,27 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
     <div class="scard">
       <div class="scard-accent" style="background:var(--red)"></div>
       <div class="scard-lbl">Total units</div>
-      <div class="scard-val" id="sumTotal">—</div>
+      <div class="scard-val" id="sumTotal">-</div>
     </div>
     <div class="scard">
       <div class="scard-accent" style="background:var(--blue)"></div>
       <div class="scard-lbl">Locations</div>
-      <div class="scard-val" id="sumLocs">—</div>
+      <div class="scard-val" id="sumLocs">-</div>
     </div>
     <div class="scard">
       <div class="scard-accent" style="background:var(--red)"></div>
       <div class="scard-lbl" style="color:var(--red-dark)">Critical types</div>
-      <div class="scard-val" style="color:var(--red)" id="sumCritical">—</div>
+      <div class="scard-val" style="color:var(--red)" id="sumCritical">-</div>
     </div>
     <div class="scard">
       <div class="scard-accent" style="background:var(--amber)"></div>
       <div class="scard-lbl" style="color:var(--amber-dk)">Low stock</div>
-      <div class="scard-val" style="color:var(--amber)" id="sumLow">—</div>
+      <div class="scard-val" style="color:var(--amber)" id="sumLow">-</div>
     </div>
     <div class="scard">
       <div class="scard-accent" style="background:var(--green)"></div>
       <div class="scard-lbl" style="color:var(--green-dk)">Optimal</div>
-      <div class="scard-val" style="color:var(--green)" id="sumOptimal">—</div>
+      <div class="scard-val" style="color:var(--green)" id="sumOptimal">-</div>
     </div>
   </div>
  
@@ -2389,7 +2514,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
     <button class="tab"        id="tab-movements"  onclick="setTab('movements')">Movements</button>
   </div>
  
-  <!-- ── ALL STOCK tab ── -->
+  <!-- -- ALL STOCK tab -- -->
   <div id="panel-all">
     <!-- Filter bar -->
     <div class="filter-bar">
@@ -2425,9 +2550,9 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
           </div>
         </div>
         <div class="legend" style="margin-bottom:.75rem">
-          <span class="leg"><span class="leg-sq" style="background:#E24B4A"></span>Critical ≤5</span>
-          <span class="leg"><span class="leg-sq" style="background:#EF9F27"></span>Low 6–15</span>
-          <span class="leg"><span class="leg-sq" style="background:#378ADD"></span>Moderate 16–30</span>
+          <span class="leg"><span class="leg-sq" style="background:#E24B4A"></span>Critical <=5</span>
+          <span class="leg"><span class="leg-sq" style="background:#EF9F27"></span>Low 6-15</span>
+          <span class="leg"><span class="leg-sq" style="background:#378ADD"></span>Moderate 16-30</span>
           <span class="leg"><span class="leg-sq" style="background:#639922"></span>Optimal 31+</span>
         </div>
         <div class="chart-wrap" style="height:200px"><canvas id="barChart"></canvas></div>
@@ -2471,17 +2596,17 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
     </div>
   </div>
  
-  <!-- ── HOSPITALS tab ── -->
+  <!-- -- HOSPITALS tab -- -->
   <div id="panel-hospitals" style="display:none">
     <div id="hospAccordion"></div>
   </div>
  
-  <!-- ── BLOOD TYPE tab ── -->
+  <!-- -- BLOOD TYPE tab -- -->
   <div id="panel-bloodtype" style="display:none">
     <div id="btAccordion"></div>
   </div>
  
-  <!-- ── MOVEMENTS tab ── -->
+  <!-- -- MOVEMENTS tab -- -->
   <div id="panel-movements" style="display:none">
     <div class="table-card">
       <div class="table-hd">
@@ -2506,12 +2631,12 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
  
 </div><!-- /page -->
  
-<!-- ── Add Stock Modal ── -->
+<!-- -- Add Stock Modal -- -->
 <div id="addStockOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:var(--radius-xl);width:100%;max-width:420px;margin:1rem;overflow:hidden">
     <div style="background:var(--red);padding:1.1rem 1.5rem;display:flex;justify-content:space-between;align-items:center">
       <span style="color:#fff;font-size:15px;font-weight:500">Add blood stock</span>
-      <button onclick="closeAddStock()" style="background:none;border:none;color:rgba(255,255,255,.8);font-size:20px;cursor:pointer;line-height:1">×</button>
+      <button onclick="closeAddStock()" style="background:none;border:none;color:rgba(255,255,255,.8);font-size:20px;cursor:pointer;line-height:1">x</button>
     </div>
     <div style="padding:1.5rem;display:flex;flex-direction:column;gap:14px">
       <div>
@@ -2546,12 +2671,12 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
   </div>
 </div>
  
-<!-- ── Quick Adjust Modal ── -->
+<!-- -- Quick Adjust Modal -- -->
 <div id="adjustOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:var(--radius-xl);width:100%;max-width:360px;margin:1rem;overflow:hidden">
     <div id="adjustHeader" style="padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center">
       <span id="adjustTitle" style="color:#fff;font-size:14px;font-weight:500"></span>
-      <button onclick="closeAdjust()" style="background:none;border:none;color:rgba(255,255,255,.8);font-size:20px;cursor:pointer;line-height:1">×</button>
+      <button onclick="closeAdjust()" style="background:none;border:none;color:rgba(255,255,255,.8);font-size:20px;cursor:pointer;line-height:1">x</button>
     </div>
     <div style="padding:1.25rem;display:flex;flex-direction:column;gap:12px">
       <p style="font-size:13px;color:var(--text2)" id="adjustMeta"></p>
@@ -2597,7 +2722,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
 </div>
 </div>  <!--
   ============================================================
-  ANALYTICS SECTION — replace the existing #analyticsSection
+  ANALYTICS SECTION - replace the existing #analyticsSection
   div in your admin_dashboard.html with this entire block
   ============================================================
 -->
@@ -2606,10 +2731,10 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
  
 
 <style>
-/* ── Analytics Design System ── */
-/* ══════════════════════════════════════════
-   ANALYTICS DESIGN SYSTEM — Unified with dashboard
-══════════════════════════════════════════ */
+/* -- Analytics Design System -- */
+/* ==========================================
+   ANALYTICS DESIGN SYSTEM - Unified with dashboard
+========================================== */
 .an {
   --red:       #E24B4A;
   --red-2:     #c73c3b;
@@ -2633,7 +2758,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Page header ── */
+/* -- Page header -- */
 .an h2 {
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   font-size: 22px;
@@ -2641,7 +2766,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
   letter-spacing: -.5px;
 }
 
-/* ── Date range bar ── */
+/* -- Date range bar -- */
 .an-bar {
   display: flex;
   flex-wrap: wrap;
@@ -2729,7 +2854,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
   box-shadow: 0 4px 14px rgba(226,75,74,.4);
 }
 
-/* ── KPI strip ── */
+/* -- KPI strip -- */
 .an-kpis {
   display: grid;
   grid-template-columns: repeat(5, minmax(0,1fr));
@@ -2799,7 +2924,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
 .delta-down { background: #FEE2E2; color: #991B1B; }
 .delta-flat { background: var(--surface-3); color: var(--text-3); }
 
-/* ── Section tabs ── */
+/* -- Section tabs -- */
 .an-tabs {
   display: flex;
   gap: 3px;
@@ -2837,7 +2962,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
   background: var(--surface-3);
 }
 
-/* ── Chart cards ── */
+/* -- Chart cards -- */
 .an-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -2869,7 +2994,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
   margin-top: 3px;
 }
 
-/* ── Table inside card ── */
+/* -- Table inside card -- */
 .an-table {
   width: 100%;
   border-collapse: collapse;
@@ -2896,7 +3021,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
   background: #faf9f7;
 }
 
-/* ── Progress bar ── */
+/* -- Progress bar -- */
 .an-prog-track {
   width: 100%;
   height: 6px;
@@ -2910,7 +3035,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
   transition: width .6s cubic-bezier(.4,0,.2,1);
 }
 
-/* ── Blood type badge ── */
+/* -- Blood type badge -- */
 .bt-chip {
   display: inline-flex;
   align-items: center;
@@ -2926,7 +3051,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
   box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
 }
 
-/* ── Loader ── */
+/* -- Loader -- */
 .an-loader {
   display: flex;
   flex-direction: column;
@@ -2946,7 +3071,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
 }
 @keyframes an-spin { to { transform: rotate(360deg); } }
 
-/* ── Fulfillment funnel ── */
+/* -- Fulfillment funnel -- */
 .funnel-bar {
   position: relative;
   border-radius: 8px;
@@ -2980,7 +3105,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* ── District bars ── */
+/* -- District bars -- */
 .dist-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .dist-name {
   width: 110px;
@@ -3014,7 +3139,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
   flex-shrink: 0;
 }
 
-/* ── Responsive ── */
+/* -- Responsive -- */
 @media (max-width: 900px) {
   .an-kpis { grid-template-columns: repeat(3, 1fr); }
 }
@@ -3022,7 +3147,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
   .an-kpis { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* ── Fade-in animation ── */
+/* -- Fade-in animation -- */
 @keyframes an-fade {
   from { opacity:0; transform:translateY(10px); }
   to   { opacity:1; transform:translateY(0); }
@@ -3037,7 +3162,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
  
 <div class="an space-y-0">
  
-  <!-- ── Page Header ── -->
+  <!-- -- Page Header -- -->
   <div class="flex items-center justify-between mb-6">
     <div>
       <h2 style="font-size:22px;font-weight:700;letter-spacing:-.4px;">Analytics Dashboard</h2>
@@ -3051,7 +3176,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
     </button>
   </div>
  
-  <!-- ── Date Range Bar ── -->
+  <!-- -- Date Range Bar -- -->
   <div class="an-bar">
     <span class="an-bar-label">Period</span>
     <div class="an-presets" id="anPresets">
@@ -3063,7 +3188,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <input type="date" id="anFrom" class="an-date-input" onchange="anCustomRange()">
-      <span style="font-size:12px;color:var(--text-3)">→</span>
+      <span style="font-size:12px;color:var(--text-3)">-></span>
       <input type="date" id="anTo"   class="an-date-input" onchange="anCustomRange()">
     </div>
     <button class="an-apply" onclick="anRefreshAll()">
@@ -3075,7 +3200,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
     </span>
   </div>
  
-  <!-- ── KPI Strip ── -->
+  <!-- -- KPI Strip -- -->
   <div class="an-kpis" id="anKpis">
     <!-- filled by JS -->
     <div class="an-kpi an-fade"><div class="an-loader"><div class="an-spin"></div></div></div>
@@ -3085,7 +3210,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
     <div class="an-kpi an-fade"><div class="an-loader"><div class="an-spin"></div></div></div>
   </div>
  
-  <!-- ── Section Tabs ── -->
+  <!-- -- Section Tabs -- -->
   <div class="an-tabs">
     <button class="an-tab active" onclick="anShowSection('trends',this)">
       <i class="ri-line-chart-line"></i> Trends
@@ -3107,9 +3232,9 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
     </button>
   </div>
  
-  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ====================================================== -->
   <!-- TRENDS SECTION                                         -->
-  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ====================================================== -->
   <div id="an-trends" class="space-y-5 an-section">
  
     <!-- Big line/bar chart -->
@@ -3152,9 +3277,9 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
  
   </div><!-- /trends -->
  
-  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ====================================================== -->
   <!-- DEMAND VS SUPPLY                                       -->
-  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ====================================================== -->
   <div id="an-supply" class="space-y-5 an-section" style="display:none;">
  
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -3207,9 +3332,9 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
  
   </div><!-- /supply -->
  
-  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ====================================================== -->
   <!-- HOSPITALS                                              -->
-  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ====================================================== -->
   <div id="an-hospitals" class="space-y-5 an-section" style="display:none;">
  
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -3270,23 +3395,23 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
  
   </div><!-- /hospitals -->
  
-  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ====================================================== -->
   <!-- DONORS                                                 -->
-  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ====================================================== -->
   <div id="an-donors" class="space-y-5 an-section" style="display:none;">
  
     <!-- 3 summary cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="donorSummaryCards">
       <div class="an-card an-fade" style="text-align:center;padding:1.5rem;">
-        <div style="font-size:40px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--red);" id="donorTotalApproved">—</div>
+        <div style="font-size:40px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--red);" id="donorTotalApproved">-</div>
         <div style="font-size:13px;color:var(--text-3);margin-top:6px;">Approved Donors</div>
       </div>
       <div class="an-card an-fade" style="text-align:center;padding:1.5rem;">
-        <div style="font-size:40px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--teal);" id="donorNewPeriod">—</div>
+        <div style="font-size:40px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--teal);" id="donorNewPeriod">-</div>
         <div style="font-size:13px;color:var(--text-3);margin-top:6px;">New in Period</div>
       </div>
       <div class="an-card an-fade" style="text-align:center;padding:1.5rem;">
-        <div style="font-size:40px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--blue);" id="donorActive">—</div>
+        <div style="font-size:40px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--blue);" id="donorActive">-</div>
         <div style="font-size:13px;color:var(--text-3);margin-top:6px;">Active Donors</div>
       </div>
     </div>
@@ -3319,9 +3444,9 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
  
   </div><!-- /donors -->
  
-  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ====================================================== -->
   <!-- FULFILLMENT                                            -->
-  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ====================================================== -->
   <div id="an-fulfillment" class="space-y-5 an-section" style="display:none;">
  
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -3394,9 +3519,9 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
  
   </div><!-- /fulfillment -->
  
-  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ====================================================== -->
   <!-- GEOGRAPHIC                                             -->
-  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- ====================================================== -->
   <div id="an-geo" class="space-y-5 an-section" style="display:none;">
  
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -3514,7 +3639,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                     <!-- Camps Table -->
                     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                         <div class="px-6 py-4 border-b flex items-center justify-between">
-                            <h4 class="font-semibold text-gray-900">All Camps — List View</h4>
+                            <h4 class="font-semibold text-gray-900">All Camps - List View</h4>
                             <button onclick="exportCampsCSV()" class="text-sm text-gray-600 hover:text-red-600 flex items-center gap-1">
                                 <i class="ri-download-line"></i> Export CSV
                             </button>
@@ -3550,7 +3675,7 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
                 All Donation Records
             </h3>
             <p class="text-gray-600 mt-1">
-                Complete view — who requested, who donated, source, confirmations
+                Complete view - who requested, who donated, source, confirmations
             </p>
         </div>
         <div class="flex gap-2">
@@ -3566,25 +3691,29 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
     </div>
 
     <!-- Summary Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
         <div class="bg-white rounded-xl border p-4 shadow-sm text-center">
-            <p class="text-2xl font-bold text-gray-900" id="donStatTotal">—</p>
+            <p class="text-2xl font-bold text-gray-900" id="donStatTotal">-</p>
             <p class="text-xs text-gray-500 mt-1">Total</p>
         </div>
         <div class="bg-white rounded-xl border p-4 shadow-sm text-center">
-            <p class="text-2xl font-bold text-green-600" id="donStatCompleted">—</p>
+            <p class="text-2xl font-bold text-green-600" id="donStatCompleted">-</p>
             <p class="text-xs text-gray-500 mt-1">Completed</p>
         </div>
         <div class="bg-white rounded-xl border p-4 shadow-sm text-center">
-            <p class="text-2xl font-bold text-yellow-600" id="donStatPending">—</p>
+            <p class="text-2xl font-bold text-yellow-600" id="donStatPending">-</p>
             <p class="text-xs text-gray-500 mt-1">Pending</p>
         </div>
         <div class="bg-white rounded-xl border p-4 shadow-sm text-center">
-            <p class="text-2xl font-bold text-blue-600" id="donStatDonorSource">—</p>
+            <p class="text-2xl font-bold text-amber-600" id="donStatIncomplete">-</p>
+            <p class="text-xs text-gray-500 mt-1">Incomplete</p>
+        </div>
+        <div class="bg-white rounded-xl border p-4 shadow-sm text-center">
+            <p class="text-2xl font-bold text-blue-600" id="donStatDonorSource">-</p>
             <p class="text-xs text-gray-500 mt-1">Via Donor</p>
         </div>
         <div class="bg-white rounded-xl border p-4 shadow-sm text-center">
-            <p class="text-2xl font-bold text-purple-600" id="donStatBankSource">—</p>
+            <p class="text-2xl font-bold text-purple-600" id="donStatBankSource">-</p>
             <p class="text-xs text-gray-500 mt-1">Via Blood Bank</p>
         </div>
     </div>
@@ -3655,12 +3784,13 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
 </div>
 <div id="donationDetailModal"
      class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl">
+    <div class="bg-white rounded-2xl w-full max-w-2xl flex flex-col shadow-2xl"
+         style="height: 90vh; max-height: 90vh;">
 
         <div class="bg-gradient-to-r from-red-600 to-red-500 px-6 py-4 rounded-t-2xl flex justify-between items-center flex-shrink-0">
             <h3 class="text-lg font-bold text-white flex items-center gap-2">
                 <i class="ri-hand-heart-line"></i>
-                Donation Detail — #<span id="donDetailId"></span>
+                Donation Detail - #<span id="donDetailId"></span>
             </h3>
             <button onclick="closeDonationDetail()"
                     class="text-white/80 hover:text-white p-1 hover:bg-white/20 rounded-lg">
@@ -3668,8 +3798,9 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
             </button>
         </div>
 
-        <div id="donationDetailBody"
-             class="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
+       <div id="donationDetailBody"
+     class="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar"
+     style="min-height: 0;">
             <div class="flex items-center justify-center py-12 text-gray-400">
                 <div class="animate-spin rounded-full h-10 w-10 border-4 border-red-200 border-t-red-600"></div>
             </div>
@@ -3687,7 +3818,8 @@ class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-50 t
         </div>
     </div>
 </div>
-            </div> 
+            </div>
+            </div>
         </main>
     </div>
     <!-- ================= JS ================= -->
@@ -3942,7 +4074,36 @@ let bloodTypeChart, requestStatusChart;
 
         /* ---------- TAB MANAGEMENT ---------- */
         const tabs = document.querySelectorAll('nav button');
+        const sidebar = document.getElementById('adminSidebar');
+        const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+        const sidebarToggle = document.getElementById('sidebarToggle');
         let sections = {};
+
+        function openSidebar() {
+            if (!sidebar || !sidebarBackdrop) return;
+            sidebar.classList.add('sidebar-open');
+            sidebarBackdrop.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeSidebar() {
+            if (!sidebar || !sidebarBackdrop) return;
+            sidebar.classList.remove('sidebar-open');
+            sidebarBackdrop.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                if (sidebar?.classList.contains('sidebar-open')) closeSidebar();
+                else openSidebar();
+            });
+        }
+
+        if (sidebarBackdrop) {
+            sidebarBackdrop.addEventListener('click', closeSidebar);
+        }
+
         function buildSectionsMap() {
             sections = {
                 overview: document.getElementById('overviewSection'),
@@ -3967,8 +4128,8 @@ let bloodTypeChart, requestStatusChart;
             inventory: { title: 'Blood Inventory',       subtitle: 'Manage blood bank stock levels' },
             analytics: { title: 'Analytics Dashboard',   subtitle: 'System-wide statistics and insights' },
             audit:     { title: 'Audit Logs',            subtitle: 'Track all system activity and changes' },
-            donations: { title: 'Donation Records', subtitle: 'Complete view of all blood donations — donors, patients, and blood bank' },
-            camps:     { title: 'Donation Camps',        subtitle: 'Create and manage donation camp events' }  // ← ADD THIS LINE
+            donations: { title: 'Donation Records', subtitle: 'Complete view of all blood donations - donors, patients, and blood bank' },
+            camps:     { title: 'Donation Camps',        subtitle: 'Create and manage donation camp events' }
         };
 
         tabs.forEach(tab => {
@@ -3979,6 +4140,7 @@ let bloodTypeChart, requestStatusChart;
                     t.classList.add('text-gray-700');
                 });
                 tab.classList.add('bg-red-50', 'text-red-600');
+                if (window.innerWidth < 1024) closeSidebar();
                 
                 // Update page title
                 const tabName = tab.dataset.tab;
@@ -4026,6 +4188,10 @@ if (tabName === 'analytics') initAnalytics();
 
         });
 
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) closeSidebar();
+        });
+
 
 let bloodTypeChartType  = 'doughnut';
 let requestChartType    = 'bar';
@@ -4046,7 +4212,7 @@ const CHART_COLORS = [
     '#F87171','#FB923C','#4ADE80','#A855F7'
 ];
  
-// ─── PRESET BUTTONS ───────────────────────────────────────────
+// --- PRESET BUTTONS -------------------------------------------
 function setGlobalPreset(days) {
     chartDateState.preset = days;
     chartDateState.from   = null;
@@ -4086,7 +4252,7 @@ function onCustomRangeChange() {
     }
 }
  
-// ─── BUILD QUERY STRING ───────────────────────────────────────
+// --- BUILD QUERY STRING ---------------------------------------
 function buildDateQuery() {
     if (chartDateState.from && chartDateState.to) {
         return `?from=${chartDateState.from}&to=${chartDateState.to}`;
@@ -4096,13 +4262,13 @@ function buildDateQuery() {
  
 function getSubtitleLabel() {
     if (chartDateState.from && chartDateState.to) {
-        return `${chartDateState.from} → ${chartDateState.to}`;
+        return `${chartDateState.from} -> ${chartDateState.to}`;
     }
     const map = { 7:'Last 7 days', 30:'Last 30 days', 90:'Last 90 days', 180:'Last 6 months', 365:'Last year' };
     return map[chartDateState.preset] || `Last ${chartDateState.preset} days`;
 }
  
-// ─── REFRESH ALL ──────────────────────────────────────────────
+// --- REFRESH ALL ----------------------------------------------
 async function refreshAllCharts() {
     await Promise.all([
         loadBloodTypeChart(),
@@ -4120,7 +4286,7 @@ async function initializeCharts() {
     await refreshAllCharts();
 }
  
-// ─── BLOOD TYPE CHART ─────────────────────────────────────────
+// --- BLOOD TYPE CHART -----------------------------------------
 async function loadBloodTypeChart() {
     const loader = document.getElementById('bloodTypeChartLoader');
     const empty  = document.getElementById('bloodTypeChartEmpty');
@@ -4237,7 +4403,7 @@ function setBloodTypeChartType(type) {
     renderBloodTypeChart();
 }
  
-// ─── REQUEST STATUS CHART ─────────────────────────────────────
+// --- REQUEST STATUS CHART -------------------------------------
 async function loadRequestStatusChart() {
     const loader = document.getElementById('requestStatusChartLoader');
     const empty  = document.getElementById('requestStatusChartEmpty');
@@ -4448,7 +4614,7 @@ function setRequestChartType(type) {
                                'bg-yellow-100 text-yellow-800';
 
             body.innerHTML += `
-                <tr class="hover:bg-gray-50">
+                <tr class="hover:bg-gray-50" data-blood-request-id="${r.id}">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center space-x-3">
                                         <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
@@ -4973,117 +5139,141 @@ function setRequestChartType(type) {
             }
         }
 
-        async function viewHospitalRequest(id) {
-            try {
-                const res = await fetch(`http://127.0.0.1:8000/api/admin/hospital-request/${id}/`);
-                const data = await res.json();
+async function viewHospitalRequest(id) {
+    try {
+        const res = await fetch(`http://127.0.0.1:8000/api/admin/hospital-request/${id}/`);
+        const data = await res.json();
 
-                const modal = document.getElementById("hospitalDetailModal");
-                const body = document.getElementById("hospitalDetailBody");
-                
-                body.innerHTML = `
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <p class="font-medium text-gray-700">Hospital Name:</p>
-                            <p class="text-gray-900">${data.hospital_name}</p>
+        const modal = document.getElementById("hospitalDetailModal");
+        const body = document.getElementById("hospitalDetailBody");
+        const status = (data.status || "pending").toLowerCase();
+        const statusMap = {
+            pending: "bg-amber-100 text-amber-700",
+            approved: "bg-green-100 text-green-700",
+            rejected: "bg-red-100 text-red-700",
+            inactive: "bg-gray-100 text-gray-700"
+        };
+
+        const infoCards = [
+            detailCard("Hospital Name", safeText(data.hospital_name), "ri-hospital-line", "text-gray-900"),
+            detailCard("Registration Number", safeText(data.registration_number), "ri-file-list-3-line", "text-gray-900"),
+            detailCard("Hospital Type", capitalizeLabel(data.hospital_type), "ri-building-4-line", "text-gray-900"),
+            detailCard("Email", safeText(data.email), "ri-mail-line", "text-gray-900"),
+            detailCard("Phone", normalizePhone(data.phone), "ri-phone-line", "text-gray-900"),
+            detailCard("District", safeText(data.district), "ri-map-pin-2-line", "text-gray-900"),
+            detailCard("Bed Capacity", safeText(data.bed_capacity, "Not specified"), "ri-hotel-bed-line", "text-gray-900"),
+            detailCard("Status", `<span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusMap[status] || statusMap.pending}">${capitalizeLabel(status)}</span>`, "ri-shield-check-line", "text-gray-900"),
+        ].join("");
+
+        const docs = [
+            documentLink(data.registration_certificate, "Registration Certificate", "ri-file-text-line", { bg: "bg-blue-50", text: "text-blue-600" }),
+            documentLink(data.medical_license, "Medical License", "ri-stethoscope-line", { bg: "bg-emerald-50", text: "text-emerald-600" }),
+            documentLink(data.id_proof, "ID Proof", "ri-id-card-line", { bg: "bg-purple-50", text: "text-purple-600" }),
+            documentLink(data.blood_bank_license, "Blood Bank License", "ri-drop-line", { bg: "bg-rose-50", text: "text-rose-600" }),
+            documentLink(data.authority_letter, "Authority Letter", "ri-file-signature-line", { bg: "bg-amber-50", text: "text-amber-600" }),
+        ].filter(Boolean).join("");
+
+        // Inject content directly into #hospitalDetailBody.
+        // The modal HTML already handles the header (title + close button) and
+        // footer (Close button), and #hospitalDetailBody already has
+        // flex-1 + overflow-y-auto on it — so just put the content here.
+        body.innerHTML = `
+            <div class="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+                <div class="space-y-6">
+                    <div class="rounded-3xl bg-gradient-to-br from-red-600 via-red-500 to-red-700 p-6 text-white shadow-lg">
+                        <p class="text-xs uppercase tracking-[0.25em] text-red-100">Application Overview</p>
+                        <h4 class="mt-2 text-3xl font-bold">${safeText(data.hospital_name)}</h4>
+                        <p class="mt-2 text-sm text-red-50/90">${safeText(data.address, "No address provided")}</p>
+
+                        <div class="mt-6 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+                            <span class="inline-flex items-center rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold text-white">
+                                <i class="ri-mail-line mr-2"></i>${safeText(data.email)}
+                            </span>
+                            <span class="inline-flex items-center rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold text-white">
+                                <i class="ri-phone-line mr-2"></i>${normalizePhone(data.phone)}
+                            </span>
+                            <span class="inline-flex items-center rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold text-white">
+                                <i class="ri-map-pin-line mr-2"></i>${safeText(data.district)}
+                            </span>
                         </div>
-                        <div>
-                            <p class="font-medium text-gray-700">Registration Number:</p>
-                            <p class="text-gray-900">${data.registration_number}</p>
-                        </div>
-                        <div>
-                            <p class="font-medium text-gray-700">Hospital Type:</p>
-                            <p class="text-gray-900 capitalize">${data.hospital_type}</p>
-                        </div>
-                        <div>
-                            <p class="font-medium text-gray-700">Email:</p>
-                            <p class="text-gray-900">${data.email}</p>
-                        </div>
-                        <div>
-                            <p class="font-medium text-gray-700">Phone:</p>
-                            <p class="text-gray-900">${data.phone}</p>
-                        </div>
-                        <div>
-                            <p class="font-medium text-gray-700">Address:</p>
-                            <p class="text-gray-900">${data.address}</p>
-                        </div>
-                        <div>
-                            <p class="font-medium text-gray-700">District:</p>
-                            <p class="text-gray-900">${data.district}</p>
-                        </div>
-                        <div>
-                            <p class="font-medium text-gray-700">Bed Capacity:</p>
-                            <p class="text-gray-900">${data.bed_capacity || 'Not specified'}</p>
-                        </div>
-                        <div>
-                            <p class="font-medium text-gray-700">Status:</p>
-                            <p class="text-gray-900 capitalize">${data.status || '-'}</p>
-                        </div>
-                        ${data.status === 'rejected' ? `
-                        <div class="md:col-span-2">
-                            <p class="font-medium text-gray-700">Rejection Reason:</p>
-                            <p class="text-gray-900">${data.rejection_reason || '-'}</p>
-                        </div>` : ''}
                     </div>
-                    
-                   <div class="mt-6 pt-6 border-t">
-  <h5 class="font-medium text-gray-700 mb-3">Documents:</h5>
 
-  <div class="flex flex-wrap gap-3">
-    ${
-      data.registration_certificate
-        ? `<a href="${API_BASE}${data.registration_certificate}" target="_blank"
-             class="inline-flex items-center space-x-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100">
-              <i class="ri-file-text-line"></i>
-              <span>Registration Certificate</span>
-           </a>`
-        : ''
-    }
-
-    ${
-      data.medical_license
-        ? `<a href="${API_BASE}${data.medical_license}" target="_blank"
-             class="inline-flex items-center space-x-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100">
-              <i class="ri-stethoscope-line"></i>
-              <span>Medical License</span>
-           </a>`
-        : ''
-    }
-
-    ${
-      data.id_proof
-        ? `<a href="${API_BASE}${data.id_proof}" target="_blank"
-             class="inline-flex items-center space-x-2 px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100">
-              <i class="ri-id-card-line"></i>
-              <span>ID Proof</span>
-           </a>`
-        : ''
-    }
-  </div>
-</div>
-
-                    
-                    <div class="mt-6 pt-6 border-t">
-                        <p class="text-sm text-gray-500">Application Date: ${data.created_at || 'Not available'}</p>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Verification</p>
+                            <p class="mt-2 text-lg font-bold text-gray-900">${capitalizeLabel(status)}</p>
+                            <p class="mt-1 text-sm text-gray-500">Current application processing status</p>
+                        </div>
+                        <div class="rounded-3xl border border-gray-200 bg-gray-50 p-4 shadow-sm">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Facility</p>
+                            <p class="mt-2 text-lg font-bold text-gray-900">${capitalizeLabel(data.hospital_type)}</p>
+                            <p class="mt-1 text-sm text-gray-500">Registered hospital category</p>
+                        </div>
+                        <div class="rounded-3xl border border-gray-200 bg-white p-4 shadow-sm sm:col-span-2">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Registration Number</p>
+                            <p class="mt-2 text-lg font-bold text-gray-900 break-words">${safeText(data.registration_number)}</p>
+                        </div>
                     </div>
-                `;
-                
-                modal.classList.remove("hidden");
-                
-            } catch (error) {
-                console.error('Error loading hospital details:', error);
-                document.getElementById("hospitalDetailBody").innerHTML = `
-                    <div class="text-center py-4">
-                        <i class="ri-error-warning-line text-3xl text-red-500 mb-3"></i>
-                        <p class="text-red-600">Failed to load hospital details</p>
-                    </div>
-                `;
-            }
-        }
 
-        function closeHospitalDetail() {
-            document.getElementById("hospitalDetailModal").classList.add("hidden");
-        }
+                    ${data.status === 'rejected' ? `
+                        <div class="rounded-3xl border border-red-200 bg-red-50 p-5">
+                            <div class="flex items-start gap-3">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-red-500 shadow-sm">
+                                    <i class="ri-alert-line"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold uppercase tracking-wider text-red-500">Rejection Reason</p>
+                                    <p class="mt-2 text-sm text-red-900">${safeText(data.rejection_reason, "No reason provided")}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div class="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm">
+                        <div class="mb-4 flex items-center justify-between">
+                            <h5 class="text-base font-bold text-gray-900">Documents</h5>
+                            <p class="text-sm text-gray-500">Open files in a new tab</p>
+                        </div>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            ${docs || '<div class="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-5 text-sm text-gray-500 sm:col-span-2">No documents uploaded.</div>'}
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="mb-3 flex items-center justify-between">
+                        <h5 class="text-lg font-bold text-gray-900">Hospital Details</h5>
+                        <p class="text-sm text-gray-500">Submitted information</p>
+                    </div>
+                    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
+                        ${infoCards}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        modal.classList.remove("hidden");
+modal.classList.add("flex");
+document.body.classList.add("modal-open");
+
+    } catch (error) {
+        console.error('Error loading hospital details:', error);
+        document.getElementById("hospitalDetailBody").innerHTML = `
+            <div class="text-center py-4">
+                <i class="ri-error-warning-line text-3xl text-red-500 mb-3"></i>
+                <p class="text-red-600">Failed to load hospital details</p>
+            </div>
+        `;
+    }
+}
+
+// In closeHospitalDetail:
+function closeHospitalDetail() {
+    const modal = document.getElementById("hospitalDetailModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    document.body.classList.remove("modal-open");
+}
 
         async function showApproveHospitalModal(id) {
     try {
@@ -5263,53 +5453,74 @@ function setRequestChartType(type) {
                 showToast('error', 'Network Error', 'Failed to connect to server.');
             }
         }
-        /* ---------- INITIAL LOAD ---------- */
         document.addEventListener('DOMContentLoaded', () => {
-            buildSectionsMap();
-            initializeCharts();
-            if (tabs.length) tabs[0].click();
-            loadBloodRequests();
-            loadDonors();
-            loadHospitals();
-            loadNotifications();
+    buildSectionsMap();
 
-            // ── REAL-TIME POLLING ──
-            setInterval(loadNotifications, 15000);  // notifications every 15s
-            setInterval(() => {
-                loadBloodRequests();
-                loadDonors();
-                loadHospitals();
-            }, 30000);  // badges + counts every 30s
-            setInterval(() => {
-                if (!document.getElementById("overviewSection").classList.contains("hidden"))
-                    initializeCharts();
-            }, 60000);  // charts every 60s if visible
-            setInterval(() => {
-                if (!document.getElementById("inventorySection").classList.contains("hidden"))
-                    loadInventory();
-            }, 30000);
-            setInterval(() => {
-                if (!document.getElementById("auditLogsSection").classList.contains("hidden"))
-                    loadAuditLogs();
-            }, 20000);
-            setInterval(() => {
-                if (!document.getElementById("usersSection").classList.contains("hidden"))
-                    loadUsers();
-            }, 30000);
-            setInterval(() => {
-                if (!document.getElementById("donationsSection").classList.contains("hidden"))
-                    loadDonations();
-            }, 30000);
-        });
-
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.dropdown')) {
-                document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                    menu.classList.add('hidden');
-                });
+    // -- Notification dropdown toggle ----------------------
+    const notifBtn      = document.getElementById("notificationBtn");
+    const notifDropdown = document.getElementById("notificationDropdown");
+    if (notifBtn && notifDropdown) {
+        notifBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            notifDropdown.classList.toggle("hidden");
+            if (!notifDropdown.classList.contains("hidden")) {
+                loadNotifications();
             }
         });
+        document.addEventListener("click", (e) => {
+            if (!notifDropdown.classList.contains("hidden") &&
+                !notifBtn.contains(e.target) &&
+                !notifDropdown.contains(e.target)) {
+                notifDropdown.classList.add("hidden");
+            }
+        });
+    }
+    // -----------------------------------------------------
+
+    initializeCharts();
+    if (tabs.length) tabs[0].click();
+    loadBloodRequests();
+    loadDonors();
+    loadHospitals();
+    loadNotifications();
+
+    // -- REAL-TIME POLLING --
+    setInterval(loadNotifications, 15000);
+    setInterval(() => {
+        loadBloodRequests();
+        loadDonors();
+        loadHospitals();
+    }, 30000);
+    setInterval(() => {
+        if (!document.getElementById("overviewSection").classList.contains("hidden"))
+            initializeCharts();
+    }, 60000);
+    setInterval(() => {
+        if (!document.getElementById("inventorySection").classList.contains("hidden"))
+            loadInventory();
+    }, 30000);
+    setInterval(() => {
+        if (!document.getElementById("auditLogsSection").classList.contains("hidden"))
+            loadAuditLogs();
+    }, 20000);
+    setInterval(() => {
+        if (!document.getElementById("usersSection").classList.contains("hidden"))
+            loadUsers();
+    }, 30000);
+    setInterval(() => {
+        if (!document.getElementById("donationsSection").classList.contains("hidden"))
+            loadDonations();
+    }, 120000);
+});
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.classList.add('hidden');
+        });
+    }
+});
 
 function toggleAdminSettingsMenu(e) {
     e?.stopPropagation?.();
@@ -5539,18 +5750,18 @@ async function loadHospitals() {
                     </td>
                 </tr>
             `;
-            totalHospitalsEl.textContent = "0"; // ✅ FIX
+            totalHospitalsEl.textContent = "0"; // fix
             return;
         }
 
         table.innerHTML = "";
         window._hospitalMap = {};
 
-// ✅ COUNT ACTIVE HOSPITALS
+// Count active hospitals
 const activeCount = json.data.filter(h => h.active).length;
 totalHospitalsEl.textContent = activeCount;
 
-// ✅ SORT: newest first
+// Sort newest first
 json.data
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .forEach(h => {
@@ -5563,27 +5774,27 @@ json.data
         table.innerHTML += `
             <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4">
-                        <p class="font-medium">${h.name}</p>
-                        <p class="text-sm text-gray-500">Username: ${h.username}</p>
-                        <p class="text-xs text-gray-400 break-all">Password: ${h.password || "-"}</p>
+                        <p class="font-medium text-gray-900">${safeText(h.name)}</p>
+                        <p class="text-sm text-gray-500">Username: ${safeText(h.username)}</p>
+                        <p class="text-xs text-gray-400 break-all">Password: ${safeText(h.password, "-")}</p>
                     </td>
-                    <td class="px-6 py-4">${h.district || "-"}</td>
+                    <td class="px-6 py-4">${safeText(h.district)}</td>
                     <td class="px-6 py-4">
-                        ${h.contact_number || "-"}<br>
-                        <span class="text-sm text-gray-500">${h.email || ""}</span>
+                        ${safeText(h.contact_number)}<br>
+                        <span class="text-sm text-gray-500">${safeText(h.email, "")}</span>
                     </td>
                     <td class="px-6 py-4">${statusBadge}</td>
                     <td class="px-6 py-4 space-x-2">
                         <button onclick="viewActiveHospitalDetails(${h.id})"
-                            class="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
+                            class="inline-flex items-center rounded-lg bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-200">
                             View Details
                         </button>
                         <button onclick="toggleHospital(${h.id})"
-                            class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200">
+                            class="inline-flex items-center rounded-lg bg-yellow-100 px-3 py-1.5 text-sm font-medium text-yellow-700 transition hover:bg-yellow-200">
                             ${h.active ? "Deactivate" : "Activate"}
                         </button>
                         <button onclick="resetHospitalPassword(${h.id})"
-                            class="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                            class="inline-flex items-center rounded-lg bg-blue-100 px-3 py-1.5 text-sm font-medium text-blue-700 transition hover:bg-blue-200">
                             Reset Password
                         </button>
                     </td>
@@ -5645,30 +5856,66 @@ function viewActiveHospitalDetails(id) {
     }
 
     const body = document.getElementById("activeHospitalDetailBody");
-    const rows = [
-        ["Hospital Name", h.name || "-"],
-        ["Username", h.username || "-"],
-        ["Password", h.password || "Not available"],
-        ["Status", h.active ? "Active" : "Inactive"],
-        ["District", h.district || "-"],
-        ["Address", h.address || "-"],
-        ["Contact Number", h.contact_number || "-"],
-        ["Email", h.email || "-"],
-        ["Registration Number", h.registration_number || "-"],
-        ["Created On", h.created_at || "-"]
-    ];
+    const activeStatusClass = h.active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700";
 
-    body.innerHTML = rows.map(([label, value]) => `
-        <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
-            <p class="text-xs text-gray-500 mb-1">${label}</p>
-            <p class="font-medium text-gray-900 break-all">${value}</p>
+    body.innerHTML = `
+        <div class="space-y-6">
+            <div class="grid gap-4 lg:grid-cols-[1.25fr_0.75fr]">
+                <div class="rounded-3xl bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 p-6 text-white shadow-lg">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-xs uppercase tracking-[0.25em] text-slate-300">Hospital Account</p>
+                            <h4 class="mt-2 text-3xl font-bold">${safeText(h.name)}</h4>
+                            <p class="mt-2 max-w-2xl text-sm text-slate-200/90">${safeText(h.address, "No address provided")}</p>
+                        </div>
+                        <span class="inline-flex rounded-full ${activeStatusClass} px-3 py-1.5 text-xs font-semibold">
+                            ${h.active ? "Active" : "Inactive"}
+                        </span>
+                    </div>
+                    <div class="mt-6 flex flex-wrap gap-3">
+                        <span class="inline-flex items-center rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-white">
+                            <i class="ri-user-3-line mr-2"></i>${safeText(h.username)}
+                        </span>
+                        <span class="inline-flex items-center rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-white">
+                            <i class="ri-phone-line mr-2"></i>${normalizePhone(h.contact_number)}
+                        </span>
+                        <span class="inline-flex items-center rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-white">
+                            <i class="ri-mail-line mr-2"></i>${safeText(h.email)}
+                        </span>
+                    </div>
+                </div>
+                <div class="grid gap-4 sm:grid-cols-2">
+                    ${detailCard("District", safeText(h.district), "ri-map-pin-2-line", "text-gray-900")}
+                    ${detailCard("Registration Number", safeText(h.registration_number), "ri-file-list-3-line", "text-gray-900")}
+                    ${detailCard("Contact Number", normalizePhone(h.contact_number), "ri-phone-line", "text-gray-900")}
+                    ${detailCard("Created On", safeText(h.created_at), "ri-calendar-line", "text-gray-900")}
+                </div>
+            </div>
+
+            <div>
+                <div class="mb-3 flex items-center justify-between">
+                    <h5 class="text-lg font-bold text-gray-900">Account Information</h5>
+                    <p class="text-sm text-gray-500">Login and administrative details</p>
+                </div>
+                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    ${detailCard("Username", safeText(h.username), "ri-user-line", "text-gray-900")}
+                    ${detailCard("Password", safeText(h.password, "Not available"), "ri-lock-2-line", "text-gray-900")}
+                    ${detailCard("Email", safeText(h.email), "ri-mail-line", "text-gray-900")}
+                    ${detailCard("Address", safeText(h.address), "ri-home-4-line", "text-gray-900")}
+                    ${detailCard("District", safeText(h.district), "ri-map-pin-2-line", "text-gray-900")}
+                    ${detailCard("Status", `<span class="inline-flex rounded-full ${activeStatusClass} px-3 py-1 text-xs font-semibold">${h.active ? "Active" : "Inactive"}</span>`, "ri-shield-check-line", "text-gray-900")}
+                </div>
+            </div>
         </div>
-    `).join("");
+    `;
 
     document.getElementById("activeHospitalDetailModal").classList.remove("hidden");
+    document.getElementById("activeHospitalDetailModal").classList.add("flex");
 }
 function closeActiveHospitalDetailModal() {
-    document.getElementById("activeHospitalDetailModal").classList.add("hidden");
+    const modal = document.getElementById("activeHospitalDetailModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
 }
 async function loadRejectedHospitalRequests() {
   const table = document.getElementById("rejectedHospitalTable");
@@ -5715,81 +5962,260 @@ async function loadRejectedHospitalRequests() {
       </tr>`;
   }
 }
-async function loadNotifications() {
-    try {
-        const res = await fetch(`${API_BASE}/api/admin/notifications/`);
-        const data = await res.json();
 
-        const list = document.getElementById("notificationList");
-        const badge = document.getElementById("notificationBadge");
-
-        list.innerHTML = "";
-
-        if (!data.notifications.length) {
-            list.innerHTML = `
-                <div class="p-4 text-center text-gray-500">
-                    No notifications
-                </div>`;
-        }
-
-data.notifications.forEach(n => {
-
-const unreadStyle = n.is_read
-    ? "bg-white"
-    : "bg-red-50 border-l-4 border-red-500";
-
-list.innerHTML += `
-<div onclick="handleNotificationClick(${n.id}, \`${n.type}\`, ${n.blood_request_id || 'null'})"
-     class="px-3 py-2.5 border-b hover:bg-red-50 cursor-pointer transition flex gap-2.5 items-start ${unreadStyle}">
-
-    <div class="w-7 h-7 flex-shrink-0 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xs mt-0.5">
-        <i class="ri-heart-pulse-line"></i>
-    </div>
-
-    <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between gap-1">
-            <p class="text-xs font-semibold text-gray-800 truncate">${n.title}</p>
-            ${!n.is_read ? `<span class="text-xs text-red-600 font-bold flex-shrink-0">•</span>` : ""}
-        </div>
-        <p class="text-xs text-gray-500 line-clamp-2 leading-snug">${n.message}</p>
-        <p class="text-xs text-gray-400 mt-0.5">${n.created_at}</p>
-    </div>
-
-</div>
-`;
-        // No-donor notifications are handled when opened from the list,
-        // so the dashboard does not spam an automatic modal on every refresh.
-});
-
-        if (data.unread > 0) {
-            badge.textContent = data.unread;
-            badge.classList.remove("hidden");
-        } else {
-            badge.classList.add("hidden");
-        }
-
-    } catch (error) {
-        console.error("Failed to load notifications", error);
-    }
+function safeText(value, fallback = "Not available") {
+    if (value === null || value === undefined || value === "") return fallback;
+    return String(value);
 }
-// Toggle notification dropdown with proper click handling
-const notifBtn = document.getElementById("notificationBtn");
-const notifDropdown = document.getElementById("notificationDropdown");
 
-if (notifBtn && notifDropdown) {
-    notifBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        notifDropdown.classList.toggle("hidden");
-    });
-    
-    // Close dropdown when clicking outside
-    document.addEventListener("click", (e) => {
-        if (!notifDropdown.classList.contains("hidden")) {
-            if (!notifBtn.contains(e.target) && !notifDropdown.contains(e.target)) {
-                notifDropdown.classList.add("hidden");
-            }
-        }
-    });
+function capitalizeLabel(value) {
+    if (!value) return "Not available";
+    return String(value)
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function normalizePhone(value) {
+    if (!value) return "Not available";
+    return String(value).trim();
+}
+
+function detailCard(label, value, icon, accent = "text-gray-700") {
+    return `
+        <div class="rounded-2xl border border-gray-200 bg-gray-50/80 p-4 shadow-sm transition hover:border-red-200 hover:bg-red-50/40">
+            <div class="flex items-start gap-3">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-red-500 ring-1 ring-gray-200">
+                    <i class="${icon}"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">${label}</p>
+                    <p class="mt-1 break-words text-sm font-semibold ${accent}">${value}</p>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function documentLink(url, label, iconClass, colorClasses) {
+    if (!url) return "";
+    return `
+        <a href="${API_BASE}${url}" target="_blank"
+           class="group flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-red-200 hover:shadow-md">
+            <div class="flex h-11 w-11 items-center justify-center rounded-xl ${colorClasses.bg} ${colorClasses.text} ring-1 ring-black/5">
+                <i class="${iconClass} text-lg"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+                <p class="text-sm font-semibold text-gray-900">${label}</p>
+                <p class="text-xs text-gray-500">Click to view uploaded file</p>
+            </div>
+            <i class="ri-external-link-line text-lg text-gray-300 transition group-hover:text-red-500"></i>
+        </a>
+    `;
+}
+// -- Notification type -> { icon, bg, color, action } ----------
+const NOTIF_MAP = {
+  // -- Pending blood requests --------------------------------
+  blood_request:                        { icon:"ri-drop-line",            bg:"bg-red-100",    color:"text-red-600",    action:"pending_blood"    },
+  blood:                                { icon:"ri-drop-line",            bg:"bg-red-100",    color:"text-red-600",    action:"pending_blood"    },
+
+  // -- Processed blood requests ------------------------------
+  request_approved:                     { icon:"ri-checkbox-circle-line", bg:"bg-green-100",  color:"text-green-600",  action:"processed_blood"  },
+  blood_request_approved:               { icon:"ri-checkbox-circle-line", bg:"bg-green-100",  color:"text-green-600",  action:"processed_blood"  },
+  blood_request_approved_by_admin:      { icon:"ri-checkbox-circle-line", bg:"bg-green-100",  color:"text-green-600",  action:"processed_blood"  },
+  request_rejected:                     { icon:"ri-close-circle-line",    bg:"bg-red-100",    color:"text-red-600",    action:"processed_blood"  },
+  blood_request_rejected_by_admin:      { icon:"ri-close-circle-line",    bg:"bg-red-100",    color:"text-red-600",    action:"processed_blood"  },
+
+  // -- Donor registrations -----------------------------------
+  donor_registration:                   { icon:"ri-user-heart-line",      bg:"bg-blue-100",   color:"text-blue-600",   action:"audit"            },
+  donor_registration_rejected:          { icon:"ri-user-unfollow-line",   bg:"bg-red-100",    color:"text-red-600",    action:"processed_donor"  },
+  donor:                                { icon:"ri-user-heart-line",      bg:"bg-blue-100",   color:"text-blue-600",   action:"pending_donor"    },
+
+  // -- Donations ---------------------------------------------
+  donor_accept:                         { icon:"ri-hand-heart-line",      bg:"bg-purple-100", color:"text-purple-600", action:"donations"        },
+  donor_request_rejected:               { icon:"ri-user-unfollow-line",   bg:"bg-red-100",    color:"text-red-600",    action:"donations"        },
+  completed:                            { icon:"ri-heart-fill",           bg:"bg-green-100",  color:"text-green-600",  action:"donations"        },
+  donation_complete:                    { icon:"ri-heart-fill",           bg:"bg-green-100",  color:"text-green-600",  action:"donations"        },
+  donation_approved:                    { icon:"ri-heart-fill",           bg:"bg-green-100",  color:"text-green-600",  action:"donations"        },
+  request_completed:                    { icon:"ri-heart-fill",           bg:"bg-green-100",  color:"text-green-600",  action:"donations"        },
+  donation_otp:                         { icon:"ri-key-line",             bg:"bg-purple-100", color:"text-purple-600", action:"donations"        },
+
+  // -- No match / escalation failed -------------------------
+  blood_request_failed:                 { icon:"ri-alarm-warning-line",   bg:"bg-orange-100", color:"text-orange-600", action:"no_match"         },
+
+  // -- Hospitals ---------------------------------------------
+  hospital_registration:                { icon:"ri-hospital-line",        bg:"bg-teal-100",   color:"text-teal-600",   action:"hospital"         },
+  hospital:                             { icon:"ri-hospital-line",        bg:"bg-teal-100",   color:"text-teal-600",   action:"hospital"         },
+
+  // -- Camps -------------------------------------------------
+  camp:                                 { icon:"ri-flag-2-line",          bg:"bg-yellow-100", color:"text-yellow-600", action:"camps"            },
+  donation_camp:                        { icon:"ri-flag-2-line",          bg:"bg-yellow-100", color:"text-yellow-600", action:"camps"            },
+  camp_registration:                    { icon:"ri-flag-2-line",          bg:"bg-yellow-100", color:"text-yellow-600", action:"camps"            },
+
+  // -- Inventory / System alerts -----------------------------
+  system_alert:                         { icon:"ri-alert-line",           bg:"bg-orange-100", color:"text-orange-600", action:"inventory"        },
+  stock_alert:                          { icon:"ri-drop-fill",            bg:"bg-orange-100", color:"text-orange-600", action:"inventory"        },
+
+  // -- Generic -----------------------------------------------
+  alert:                                { icon:"ri-notification-3-line",  bg:"bg-gray-100",   color:"text-gray-600",   action:"audit"            },
+  audit:                                { icon:"ri-file-list-3-line",     bg:"bg-gray-100",   color:"text-gray-600",   action:"audit"            },
+  system:                               { icon:"ri-settings-3-line",      bg:"bg-gray-100",   color:"text-gray-600",   action:"audit"            },
+  security_alert:                       { icon:"ri-shield-line",          bg:"bg-gray-100",   color:"text-gray-600",   action:"audit"            },
+};
+
+const NOTIF_DEFAULT = { icon:"ri-notification-3-line", bg:"bg-gray-100", color:"text-gray-600", action:"audit" };
+
+function getNotifMeta(type) {
+  return NOTIF_MAP[(type || "").trim().toLowerCase()] || NOTIF_DEFAULT;
+}
+
+// -- loadNotifications ----------------------------------------
+async function loadNotifications() {
+  try {
+    const res  = await fetch(`${API_BASE}/api/admin/notifications/`);
+    const data = await res.json();
+
+    const list  = document.getElementById("notificationList");
+    const badge = document.getElementById("notificationBadge");
+    if (!list) return;
+
+    list.innerHTML = "";
+
+    const notifications = data.notifications || [];
+
+    if (!notifications.length) {
+      list.innerHTML = `
+        <div class="p-6 text-center text-gray-400 text-sm">
+          <i class="ri-notification-line text-2xl mb-2 block opacity-40"></i>
+          No notifications
+        </div>`;
+    } else {
+      notifications.forEach(n => {
+        const meta      = getNotifMeta(n.type);
+        const unreadCls = n.is_read ? "bg-white" : "bg-red-50 border-l-4 border-red-500";
+
+        const div = document.createElement("div");
+        div.className = `px-3 py-2.5 border-b hover:bg-red-50 cursor-pointer transition flex gap-2.5 items-start ${unreadCls}`;
+        div.innerHTML = `
+          <div class="w-7 h-7 flex-shrink-0 ${meta.bg} ${meta.color} rounded-full flex items-center justify-center text-xs mt-0.5">
+            <i class="${meta.icon}"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-1">
+              <p class="text-xs font-semibold text-gray-800 truncate">${n.title || "Notification"}</p>
+              ${!n.is_read ? `<span class="text-xs text-red-600 font-bold flex-shrink-0">-</span>` : ""}
+            </div>
+            <p class="text-xs text-gray-500 line-clamp-2 leading-snug mt-0.5">${n.message || ""}</p>
+            <p class="text-xs text-gray-400 mt-0.5">${n.created_at || ""}</p>
+          </div>`;
+
+        // Safe click - no string escaping, actual JS values
+        div.addEventListener("click", () => {
+          handleNotificationClick(n.id, n.type, n.blood_request_id || null);
+        });
+
+        list.appendChild(div);
+      });
+    }
+
+    // Badge
+    if ((data.unread || 0) > 0) {
+      badge.textContent = data.unread > 99 ? "99+" : data.unread;
+      badge.classList.remove("hidden");
+    } else {
+      badge?.classList.add("hidden");
+    }
+
+    const autoNoMatch = [...notifications].reverse().find(n =>
+      !n.is_read &&
+      getNotifMeta(n.type).action === "no_match" &&
+      n.id !== lastAutoNoMatchNotificationId
+    );
+    if (autoNoMatch && document.getElementById('noMatchModal')?.classList.contains('hidden')) {
+      autoOpenNoMatchNotification(autoNoMatch);
+    }
+
+  } catch (err) {
+    console.error("Failed to load notifications", err);
+  }
+}
+
+// -- handleNotificationClick ----------------------------------
+async function handleNotificationClick(id, type, requestId = null) {
+  // Mark read (fire and forget)
+  fetch(`${API_BASE}/api/admin/notifications/${id}/read/`, { method: "POST" })
+    .then(() => loadNotifications())
+    .catch(() => {});
+
+  // Close dropdown immediately
+  document.getElementById("notificationDropdown")?.classList.add("hidden");
+
+  const { action } = getNotifMeta(type);
+
+  switch (action) {
+
+    case "pending_blood":
+      openBloodRequests();
+      break;
+
+    case "processed_blood":
+      // go to blood tab, scroll to processed table
+      openBloodRequests();
+      setTimeout(() => {
+        document.getElementById("processedBloodRequestsBody")
+          ?.closest("div.mt-10")
+          ?.scrollIntoView({ behavior:"smooth", block:"start" });
+      }, 300);
+      break;
+
+    case "pending_donor":
+      openDonorRequests();
+      break;
+
+    case "processed_donor":
+      openDonorRequests();
+      setTimeout(() => {
+        document.getElementById("processedDonorsBody")
+          ?.closest("div.mt-10")
+          ?.scrollIntoView({ behavior:"smooth", block:"start" });
+      }, 300);
+      break;
+
+    case "donations":
+      await openDonationsSection(requestId);
+      if (requestId) {
+        setTimeout(() => viewDonationDetail(Number(requestId)), 400);
+      }
+      break;
+
+    case "no_match":
+      showNoMatchModal(requestId);
+      break;
+
+    case "hospital":
+      openHospitalSection();
+      break;
+
+    case "camps":
+      openCampsSection();
+      break;
+
+    case "inventory":
+      // Switch to inventory tab
+      tabs.forEach(t => { t.classList.remove("bg-red-50","text-red-600"); t.classList.add("text-gray-700"); });
+      const invTab = document.querySelector("[data-tab='inventory']");
+      if (invTab) invTab.classList.add("bg-red-50","text-red-600");
+      Object.values(sections).forEach(s => { if (s) s.classList.add("hidden"); });
+      if (sections.inventory) sections.inventory.classList.remove("hidden");
+      document.getElementById("page-title").textContent    = "Blood Inventory";
+      document.getElementById("page-subtitle").textContent = "Manage blood bank stock levels";
+      loadInventory();
+      break;
+
+    case "audit":
+    default:
+      openAuditLogs();
+      break;
+  }
 }
 // notifications polled in main DOMContentLoaded
 function openBloodRequests() {
@@ -5821,56 +6247,56 @@ function openBloodRequests() {
     // close notification dropdown
     document.getElementById("notificationDropdown").classList.add("hidden");
 }
-async function handleNotificationClick(id, type, donationId = null) {
-    try {
-        await fetch(`${API_BASE}/api/admin/notifications/${id}/read/`, { method: "POST" });
-        loadNotifications();
-    } catch (error) {
-        console.error("Failed to mark notification as read");
-    }
-    document.getElementById("notificationDropdown").classList.add("hidden");
+// async function handleNotificationClick(id, type, donationId = null) {
+//     try {
+//         await fetch(`${API_BASE}/api/admin/notifications/${id}/read/`, { method: "POST" });
+//         loadNotifications();
+//     } catch (error) {
+//         console.error("Failed to mark notification as read");
+//     }
+//     document.getElementById("notificationDropdown").classList.add("hidden");
 
-    type = (type || "").trim().toLowerCase();
-    const donationTypes = new Set(["completed", "donation_complete", "donation_approved", "request_completed"]);
-    const bloodTypes = new Set(["blood_request", "blood", "request_approved", "request_rejected", "blood_request_failed"]);
-    const donorTypes = new Set(["donor_registration", "donor", "donor_accept", "donation_otp"]);
-    const hospitalTypes = new Set(["hospital_registration", "hospital"]);
-    const campTypes = new Set(["camp", "donation_camp", "camp_registration"]);
-    const auditTypes = new Set(["alert", "audit", "system", "security_alert", "system_alert"]);
+//     type = (type || "").trim().toLowerCase();
+//     const donationTypes = new Set(["completed", "donation_complete", "donation_approved", "request_completed"]);
+//     const bloodTypes = new Set(["blood_request", "blood", "request_approved", "request_rejected", "blood_request_failed"]);
+//     const donorTypes = new Set(["donor_registration", "donor", "donor_accept", "donation_otp"]);
+//     const hospitalTypes = new Set(["hospital_registration", "hospital"]);
+//     const campTypes = new Set(["camp", "donation_camp", "camp_registration"]);
+//     const auditTypes = new Set(["alert", "audit", "system", "security_alert", "system_alert"]);
 
-   if (type === "blood_request_failed" || type === "system_alert") {
-    showNoMatchModal();
-    return;  // ← important: stop here, don't run anything else
-}
-    if (type === "blood_request_failed" || type === "system_alert") {
-        if (donationId) {
-            await openDonationsSection(donationId);
-            await viewDonationDetail(Number(donationId), { noMatch: true });
-        } else {
-            openBloodRequests();
-            showResultModal(
-                "error",
-                "No Donor Found",
-                "This request finished escalation without a donor or stock match."
-            );
-        }
-    } else if (donationTypes.has(type)) {
-        await openDonationsSection(donationId);
-    } else if (bloodTypes.has(type)) {
-        openBloodRequests();
-    } else if (donorTypes.has(type)) {
-        openDonorRequests();
-    } else if (hospitalTypes.has(type)) {
-        openHospitalSection();
-    } else if (campTypes.has(type)) {
-        openCampsSection();
-    } else if (auditTypes.has(type)) {
-        openAuditLogs();
-    } else {
-        openAuditLogs();
-    }
+//    if (type === "blood_request_failed" || type === "system_alert") {
+//     showNoMatchModal();
+//     return;  // stop here
+// }
+//     if (type === "blood_request_failed" || type === "system_alert") {
+//         if (donationId) {
+//             await openDonationsSection(donationId);
+//             await viewDonationDetail(Number(donationId), { noMatch: true });
+//         } else {
+//             openBloodRequests();
+//             showResultModal(
+//                 "error",
+//                 "No Donor Found",
+//                 "This request finished escalation without a donor or stock match."
+//             );
+//         }
+//     } else if (donationTypes.has(type)) {
+//         await openDonationsSection(donationId);
+//     } else if (bloodTypes.has(type)) {
+//         openBloodRequests();
+//     } else if (donorTypes.has(type)) {
+//         openDonorRequests();
+//     } else if (hospitalTypes.has(type)) {
+//         openHospitalSection();
+//     } else if (campTypes.has(type)) {
+//         openCampsSection();
+//     } else if (auditTypes.has(type)) {
+//         openAuditLogs();
+//     } else {
+//         openAuditLogs();
+//     }
 
-}
+// }
 
 async function openDonationsSection(donationId = null) {
     tabs.forEach(t => { t.classList.remove('bg-red-50','text-red-600'); t.classList.add('text-gray-700'); });
@@ -6304,9 +6730,10 @@ async function loadUsers(){
     if (!res.ok) throw new Error("Server error: " + res.status);
     const data = await res.json();
 
-    // Update summary stats
-    const totalDonations   = data.reduce((s, u) => s + (u.total_donations || 0), 0);
-    const totalRequests    = data.reduce((s, u) => s + (u.total_requests  || 0), 0);
+    // Simple totals - backend now returns correct values
+    const totalDonations = data.reduce((s, u) => s + (u.total_donations || 0), 0);
+    const totalRequests  = data.reduce((s, u) => s + (u.total_requests  || 0), 0);
+
     const el = (id) => document.getElementById(id);
     if (el("totalUsersCount"))   el("totalUsersCount").textContent   = data.length;
     if (el("totalDonationsSum")) el("totalDonationsSum").textContent = totalDonations;
@@ -6321,21 +6748,21 @@ async function loadUsers(){
     }
 
     data.forEach(u => {
-      const bloodType   = u.blood_type && u.blood_type !== "null" ? u.blood_type : "—";
-      const location    = u.city || u.district || "—";
-      const availClass  = u.availability === "Available"
+      const bloodType  = u.blood_type && u.blood_type !== "null" ? u.blood_type : "-";
+      const location   = u.city || u.district || "-";
+      const availClass = u.availability === "Available"
         ? "bg-green-100 text-green-700"
         : "bg-gray-100 text-gray-500";
 
       body.innerHTML += `
         <tr class="hover:bg-gray-50 border-b border-gray-100 transition">
-          <td class="px-6 py-4 font-medium text-gray-900">${u.name || "—"}</td>
+          <td class="px-6 py-4 font-medium text-gray-900">${u.name || "-"}</td>
           <td class="px-6 py-4">
             <span class="px-2 py-1 bg-red-50 text-red-700 rounded font-semibold text-sm">${bloodType}</span>
           </td>
           <td class="px-6 py-4 text-gray-600">${location}</td>
-          <td class="px-6 py-4 text-gray-800 font-medium">${u.total_donations == null ? 0 : u.total_donations}</td>
-          <td class="px-6 py-4 text-gray-800 font-medium">${u.total_requests == null ? 0 : u.total_requests}</td>
+          <td class="px-6 py-4 text-gray-800 font-medium">${u.total_donations || 0}</td>
+          <td class="px-6 py-4 text-gray-800 font-medium">${u.total_requests  || 0}</td>
           <td class="px-6 py-4">
             <span class="px-2 py-1 rounded-full text-xs font-medium ${availClass}">${u.availability}</span>
           </td>
@@ -6598,7 +7025,7 @@ let currentSort = { field: 'blood_type', direction: 'asc' };
 let currentFilters = { location: 'all', bloodType: 'all', status: 'all', search: '' };
 let quickAdjustState  = {};   // { bloodType, location, action }
  
-// ─── TAB MANAGEMENT ───────────────────────────────────────────
+// --- TAB MANAGEMENT -------------------------------------------
 function setInventoryTab(tab) {
     currentInventoryTab = tab;
  
@@ -6635,7 +7062,7 @@ function filterByStatus(s) {
     applyFiltersAndRender();
 }
  
-// ── STATE ───────────────────────────────────────────────────────────────────
+// -- STATE -------------------------------------------------------------------
 let allStock   = [];
 let filtered   = [];
 let sortField  = 'bt';
@@ -6645,7 +7072,7 @@ let barChartInst, donutChartInst;
 let currentTab = 'all';
 let scarcityPopupShown = false;
  
-// ── STATUS HELPERS ───────────────────────────────────────────────────────────
+// -- STATUS HELPERS -----------------------------------------------------------
 const STATUS_MAX = 50;
 function getStatus(u) {
   if (u <= 5)  return 'critical';
@@ -6666,7 +7093,7 @@ const BT_COLORS = {
   'O-': '#F09595', 'A-': '#EF9F27', 'B-': '#5DCAA5', 'AB-': '#378ADD'
 };
  
-// ── LOAD DATA ────────────────────────────────────────────────────────────────
+// -- LOAD DATA ----------------------------------------------------------------
 async function loadInventory() {
   document.getElementById('refreshBtn').disabled = true;
   try {
@@ -6771,7 +7198,7 @@ function buildDemoData() {
   return data;
 }
  
-// ── SUMMARY + ALERT ──────────────────────────────────────────────────────────
+// -- SUMMARY + ALERT ----------------------------------------------------------
 function updateSummary() {
   const total    = allStock.reduce((s,r) => s + r.units, 0);
   const locs     = new Set(allStock.map(r => r.loc)).size;
@@ -6804,14 +7231,14 @@ function updateAlert() {
   const ab   = document.getElementById('alertBox');
   const txt  = document.getElementById('alertText');
   if (critTypes.length) {
-    txt.textContent = `${critTypes.length} blood type${critTypes.length > 1 ? 's' : ''} critically low (${critTypes.join(', ')}) — immediate restocking recommended across all locations.`;
+    txt.textContent = `${critTypes.length} blood type${critTypes.length > 1 ? 's' : ''} critically low (${critTypes.join(', ')}) - immediate restocking recommended across all locations.`;
     ab.style.display = 'flex';
   } else {
     ab.style.display = 'none';
   }
 }
  
-// ── FILTER ───────────────────────────────────────────────────────────────────
+// -- FILTER -------------------------------------------------------------------
 function populateLocationFilter() {
   const sel = document.getElementById('sfLoc');
   while (sel.options.length > 1) sel.remove(1);
@@ -6849,7 +7276,7 @@ function resetFilters() {
   applyFilter();
 }
  
-// ── SORT ─────────────────────────────────────────────────────────────────────
+// -- SORT ---------------------------------------------------------------------
 function sortBy(field) {
   if (sortField === field) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
   else { sortField = field; sortDir = 'asc'; }
@@ -6877,7 +7304,7 @@ function sortData() {
   });
 }
  
-// ── TABLE ─────────────────────────────────────────────────────────────────────
+// -- TABLE ---------------------------------------------------------------------
 function renderTable() {
   const tb = document.getElementById('stockTable');
   document.getElementById('tableRowCount').textContent = `${filtered.length} rows`;
@@ -6911,7 +7338,7 @@ function renderTable() {
         ${isBank
           ? `<div style="display:flex;gap:6px">
                <button class="btn" style="font-size:11px;padding:4px 10px" onclick="openAdjust('${r.bt}','${r.loc}','add',${r.units})">+ Add</button>
-               <button class="btn" style="font-size:11px;padding:4px 10px" onclick="openAdjust('${r.bt}','${r.loc}','remove',${r.units})">− Remove</button>
+               <button class="btn" style="font-size:11px;padding:4px 10px" onclick="openAdjust('${r.bt}','${r.loc}','remove',${r.units})">- Remove</button>
              </div>`
           : `<span style="font-size:11px;color:var(--text3);font-style:italic">Hospital-managed</span>`
         }
@@ -6920,7 +7347,7 @@ function renderTable() {
   }).join('');
 }
  
-// ── CHARTS ────────────────────────────────────────────────────────────────────
+// -- CHARTS --------------------------------------------------------------------
 function getBankByBT() {
   const m = {};
   allStock.filter(r => r.loc === 'Blood Bank').forEach(r => { m[r.bt] = (m[r.bt] || 0) + r.units; });
@@ -6944,7 +7371,7 @@ function buildBarChart() {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: c => ` ${c.raw} units — ${STATUS_LABELS[getStatus(c.raw)]}` }}
+        tooltip: { callbacks: { label: c => ` ${c.raw} units - ${STATUS_LABELS[getStatus(c.raw)]}` }}
       },
       scales: {
         x: { grid: { display: false }, ticks: { font: { size: 11, family: "'DM Mono', monospace" }}},
@@ -6995,7 +7422,7 @@ function buildDonut() {
   });
 }
  
-// ── HOSPITAL ACCORDION ───────────────────────────────────────────────────────
+// -- HOSPITAL ACCORDION -------------------------------------------------------
 function buildHospitalAccordion() {
   const locs = [...new Set(allStock.map(r => r.loc))].sort();
   const acc  = document.getElementById('hospAccordion');
@@ -7017,12 +7444,12 @@ function buildHospitalAccordion() {
               <span class="hosp-name">${loc}</span>
               ${isBank ? `<span class="pill p-bank">Central bank</span>` : ''}
             </div>
-            <div class="hosp-meta">${rows.length} blood types · ${alerts > 0 ? alerts + ' need attention' : 'all levels OK'}</div>
+            <div class="hosp-meta">${rows.length} blood types by ${alerts > 0 ? alerts + ' need attention' : 'all levels OK'}</div>
           </div>
           <div class="hosp-right">
             ${alerts > 0 ? `<span class="pill p-low">${alerts} alert${alerts > 1 ? 's' : ''}</span>` : `<span class="pill p-optimal">Healthy</span>`}
             <span class="hosp-total" style="color:var(--text)">${total}</span>
-            <span class="chevron" id="hchev${idx}">▼</span>
+            <span class="chevron" id="hchev${idx}">v</span>
           </div>
         </div>
         <div class="hosp-body" id="hacc${idx}" style="display:none">
@@ -7047,7 +7474,7 @@ function buildHospitalAccordion() {
   });
 }
  
-// ── BLOOD TYPE ACCORDION ─────────────────────────────────────────────────────
+// -- BLOOD TYPE ACCORDION -----------------------------------------------------
 function buildBTAccordion() {
   const acc = document.getElementById('btAccordion');
   acc.innerHTML = '';
@@ -7070,7 +7497,7 @@ function buildBTAccordion() {
           <div class="hosp-right">
             <span class="pill p-${st}">${STATUS_LABELS[st]}</span>
             <span class="hosp-total" style="color:${STATUS_COLORS[st]}">${total}</span>
-            <span class="chevron" id="btchev${idx}">▼</span>
+            <span class="chevron" id="btchev${idx}">v</span>
           </div>
         </div>
         <div class="hosp-body" id="btacc${idx}" style="display:none">
@@ -7098,7 +7525,7 @@ function buildBTAccordion() {
                       ${isBank
                         ? `<div style="display:flex;gap:5px">
                              <button class="btn" style="font-size:11px;padding:3px 8px" onclick="openAdjust('${r.bt}','${r.loc}','add',${r.units})">+ Add</button>
-                             <button class="btn" style="font-size:11px;padding:3px 8px" onclick="openAdjust('${r.bt}','${r.loc}','remove',${r.units})">− Remove</button>
+                             <button class="btn" style="font-size:11px;padding:3px 8px" onclick="openAdjust('${r.bt}','${r.loc}','remove',${r.units})">- Remove</button>
                            </div>`
                         : `<span style="font-size:11px;color:var(--text3);font-style:italic">Hospital</span>`
                       }
@@ -7113,7 +7540,7 @@ function buildBTAccordion() {
   });
 }
  
-// ── MOVEMENTS ────────────────────────────────────────────────────────────────
+// -- MOVEMENTS ----------------------------------------------------------------
 async function loadMovements() {
   const tb = document.getElementById('movementsTable');
   tb.innerHTML = `<tr><td colspan="7" class="empty-state">Loading...</td></tr>`;
@@ -7127,21 +7554,21 @@ async function loadMovements() {
     tb.innerHTML = data.map(m => {
       const isAdd = m.type === 'add';
       return `<tr>
-        <td style="color:var(--text3);font-size:12px">${m.date || '—'}</td>
+        <td style="color:var(--text3);font-size:12px">${m.date || '-'}</td>
         <td><span class="bt-badge" style="width:auto;padding:0 10px">${m.blood_type}</span></td>
         <td style="color:var(--text2)">${m.location || 'Blood Bank'}</td>
-        <td><span class="pill ${isAdd ? 'p-optimal' : 'p-critical'}">${isAdd ? '+ Added' : '− Removed'}</span></td>
+        <td><span class="pill ${isAdd ? 'p-optimal' : 'p-critical'}">${isAdd ? '+ Added' : '- Removed'}</span></td>
         <td style="font-weight:500;font-family:var(--font-mono)">${m.units}</td>
         <td style="color:var(--text3);font-size:12px">${m.expiry_date ? new Date(m.expiry_date).toLocaleDateString() : 'N/A'}</td>
         <td style="color:var(--text3);font-size:12px">${m.updated_by || 'System'}</td>
       </tr>`;
     }).join('');
   } catch {
-    tb.innerHTML = `<tr><td colspan="7" class="empty-state">Could not load movements — API unavailable</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="7" class="empty-state">Could not load movements - API unavailable</td></tr>`;
   }
 }
  
-// ── TAB SWITCHING ────────────────────────────────────────────────────────────
+// -- TAB SWITCHING ------------------------------------------------------------
 function setTab(tab) {
   currentTab = tab;
   ['all','hospitals','bloodtype','movements'].forEach(t => {
@@ -7151,7 +7578,7 @@ function setTab(tab) {
   if (tab === 'movements') loadMovements();
 }
  
-// ── ACCORDION TOGGLE ─────────────────────────────────────────────────────────
+// -- ACCORDION TOGGLE ---------------------------------------------------------
 function toggleAcc(id, chevId) {
   const el   = document.getElementById(id);
   const chev = document.getElementById(chevId);
@@ -7160,7 +7587,7 @@ function toggleAcc(id, chevId) {
   chev.style.transform = open ? 'rotate(180deg)' : '';
 }
  
-// ── ADD STOCK MODAL ──────────────────────────────────────────────────────────
+// -- ADD STOCK MODAL ----------------------------------------------------------
 function showAddStock() {
   document.getElementById('addStockOverlay').style.display = 'flex';
 }
@@ -7203,13 +7630,13 @@ async function submitAddStock() {
   }
 }
  
-// ── QUICK ADJUST MODAL ───────────────────────────────────────────────────────
+// -- QUICK ADJUST MODAL -------------------------------------------------------
 function openAdjust(bt, loc, action, current) {
   adjustState = { bt, loc, action, current: Number(current || 0) };
   const isAdd = action === 'add';
   const header = document.getElementById('adjustHeader');
   header.style.background = isAdd ? 'var(--green)' : 'var(--red)';
-  document.getElementById('adjustTitle').textContent   = isAdd ? `Add units — ${bt}` : `Remove units — ${bt}`;
+  document.getElementById('adjustTitle').textContent   = isAdd ? `Add units - ${bt}` : `Remove units - ${bt}`;
   document.getElementById('adjustMeta').textContent    = `${bt} at ${loc}`;
   document.getElementById('adjustCurrent').textContent = `Current stock: ${current} unit(s)`;
   document.getElementById('adjustUnits').value         = '';
@@ -7265,7 +7692,7 @@ async function submitAdjust() {
   }
 }
  
-// ── EXPORT CSV ────────────────────────────────────────────────────────────────
+// -- EXPORT CSV ----------------------------------------------------------------
 function exportCSV() {
   if (!allStock.length) return;
   let csv = 'Blood Type,Units,Location,Status,Last Updated\n';
@@ -7279,7 +7706,7 @@ function exportCSV() {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
  
-// ── INIT ──────────────────────────────────────────────────────────────────────
+// -- INIT ----------------------------------------------------------------------
 loadInventory();
 async function loadAuditLogs() {
 
@@ -7446,19 +7873,19 @@ function renderCampCards(camps) {
                 <!-- Card Body -->
 <div class="p-5 flex-1 space-y-3">
 
-    <!-- 📅 Date -->
+    <!-- Date -->
     <div class="flex items-center gap-2 text-sm text-gray-600">
         <i class="ri-calendar-line text-red-400 flex-shrink-0"></i>
-        <span>${c.date} &nbsp;|&nbsp; ${c.start_time || '—'} – ${c.end_time || '—'}</span>
+        <span>${c.date} &nbsp;|&nbsp; ${c.start_time || '-'} - ${c.end_time || '-'}</span>
     </div>
 
-    <!-- 📍 Location -->
+    <!-- Location -->
     <div class="flex items-start gap-2 text-sm text-gray-600">
         <i class="ri-map-pin-line text-red-400 flex-shrink-0 mt-0.5"></i>
         <span>${c.location}</span>
     </div>
 
-    <!-- ✅ 📞 CONTACT -->
+    <!-- contact CONTACT -->
     ${c.contact_number ? `
     <div class="flex items-center gap-2 text-sm">
         <i class="ri-phone-line text-green-600"></i>
@@ -7469,7 +7896,7 @@ function renderCampCards(camps) {
     </div>
     ` : ""}
 
-    <!-- ✅ 🗺 MAP -->
+    <!-- map MAP -->
     ${c.map_link ? `
     <div>
         <a href="${c.map_link}" target="_blank"
@@ -7586,10 +8013,10 @@ function renderCampTable(camps) {
                         ? `<p class="text-xs text-red-600 mt-1">${c.rejection_reason}</p>`
                         : ''}
                 </td>
-                <td class="px-6 py-4 text-gray-600">${c.hospital_name || '—'}</td>
+                <td class="px-6 py-4 text-gray-600">${c.hospital_name || '-'}</td>
                 <td class="px-6 py-4 text-sm">
                     <p class="font-medium">${c.date}</p>
-                    <p class="text-gray-400">${c.start_time || ''} – ${c.end_time || ''}</p>
+                    <p class="text-gray-400">${c.start_time || ''} - ${c.end_time || ''}</p>
                 </td>
                 <td class="px-6 py-4 text-gray-600">${c.location}</td>
                 <td class="px-6 py-4">
@@ -7607,7 +8034,7 @@ function renderCampTable(camps) {
                                <button onclick="rejectCamp(${c.id})"
                                    class="px-2 py-1 text-xs bg-red-600 text-white rounded">Decline</button>`
                             : c.is_approved
-                            ? `<span class="text-green-600 text-xs font-semibold">✓ Approved</span>`
+                            ? `<span class="text-green-600 text-xs font-semibold">Yes Approved</span>`
                             : c.is_rejected
                             ? `<span class="text-red-600 text-xs font-semibold">Rejected</span>`
                             : `<button onclick="editCamp(${c.id})"
@@ -7967,7 +8394,7 @@ function hideCampError() {
     if (el) el.classList.add('hidden');
 }
 
-// ── STATE ──────────────────────────────────────────────────
+// -- STATE --------------------------------------------------
 const AN = {
   preset:  7,
   from:    null,
@@ -7979,7 +8406,7 @@ const AN = {
   data: {}
 };
  
-// ── COLORS ─────────────────────────────────────────────────
+// -- COLORS -------------------------------------------------
 const AN_COLORS = {
   completed: '#1BCCAA',
   approved:  '#4E8CF5',
@@ -7993,7 +8420,7 @@ const AN_COLORS = {
             '#9B72F5','#FF6B9D','#2DD4BF','#F97316']
 };
  
-// ── DATE HELPERS ───────────────────────────────────────────
+// -- DATE HELPERS -------------------------------------------
 function anBuildQuery() {
   if (AN.from && AN.to) return `?from=${AN.from}&to=${AN.to}`;
   return `?days=${AN.preset}`;
@@ -8018,11 +8445,11 @@ function anCustomRange() {
   if (f && t && f <= t) {
     AN.from = f; AN.to = t; AN.preset = null;
     document.querySelectorAll('.an-preset').forEach(b => b.classList.remove('active'));
-    document.getElementById('anPeriodLabel').textContent = `${f} → ${t}`;
+    document.getElementById('anPeriodLabel').textContent = `${f} -> ${t}`;
   }
 }
  
-// ── SECTION TABS ───────────────────────────────────────────
+// -- SECTION TABS -------------------------------------------
 function anShowSection(name, btn) {
   AN.section = name;
   document.querySelectorAll('.an-tab').forEach(b => b.classList.remove('active'));
@@ -8032,7 +8459,7 @@ function anShowSection(name, btn) {
   anLoadSection(name);
 }
  
-// ── REFRESH ALL ────────────────────────────────────────────
+// -- REFRESH ALL --------------------------------------------
 async function anRefreshAll() {
   await anLoadKPIs();
   anLoadSection(AN.section);
@@ -8050,7 +8477,7 @@ async function anLoadSection(name) {
   if (loaders[name]) await loaders[name]();
 }
  
-// ── KPI STRIP ──────────────────────────────────────────────
+// -- KPI STRIP ----------------------------------------------
 async function anLoadKPIs() {
   try {
     const res  = await fetch(`${API_BASE}/api/admin/analytics/kpi/${anBuildQuery()}`);
@@ -8078,7 +8505,7 @@ async function anLoadKPIs() {
       let deltaHtml = '';
       if (!def.noChange) {
         const cls = change > 0 ? 'delta-up' : change < 0 ? 'delta-down' : 'delta-flat';
-        const arrow = change > 0 ? '↑' : change < 0 ? '↓' : '→';
+        const arrow = change > 0 ? '^' : change < 0 ? 'v' : '->';
         deltaHtml = `<span class="an-kpi-delta ${cls}">${arrow} ${Math.abs(change)}%</span>`;
       }
  
@@ -8100,7 +8527,7 @@ async function anLoadKPIs() {
   }
 }
  
-// ── TRENDS ─────────────────────────────────────────────────
+// -- TRENDS -------------------------------------------------
 let _trendsData = null;
 let _trendsType = 'bar';
  
@@ -8196,7 +8623,7 @@ function anRenderTrends() {
   });
 }
  
-// ── DEMAND VS SUPPLY ───────────────────────────────────────
+// -- DEMAND VS SUPPLY ---------------------------------------
 let _supplyData = null;
  
 async function anLoadSupply() {
@@ -8303,7 +8730,7 @@ function anRenderSupply() {
   }).join('');
 }
  
-// ── HOSPITALS ──────────────────────────────────────────────
+// -- HOSPITALS ----------------------------------------------
 let _hospData = null;
  
 async function anLoadHospitals() {
@@ -8386,7 +8813,7 @@ function anRenderHospitals() {
                       h.fulfillment_rate >= 40 ? '#F5A623' : '#E24B4A';
     return `<tr>
       <td><span style="font-weight:600;">${h.hospital}</span></td>
-      <td style="color:var(--text-3);">${h.district || '—'}</td>
+      <td style="color:var(--text-3);">${h.district || '-'}</td>
       <td style="font-family:'JetBrains Mono',mono;font-weight:600;">${h.total_requests}</td>
       <td style="color:#1BCCAA;font-weight:600;">${h.completed}</td>
       <td style="color:#F5A623;font-weight:600;">${h.pending}</td>
@@ -8408,7 +8835,7 @@ function anRenderHospitals() {
   }).join('');
 }
  
-// ── DONORS ─────────────────────────────────────────────────
+// -- DONORS -------------------------------------------------
 let _donorData = null;
  
 async function anLoadDonors() {
@@ -8484,7 +8911,7 @@ function anRenderDonors() {
   );
 }
  
-// ── FULFILLMENT ─────────────────────────────────────────────
+// -- FULFILLMENT ---------------------------------------------
 let _fulfillData = null;
  
 async function anLoadFulfillment() {
@@ -8523,7 +8950,7 @@ function anRenderFulfillment() {
       </div>`;
   }).join('');
   document.getElementById('funnelSub').textContent =
-    `${s.total} total · ${s.rate}% fulfillment rate`;
+    `${s.total} total by ${s.rate}% fulfillment rate`;
  
   // Donut
   if (AN.charts.fulfillDonut) AN.charts.fulfillDonut.destroy();
@@ -8581,7 +9008,7 @@ function anRenderFulfillment() {
   }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text-3);padding:1.5rem;">No data</td></tr>';
 }
  
-// ── GEOGRAPHIC ─────────────────────────────────────────────
+// -- GEOGRAPHIC ---------------------------------------------
 let _geoData = null;
  
 async function anLoadGeo() {
@@ -8911,7 +9338,7 @@ function anExportHospitals() {
   document.body.removeChild(a);
 }
  
-// ── INIT (called when analytics tab is clicked) ─────────────
+// -- INIT (called when analytics tab is clicked) -------------
 async function initAnalytics() {
   // Set default date range inputs
   const today = new Date();
@@ -8920,7 +9347,7 @@ async function initAnalytics() {
   document.getElementById('anFrom').value = week.toISOString().split('T')[0];
   await anRefreshAll();
 }
-// ── DONATIONS STATE ──────────────────────────────────────────
+// -- DONATIONS STATE ------------------------------------------
 let allDonations = [];
 let filteredDonations = [];
 const COMPLETED_DONATION_STATUSES = new Set([
@@ -8931,7 +9358,7 @@ const COMPLETED_DONATION_STATUSES = new Set([
     'donation_completed',
 ]);
 
-// ── LOAD ALL DONATIONS ───────────────────────────────────────
+// -- LOAD ALL DONATIONS ---------------------------------------
 async function loadDonations() {
     const body = document.getElementById('donationsTableBody');
     body.innerHTML = `<tr><td colspan="9" class="px-6 py-10 text-center text-gray-400">
@@ -8955,7 +9382,7 @@ async function loadDonations() {
     }
 }
 
-// ── STATS ────────────────────────────────────────────────────
+// -- STATS ----------------------------------------------------
 function updateDonationStats(data) {
     const isCompletedDonation = (d) => {
         const status = (d?.status || '').trim().toLowerCase();
@@ -8968,6 +9395,27 @@ function updateDonationStats(data) {
         data.filter(isCompletedDonation).length;
     document.getElementById('donStatPending').textContent =
         data.filter(d => d.status === 'pending').length;
+    document.getElementById('donStatIncomplete').textContent =
+        data.filter(d => {
+            const status = (d?.status || '').trim().toLowerCase();
+            const approvedAt = parseAdminDate(d.approved_at || d.updated_at || d.created_at || d.date);
+            const noMatchSignals = [
+                d.no_match_found,
+                d.stock_unavailable,
+                d.donor_unavailable,
+                d.fulfillment_failed,
+                d.latest_activity_title,
+                d.latest_activity_message,
+                d.status_note,
+            ].some(val => typeof val === 'string'
+                ? /no\s*donor|no\s*stock|unavailable|exhausted|no\s*match/i.test(val)
+                : Boolean(val));
+            return status !== 'completed'
+                && status !== 'rejected'
+                && noMatchSignals
+                && approvedAt
+                && ((Date.now() - approvedAt.getTime()) >= (10 * 60 * 1000));
+        }).length;
     document.getElementById('donStatDonorSource').textContent =
         data.filter(d => d.source === 'donor').length;
     document.getElementById('donStatBankSource').textContent =
@@ -8982,7 +9430,7 @@ function updateDonationStats(data) {
     }
 }
 
-// ── FILTERS ──────────────────────────────────────────────────
+// -- FILTERS --------------------------------------------------
 function applyDonationFilters() {
     const status    = document.getElementById('donFilterStatus').value;
     const bloodType = document.getElementById('donFilterBloodType').value;
@@ -9021,7 +9469,7 @@ function resetDonationFilters() {
     renderDonationsTable(filteredDonations);
 }
 
-// ── RENDER TABLE ─────────────────────────────────────────────
+// -- RENDER TABLE ---------------------------------------------
 function renderDonationsTable(data) {
     const body = document.getElementById('donationsTableBody');
 
@@ -9044,11 +9492,11 @@ function renderDonationsTable(data) {
         pending:   'bg-yellow-100 text-yellow-700',
         approved:  'bg-blue-100 text-blue-700',
         completed: 'bg-green-100 text-green-700',
+        incomplete:'bg-amber-100 text-amber-700',
         rejected:  'bg-red-100 text-red-700',
     };
 
     body.innerHTML = sorted.map(d => {
-        const stCls = statusColors[d.status] || 'bg-gray-100 text-gray-600';
 
         // Source column
         const sourceHtml = d.source === 'donor'
@@ -9057,7 +9505,7 @@ function renderDonationsTable(data) {
                               text-xs font-semibold rounded-full mb-1">
                      <i class="ri-user-heart-line"></i> Donor
                  </span>
-                 <p class="text-xs font-medium text-gray-800">${d.donor_name || '—'}</p>
+                 <p class="text-xs font-medium text-gray-800">${d.donor_name || '-'}</p>
                  <p class="text-xs text-gray-400">${d.donor_blood_type || ''}</p>
                  ${d.donor_phone
                      ? `<p class="text-xs text-gray-400">${d.donor_phone}</p>`
@@ -9074,12 +9522,12 @@ function renderDonationsTable(data) {
                 <span class="text-xs ${d.donor_confirmed
                     ? 'text-green-600 font-semibold'
                     : 'text-gray-400'}">
-                    ${d.donor_confirmed ? '✓' : '○'} Donor
+                    ${d.donor_confirmed ? 'Yes' : 'No'} Donor
                 </span>
                 <span class="text-xs ${d.patient_confirmed
                     ? 'text-green-600 font-semibold'
                     : 'text-gray-400'}">
-                    ${d.patient_confirmed ? '✓' : '○'} Patient
+                    ${d.patient_confirmed ? 'Yes' : 'No'} Patient
                 </span>
             </div>`;
 
@@ -9095,7 +9543,27 @@ function renderDonationsTable(data) {
                        class="text-blue-500 hover:text-blue-700 text-xs flex items-center gap-1">
                        <i class="ri-stethoscope-line"></i>Note
                    </a>` : '',
-        ].filter(Boolean).join('') || '<span class="text-gray-300 text-xs">—</span>';
+        ].filter(Boolean).join('') || '<span class="text-gray-300 text-xs">-</span>';
+
+        const noMatchSignals = [
+            d.no_match_found,
+            d.stock_unavailable,
+            d.donor_unavailable,
+            d.fulfillment_failed,
+            d.latest_activity_title,
+            d.latest_activity_message,
+            d.status_note,
+        ].some(val => typeof val === 'string'
+            ? /no\s*donor|no\s*stock|unavailable|exhausted|no\s*match/i.test(val)
+            : Boolean(val));
+        const approvedAt = parseAdminDate(d.approved_at || d.updated_at || d.created_at || d.date);
+        const noMatchTimedOut = noMatchSignals && approvedAt
+            ? ((Date.now() - approvedAt.getTime()) >= (10 * 60 * 1000))
+            : false;
+        const displayStatus = noMatchTimedOut ? 'incomplete' : d.status;
+        const displayStatusLabel = displayStatus === 'incomplete' ? 'Incomplete' : (d.status || 'Unknown');
+        const stCls = statusColors[displayStatus] || 'bg-gray-100 text-gray-600';
+        const canComplete = d.status === 'approved' && !noMatchSignals && !noMatchTimedOut;
 
         return `
             <tr class="hover:bg-gray-50 transition">
@@ -9122,9 +9590,20 @@ function renderDonationsTable(data) {
                 <td class="px-5 py-4">${sourceHtml}</td>
                 <td class="px-5 py-4">${confHtml}</td>
                 <td class="px-5 py-4">
-                    <span class="px-2 py-1 rounded-full text-xs font-semibold ${stCls}">
-                        ${d.status.charAt(0).toUpperCase() + d.status.slice(1)}
+                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${stCls}">
+                        ${displayStatus === 'incomplete'
+                            ? '<i class="ri-alert-line"></i>'
+                            : ''}
+                        ${displayStatusLabel}
                     </span>
+                    ${d.has_donor_decline
+                        ? `<p class="text-[11px] text-red-600 mt-1 flex items-center gap-1">
+                               <i class="ri-user-unfollow-line"></i>
+                               Donor declined
+                           </p>`
+                        : (d.latest_activity_title && d.status === 'pending'
+                            ? `<p class="text-[11px] text-gray-500 mt-1">${d.latest_activity_title}</p>`
+                            : '')}
                 </td>
                 <td class="px-5 py-4">
                     <p class="text-xs font-medium text-gray-700">
@@ -9142,7 +9621,7 @@ function renderDonationsTable(data) {
                                        flex items-center gap-1">
                             <i class="ri-eye-line"></i> View
                         </button>
-                        ${d.status === 'approved'
+                        ${canComplete
                             ? `<button onclick="adminMarkComplete(${d.id})"
                                        class="px-3 py-1.5 bg-green-50 text-green-700 rounded-lg
                                               text-xs font-semibold hover:bg-green-100 transition
@@ -9155,7 +9634,7 @@ function renderDonationsTable(data) {
     }).join('');
 }
 
-// ── DETAIL MODAL ─────────────────────────────────────────────
+
 async function viewDonationDetail(id, options = {}) {
     const modal = document.getElementById('donationDetailModal');
     const body  = document.getElementById('donationDetailBody');
@@ -9174,9 +9653,28 @@ async function viewDonationDetail(id, options = {}) {
         const res  = await fetch(`${API_BASE}/api/admin/donations/${id}/`);
         const data = await res.json();
 
-        // Show complete button only if approved
+        const timelineItems = Array.isArray(data.timeline)
+            ? [...data.timeline]
+            : [];
+        const timelineText = (value) => String(value || '').toLowerCase();
+        const hasNoMatchTimeline = timelineItems.some(item => {
+            const text = `${timelineText(item?.event)} ${timelineText(item?.details)} ${timelineText(item?.tone)}`;
+            return /no\s*donor|no\s*stock|unavailable|exhausted|no\s*match/.test(text);
+        });
+        const approvedEvent = timelineItems.find(item => {
+            const text = `${timelineText(item?.event)} ${timelineText(item?.details)} ${timelineText(item?.tone)}`;
+            return /approved|accepted by admin/.test(text);
+        });
         const rec = allDonations.find(d => d.id === id);
-        if (rec && rec.status === 'approved') {
+        const approvedTime = approvedEvent?.time ? new Date(approvedEvent.time) : (rec ? parseAdminDate(rec.approved_at || rec.updated_at || rec.created_at || rec.date) : null);
+        const noMatchTimedOut = hasNoMatchTimeline && approvedTime && !Number.isNaN(approvedTime.getTime())
+            ? ((Date.now() - approvedTime.getTime()) >= (10 * 60 * 1000))
+            : false;
+        const effectiveStatus = noMatchTimedOut ? 'incomplete' : (rec?.status || data.status || '');
+        const canCompleteDonation = (rec && rec.status === 'approved') && !hasNoMatchTimeline && !noMatchTimedOut;
+
+        // Show complete button only if the request is approved and not a no-match case
+        if (canCompleteDonation) {
             completeBtn.classList.remove('hidden');
             completeBtn.onclick = () => adminMarkComplete(id);
         } else {
@@ -9190,18 +9688,20 @@ async function viewDonationDetail(id, options = {}) {
                 : 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 font-medium';
         }
 
-        // ── Donor block ──
+        
         const donor = data.donor || {};
-        const noDonorBanner = noMatchView
+        const noDonorBanner = (noMatchView || hasNoMatchTimeline)
             ? `<div class="rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4">
                  <div class="flex items-start gap-3">
                    <div class="w-11 h-11 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
                      <i class="ri-alert-line text-xl"></i>
                    </div>
                    <div>
-                     <h5 class="font-bold text-amber-900">No donor matched</h5>
+                     <h5 class="font-bold text-amber-900">${noMatchTimedOut ? 'Marked Incomplete' : 'No donor or stock found'}</h5>
                      <p class="text-sm text-amber-800 mt-1">
-                       All donor tiers and stock checks were exhausted for this request.
+                       ${noMatchTimedOut
+                            ? 'No donor or stock was available within 10 minutes after admin approval.'
+                            : 'The system could not arrange blood for this request.'}
                      </p>
                    </div>
                  </div>
@@ -9214,17 +9714,17 @@ async function viewDonationDetail(id, options = {}) {
                  </h5>
                  <div class="grid grid-cols-2 gap-3 text-sm">
                      <div><p class="text-xs text-gray-500">Name</p>
-                          <p class="font-semibold">${donor.name || '—'}</p></div>
+                    <p class="font-semibold">${donor.name || '-'}</p></div>
                      <div><p class="text-xs text-gray-500">Blood Type</p>
                           <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-bold">
-                              ${donor.blood_type || '—'}
+${donor.blood_type || '-'}
                           </span></div>
                      <div><p class="text-xs text-gray-500">Phone</p>
-                          <p class="font-semibold">${donor.phone || '—'}</p></div>
+                    <p class="font-semibold">${donor.phone || '-'}</p></div>
                      <div><p class="text-xs text-gray-500">Email</p>
-                          <p class="font-semibold">${donor.email || '—'}</p></div>
+                    <p class="font-semibold">${donor.email || '-'}</p></div>
                      <div><p class="text-xs text-gray-500">City</p>
-                          <p class="font-semibold">${donor.city || '—'}</p></div>
+                    <p class="font-semibold">${donor.city || '-'}</p></div>
                  </div>
                </div>`
             : `<div class="bg-purple-50 rounded-xl p-4 border border-purple-100">
@@ -9232,11 +9732,11 @@ async function viewDonationDetail(id, options = {}) {
                      <i class="ri-drop-line"></i> Fulfilled from Blood Bank
                  </h5>
                  <p class="text-sm text-gray-500 mt-1">
-                     No individual donor — blood supplied from central bank stock.
+            No individual donor - blood supplied from central bank stock.
                  </p>
                </div>`;
 
-        // ── Confirmation block ──
+        
         const conf = data.confirmation;
         const confHtml = conf
             ? `<div class="bg-gray-50 rounded-xl p-4 border">
@@ -9249,7 +9749,7 @@ async function viewDonationDetail(id, options = {}) {
                              ${conf.donor_confirmed
                                  ? 'bg-green-500 text-white'
                                  : 'bg-gray-200 text-gray-400'}">
-                             ${conf.donor_confirmed ? '✓' : '○'}
+                             ${conf.donor_confirmed ? 'Yes' : 'No'}
                          </span>
                          <span class="text-sm font-medium">Donor Confirmed</span>
                      </div>
@@ -9258,7 +9758,7 @@ async function viewDonationDetail(id, options = {}) {
                              ${conf.patient_confirmed
                                  ? 'bg-green-500 text-white'
                                  : 'bg-gray-200 text-gray-400'}">
-                             ${conf.patient_confirmed ? '✓' : '○'}
+                             ${conf.patient_confirmed ? 'Yes' : 'No'}
                          </span>
                          <span class="text-sm font-medium">Patient Confirmed</span>
                      </div>
@@ -9272,36 +9772,93 @@ async function viewDonationDetail(id, options = {}) {
                    No confirmation record yet.
                </div>`;
 
-        // ── Timeline block ──
-        const getTimelineDotClass = (eventName, idx) => {
-            const event = (eventName || '').toLowerCase();
+        
+        const getTimelineDotClass = (item, idx) => {
+            const tone = (item?.tone || '').toLowerCase();
+            if (tone === 'success') return 'bg-green-500';
+            if (tone === 'danger') return 'bg-red-500';
+            if (tone === 'warning') return 'bg-amber-500';
+            if (tone === 'info') return 'bg-blue-500';
+
+            const event = (item?.event || '').toLowerCase();
             if (event.includes('completed')) return 'bg-green-500';
-            if (event.includes('rejected')) return 'bg-red-500';
+            if (event.includes('rejected') || event.includes('declined')) return 'bg-red-500';
             if (event.includes('approved')) return 'bg-emerald-500';
             if (event.includes('confirmed')) return 'bg-blue-500';
             if (event.includes('accepted')) return 'bg-indigo-500';
             return idx === 0 ? 'bg-red-500' : 'bg-slate-400';
         };
 
+        if ((noMatchView || hasNoMatchTimeline) && !timelineItems.some(item => {
+            const text = `${timelineText(item?.event)} ${timelineText(item?.details)}`;
+            return text.includes('stock and donor were unavailable');
+        })) {
+            const unavailableTime = approvedTime && !Number.isNaN(approvedTime.getTime())
+                ? new Date(approvedTime.getTime() + (10 * 60 * 1000))
+                : null;
+
+            timelineItems.push({
+                event: 'Stock and donor unavailable',
+                details: 'The stock and donor were unavailable after 10 minutes of blood request acceptance by the admin.',
+                tone: 'warning',
+                by: 'System',
+                time: unavailableTime ? unavailableTime.toISOString() : null,
+            });
+        }
+
+        timelineItems.sort((a, b) => {
+            const at = a?.time ? new Date(a.time).getTime() : Number.POSITIVE_INFINITY;
+            const bt = b?.time ? new Date(b.time).getTime() : Number.POSITIVE_INFINITY;
+            return at - bt;
+        });
+        const getTimelineBadgeClass = (item) => {
+            const tone = (item?.tone || '').toLowerCase();
+            if (tone === 'success') return 'bg-green-100 text-green-700 border-green-200';
+            if (tone === 'danger') return 'bg-red-100 text-red-700 border-red-200';
+            if (tone === 'warning') return 'bg-amber-100 text-amber-700 border-amber-200';
+            if (tone === 'info') return 'bg-blue-100 text-blue-700 border-blue-200';
+
+            const event = (item?.event || '').toLowerCase();
+            if (event.includes('completed')) return 'bg-green-100 text-green-700 border-green-200';
+            if (event.includes('rejected') || event.includes('declined')) return 'bg-red-100 text-red-700 border-red-200';
+            if (event.includes('approved')) return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+            if (event.includes('confirmed')) return 'bg-blue-100 text-blue-700 border-blue-200';
+            if (event.includes('accepted')) return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+            return 'bg-slate-100 text-slate-700 border-slate-200';
+        };
         const timelineHtml = `
             <div class="bg-white rounded-xl border p-4">
-                <h5 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
-                    <i class="ri-timeline-view text-red-500"></i> Donation Timeline
-                </h5>
-                <div class="relative">
-                    <div class="absolute left-2 top-1 bottom-1 w-0.5 bg-gray-200"></div>
-                    ${(data.timeline || []).map((t, i) => `
-                        <div class="relative mb-4 last:mb-0 pl-8">
-                            <div class="absolute left-[5px] top-1.5 w-3 h-3 rounded-full border-2 border-white shadow-sm
-                                        ${getTimelineDotClass(t.event, i)}">
-                            </div>
-                            <p class="text-sm font-semibold text-gray-800">${t.event}</p>
-                            <p class="text-xs text-gray-400">
-                                ${t.time ? formatAdminDateTime(t.time) : '—'}
-                                ${t.by ? `· by ${t.by}` : ''}
-                            </p>
-                        </div>`).join('')}
+                <div class="flex items-center justify-between gap-3 mb-4">
+                    <h5 class="font-bold text-gray-700 flex items-center gap-2">
+                        <i class="ri-timeline-view text-red-500"></i> Donation Timeline
+                    </h5>
+                    <span class="text-xs font-medium text-gray-500">${timelineItems.length} event(s)</span>
                 </div>
+                ${timelineItems.length ? `
+                <div class="timeline-wrapper max-h-[42vh] overflow-y-auto pr-2 custom-scrollbar">
+                    ${timelineItems.map((t, i) => `
+                        <div class="timeline-item activity-card">
+                            <div class="timeline-dot ${getTimelineDotClass(t, i)}"></div>
+                            <div class="rounded-xl border border-gray-100 bg-gray-50/80 p-3">
+                                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                                    <p class="text-sm font-semibold text-gray-800">${t.event || 'Activity'}</p>
+                                    <span class="inline-flex w-fit items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${getTimelineBadgeClass(t)}">
+                                        ${t.tone || (t.event || 'Activity')}
+                                    </span>
+                                </div>
+                                ${t.details ? `<p class="text-xs text-gray-600 mt-1 leading-snug">${t.details}</p>` : ''}
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mt-2">
+                                    <p class="text-[11px] text-gray-400">
+                                        ${t.time ? formatAdminDateTime(t.time) : '-'}
+                                    </p>
+                                    ${t.by ? `<p class="text-[11px] text-gray-500">by ${t.by}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>`).join('')}
+                </div>` : `
+                <div class="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
+                    No timeline events available yet.
+                </div>`}
             </div>`;
 
         body.innerHTML = `
@@ -9322,7 +9879,7 @@ function closeDonationDetail() {
     document.getElementById('donationDetailModal').classList.add('hidden');
 }
 
-// ── ADMIN MARK COMPLETE ───────────────────────────────────────
+// -- ADMIN MARK COMPLETE ---------------------------------------
 async function adminMarkComplete(id) {
     if (!confirm('Mark this donation as completed?')) return;
     try {
@@ -9341,7 +9898,7 @@ async function adminMarkComplete(id) {
     }
 }
 
-// ── EXPORT CSV ───────────────────────────────────────────────
+// -- EXPORT CSV -----------------------------------------------
 function exportDonationsCSV() {
     if (!allDonations.length) return;
     const hdr = ['ID','Patient','Blood Type','Units','Urgency','Hospital',
@@ -9363,40 +9920,159 @@ function exportDonationsCSV() {
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     showToast('success', 'Exported', `${allDonations.length} records exported`);
 }
-function showNoMatchModal(requestId) {
-    showResultModal('error', 'No Donor/Stock Found', 
-        'This blood request completed all donor tiers and stock checks, but no match was found.');
-    
-    // Replace the OK button with two buttons
-    const modal = document.getElementById('resultModal');
-    const okBtn = modal.querySelector('button');
-    if (okBtn && requestId) {
-        okBtn.outerHTML = `
-            <div class="flex gap-3 justify-center">
-                <button onclick="hideResultModal()" 
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
-                    Dismiss
-                </button>
-                <button onclick="hideResultModal(); openBloodRequests();" 
-                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2">
-                    <i class="ri-eye-line"></i> View Blood Request
-                </button>
-            </div>`;
-    }
-    
-    document.getElementById('notificationDropdown').classList.add('hidden');
+let lastNoMatchRequestId = null;
+let lastAutoNoMatchNotificationId = null;
+
+async function autoOpenNoMatchNotification(notification) {
+    if (!notification || !notification.id) return;
+    if (lastAutoNoMatchNotificationId === notification.id) return;
+
+    lastAutoNoMatchNotificationId = notification.id;
+    document.getElementById('notificationDropdown')?.classList.add('hidden');
+
+    fetch(`${API_BASE}/api/admin/notifications/${notification.id}/read/`, { method: "POST" })
+        .then(() => loadNotifications())
+        .catch(() => {});
+
+    await showNoMatchModal(notification.blood_request_id || null);
 }
-function showNoMatchModal() {
+
+async function showNoMatchModal(requestId = null) {
     const modal = document.getElementById('noMatchModal');
+    const summaryEl = document.getElementById('noMatchSummary');
+    const contactEl = document.getElementById('noMatchContact');
+    const viewBtn = document.getElementById('noMatchViewBtn');
+    if (!modal || !summaryEl || !contactEl || !viewBtn) return;
+
+    lastNoMatchRequestId = requestId ? Number(requestId) : null;
+    document.getElementById('notificationDropdown')?.classList.add('hidden');
+
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
-    document.getElementById('notificationDropdown').classList.add('hidden');
+
+    summaryEl.innerHTML = `
+        <div class="flex items-start gap-3">
+            <div class="w-11 h-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                <i class="ri-alert-line text-lg"></i>
+            </div>
+            <div class="text-left">
+                <h4 class="font-bold text-gray-900">Checking request</h4>
+                <p class="text-sm text-gray-600 mt-1">We completed all donor tiers and stock checks, but no donor or stock match was found.</p>
+            </div>
+        </div>`;
+
+    contactEl.innerHTML = `
+        <div class="text-left">
+            <p class="text-xs uppercase tracking-wide text-gray-400">Requester contact</p>
+            <p class="mt-1 text-sm text-gray-500">Loading request details...</p>
+        </div>`;
+
+    viewBtn.disabled = true;
+    viewBtn.classList.add('opacity-60', 'cursor-not-allowed');
+
+    if (!lastNoMatchRequestId) {
+        summaryEl.innerHTML = `
+            <div class="flex items-start gap-3">
+                <div class="w-11 h-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                    <i class="ri-alert-line text-lg"></i>
+                </div>
+                <div class="text-left">
+                    <h4 class="font-bold text-gray-900">No donor or stock found</h4>
+                    <p class="text-sm text-gray-600 mt-1">The search completed, but the request ID was not available for details.</p>
+                </div>
+            </div>`;
+        contactEl.innerHTML = `
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-left">
+                <p class="text-sm text-gray-500">Requester details are unavailable.</p>
+            </div>`;
+        viewBtn.disabled = false;
+        viewBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+        return;
+    }
+
+    try {
+        const res = await fetch('http://127.0.0.1:8000/api/admin/pending-blood-requests/');
+        const json = await res.json();
+        const req = (json.data || []).find(r => Number(r.id) === lastNoMatchRequestId);
+
+        if (!req) {
+            summaryEl.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <div class="w-11 h-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                        <i class="ri-alert-line text-lg"></i>
+                    </div>
+                    <div class="text-left">
+                        <h4 class="font-bold text-gray-900">No donor or stock found</h4>
+                        <p class="text-sm text-gray-600 mt-1">The request completed all checks, but we could not load the full contact details.</p>
+                    </div>
+                </div>`;
+            contactEl.innerHTML = `
+                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-left">
+                    <p class="text-sm text-gray-500">Requester details were not found in the current list.</p>
+                </div>`;
+            return;
+        }
+
+        summaryEl.innerHTML = `
+            <div class="flex items-start gap-3">
+                <div class="w-11 h-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                    <i class="ri-alert-line text-lg"></i>
+                </div>
+                <div class="text-left">
+                    <h4 class="font-bold text-gray-900">No donor or stock found</h4>
+                    <p class="text-sm text-gray-600 mt-1">All donor tiers and stock checks were exhausted for request #${req.id}.</p>
+                </div>
+            </div>`;
+
+        contactEl.innerHTML = `
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
+                <div class="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                    <p class="text-xs uppercase tracking-wide text-gray-400">Requester</p>
+                    <p class="mt-1 font-semibold text-gray-900">${req.contact_name || req.patient_name || '-'}</p>
+                </div>
+                <div class="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                    <p class="text-xs uppercase tracking-wide text-gray-400">Phone</p>
+                    <p class="mt-1 font-semibold text-gray-900">${req.contact_phone || '-'}</p>
+                </div>
+                <div class="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                    <p class="text-xs uppercase tracking-wide text-gray-400">Hospital</p>
+                    <p class="mt-1 font-semibold text-gray-900">${req.hospital || '-'}</p>
+                </div>
+                <div class="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                    <p class="text-xs uppercase tracking-wide text-gray-400">Blood Need</p>
+                    <p class="mt-1 font-semibold text-gray-900">${req.blood_type || '-'} / ${req.units || 1} unit(s)</p>
+                </div>
+            </div>`;
+    } catch (err) {
+        console.error('Failed to load no-match request details', err);
+        contactEl.innerHTML = `
+            <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-left">
+                <p class="text-sm text-red-700">We could not load the requester contact details.</p>
+            </div>`;
+    } finally {
+        viewBtn.disabled = false;
+        viewBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+    }
+}
+
+function openNoMatchBloodRequest() {
+    const requestId = lastNoMatchRequestId;
+    closeNoMatchModal();
+    openBloodRequests();
+    if (requestId) {
+        setTimeout(() => {
+            document.querySelector(`[data-blood-request-id="${requestId}"]`)
+                ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 350);
+    }
 }
 
 function closeNoMatchModal() {
     const modal = document.getElementById('noMatchModal');
-    modal.classList.add('hidden');
-    modal.style.display = 'none';
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
 }
     </script>
 <!-- User Detail Modal - FIXED VERSION with proper scrolling -->
@@ -9576,21 +10252,33 @@ function closeNoMatchModal() {
         </div>
     </div>
 </div>
-<div id="noMatchModal" class="fixed inset-0 z-[999] hidden items-center justify-center" style="background: rgba(0,0,0,0.6);">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6 text-center" onclick="event.stopPropagation()">
-        <div class="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center bg-red-100">
-            <i class="ri-close-circle-line text-2xl text-red-600"></i>
+<div id="noMatchModal" 
+     class="fixed inset-0 z-[999] hidden items-center justify-center p-4"
+     style="display: none; background: rgba(0,0,0,0.6);">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden" onclick="event.stopPropagation()">
+        <div class="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-5 text-white">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center">
+                    <i class="ri-close-circle-line text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold">No Donor or Stock Found</h3>
+                    <p class="text-sm text-red-100 mt-1">The search completed, but no compatible donor or stock source was available.</p>
+                </div>
+            </div>
         </div>
-        <h3 class="text-lg font-semibold mb-2">No Donor/Stock Found</h3>
-        <p class="text-gray-600 mb-6">This blood request completed all donor tiers and stock checks, but no match was found.</p>
-        <div class="flex gap-3 justify-center">
+        <div class="px-6 py-5 space-y-4">
+            <div id="noMatchSummary"></div>
+            <div id="noMatchContact"></div>
+        </div>
+        <div class="flex flex-wrap gap-3 justify-end border-t border-gray-100 bg-gray-50 px-6 py-4">
             <button onclick="closeNoMatchModal()"
-                    class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium cursor-pointer">
+                    class="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium cursor-pointer">
                 Dismiss
             </button>
-            <button onclick="closeNoMatchModal(); openBloodRequests();"
-                    class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium cursor-pointer flex items-center gap-2">
-                <i class="ri-eye-line"></i> View Blood Request
+            <button id="noMatchViewBtn" onclick="openNoMatchBloodRequest()"
+                    class="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium cursor-pointer flex items-center gap-2">
+                <i class="ri-eye-line"></i> View Request
             </button>
         </div>
     </div>

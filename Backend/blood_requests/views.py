@@ -74,6 +74,33 @@ def api_user_requests(request):
             status=403
         )
 
+    # Close out stale approved requests so old search flows do not reopen on the dashboard.
+    stale_cutoff = timezone.now() - timedelta(minutes=10)
+    stale_requests = (
+        BloodRequest.objects
+        .filter(
+            patient=patient,
+            status="approved",
+            fulfilled=False,
+            accepted_donor__isnull=True,
+            approved_at__lte=stale_cutoff,
+        )
+        .select_related("hospital_location")
+    )
+    from adminpanel.models import BloodRequestEscalation
+    for stale_req in stale_requests:
+        esc = BloodRequestEscalation.objects.filter(blood_request=stale_req).first()
+        has_stock = bool(
+            esc and (
+                (esc.blood_bank_units or 0) > 0
+                or bool(esc.hospital_stock_details)
+            )
+        )
+        if has_stock:
+            continue
+        stale_req.status = "incomplete"
+        stale_req.save(update_fields=["status"])
+
     qs = (
         BloodRequest.objects
         .filter(patient=patient)
@@ -585,6 +612,8 @@ def public_blood_requests(request):
             "units": r.units_required,
             "hospital_name": r.hospital_location.name if r.hospital_location else None,
             "urgency": r.urgency,
+            "contact_name": r.contact_name,      # ← add this
+            "contact_phone": r.contact_phone,
         })
 
     return Response(data)
@@ -756,6 +785,53 @@ def api_patient_confirm_bank_fulfillment(request, request_id):
     return Response({"success": True, "message": "Request marked as completed."})
 
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_patient_mark_request_incomplete(request, request_id):
+    """
+    Marks an unresolved approved request as incomplete after the no-match window.
+    This is used by the dashboard timeout so old requests stop reopening.
+    """
+    patient = Patient.objects.filter(emailaddress=request.user.username).first()
+    if not patient:
+        return Response({"success": False, "message": "Patient not found"}, status=403)
+
+    blood_request = get_object_or_404(BloodRequest, id=request_id, patient=patient)
+    if blood_request.status == "incomplete":
+        return Response({"success": True, "message": "Request is already incomplete."})
+    if blood_request.status not in ["approved", "no_match"]:
+        return Response({"success": False, "message": "Only active requests can be marked incomplete."}, status=400)
+    if blood_request.fulfilled or blood_request.accepted_donor_id:
+        return Response({"success": False, "message": "This request already has a donor/fulfillment record."}, status=400)
+    if blood_request.approved_at and blood_request.approved_at > timezone.now() - timedelta(minutes=10):
+        return Response({"success": False, "message": "This request can only be marked incomplete after 10 minutes."}, status=400)
+
+    from adminpanel.models import BloodRequestEscalation, Notification
+
+    esc = BloodRequestEscalation.objects.filter(blood_request=blood_request).first()
+    has_stock = bool(
+        esc and (
+            (esc.blood_bank_units or 0) > 0
+            or bool(esc.hospital_stock_details)
+        )
+    )
+    if has_stock:
+        return Response({"success": False, "message": "Stock is already available for this request."}, status=400)
+
+    blood_request.status = "incomplete"
+    blood_request.save(update_fields=["status"])
+
+    Notification.objects.create(
+        user=request.user,
+        blood_request=blood_request,
+        title="Request Marked Incomplete",
+        message="No donor or stock was confirmed within the search window, so the request has been marked incomplete.",
+        type="blood_request_failed",
+    )
+
+    return Response({"success": True, "message": "Request marked as incomplete."})
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def api_request_status(request, request_id):
@@ -803,6 +879,10 @@ def api_request_status(request, request_id):
     except Exception:
         pass
 
+    no_match_found = blood_request.status in {"no_match", "incomplete"}
+    if blood_request.status != "approved" or blood_request.fulfilled or no_match_found:
+        donor_can_respond = False
+
     return Response({
         "request_id": blood_request.id,
         "status": blood_request.status,
@@ -815,4 +895,9 @@ def api_request_status(request, request_id):
         "donor_eligible": donor_eligible,
         "donor_days_remaining": donor_days_remaining,
         "accepted_donor": donor_data,   # ✅ added
+        "no_match_found": no_match_found,
+        "final_message": (
+            "No compatible donor or blood stock was found within the search window."
+            if no_match_found else ""
+        ),
     })

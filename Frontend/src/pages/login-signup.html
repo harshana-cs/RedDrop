@@ -742,12 +742,20 @@ document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
   } else { clearFieldError(phoneEl); }
 
   // Password strength
-  const { strong } = checkPasswordStrength(password);
-  if (!password) {
-    showFieldError(passwordEl, "Password is required."); valid = false;
-  } else if (!strong) {
-    showFieldError(passwordEl, "Password too weak — meet at least 4 of the 5 requirements above."); valid = false;
-  } else { clearFieldError(passwordEl); }
+const { checks, strong } = checkPasswordStrength(password);
+if (!password) {
+  showFieldError(passwordEl, "Password is required."); valid = false;
+} else if (!checks.length) {
+  showFieldError(passwordEl, "Password must be at least 8 characters."); valid = false;
+} else if (!checks.special) {
+  showFieldError(passwordEl, "Password must contain at least one special character (!@#$%...)."); valid = false;
+} else if (!checks.number) {
+  showFieldError(passwordEl, "Password must contain at least one number (0–9)."); valid = false;
+} else if (!checks.uppercase) {
+  showFieldError(passwordEl, "Password must contain at least one uppercase letter."); valid = false;
+} else if (!checks.lowercase) {
+  showFieldError(passwordEl, "Password must contain at least one lowercase letter."); valid = false;
+} else { clearFieldError(passwordEl); }
 
   // Confirm password
   if (!confirmpassword) {

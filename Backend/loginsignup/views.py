@@ -19,6 +19,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from blood_requests.models import BloodRequest
 from donor.models import Donation
+from common.email_utils import send_branded_email
 
 GOOGLE_CLIENT_ID = "320231613519-n8ppnf9bof8r6js60el89rar1mvtl8lo.apps.googleusercontent.com"
 
@@ -59,11 +60,17 @@ def google_signup(request):
             }
         )
 
-        send_mail(
-            "RedDrop Verification Code",
-            f"Your verification code is: {code}",
-            "noreply@reddrop.com",
-            [email],
+        send_branded_email(
+            subject="RedDrop Verification Code",
+            to=email,
+            title="Verify Your Email",
+            lines=[
+                f"Hello {fullname or 'there'},",
+                "Use the code below to verify your RedDrop email address.",
+            ],
+            bullets=[f"Verification Code: {code}"],
+            footer_note="Do not share this code with anyone.",
+            from_email="noreply@reddrop.com",
         )
 
         return JsonResponse({"success": True, "email": email})
@@ -241,11 +248,17 @@ def patient_signup_manually(request):
     )
 
     try:
-        send_mail(
-            "RedDrop — Verify Your Email",
-            f"Hi {data['fullname']},\n\nYour RedDrop verification code is:\n\n{code}\n\nDo not share this code with anyone.\n\n— RedDrop Team",
-            "noreply@reddrop.com",
-            [data["emailaddress"]],
+        send_branded_email(
+            subject="RedDrop - Verify Your Email",
+            to=data["emailaddress"],
+            title="Verify Your Email",
+            lines=[
+                f"Hi {data['fullname']},",
+                "Your RedDrop verification code is ready.",
+            ],
+            bullets=[f"Verification Code: {code}"],
+            footer_note="Do not share this code with anyone.",
+            from_email="noreply@reddrop.com",
         )
     except Exception as e:
         print("Email error:", e)

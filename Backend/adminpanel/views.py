@@ -37,6 +37,7 @@ import logging
 from .models import BloodRequestEscalation, NotificationLog
 import random
 import requests
+from common.email_utils import send_branded_email
 # Add this with your other imports at the top
 from blood_requests.notifications import is_donor_eligible
 from celery_task import orchestrate_tiered_notification
@@ -80,16 +81,21 @@ def _send_hospital_status_email(hospital, is_active):
         return
 
     state = "activated" if is_active else "deactivated"
-    send_mail(
+    send_branded_email(
         subject=f"RedDrop: Hospital account {state}",
-        message=(
-            f"Hello {hospital.name},\n\n"
-            f"Your hospital account has been {state} by RedDrop admin.\n"
-            f"{'You can now log in and access your dashboard.' if is_active else 'You will not be able to log in until the account is reactivated.'}\n\n"
-            "- RedDrop Team"
-        ),
+        to=recipient,
+        title=f"Hospital Account {state.capitalize()}",
+        lines=[
+            f"Hello {hospital.name},",
+            f"Your hospital account has been {state} by the RedDrop admin team.",
+            "You can now log in and access your dashboard." if is_active else "You will not be able to log in until the account is reactivated.",
+        ],
+        bullets=[
+            f"Hospital: {hospital.name}",
+            f"Status: {state.capitalize()}",
+        ],
+        footer_note="Thank you for partnering with RedDrop and helping strengthen emergency blood access.",
         from_email=settings.EMAIL_HOST_USER,
-        recipient_list=[recipient],
         fail_silently=True,
     )
 
@@ -100,23 +106,23 @@ def _send_user_status_email(user, is_active, reason=""):
 
     state = "activated" if is_active else "deactivated"
     reason_text = reason.strip() if isinstance(reason, str) else ""
-    reason_line = f"Reason: {reason_text}\n" if reason_text else ""
-    access_line = (
-        "You can now log in again."
-        if is_active
-        else "You will not be able to log in until the account is reactivated."
-    )
-    send_mail(
+    send_branded_email(
         subject=f"RedDrop: User account {state}",
-        message=(
-            f"Hello {user.fullname},\n\n"
-            f"Your RedDrop user account has been {state} by admin.\n"
-            f"{reason_line}"
-            f"{access_line}\n\n"
-            "- RedDrop Team"
-        ),
+        to=user.emailaddress,
+        title=f"User Account {state.capitalize()}",
+        lines=[
+            f"Hello {user.fullname},",
+            f"Your RedDrop user account has been {state} by admin.",
+            "You can now log in again." if is_active else "You will not be able to log in until the account is reactivated.",
+            f"Reason: {reason_text}" if reason_text else None,
+        ],
+        bullets=[
+            f"User: {user.fullname}",
+            f"Email: {user.emailaddress}",
+            f"Status: {state.capitalize()}",
+        ],
+        footer_note="If you need help, please contact the RedDrop support team.",
         from_email=settings.EMAIL_HOST_USER,
-        recipient_list=[user.emailaddress],
         fail_silently=True,
     )
 
@@ -170,12 +176,25 @@ def send_donor_alert(donor, blood_request, distance, tier=None):
     # EMAIL
     try:
         if donor.email:
-            send_mail(
+            send_branded_email(
                 subject=f"{blood_request.blood_type} blood needed",
-                message="Please login and donate.",
+                to=donor.email,
+                title="Urgent Blood Needed",
+                lines=[
+                    f"Hi {donor.first_name or 'Donor'},",
+                    f"We need {blood_request.blood_type} blood as soon as possible.",
+                    "Please log in to your RedDrop dashboard and respond if you are available.",
+                ],
+                bullets=[
+                    f"Hospital: {blood_request.hospital_location.name if blood_request.hospital_location else 'Hospital'}",
+                    f"District: {blood_request.district}",
+                    f"Contact: {blood_request.contact_phone}",
+                ],
+                cta_text="Open Donor Dashboard",
+                cta_url="http://localhost:5500/donor_dashboard.html",
+                footer_note="Your response can help save a life.",
                 from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[donor.email],
-                fail_silently=False
+                fail_silently=False,
             )
             email_sent = True
         else:
@@ -334,20 +353,24 @@ def admin_approve_blood_request(request, request_id):
             )
 
         try:
-            send_mail(
+            send_branded_email(
                 subject="RedDrop: Your blood request was approved",
-                message=(
-                    f"Hi {blood_request.patient.fullname},\n\n"
-                    f"Your blood request for {blood_request.blood_type} blood has been approved.\n"
-                    + (
-                        "Your request is scheduled and donor/blood bank matching will begin one day before your required date.\n\n"
-                        if is_future_scheduled else
-                        "We are now searching for compatible donors only.\n\n"
-                    )
-                    + "- RedDrop Team"
-                ),
+                to=blood_request.patient.emailaddress,
+                title="Blood Request Approved",
+                lines=[
+                    f"Hi {blood_request.patient.fullname},",
+                    f"Your blood request for {blood_request.blood_type} blood has been approved.",
+                    "Your request is scheduled and donor/blood bank matching will begin one day before your required date."
+                    if is_future_scheduled else
+                    "We are now searching for compatible donors only.",
+                ],
+                bullets=[
+                    f"Blood Type: {blood_request.blood_type}",
+                    f"Hospital: {blood_request.hospital_location.name if blood_request.hospital_location else 'N/A'}",
+                    f"Required Date: {blood_request.required_date.strftime('%Y-%m-%d') if blood_request.required_date else 'ASAP'}",
+                ],
+                footer_note="We will keep updating your request as matching progresses.",
                 from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[blood_request.patient.emailaddress],
                 fail_silently=True,
             )
         except Exception:
@@ -425,17 +448,22 @@ def admin_reject_blood_request(request, request_id):
                 type="blood_request_rejected_by_admin",
             )
         try:
-            send_mail(
+            send_branded_email(
                 subject="RedDrop: Your blood request was rejected",
-                message=(
-                    f"Hi {blood_request.patient.fullname},\n\n"
-                    f"Your blood request for {blood_request.blood_type} was rejected by admin."
-                    + (f"\nReason: {reason}\n\n" if reason else "\n\n")
-                    + "If you believe this is a mistake, please resubmit with correct documents.\n\n"
-                    + "- RedDrop Team"
-                ),
+                to=blood_request.patient.emailaddress,
+                title="Blood Request Rejected",
+                lines=[
+                    f"Hi {blood_request.patient.fullname},",
+                    f"Your blood request for {blood_request.blood_type} was rejected by admin.",
+                    f"Reason: {reason}" if reason else None,
+                    "If you believe this is a mistake, please resubmit with the correct documents.",
+                ],
+                bullets=[
+                    f"Blood Type: {blood_request.blood_type}",
+                    f"Request ID: {blood_request.id}",
+                ],
+                footer_note="If you need support, please contact the RedDrop team.",
                 from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[blood_request.patient.emailaddress],
                 fail_silently=True,
             )
         except Exception:
@@ -490,17 +518,22 @@ def admin_reject_donor_registration(request, donor_id):
 
     if donor.email:
         try:
-            send_mail(
+            send_branded_email(
                 subject="RedDrop: Your donor registration was rejected",
-                message=(
-                    f"Hello {donor.first_name or 'Donor'},\n\n"
-                    "Your donor registration was rejected by admin."
-                    + (f"\nReason: {reason}\n\n" if reason else "\n\n")
-                    + "If you believe this is a mistake, please update your details and reapply.\n\n"
-                    + "- RedDrop Team"
-                ),
+                to=donor.email,
+                title="Donor Registration Rejected",
+                lines=[
+                    f"Hello {donor.first_name or 'Donor'},",
+                    "Your donor registration was rejected by admin.",
+                    f"Reason: {reason}" if reason else None,
+                    "Please update your details and reapply if you believe this is a mistake.",
+                ],
+                bullets=[
+                    f"Name: {donor.first_name or ''} {donor.last_name or ''}".strip(),
+                    f"Email: {donor.email}",
+                ],
+                footer_note="Thank you for supporting the RedDrop community.",
                 from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[donor.email],
                 fail_silently=True,
             )
         except Exception:
@@ -536,20 +569,26 @@ def admin_approve_donor_registration(request, donor_id):
     donor.save()
 
     if donor.email:
-        send_mail(
-            subject="🎉 You are now an approved blood donor!",
-            message=(
-                f"Hello {donor.first_name},\n\n"
-                "Great news! Your donor registration on RedDrop has been approved.\n\n"
-                "You can now receive blood donation requests and help save lives.\n\n"
-                "Thank you for being a hero ❤️\n"
-                "- RedDrop Team"
-            ),
+        send_branded_email(
+            subject="RedDrop: Your donor registration was approved",
+            to=donor.email,
+            title="Donor Registration Approved",
+            lines=[
+                f"Hello {donor.first_name or 'Donor'},",
+                "Great news! Your donor registration on RedDrop has been approved.",
+                "You can now receive blood donation requests and help save lives.",
+            ],
+            bullets=[
+                f"Donor: {donor.first_name or ''} {donor.last_name or ''}".strip(),
+                f"Blood Type: {donor.blood_type or 'N/A'}",
+                f"District: {donor.district or 'N/A'}",
+            ],
+            cta_text="Go to Donor Dashboard",
+            cta_url="http://localhost:5500/donor_dashboard.html",
+            footer_note="Thank you for being a hero and saving lives.",
             from_email="noreply@reddrop.com",
-            recipient_list=[donor.email],
             fail_silently=True
         )
-
     return Response({
         "success": True,
         "message": "Donor approved successfully and email sent"
@@ -854,22 +893,25 @@ def approve_hospital_request(request, pk):
     app.approved_at = timezone.now()
     app.save()
 
-    send_mail(
+    send_branded_email(
         subject="Hospital Registration Approved - RedDrop",
-        message=(
-            f"Dear {app.hospital_name},\n\n"
-            "Your hospital registration request has been approved.\n\n"
-            f"Login Credentials:\n"
-            f"Username: {username}\n"
-            f"Password: {password}\n\n"
-            "You can now log in and manage blood requests on RedDrop.\n\n"
-            "- RedDrop Team"
-        ),
+        to=app.email,
+        title="Hospital Registration Approved",
+        lines=[
+            f"Hello {app.hospital_name},",
+            "Your hospital registration request has been approved.",
+            "Please log in and change your password after first login.",
+        ],
+        bullets=[
+            f"Username: {username}",
+            f"Password: {password}",
+        ],
+        cta_text="Open Hospital Login",
+        cta_url="http://localhost:5500/hospital-login.html",
+        footer_note="Please keep your credentials secure.",
         from_email=settings.EMAIL_HOST_USER,
-        recipient_list=[app.email],
         fail_silently=True,
     )
-
     return Response(
         {"success": True, "message": "Hospital approved successfully"},
         status=status.HTTP_200_OK
@@ -1115,9 +1157,13 @@ def admin_users(request):
     for u in users:
         donor = Donor.objects.filter(email=u.emailaddress).first()
         requests_count = BloodRequest.objects.filter(patient=u).count()
-        donations_count = BloodRequest.objects.filter(
-            patient=u, status="completed"
-        ).count()
+        
+        # Count only donations where this user acted as a DONOR
+        if donor:
+            donor_donations_count = Donation.objects.filter(donor=donor).count()
+        else:
+            donor_donations_count = 0
+
         data.append({
             "id": u.id,
             "name": u.fullname,
@@ -1125,7 +1171,7 @@ def admin_users(request):
             "active": u.is_active,
             "blood_type": donor.blood_type if donor else None,
             "total_requests": requests_count,
-            "total_donations": donations_count,
+            "total_donations": donor_donations_count,
             "availability": "Available" if donor else "Not Donor"
         })
     return Response(data)
@@ -1192,11 +1238,13 @@ def admin_user_detail(request, user_id):
     if completed and completed.donation_date:
         last_donation = completed.donation_date
 
+    DONATION_GAP_DAYS = 56  # Whole blood donation gap
+
     eligibility = "Eligible"
     if last_donation:
         days_since = (timezone.now() - last_donation).days
-        if days_since < 90:
-            eligibility = f"Not Eligible ({90 - days_since} days remaining)"
+        if days_since < DONATION_GAP_DAYS:
+            eligibility = f"Not Eligible ({DONATION_GAP_DAYS - days_since} days remaining)"
 
     donor_info = None
     donor_donations = []
@@ -1459,6 +1507,85 @@ def admin_activity_logs(request):
         })
 
     return Response(data)
+
+
+def _donation_timeline_entry(notification, req=None, donor_name=None):
+    """Normalize notification rows into timeline-friendly items."""
+    ntype = (getattr(notification, "type", "") or "").lower()
+    title = getattr(notification, "title", "") or ""
+    message = getattr(notification, "message", "") or ""
+    created_at = getattr(notification, "created_at", None)
+
+    if ntype in {"blood_request_approved_by_admin", "blood_request_approved", "request_approved"}:
+        return {
+            "event": "Request Approved",
+            "time": created_at.isoformat() if created_at else None,
+            "by": "Admin",
+            "details": message or title,
+            "tone": "success",
+        }
+
+    if ntype in {"blood_request_rejected_by_admin", "request_rejected"}:
+        return {
+            "event": "Request Rejected",
+            "time": created_at.isoformat() if created_at else None,
+            "by": "Admin",
+            "details": message or title,
+            "tone": "danger",
+        }
+
+    if ntype == "donor_accept":
+        return {
+            "event": "Donor Accepted Request",
+            "time": created_at.isoformat() if created_at else None,
+            "by": donor_name or "Donor",
+            "details": message or title,
+            "tone": "info",
+        }
+
+    if ntype == "donor_request_rejected":
+        return {
+            "event": "Donor Declined Request",
+            "time": created_at.isoformat() if created_at else None,
+            "by": donor_name or "Donor",
+            "details": message or title,
+            "tone": "warning",
+        }
+
+    if ntype in {"completed", "request_completed", "donation_complete", "donation_completed"}:
+        return {
+            "event": "Donation Completed",
+            "time": created_at.isoformat() if created_at else None,
+            "by": "System",
+            "details": message or title,
+            "tone": "success",
+        }
+
+    if ntype == "donor_confirmation":
+        return {
+            "event": "Donor Confirmed Donation",
+            "time": created_at.isoformat() if created_at else None,
+            "by": donor_name or "Donor",
+            "details": message or title,
+            "tone": "info",
+        }
+
+    if ntype == "patient_confirmation":
+        return {
+            "event": "Patient Confirmed Receipt",
+            "time": created_at.isoformat() if created_at else None,
+            "by": "Patient",
+            "details": message or title,
+            "tone": "info",
+        }
+
+    return {
+        "event": title or "Activity",
+        "time": created_at.isoformat() if created_at else None,
+        "by": "System",
+        "details": message,
+        "tone": "neutral",
+    }
 
 
 # ================= DONATION CAMPS: SERIALIZE HELPER =================
@@ -1860,10 +1987,13 @@ def admin_escalation_status(request, request_id):
  
     stock_found = bool((escalation.blood_bank_units or 0) > 0 or (escalation.hospital_stock_details or {}))
     no_match_found = bool(
-        escalation.completed_at
-        and not escalation.success
-        and not stock_found
-        and not blood_request.accepted_donor_id
+        blood_request.status in {'no_match', 'incomplete'}
+        or (
+            escalation.completed_at
+            and not escalation.success
+            and not stock_found
+            and not blood_request.accepted_donor_id
+        )
     )
 
     return Response({
@@ -1898,9 +2028,9 @@ def admin_escalation_status(request, request_id):
         "success": bool(escalation.success),
         "no_match_found": no_match_found,
         "final_message": (
-            "No compatible donor or stock found after all 4 tiers completed."
-            if no_match_found else ""
-        ),
+    "No compatible donor or blood stock found after searching all tiers."
+    if no_match_found else ""
+),
         "total_donors_alerted": escalation.total_donors_alerted or 0,
         "completed_at": escalation.completed_at,
     })
@@ -2320,13 +2450,13 @@ def analytics_geographic(request):
         .annotate(
             total=Count("id"),
             completed=Count("id", filter=Q(status="completed")),
-            pending=Count("id",   filter=Q(status="pending")),
+            pending=Count("id", filter=Q(status="pending")),
         )
         .order_by("-total")[:15]
     )
 
-    # Donors by district (city field)
-    donor_districts = (
+    # Donors by city (Donor model has no district field — use city)
+    donor_by_city = (
         Donor.objects.filter(is_approved=True)
         .exclude(city__isnull=True)
         .exclude(city__exact="")
@@ -2334,6 +2464,26 @@ def analytics_geographic(request):
         .annotate(count=Count("id"))
         .order_by("-count")[:15]
     )
+
+    # Fallback to state if city is also empty for all donors
+    if not donor_by_city.exists():
+        donor_by_city = (
+            Donor.objects.filter(is_approved=True)
+            .exclude(state__isnull=True)
+            .exclude(state__exact="")
+            .values("state")
+            .annotate(count=Count("id"))
+            .order_by("-count")[:15]
+        )
+        donors_by_district = [
+            {"district": d["state"], "count": d["count"]}
+            for d in donor_by_city
+        ]
+    else:
+        donors_by_district = [
+            {"district": d["city"], "count": d["count"]}
+            for d in donor_by_city
+        ]
 
     return Response({
         "requests_by_district": [
@@ -2346,10 +2496,7 @@ def analytics_geographic(request):
             }
             for d in district_requests
         ],
-        "donors_by_district": [
-            {"district": d["city"], "count": d["count"]}
-            for d in donor_districts
-        ],
+        "donors_by_district": donors_by_district,
     })
 
 
@@ -2424,6 +2571,18 @@ def admin_all_donations(request):
     if to_date:
         donations = donations.filter(created_at__date__lte=to_date)
 
+    donation_ids = list(donations.values_list("id", flat=True))
+    notification_map = {}
+    donor_decline_map = {}
+    if donation_ids:
+        related_notifications = Notification.objects.filter(
+            blood_request_id__in=donation_ids
+        ).order_by("created_at")
+        for n in related_notifications:
+            notification_map[n.blood_request_id] = n
+            if (n.type or "").lower() == "donor_request_rejected":
+                donor_decline_map[n.blood_request_id] = True
+
     def _abs(field):
         try:
             return request.build_absolute_uri(field.url) if field else None
@@ -2455,6 +2614,8 @@ def admin_all_donations(request):
             donor_phone      = donor.phone_number
             donor_city       = donor.city
             donor_email      = donor.email
+
+        latest_activity = notification_map.get(req.id)
 
         # �"��"� confirmation �" query DonationConfirmation directly �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
         # Avoids any reverse-relation name guessing
@@ -2513,6 +2674,11 @@ def admin_all_donations(request):
             # documents
             "hospital_doc":  _abs(req.hospital_doc),
             "doctor_note":   _abs(req.doctor_note),
+            "latest_activity_type": latest_activity.type if latest_activity else None,
+            "latest_activity_title": latest_activity.title if latest_activity else None,
+            "latest_activity_message": latest_activity.message if latest_activity else None,
+            "latest_activity_at": latest_activity.created_at.isoformat() if latest_activity else None,
+            "has_donor_decline": bool(donor_decline_map.get(req.id)),
         })
 
     return JsonResponse({"data": data, "total": len(data)})
@@ -2572,6 +2738,94 @@ def admin_donation_detail(request, donation_id):
             "patient_confirmed": bool(conf.patient_confirmed),
             "created_at":        conf.created_at.isoformat() if conf.created_at else None,
         }
+
+    audit_logs = []
+    try:
+        audit_logs = list(
+            Notification.objects.filter(blood_request=req)
+            .order_by("created_at")
+            .values("title", "message", "created_at", "type")
+        )
+    except Exception:
+        pass
+
+    timeline = []
+
+    def add_timeline(event, time_value=None, by=None, details="", tone="neutral"):
+        timeline.append({
+            "event": event,
+            "time": time_value.isoformat() if hasattr(time_value, "isoformat") else time_value,
+            "by": by or "System",
+            "details": details or "",
+            "tone": tone,
+        })
+
+    add_timeline(
+        "Request Created",
+        req.created_at,
+        by=req.patient.fullname if req.patient else "Hospital",
+        details=f"{req.blood_type} - {req.units_required} unit(s)",
+        tone="neutral",
+    )
+
+    donor_display_name = donor_data.get("name") if donor_data else None
+    donor_display_name = donor_display_name or (donor.first_name if donor else None) or "Donor"
+    seen_complete = False
+
+    for log in audit_logs:
+        log_type = (log.get("type") or "").lower()
+        if log_type in {"alert", "audit", "system", "security_alert", "system_alert"}:
+            continue
+
+        log_time = log.get("created_at")
+        log_details = log.get("message", "") or log.get("title", "")
+
+        if log_type in {"blood_request_approved_by_admin", "blood_request_approved", "request_approved"}:
+            add_timeline("Request Approved", log_time, by="Admin", details=log_details, tone="success")
+        elif log_type in {"blood_request_rejected_by_admin", "request_rejected"}:
+            add_timeline("Request Rejected", log_time, by="Admin", details=log_details, tone="danger")
+        elif log_type == "donor_accept":
+            add_timeline("Donor Accepted Request", log_time, by=donor_display_name, details=log_details, tone="info")
+        elif log_type == "donor_request_rejected":
+            add_timeline("Donor Declined Request", log_time, by=donor_display_name, details=log_details, tone="warning")
+        elif log_type in {"completed", "request_completed", "donation_complete", "donation_completed"}:
+            add_timeline("Donation Completed", log_time, by="System", details=log_details, tone="success")
+            seen_complete = True
+
+    if conf and conf.donor_confirmed:
+        add_timeline(
+            "Donor Confirmed Donation",
+            conf.created_at,
+            by=donor_display_name,
+            details="Donation confirmed by donor.",
+            tone="info",
+        )
+
+    if conf and conf.patient_confirmed:
+        add_timeline(
+            "Patient Confirmed Receipt",
+            conf.created_at,
+            by=req.patient.fullname if req.patient else "Patient",
+            details="Patient confirmed receipt.",
+            tone="info",
+        )
+
+    if req.status == "completed" and not seen_complete:
+        add_timeline(
+            "Donation Completed",
+            req.donation_date or getattr(req, "updated_at", None),
+            by="System",
+            details="Donation marked complete.",
+            tone="success",
+        )
+
+    return JsonResponse({
+        "id": req.id,
+        "timeline": timeline,
+        "audit_logs": audit_logs,
+        "donor": donor_data,
+        "confirmation": conf_data,
+    })
 
     # �"��"� timeline �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
     timeline = []

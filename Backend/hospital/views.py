@@ -771,10 +771,13 @@ def hospital_request_escalation_status(request, request_id):
 
     stock_found = bool((escalation.blood_bank_units or 0) > 0 or (escalation.hospital_stock_details or {}))
     no_match_found = bool(
-        escalation.completed_at
-        and not escalation.success
-        and not stock_found
-        and not blood_request.accepted_donor_id
+        blood_request.status in {"no_match", "incomplete"}
+        or (
+            escalation.completed_at
+            and not escalation.success
+            and not stock_found
+            and not blood_request.accepted_donor_id
+        )
     )
 
     return Response({
