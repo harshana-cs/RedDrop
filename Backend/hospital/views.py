@@ -23,6 +23,7 @@ from blood_stock.stock_utils import (
 from hospital.auth import get_hospital_from_token
 import time
 from adminpanel.models import Notification
+from common.email_utils import send_branded_email
 from adminpanel.models import HospitalAuditLog
 from blood_requests.models import HospitalLocation
 from blood_requests.utils import get_coordinates_from_osm
@@ -867,21 +868,26 @@ def hospital_confirm_donor_receipt(request, request_id):
     donor = blood_request.accepted_donor
     if donor and donor.email:
         try:
-            from django.core.mail import send_mail
-            send_mail(
+            send_branded_email(
                 subject="RedDrop: Your Donation OTP - Please Verify",
-                message=(
-                    f"Hi {donor.first_name or 'Donor'},\n\n"
-                    f"The hospital has confirmed blood handover for request "
-                    f"#{blood_request.id} ({blood_request.blood_type}).\n\n"
-                    f"Your verification OTP is:\n\n"
-                    f"    {otp}\n\n"
-                    f"Please open your RedDrop donor dashboard and enter this OTP.\n"
-                    f"This OTP expires in 24 hours.\n\n"
-                    f"- RedDrop Team"
-                ),
+                to=donor.email,
+                title="Donation OTP Ready",
+                lines=[
+                    f"Hi {donor.first_name or 'Donor'},",
+                    f"The hospital has confirmed blood handover for request #{blood_request.id} ({blood_request.blood_type}).",
+                    "Use the OTP below to complete verification.",
+                ],
+                highlight_label="Verification OTP",
+                highlight_value=otp,
+                highlight_note="This OTP expires in 24 hours.",
+                bullets=[
+                    "Open your RedDrop donor dashboard",
+                    "Enter the OTP to finish donation verification",
+                ],
+                cta_text="Open Donor Dashboard",
+                cta_url="http://localhost:5500/donor_dashboard.html",
+                footer_note="Thank you for helping save a life.",
                 from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[donor.email],
                 fail_silently=True,
             )
         except Exception:

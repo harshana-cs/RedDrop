@@ -14,6 +14,7 @@ import logging
 import threading
 import time
 from math import radians, sin, cos, sqrt, atan2
+from common.email_utils import send_branded_email
 
 logger = logging.getLogger(__name__)
 
@@ -595,7 +596,7 @@ def _notify_tier(blood_request_id, tier_label, min_km, max_km):
             if donor.email:
                 from django.conf import settings
                 from django.core.mail import send_mail as _send_mail
-                _send_mail(
+                send_branded_email(
                     subject=f"RedDrop: Compatible donor request for {blood_request.blood_type}",
                     message=(
                         f"Hi {donor.first_name or 'Donor'},\n\n"

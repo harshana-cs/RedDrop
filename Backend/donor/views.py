@@ -9,6 +9,8 @@ from register_donor.models import Donor
 from blood_requests.models import BloodRequest
 from adminpanel.models import DonationCamp
 from adminpanel.models import Notification  
+from common.email_utils import send_branded_email
+from adminpanel.sms import send_sms
 from .models import Donation, DonationConfirmation
 from django.db.models import Count, Max
 from django.contrib.auth.models import User
@@ -209,6 +211,33 @@ def api_donor_confirm(request):
     blood_request.otp = None           
     blood_request.otp_expires_at = None
     blood_request.save()
+
+    try:
+        donor_name = donor.first_name or "Donor"
+        if donor.email:
+            send_branded_email(
+                subject="RedDrop: Your donation has been completed",
+                to=donor.email,
+                title="Donation Completed",
+                lines=[
+                    f"Hi {donor_name},",
+                    "Thank you for confirming your donation by OTP.",
+                    "Your donation has been completed successfully in RedDrop.",
+                    "Your support has helped save lives.",
+                ],
+                highlight_label="Status",
+                highlight_value="Completed",
+                highlight_note="Your donation record is now verified and stored in RedDrop.",
+                footer_note="Thank you for being part of RedDrop and helping patients in need.",
+            )
+
+        if getattr(donor, "phone_number", None):
+            send_sms(
+                donor.phone_number,
+                "RedDrop: Thank you for donating. You saved lives.",
+            )
+    except Exception:
+        pass
 
     return Response({
         "success": True,

@@ -25,6 +25,12 @@
 ========================================== */
 #inventorySection {
   font-family: var(--font-sans);
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(1200px 500px at 10% -10%, rgba(226,75,74,.10), transparent 62%),
+    radial-gradient(900px 360px at 95% 0%, rgba(55,138,221,.10), transparent 58%),
+    linear-gradient(180deg, #fffdfc 0%, #fbf7f5 100%);
 }
 
 /* Summary strip upgrade */
@@ -34,20 +40,52 @@
   background: var(--surface);
   box-shadow: var(--shadow-sm);
   transition: transform .2s ease, box-shadow .2s ease, border-color .2s;
-  padding: 1.1rem 1.25rem 1rem;
+  padding: 1rem 1.1rem 1rem;
+  position: relative;
+  overflow: hidden;
+  min-height: 122px;
 }
 #inventorySection .scard:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
   border-color: var(--border2);
 }
+#inventorySection .scard::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.7), transparent);
+  opacity: .75;
+}
+#inventorySection .scard-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+#inventorySection .scard-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 8px 18px rgba(0,0,0,.08);
+  flex-shrink: 0;
+}
+#inventorySection .scard-icon.red { background: linear-gradient(135deg, #E24B4A 0%, #b92525 100%); }
+#inventorySection .scard-icon.blue { background: linear-gradient(135deg, #378ADD 0%, #2563eb 100%); }
+#inventorySection .scard-icon.amber { background: linear-gradient(135deg, #EF9F27 0%, #d97706 100%); }
+#inventorySection .scard-icon.green { background: linear-gradient(135deg, #639922 0%, #3f7d1a 100%); }
+#inventorySection .scard-body { flex: 1; min-width: 0; }
 #inventorySection .scard-val {
   font-family: var(--font-mono);
-  font-size: 30px;
+  font-size: 29px;
   font-weight: 700;
   letter-spacing: -1px;
   line-height: 1;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 #inventorySection .scard-lbl {
   font-size: 11px;
@@ -55,7 +93,13 @@
   letter-spacing: .05em;
   text-transform: uppercase;
   color: var(--text3);
-  margin-top: 6px;
+  margin-top: 2px;
+}
+#inventorySection .scard-note {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text2);
 }
 #inventorySection .scard-accent {
   height: 4px;
@@ -123,14 +167,31 @@
 #inventorySection .card {
   border-radius: 16px;
   border: 1px solid var(--border);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  padding: 1.25rem 1.4rem;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(255,250,248,.95) 100%);
+  box-shadow: 0 14px 34px rgba(17,24,39,.06);
+  padding: 1.15rem 1.25rem 1.3rem;
   transition: box-shadow .2s, border-color .2s;
+  position: relative;
+  overflow: hidden;
 }
 #inventorySection .card:hover {
   box-shadow: var(--shadow-md);
   border-color: var(--border2);
+}
+#inventorySection .card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, #E24B4A 0%, #EF9F27 50%, #378ADD 100%);
+}
+#inventorySection .card-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 1rem;
 }
 #inventorySection .card-title {
   font-size: 13px;
@@ -144,13 +205,32 @@
   margin-top: 3px;
   font-weight: 500;
 }
+#inventorySection .card-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff3f3;
+  color: #b92525;
+  border: 1px solid #f5d2d2;
+  white-space: nowrap;
+}
+#inventorySection .chart-wrap {
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.75) 0%, rgba(251,248,246,.9) 100%);
+  border: 1px solid rgba(226,75,74,.08);
+  padding: .6rem;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.65);
+}
 
 /* Table card upgrade */
 #inventorySection .table-card {
   border-radius: 16px;
   border: 1px solid var(--border);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(180deg, #fff 0%, #fbfaf8 100%);
+  box-shadow: 0 14px 34px rgba(17,24,39,.06);
   overflow: hidden;
 }
 #inventorySection .table-hd {
@@ -234,9 +314,21 @@
 /* Alert upgrade */
 #inventorySection .alert {
   border-radius: 12px;
-  background: linear-gradient(135deg, #FEF2F2 0%, #FCEBEB 100%);
-  border: 1px solid #F7C1C1;
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(135deg, #fff6f6 0%, #ffecec 100%);
+  border: 1px solid #f4c7c7;
+  box-shadow: 0 10px 24px rgba(226,75,74,.09);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: .95rem 1rem;
+}
+#inventorySection .alert-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E24B4A 0%, #b92525 100%);
+  box-shadow: 0 0 0 6px rgba(226,75,74,.12);
+  flex-shrink: 0;
 }
 #inventorySection .alert p {
   font-family: var(--font-sans);
@@ -378,14 +470,28 @@
     linear-gradient(180deg, rgba(255,255,255,.96) 0%, rgba(255,255,255,.6) 100%);
 }
 #inventorySection .page-header {
-  padding: 1.05rem 1.15rem;
+  padding: 1.2rem 1.2rem 1.15rem;
   border: 1px solid rgba(255,255,255,.66);
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(121,31,31,.94) 0%, rgba(226,75,74,.88) 54%, rgba(239,159,39,.83) 100%);
-  box-shadow: 0 16px 44px rgba(121,31,31,.22);
+  border-radius: 22px;
+  background:
+    radial-gradient(700px 180px at 95% 0%, rgba(255,255,255,.16), transparent 60%),
+    linear-gradient(135deg, rgba(121,31,31,.95) 0%, rgba(226,75,74,.92) 54%, rgba(239,159,39,.88) 100%);
+  box-shadow: 0 18px 46px rgba(121,31,31,.24);
+  position: relative;
+  overflow: hidden;
 }
 #inventorySection .page-header h1 { color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.18); }
 #inventorySection .page-header p { color: rgba(255,255,255,.92); }
+#inventorySection .page-header::after {
+  content: "";
+  position: absolute;
+  inset: auto -30px -28px auto;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,.18), transparent 65%);
+  pointer-events: none;
+}
 #inventorySection .hdr-actions .btn {
   background: rgba(255,255,255,.9);
   color: #422f2f;
@@ -401,6 +507,7 @@
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: .85rem;
+  margin-top: .25rem;
 }
 #inventorySection .scard {
   background: linear-gradient(160deg, #fff 0%, #fdfcfc 56%, #f7f4f4 100%);
@@ -416,12 +523,18 @@
 #inventorySection .filter-bar {
   border-radius: 16px;
   background: linear-gradient(160deg, #fff 0%, #faf8f6 100%);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 #inventorySection .filter-bar label {
   font-weight: 700;
   color: #7c2a2a;
   letter-spacing: .03em;
   text-transform: uppercase;
+}
+#inventorySection .filter-bar .btn {
+  border: 1px solid rgba(226,75,74,.12);
 }
 #inventorySection .card { background: linear-gradient(170deg, #fff 0%, #fbfaf9 100%); }
 #inventorySection .table-card {
@@ -436,10 +549,14 @@
   border: 1px solid #f7b8b8;
 }
 #inventorySection .alert { border-left: 5px solid #e24b4a; }
+@media (max-width: 1024px) {
+  #inventorySection .charts-row { grid-template-columns: 1fr; }
+}
 @media (max-width: 1200px) { #inventorySection .summary-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 760px) {
   #inventorySection .summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   #inventorySection .page-header { padding: .95rem; }
+  #inventorySection .filter-bar { gap: 8px; }
 }
         /* -- Reset -- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2458,7 +2575,7 @@ nav button span:last-child {
     <div class="hdr-actions">
       <button class="btn" onclick="exportCSV()">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h10M8 2v8M5 7l3 3 3-3"/></svg>
-        Export CSV
+        Export Report
       </button>
       <button class="btn" id="refreshBtn" onclick="loadInventory()">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13.5 4A6.5 6.5 0 1 0 14 8.5"/><path d="M10 1l3.5 3L10 7"/></svg>
@@ -2481,28 +2598,58 @@ nav button span:last-child {
   <div class="summary-strip">
     <div class="scard">
       <div class="scard-accent" style="background:var(--red)"></div>
-      <div class="scard-lbl">Total units</div>
-      <div class="scard-val" id="sumTotal">-</div>
+      <div class="scard-head">
+        <div class="scard-icon red"><i class="ri-drop-line"></i></div>
+        <div class="scard-body">
+          <div class="scard-lbl">Total units</div>
+          <div class="scard-val" id="sumTotal">-</div>
+          <div class="scard-note">Combined inventory across bank and hospitals</div>
+        </div>
+      </div>
     </div>
     <div class="scard">
       <div class="scard-accent" style="background:var(--blue)"></div>
-      <div class="scard-lbl">Locations</div>
-      <div class="scard-val" id="sumLocs">-</div>
+      <div class="scard-head">
+        <div class="scard-icon blue"><i class="ri-map-pin-line"></i></div>
+        <div class="scard-body">
+          <div class="scard-lbl">Locations</div>
+          <div class="scard-val" id="sumLocs">-</div>
+          <div class="scard-note">Places currently holding stock</div>
+        </div>
+      </div>
     </div>
     <div class="scard">
       <div class="scard-accent" style="background:var(--red)"></div>
-      <div class="scard-lbl" style="color:var(--red-dark)">Critical types</div>
-      <div class="scard-val" style="color:var(--red)" id="sumCritical">-</div>
+      <div class="scard-head">
+        <div class="scard-icon red"><i class="ri-alarm-warning-line"></i></div>
+        <div class="scard-body">
+          <div class="scard-lbl" style="color:var(--red-dark)">Critical types</div>
+          <div class="scard-val" style="color:var(--red)" id="sumCritical">-</div>
+          <div class="scard-note">Needs immediate restocking attention</div>
+        </div>
+      </div>
     </div>
     <div class="scard">
       <div class="scard-accent" style="background:var(--amber)"></div>
-      <div class="scard-lbl" style="color:var(--amber-dk)">Low stock</div>
-      <div class="scard-val" style="color:var(--amber)" id="sumLow">-</div>
+      <div class="scard-head">
+        <div class="scard-icon amber"><i class="ri-drop-fill"></i></div>
+        <div class="scard-body">
+          <div class="scard-lbl" style="color:var(--amber-dk)">Low stock</div>
+          <div class="scard-val" style="color:var(--amber)" id="sumLow">-</div>
+          <div class="scard-note">Monitor closely before it becomes critical</div>
+        </div>
+      </div>
     </div>
     <div class="scard">
       <div class="scard-accent" style="background:var(--green)"></div>
-      <div class="scard-lbl" style="color:var(--green-dk)">Optimal</div>
-      <div class="scard-val" style="color:var(--green)" id="sumOptimal">-</div>
+      <div class="scard-head">
+        <div class="scard-icon green"><i class="ri-checkbox-circle-line"></i></div>
+        <div class="scard-body">
+          <div class="scard-lbl" style="color:var(--green-dk)">Optimal</div>
+          <div class="scard-val" style="color:var(--green)" id="sumOptimal">-</div>
+          <div class="scard-note">Healthy levels ready for routine use</div>
+        </div>
+      </div>
     </div>
   </div>
  
@@ -2548,6 +2695,7 @@ nav button span:last-child {
             <div class="card-title">Stock levels by blood type</div>
             <div class="card-sub">Central blood bank</div>
           </div>
+          <div class="card-badge">Live inventory</div>
         </div>
         <div class="legend" style="margin-bottom:.75rem">
           <span class="leg"><span class="leg-sq" style="background:#E24B4A"></span>Critical <=5</span>
@@ -2558,12 +2706,24 @@ nav button span:last-child {
         <div class="chart-wrap" style="height:200px"><canvas id="barChart"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-hd"><div class="card-title">Distribution</div></div>
+        <div class="card-hd">
+          <div>
+            <div class="card-title">Distribution</div>
+            <div class="card-sub">Share of blood types across all locations</div>
+          </div>
+          <div class="card-badge">Overall mix</div>
+        </div>
         <div class="chart-wrap" style="height:160px"><canvas id="donutChart"></canvas></div>
         <div class="legend" id="donutLegend" style="margin-top:.75rem;flex-direction:column;gap:5px"></div>
       </div>
       <div class="card" style="display:flex;flex-direction:column">
-        <div class="card-hd"><div class="card-title">Status summary</div></div>
+        <div class="card-hd">
+          <div>
+            <div class="card-title">Status summary</div>
+            <div class="card-sub">Critical to optimal stock mix</div>
+          </div>
+          <div class="card-badge">Health check</div>
+        </div>
         <div style="display:flex;flex-direction:column;gap:10px;flex:1;justify-content:center">
           <div id="statusSummary"></div>
         </div>
@@ -2573,7 +2733,10 @@ nav button span:last-child {
     <!-- Table -->
     <div class="table-card">
       <div class="table-hd">
-        <span class="table-hd-title">Detailed stock table</span>
+        <div>
+          <span class="table-hd-title">Detailed stock table</span>
+          <div class="card-sub">All inventory records with live status and expiry tracking</div>
+        </div>
         <span class="row-count" id="tableRowCount"></span>
       </div>
       <div class="table-scroll">
@@ -7214,14 +7377,25 @@ function updateSummary() {
  
   // Status summary panel
   const ss = document.getElementById('statusSummary');
+  if (!ss) return;
+  ss.innerHTML = '';
+  const totalStatus = allStock.length || 1;
   ['critical','low','moderate','optimal'].forEach(st => {
     const count = allStock.filter(r => getStatus(r.units) === st).length;
+    const pct = Math.round((count / totalStatus) * 100);
     ss.innerHTML += `
-      <div style="display:flex;align-items:center;justify-content:space-between;
-                  padding:6px 10px;border-radius:6px;background:var(--surface2);margin-bottom:6px">
-        <span class="pill p-${st}">${STATUS_LABELS[st]}</span>
-        <span style="font-size:15px;font-weight:500;font-family:var(--font-mono);
-                     color:${STATUS_COLORS[st]}">${count}</span>
+      <div style="padding:10px 12px;border-radius:14px;background:linear-gradient(180deg,#fff 0%,#fbf8f7 100%);
+                  border:1px solid rgba(17,24,39,.06);margin-bottom:10px;box-shadow:0 8px 16px rgba(17,24,39,.04)">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px;min-width:0">
+            <span class="pill p-${st}">${STATUS_LABELS[st]}</span>
+            <span style="font-size:12px;color:var(--text2);font-weight:600">${pct}% of records</span>
+          </div>
+          <span style="font-size:18px;font-weight:700;font-family:var(--font-mono);color:${STATUS_COLORS[st]}">${count}</span>
+        </div>
+        <div style="margin-top:8px;height:6px;border-radius:999px;background:#f1eeea;overflow:hidden">
+          <div style="width:${pct}%;height:100%;border-radius:999px;background:${STATUS_COLORS[st]};box-shadow:0 0 10px ${STATUS_COLORS[st]}33"></div>
+        </div>
       </div>`;
   });
 }
@@ -7353,6 +7527,12 @@ function getBankByBT() {
   allStock.filter(r => r.loc === 'Blood Bank').forEach(r => { m[r.bt] = (m[r.bt] || 0) + r.units; });
   return m;
 }
+
+function getOverallByBT() {
+  const m = {};
+  allStock.forEach(r => { m[r.bt] = (m[r.bt] || 0) + r.units; });
+  return m;
+}
  
 function buildBarChart() {
   const totals = getBankByBT();
@@ -7392,13 +7572,26 @@ function updateBarChart() {
 }
  
 function buildDonut() {
-  const totals = getBankByBT();
+  const totals = getOverallByBT();
   const labels = BT_ORDER.filter(bt => totals[bt]);
   const vals   = labels.map(bt => totals[bt]);
   const total  = vals.reduce((a, b) => a + b, 0);
   const colors = labels.map(bt => BT_COLORS[bt]);
  
   if (donutChartInst) donutChartInst.destroy();
+  const ctx = document.getElementById('donutChart');
+  if (!labels.length || !total) {
+    const legend = document.getElementById('donutLegend');
+    if (legend) {
+      legend.innerHTML = `<span class="empty-state">No inventory data available for distribution.</span>`;
+    }
+    if (ctx && ctx.getContext) {
+      const chartCtx = ctx.getContext('2d');
+      chartCtx.clearRect(0, 0, ctx.width, ctx.height);
+    }
+    return;
+  }
+
   donutChartInst = new Chart(document.getElementById('donutChart'), {
     type: 'doughnut',
     data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
@@ -7420,6 +7613,43 @@ function buildDonut() {
       <span style="color:var(--text3);margin-left:auto">${vals[i]} (${Math.round(vals[i] / total * 100)}%)</span>
     </span>`;
   });
+}
+
+function buildInventoryExportRows() {
+  return allStock.map(r => [
+    r.bt,
+    r.units,
+    r.loc,
+    STATUS_LABELS[getStatus(r.units)],
+    r.expiry ? new Date(r.expiry).toLocaleDateString() : 'N/A',
+    r.updated || 'Unknown'
+  ]);
+}
+
+function loadInventoryExcelJS() {
+  return new Promise(function(resolve, reject) {
+    if (window.ExcelJS) return resolve(window.ExcelJS);
+    var existing = document.getElementById('exceljs-cdn');
+    if (existing) {
+      existing.addEventListener('load', function() { resolve(window.ExcelJS); });
+      existing.addEventListener('error', reject);
+      return;
+    }
+    var s = document.createElement('script');
+    s.id = 'exceljs-cdn';
+    s.src = 'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';
+    s.onload = function() { resolve(window.ExcelJS); };
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+function captureChartImage(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || typeof canvas.toDataURL !== 'function') return null;
+  if (!canvas.width || !canvas.height) return null;
+  const dataUrl = canvas.toDataURL('image/png');
+  return dataUrl.replace(/^data:image\/png;base64,/, '');
 }
  
 // -- HOSPITAL ACCORDION -------------------------------------------------------
@@ -7694,16 +7924,81 @@ async function submitAdjust() {
  
 // -- EXPORT CSV ----------------------------------------------------------------
 function exportCSV() {
-  if (!allStock.length) return;
-  let csv = 'Blood Type,Units,Location,Status,Last Updated\n';
-  allStock.forEach(r => {
-    csv += `"${r.bt}",${r.units},"${r.loc}","${STATUS_LABELS[getStatus(r.units)]}","${r.updated}"\n`;
+  if (!allStock.length) {
+    showToast('warning', 'No Data', 'No inventory data available to export');
+    return;
+  }
+
+  const rows = buildInventoryExportRows();
+  const exportDate = new Date().toISOString().split('T')[0];
+
+  loadInventoryExcelJS().then(function(ExcelJSLib) {
+    const workbook = new ExcelJSLib.Workbook();
+
+    const dataSheet = workbook.addWorksheet('Inventory Data');
+    dataSheet.addRow(['Blood Type', 'Units', 'Location', 'Status', 'Expiry Date', 'Last Updated']);
+    rows.forEach(function(row) { dataSheet.addRow(row); });
+    dataSheet.columns.forEach(function(col) { col.width = 22; });
+
+    const chartSheet = workbook.addWorksheet('Charts');
+    chartSheet.columns = [{ width: 40 }, { width: 40 }, { width: 40 }, { width: 40 }];
+    chartSheet.getCell('A1').value = 'RedDrop Blood Inventory Report';
+    chartSheet.getCell('A2').value = 'Generated: ' + new Date().toLocaleString();
+
+    const chartList = [
+      ['Blood Inventory Distribution', 'barChart'],
+      ['Blood Type Distribution', 'donutChart']
+    ];
+
+    let rowCursor = 4;
+    let embeddedCount = 0;
+    chartList.forEach(function(item) {
+      const title = item[0];
+      const id = item[1];
+      const base64 = captureChartImage(id);
+      if (!base64) return;
+
+      chartSheet.getCell('A' + rowCursor).value = title;
+      chartSheet.getCell('A' + rowCursor).font = { bold: true, size: 12 };
+
+      const imageId = workbook.addImage({ base64: base64, extension: 'png' });
+      chartSheet.addImage(imageId, {
+        tl: { col: 0, row: rowCursor },
+        ext: { width: 900, height: 300 }
+      });
+      embeddedCount += 1;
+      rowCursor += 17;
+    });
+
+    if (!embeddedCount) {
+      showToast('warning', 'No Charts Captured', 'Open the Blood Inventory tab and wait for the charts to render, then export again.');
+    }
+
+    return workbook.xlsx.writeBuffer();
+  }).then(function(buffer) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    }));
+    a.download = `blood-inventory-report-${exportDate}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('success', 'Exported', 'Inventory report exported with charts');
+  }).catch(function() {
+    let csv = 'Blood Type,Units,Location,Status,Expiry Date,Last Updated\n';
+    allStock.forEach(function(r) {
+      csv += `"${r.bt}",${r.units},"${r.loc}","${STATUS_LABELS[getStatus(r.units)]}","${r.expiry ? new Date(r.expiry).toLocaleDateString() : 'N/A'}","${r.updated || 'Unknown'}"\n`;
+    });
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })),
+      download: `blood-inventory-${exportDate}.csv`
+    });
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('warning', 'Excel Export Fallback', 'Could not load Excel library, exported CSV instead.');
   });
-  const a = Object.assign(document.createElement('a'), {
-    href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })),
-    download: `blood-inventory-${new Date().toISOString().split('T')[0]}.csv`
-  });
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
  
 // -- INIT ----------------------------------------------------------------------
@@ -9398,6 +9693,8 @@ function updateDonationStats(data) {
     document.getElementById('donStatIncomplete').textContent =
         data.filter(d => {
             const status = (d?.status || '').trim().toLowerCase();
+            if (status === 'incomplete' || status === 'no_match') return true;
+
             const approvedAt = parseAdminDate(d.approved_at || d.updated_at || d.created_at || d.date);
             const noMatchSignals = [
                 d.no_match_found,
@@ -9410,6 +9707,7 @@ function updateDonationStats(data) {
             ].some(val => typeof val === 'string'
                 ? /no\s*donor|no\s*stock|unavailable|exhausted|no\s*match/i.test(val)
                 : Boolean(val));
+
             return status !== 'completed'
                 && status !== 'rejected'
                 && noMatchSignals

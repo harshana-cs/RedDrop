@@ -18,6 +18,7 @@ from math import radians, sin, cos, sqrt, atan2
 from .models import HospitalLocation
 from adminpanel.models import Notification
 from .utils import get_coordinates_from_osm
+from common.email_utils import send_branded_email
 from rest_framework import status
 from .notifications import is_donor_eligible, get_compatible_donors, send_donor_alert
 
@@ -414,25 +415,28 @@ def api_patient_confirm_receipt(request, request_id):
     donor = blood_request.accepted_donor
     if donor and donor.email:
         try:
-            from django.core.mail import send_mail
             from django.conf import settings
-            send_mail(
+            send_branded_email(
                 subject="RedDrop: Your Donation OTP — Please Verify",
-                message=(
-                    f"Hi {donor.first_name or 'Donor'},\n\n"
-                    f"The patient has confirmed receipt of blood for request "
-                    f"#{blood_request.id} ({blood_request.blood_type}).\n\n"
-                    f"Your verification OTP is:\n\n"
-                    f"    {otp}\n\n"
-                    f"Please open your RedDrop donor dashboard, go to\n"
-                    f"History → Donation History → Pending Confirmation\n"
-                    f"and enter this OTP to complete the donation record.\n\n"
-                    f"This OTP expires in 24 hours.\n\n"
-                    f"Thank you for saving a life! ❤️\n"
-                    f"— RedDrop Team"
-                ),
+                to=donor.email,
+                title="Donation OTP Ready",
+                lines=[
+                    f"Hi {donor.first_name or 'Donor'},",
+                    f"The patient has confirmed receipt of blood for request #{blood_request.id} ({blood_request.blood_type}).",
+                    "Use the OTP below to complete the donation record.",
+                ],
+                highlight_label="Verification OTP",
+                highlight_value=otp,
+                highlight_note="This OTP expires in 24 hours.",
+                bullets=[
+                    "Open your RedDrop donor dashboard",
+                    "Go to History → Donation History → Pending Confirmation",
+                    "Enter the OTP exactly as shown",
+                ],
+                cta_text="Open Donor Dashboard",
+                cta_url="http://localhost:5500/donor_dashboard.html",
+                footer_note="Thank you for saving a life.",
                 from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[donor.email],
                 fail_silently=True,
             )
         except Exception as e:
