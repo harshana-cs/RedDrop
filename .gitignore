@@ -1,0 +1,25 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Python virtual environments
+venv/
+.venv/
+Backend/venv/
+Backend/.venv/
+
+# Django/media uploads
+media/
+Backend/media/
+uploads/
+
+# Python cache/build
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+

@@ -1,0 +1,3486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hospital Dashboard | RedDrop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Fixed sidebar - never moves */
+    .fixed-sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 260px;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow-x: hidden;
+      overflow-y: auto;
+      z-index: 50;
+      background: white;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+    }
+    
+    .fixed-sidebar.collapsed {
+      width: 80px;
+    }
+    
+    /* Main content with margin to accommodate fixed sidebar */
+    .main-content {
+      margin-left: 260px;
+      width: calc(100% - 260px);
+      min-height: 100vh;
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .main-content.sidebar-collapsed {
+      margin-left: 80px;
+      width: calc(100% - 80px);
+    }
+    
+    /* Fixed header inside main content */
+    .fixed-header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      backdrop-filter: blur(8px);
+      background-color: rgba(255, 255, 255, 0.95);
+    }
+    
+    /* Sidebar collapsed styles */
+    .fixed-sidebar.collapsed .nav-text,
+    .fixed-sidebar.collapsed .hospital-name,
+    .fixed-sidebar.collapsed .hospital-id-text,
+    .fixed-sidebar.collapsed .logout-text {
+      display: none;
+    }
+    
+    .fixed-sidebar.collapsed .nav-icon {
+      margin-right: 0;
+      font-size: 1.25rem;
+    }
+    
+    .fixed-sidebar.collapsed .tab-btn {
+      justify-content: center;
+      padding: 0.75rem;
+    }
+    
+    .fixed-sidebar.collapsed .hospital-info {
+      display: none;
+    }
+    
+    .fixed-sidebar.collapsed .hospital-logo {
+      margin-right: 0;
+    }
+    
+    /* Toggle button animation */
+    .toggle-btn {
+      transition: all 0.3s ease;
+    }
+    
+    .toggle-btn:hover {
+      transform: scale(1.1);
+    }
+    
+    .toggle-btn.collapsed i {
+      transform: rotate(180deg);
+    }
+    
+    /* Button hover animations */
+    .tab-btn {
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .tab-btn:hover {
+      transform: translateX(6px);
+      background-color: #fee2e2;
+    }
+    
+    .tab-btn::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, rgba(239,68,68,0.2) 0%, rgba(239,68,68,0) 100%);
+      transition: width 0.3s ease;
+      z-index: 0;
+    }
+    
+    .tab-btn:hover::after {
+      width: 100%;
+    }
+    
+    .tab-btn i, .tab-btn span {
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Ripple effect on click */
+    .tab-btn:active::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.3);
+      transform: translate(-50%, -50%);
+      animation: ripple 0.4s ease-out;
+      z-index: 0;
+    }
+    
+    @keyframes ripple {
+      0% {
+        width: 0;
+        height: 0;
+        opacity: 0.5;
+      }
+      100% {
+        width: 200px;
+        height: 200px;
+        opacity: 0;
+      }
+    }
+    
+    /* Card animations */
+    .stat-card {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+    }
+    
+    /* Profile avatar pulse */
+    @keyframes softPulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
+      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    
+    .profile-avatar {
+      animation: softPulse 3s infinite;
+      transition: transform 0.4s ease;
+    }
+    
+    .profile-avatar:hover {
+      transform: scale(1.05);
+    }
+    
+    /* Fade in animation for sections */
+    .tab-section {
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Tooltip for collapsed sidebar */
+    .fixed-sidebar.collapsed .tab-btn {
+      position: relative;
+    }
+    
+    .fixed-sidebar.collapsed .tab-btn:hover::before {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #1f2937;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      white-space: nowrap;
+      z-index: 100;
+      margin-left: 1rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      pointer-events: none;
+    }
+    
+    .fixed-sidebar.collapsed .tab-btn:hover::after {
+      content: '';
+      position: absolute;
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: transparent #1f2937 transparent transparent;
+      margin-left: 0.5rem;
+      pointer-events: none;
+    }
+    
+    /* Custom scrollbar for sidebar */
+    .fixed-sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    .fixed-sidebar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    
+    .fixed-sidebar::-webkit-scrollbar-thumb {
+      background: #cbd5e0;
+      border-radius: 4px;
+    }
+    
+    .fixed-sidebar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    
+    /* Ensure content is scrollable */
+    .main-content {
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+    
+    /* Smooth scrolling for main content */
+    .main-content {
+      scroll-behavior: smooth;
+    }
+
+    /* Request details modal should scroll internally on smaller screens */
+    #requestDetailsModal .modal-card {
+      max-height: calc(100vh - 2rem);
+      overflow: hidden;
+    }
+
+    #requestDetailsModal #requestDetailsContent {
+      max-height: calc(100vh - 12rem);
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 overflow-hidden">
+
+<!-- ================= AUTH CHECK ================= -->
+<script>
+  const token = localStorage.getItem("hospitalToken");
+  if (!token) {
+    window.location.href = "hospital-login.html";
+  }
+</script>
+
+<div class="flex h-screen overflow-hidden">
+  <!-- ================= FIXED SIDEBAR - NEVER MOVES ================= -->
+  <aside class="fixed-sidebar bg-white flex flex-col" id="sidebar">
+    <div class="p-6 border-b flex items-center justify-between">
+      <div class="flex items-center space-x-3 group">
+        <div class="hospital-logo w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 group-hover:rotate-3">
+          <i class="fas fa-hospital text-white"></i>
+        </div>
+        <div class="hospital-info">
+          <h2 class="hospital-name text-xl font-bold">Hospital Panel</h2>
+          <p class="text-xs text-gray-500" id="hospitalName">Loading...</p>
+        </div>
+      </div>
+      
+      <!-- Toggle button for sidebar collapse -->
+      <button onclick="toggleSidebar()" class="toggle-btn w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200 transition-all flex-shrink-0">
+        <i class="fas fa-chevron-left text-gray-600 transition-transform duration-300"></i>
+      </button>
+    </div>
+
+    <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+      <button data-tab="overview" data-tooltip="Dashboard"
+        class="tab-btn w-full text-left px-4 py-3 rounded-lg bg-red-50 text-red-600 flex items-center">
+        <i class="fas fa-chart-line nav-icon mr-2 transition-transform group-hover:scale-110"></i>
+        <span class="nav-text">Dashboard</span>
+      </button>
+      <button data-tab="request" data-tooltip="Blood Requests"
+        class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 flex items-center">
+        <i class="fas fa-tint nav-icon mr-2"></i>
+        <span class="nav-text">Blood Requests</span>
+      </button>
+      <button data-tab="donors" data-tooltip="Donors Near Hospital"
+  class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 flex items-center">
+  <i class="fas fa-users nav-icon mr-2"></i>
+  <span class="nav-text">Donors Near Hospital</span>
+</button>
+      <button data-tab="stock" data-tooltip="Blood Stock"
+        class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 flex items-center">
+        <i class="fas fa-boxes nav-icon mr-2"></i>
+        <span class="nav-text">Blood Stock</span>
+      </button>
+      <button data-tab="inventory" data-tooltip="Inventory"
+        class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 flex items-center">
+        <i class="fas fa-clipboard-list nav-icon mr-2"></i>
+        <span class="nav-text">Inventory Management</span>
+      </button>
+      <button data-tab="history" data-tooltip="Stock History"
+        class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 flex items-center">
+        <i class="fas fa-history nav-icon mr-2"></i>
+        <span class="nav-text">Stock History</span>
+      </button>
+      <button data-tab="profile" data-tooltip="Profile"
+        class="tab-btn w-full text-left px-4 py-3 rounded-lg hover:bg-red-50 flex items-center">
+        <i class="fas fa-user-md nav-icon mr-2"></i>
+        <span class="nav-text">Hospital Profile</span>
+      </button>
+    </nav>
+
+    <div class="p-4 border-t">
+      <div class="hospital-info mb-3 p-3 bg-blue-50 rounded-lg transition-all hover:shadow-md">
+        <p class="text-sm text-blue-800 font-medium">Hospital ID:</p>
+        <p class="hospital-id-text text-xs text-blue-600" id="hospitalId">Loading...</p>
+      </div>
+      <button onclick="logoutHospital()"
+        class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center">
+        <i class="fas fa-sign-out-alt mr-2"></i>
+        <span class="logout-text">Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN CONTENT - SCROLLABLE ================= -->
+  <main class="main-content flex flex-col" id="mainContent">
+    <!-- FIXED HEADER - STICKS TO TOP -->
+    <header class="fixed-header px-6 py-4 flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold" id="pageTitle">Hospital Overview</h1>
+        <p class="text-gray-600 text-sm" id="pageSubtitle">
+          Manage blood requests and donors
+        </p>
+      </div>
+ <div class="flex items-center space-x-4">
+
+  <!-- Notification Bell -->
+  <div class="relative">
+
+  <button onclick="toggleNotifications()" class="text-gray-600 hover:text-red-600 text-xl relative">
+    <i class="fas fa-bell"></i>
+
+    <!-- Notification Count Badge -->
+    <span id="notificationCount"
+      class="hidden absolute -top-1 -right-2 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-full">
+      0
+    </span>
+
+  </button>
+
+    <div id="notificationBox"
+         class="hidden absolute right-0 mt-2 w-80 bg-white border rounded-lg shadow-lg max-h-96 overflow-y-auto">
+
+      <div class="p-2 border-b flex items-center justify-between">
+        <span class="font-semibold">Notifications</span>
+        <div class="flex items-center gap-2">
+          <button onclick="loadHospitalNotifications()" class="text-xs px-2 py-1 bg-gray-100 rounded hover:bg-gray-200">Refresh</button>
+          <button onclick="markAllHospitalNotificationsRead()" class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">Mark all read</button>
+        </div>
+      </div>
+
+      <div id="notificationList"></div>
+
+    </div>
+  </div>
+
+  <!-- Date + Sync -->
+  <div class="text-right">
+    <p class="text-sm font-medium" id="currentDate"></p>
+    <p class="text-xs text-gray-500" id="lastSync">Last sync: Just now</p>
+  </div>
+
+</div>
+      
+    </header>
+
+    <!-- SCROLLABLE CONTENT AREA -->
+    <div class="flex-1 overflow-y-auto p-6" id="contentArea">
+      <!-- ================= OVERVIEW ================= -->
+      <section id="overview" class="tab-section space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow stat-card transition-all">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-3xl font-bold" id="totalRequests">0</h3>
+                <p class="text-gray-600">Total Requests</p>
+              </div>
+              <i class="fas fa-file-medical text-red-500 text-2xl"></i>
+            </div>
+            <div class="mt-2 text-sm text-green-600" id="requestChange">
+              <i class="fas fa-arrow-up"></i> 0% from last week
+            </div>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow stat-card">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-3xl font-bold" id="approvedRequests">0</h3>
+                <p class="text-gray-600">Approved Requests</p>
+              </div>
+              <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+            </div>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow stat-card">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-3xl font-bold" id="pendingRequests">0</h3>
+                <p class="text-gray-600">Pending Requests</p>
+              </div>
+              <i class="fas fa-clock text-yellow-500 text-2xl"></i>
+            </div>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow stat-card">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-3xl font-bold" id="totalStock">0</h3>
+                <p class="text-gray-600">Total Blood Units</p>
+              </div>
+              <i class="fas fa-tint text-red-500 text-2xl"></i>
+            </div>
+            <div class="mt-2 text-sm text-blue-600">
+              <span id="criticalStock">0</span> critical types
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow">
+          <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button onclick="switchTab('request')" 
+              class="p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-all hover:scale-105 active:scale-95">
+              <i class="fas fa-plus text-red-600 mb-2"></i>
+              <p class="font-medium">New Request</p>
+            </button>
+            <button onclick="switchTab('stock')"
+              class="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all hover:scale-105 active:scale-95">
+              <i class="fas fa-chart-bar text-blue-600 mb-2"></i>
+              <p class="font-medium">View Stock</p>
+            </button>
+            <button onclick="switchTab('inventory')"
+              class="p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-all hover:scale-105 active:scale-95">
+              <i class="fas fa-edit text-green-600 mb-2"></i>
+              <p class="font-medium">Update Inventory</p>
+            </button>
+            <button onclick="refreshAllData()"
+              class="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-all hover:scale-105 active:scale-95">
+              <i class="fas fa-sync-alt text-purple-600 mb-2"></i>
+              <p class="font-medium">Refresh Data</p>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl shadow flex flex-wrap gap-3 items-center">
+          <p class="text-sm font-medium text-gray-700">Overview Filters:</p>
+          <select id="overviewDaysFilter" class="border p-2 rounded text-sm" onchange="loadOverviewData()">
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="all">All time</option>
+          </select>
+          <select id="overviewRequestStatusFilter" class="border p-2 rounded text-sm" onchange="loadOverviewData()">
+            <option value="all">All request statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <h3 class="text-lg font-semibold">Blood Stock Overview</h3>
+              <select id="overviewStockTypeFilter" class="border p-2 rounded text-sm" onchange="applyOverviewStockFilter()">
+                <option value="all">All Blood Types</option>
+                <option value="A+">A+</option><option value="A-">A-</option>
+                <option value="B+">B+</option><option value="B-">B-</option>
+                <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                <option value="O+">O+</option><option value="O-">O-</option>
+              </select>
+            </div>
+            <canvas id="stockChart" height="250"></canvas>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow">
+            <h3 class="text-lg font-semibold mb-4">Recent Activity</h3>
+            <div id="recentActivity" class="space-y-3">
+              <!-- dynamic -->
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow">
+            <h3 class="text-lg font-semibold mb-4">Request Status Distribution</h3>
+            <canvas id="requestStatusChart" height="260"></canvas>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow">
+            <h3 class="text-lg font-semibold mb-4">Request Urgency Breakdown</h3>
+            <canvas id="requestUrgencyChart" height="260"></canvas>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================= BLOOD REQUEST ================= -->
+      <section id="request" class="tab-section hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow">
+          <h3 class="text-xl font-semibold mb-4">Create Blood Request</h3>
+          
+          <div class="grid md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label class="block text-sm font-medium mb-1">Patient Name</label>
+              <input id="patientName" placeholder="Enter patient full name"
+                class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Blood Type</label>
+              <select id="bloodType" class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500">
+                <option value="">Select Blood Type</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Units Required</label>
+              <input id="units" type="number" min="1" max="10" placeholder="1-10 units"
+                class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Urgency Level</label>
+              <select id="urgency" class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500">
+                <option value="Normal">Normal</option>
+                <option value="High">High</option>
+                <option value="Critical">Critical</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Additional Notes</label>
+            <textarea id="requestNotes" placeholder="Any additional information..."
+              class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500" rows="2"></textarea>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Hospital Verification Document</label>
+            <input type="file" id="hospitalDoc" accept=".pdf,.jpg,.jpeg,.png"
+              class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500" />
+            <p class="text-xs text-gray-500 mt-1">Upload signed letter or medical verification document</p>
+          </div>
+
+          <div class="flex justify-between">
+            <div class="text-sm text-gray-600">
+              <p>Available stock for <span id="selectedBloodType" class="font-medium">selected type</span>: 
+                <span id="availableStock" class="font-bold">0</span> units
+              </p>
+            </div>
+            <button onclick="createBloodRequest()"
+              class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition flex items-center">
+              <i class="fas fa-paper-plane mr-2"></i> Submit Request
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+          <div class="p-4 border-b flex justify-between items-center">
+            <h3 class="text-lg font-semibold">Recent Blood Requests</h3>
+            <div class="flex space-x-2">
+              <select id="requestFilter" onchange="loadRequests()" class="border p-2 rounded">
+                <option value="all">All Requests</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+              <button onclick="loadRequests()" class="p-2 bg-gray-100 rounded hover:bg-gray-200">
+                <i class="fas fa-sync"></i>
+              </button>
+            </div>
+          </div>
+          <table class="w-full">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="px-4 py-3 text-left">Patient</th>
+                <th class="px-4 py-3 text-left">Blood Type</th>
+                <th class="px-4 py-3 text-left">Units</th>
+                <th class="px-4 py-3 text-left">Urgency</th>
+                <th class="px-4 py-3 text-left">Status</th>
+                <th class="px-4 py-3 text-left">Date</th>
+                <th class="px-4 py-3 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="requestTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= BLOOD STOCK ================= -->
+      <section id="stock" class="tab-section hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-semibold">Blood Stock Levels</h3>
+            <div class="flex space-x-3">
+              <button onclick="exportStockData()" 
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                <i class="fas fa-file-export mr-2"></i>Export
+              </button>
+              <button onclick="loadStockData()" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <i class="fas fa-sync mr-2"></i>Refresh
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-6 flex flex-wrap items-center gap-3">
+            <p class="text-sm font-medium text-gray-700">Inventory Filters:</p>
+            <select id="stockBloodTypeFilter" class="border p-2 rounded text-sm" onchange="applyStockFilters()">
+              <option value="all">All Blood Types</option>
+              <option value="A+">A+</option><option value="A-">A-</option>
+              <option value="B+">B+</option><option value="B-">B-</option>
+              <option value="AB+">AB+</option><option value="AB-">AB-</option>
+              <option value="O+">O+</option><option value="O-">O-</option>
+            </select>
+            <select id="stockLevelFilter" class="border p-2 rounded text-sm" onchange="applyStockFilters()">
+              <option value="all">All Levels</option>
+              <option value="critical">Critical</option>
+              <option value="low">Low</option>
+              <option value="adequate">Adequate</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-red-50 p-4 rounded-lg">
+              <p class="text-sm text-gray-600">Critical Stock</p>
+              <p class="text-2xl font-bold text-red-600" id="criticalCount">0</p>
+              <p class="text-xs text-red-500">Needs immediate attention</p>
+            </div>
+            <div class="bg-yellow-50 p-4 rounded-lg">
+              <p class="text-sm text-gray-600">Low Stock</p>
+              <p class="text-2xl font-bold text-yellow-600" id="lowCount">0</p>
+              <p class="text-xs text-yellow-500">Below minimum threshold</p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg">
+              <p class="text-sm text-gray-600">Adequate Stock</p>
+              <p class="text-2xl font-bold text-green-600" id="adequateCount">0</p>
+              <p class="text-xs text-green-500">Within safe limits</p>
+            </div>
+            <div class="bg-blue-50 p-4 rounded-lg">
+              <p class="text-sm text-gray-600">Total Units</p>
+              <p class="text-2xl font-bold text-blue-600" id="totalUnits">0</p>
+              <p class="text-xs text-blue-500">All blood types</p>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="px-4 py-3 text-left">Blood Type</th>
+                  <th class="px-4 py-3 text-left">Available Units</th>
+                  <th class="px-4 py-3 text-left">Expiry Date</th>
+                  <th class="px-4 py-3 text-left">Minimum Required</th>
+                  <th class="px-4 py-3 text-left">Status</th>
+                  <th class="px-4 py-3 text-left">Last Updated</th>
+                  <th class="px-4 py-3 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="stockTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow">
+            <h3 class="text-lg font-semibold mb-4">Stock Distribution</h3>
+            <canvas id="stockDistributionChart" height="300"></canvas>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow">
+            <h3 class="text-lg font-semibold mb-4">Current vs Minimum Required</h3>
+            <canvas id="stockMinCompareChart" height="300"></canvas>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow">
+            <h3 class="text-lg font-semibold mb-4">Stock Alerts</h3>
+            <div id="stockAlerts" class="space-y-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= DONORS ================= -->
+<!-- ================= DONORS ================= -->
+<section id="donors" class="tab-section hidden space-y-6">
+
+  <!-- Mode banner: shows context when viewing matched donors from a request -->
+  <div id="donorModeBanner" class="hidden bg-blue-50 border border-blue-200 rounded-xl px-5 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-filter text-blue-600"></i>
+      <div>
+        <p class="font-semibold text-blue-800 text-sm" id="donorModeBannerTitle">Showing matched donors</p>
+        <p class="text-xs text-blue-600" id="donorModeBannerSub">Filtered by blood type compatibility for this request</p>
+      </div>
+    </div>
+    <button onclick="resetDonorView()"
+      class="px-3 py-1.5 text-sm bg-white border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-100 transition">
+      <i class="fas fa-times mr-1"></i> Clear filter
+    </button>
+  </div>
+
+  <!-- Tier status (shown when coming from a request notification) -->
+  <div id="donorTierStatus" class="hidden"></div>
+
+  <!-- Map -->
+  <div class="bg-white rounded-xl shadow overflow-hidden">
+    <div class="px-6 pt-5 pb-3 flex items-center justify-between">
+      <div>
+        <h3 class="text-lg font-semibold">Donor map</h3>
+        <p class="text-xs text-gray-500 mt-0.5">
+          <span class="inline-block w-3 h-3 rounded-full bg-green-500 mr-1"></span>Available ·
+          <span class="inline-block w-3 h-3 rounded-full bg-red-400 mr-1 ml-2"></span>Unavailable ·
+          <span class="inline-block w-3 h-3 rounded-full bg-blue-600 mr-1 ml-2"></span>Hospital ·
+          <span class="inline-block w-3 h-3 rounded-full bg-yellow-500 mr-1 ml-2"></span>Matched donor
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <select id="donorBloodTypeFilter"
+          class="border p-2 rounded text-sm"
+          onchange="applyDonorFilters()">
+          <option value="all">All blood types</option>
+          <option value="A+">A+</option><option value="A-">A-</option>
+          <option value="B+">B+</option><option value="B-">B-</option>
+          <option value="AB+">AB+</option><option value="AB-">AB-</option>
+          <option value="O+">O+</option><option value="O-">O-</option>
+        </select>
+        <select id="donorAvailFilter"
+          class="border p-2 rounded text-sm"
+          onchange="applyDonorFilters()">
+          <option value="all">All availability</option>
+          <option value="available">Available only</option>
+          <option value="unavailable">Unavailable only</option>
+        </select>
+        <button onclick="refreshDonorMap()"
+          class="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm">
+          <i class="fas fa-sync mr-1"></i> Refresh
+        </button>
+      </div>
+    </div>
+    <div id="donorMap" style="height: 420px; width: 100%;"></div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-white p-4 rounded-xl shadow">
+      <p class="text-xs text-gray-500">Total donors</p>
+      <p class="text-2xl font-bold text-gray-800" id="donorStatTotal">0</p>
+    </div>
+    <div class="bg-white p-4 rounded-xl shadow">
+      <p class="text-xs text-gray-500">Available now</p>
+      <p class="text-2xl font-bold text-green-600" id="donorStatAvailable">0</p>
+    </div>
+    <div class="bg-white p-4 rounded-xl shadow">
+      <p class="text-xs text-gray-500">Showing on map</p>
+      <p class="text-2xl font-bold text-blue-600" id="donorStatShowing">0</p>
+    </div>
+    <div class="bg-white p-4 rounded-xl shadow">
+      <p class="text-xs text-gray-500">Matched donors</p>
+      <p class="text-2xl font-bold text-yellow-600" id="donorStatMatched">—</p>
+    </div>
+  </div>
+
+  <!-- Donor cards -->
+  <div class="bg-white rounded-xl shadow p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold" id="donorListTitle">All donors near hospital</h3>
+      <p class="text-sm text-gray-500" id="donorListCount"></p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="donorList"></div>
+  </div>
+
+</section>
+
+      <!-- ================= INVENTORY MANAGEMENT ================= -->
+      <section id="inventory" class="tab-section hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow">
+          <h3 class="text-xl font-semibold mb-6">Update Blood Inventory</h3>
+          
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="text-lg font-medium mb-4">Add Blood Units</h4>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium mb-1">Blood Type</label>
+                  <select id="addBloodType" class="w-full border p-3 rounded">
+                    <option value="">Select Type</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Units to Add</label>
+                  <input id="addUnits" type="number" min="1" placeholder="Number of units"
+                    class="w-full border p-3 rounded" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Source</label>
+                  <select id="addSource" class="w-full border p-3 rounded">
+                    <option value="donation">Blood Donation</option>
+                    <option value="transfer">Hospital Transfer</option>
+                    <option value="purchase">Purchase</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Expiry Date</label>
+                  <input id="addExpiryDate" type="date" class="w-full border p-3 rounded" />
+                </div>
+                <button onclick="addBloodStock()"
+                  class="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700">
+                  <i class="fas fa-plus mr-2"></i>Add to Inventory
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-lg font-medium mb-4">Remove/Use Blood Units</h4>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium mb-1">Blood Type</label>
+                  <select id="removeBloodType" class="w-full border p-3 rounded">
+                    <option value="">Select Type</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Units to Remove</label>
+                  <input id="removeUnits" type="number" min="1" placeholder="Number of units"
+                    class="w-full border p-3 rounded" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Reason</label>
+                  <select id="removeReason" class="w-full border p-3 rounded">
+                    <option value="patient_use">Patient Use</option>
+                    <option value="expired">Expired</option>
+                    <option value="damaged">Damaged</option>
+                    <option value="transfer">Transfer to Other Hospital</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <button onclick="removeBloodStock()"
+                  class="w-full bg-red-600 text-white p-3 rounded-lg hover:bg-red-700">
+                  <i class="fas fa-minus mr-2"></i>Remove from Inventory
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow">
+          <h3 class="text-xl font-semibold mb-4">Set Minimum Stock Levels</h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="minStockSettings"></div>
+        </div>
+      </section>
+
+      <!-- ================= STOCK HISTORY ================= -->
+      <section id="history" class="tab-section hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow">
+          <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+            <h3 class="text-xl font-semibold">Stock Transaction History</h3>
+            <div class="flex flex-wrap items-end gap-2">
+              <div class="flex flex-col">
+                <label for="historyStartDate" class="text-xs text-gray-500 mb-1">From</label>
+                <input type="date" id="historyStartDate" class="border p-2 rounded">
+              </div>
+              <div class="flex flex-col">
+                <label for="historyEndDate" class="text-xs text-gray-500 mb-1">To</label>
+                <input type="date" id="historyEndDate" class="border p-2 rounded">
+              </div>
+              <div class="flex flex-col">
+                <label for="historyTxnType" class="text-xs text-gray-500 mb-1">Type</label>
+                <select id="historyTxnType" class="border p-2 rounded">
+                  <option value="">All</option>
+                  <option value="add">Addition</option>
+                  <option value="remove">Removal</option>
+                </select>
+              </div>
+              <button onclick="loadStockHistory()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                <i class="fas fa-filter mr-1"></i> Filter
+              </button>
+              <button onclick="clearHistoryFilter()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded">
+                <i class="fas fa-times mr-1"></i> Clear
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick date range presets -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="text-xs text-gray-500 self-center mr-1">Quick range:</span>
+            <button type="button" onclick="setHistoryDateRange('today')" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full">Today</button>
+            <button type="button" onclick="setHistoryDateRange('7')" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full">Last 7 days</button>
+            <button type="button" onclick="setHistoryDateRange('30')" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full">Last 30 days</button>
+            <button type="button" onclick="setHistoryDateRange('month')" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full">This month</button>
+            <button type="button" onclick="setHistoryDateRange('all')" class="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full">All time</button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="px-4 py-3 text-left">Date & Time</th>
+                  <th class="px-4 py-3 text-left">Blood Type</th>
+                  <th class="px-4 py-3 text-left">Transaction Type</th>
+                  <th class="px-4 py-3 text-left">Units</th>
+                  <th class="px-4 py-3 text-left">Expiry Date</th>
+                  <th class="px-4 py-3 text-left">Source/Reason</th>
+                  <th class="px-4 py-3 text-left">Performed By</th>
+                  <th class="px-4 py-3 text-left">New Balance</th>
+                </tr>
+              </thead>
+              <tbody id="historyTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= HOSPITAL PROFILE ================= -->
+      <section id="profile" class="tab-section hidden space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow-lg overflow-hidden relative">
+          <div class="absolute top-0 right-0 w-40 h-40 bg-red-50 rounded-full -mr-10 -mt-10 opacity-30"></div>
+          <div class="absolute bottom-0 left-0 w-32 h-32 bg-blue-50 rounded-full -ml-10 -mb-10 opacity-30"></div>
+
+          <div class="relative z-10">
+            <h3 class="text-2xl font-bold mb-6 flex items-center">
+              <i class="fas fa-user-md text-red-600 mr-3"></i> Hospital Profile
+            </h3>
+
+            <div class="flex flex-col items-center mb-8">
+              <div class="profile-avatar w-28 h-28 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center text-white text-5xl font-bold shadow-lg mb-3 transition-all">
+                <i class="fas fa-hospital"></i>
+              </div>
+              <div class="text-center">
+                <p class="text-xl font-bold" id="profileNameDisplay">—</p>
+                <p class="text-sm text-gray-500 bg-gray-100 px-4 py-1 rounded-full mt-1 inline-block">verified hospital</p>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
+              <h3 class="text-xl font-bold mb-6 flex items-center">
+                <i class="fas fa-pen-to-square text-red-600 mr-3"></i> Editable Profile Details
+              </h3>
+              <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium mb-1">Hospital Name</label>
+                  <input id="profileName" class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Hospital ID</label>
+                  <input id="profileHospitalIdField" class="w-full border p-3 rounded bg-gray-100 text-gray-600" readonly />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Email</label>
+                  <input id="profileEmail" type="email" class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Phone</label>
+                  <input id="profilePhone" class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent" />
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium mb-1">Address</label>
+                  <input id="profileAddress" class="w-full border p-3 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent" />
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+  <h3 class="text-xl font-bold mb-6 flex items-center">
+    <i class="fas fa-info-circle text-red-600 mr-3"></i> Hospital Information
+  </h3>
+
+  <div class="grid md:grid-cols-3 gap-6">
+
+    <div>
+      <p class="text-xs text-gray-500">Registration Number</p>
+      <p class="font-semibold" id="profileRegistrationNumber">—</p>
+    </div>
+
+    <div>
+      <p class="text-xs text-gray-500">Hospital Type</p>
+      <p class="font-semibold" id="profileHospitalType">—</p>
+    </div>
+
+    <div>
+      <p class="text-xs text-gray-500">Bed Capacity</p>
+      <p class="font-semibold" id="profileBedCapacity">—</p>
+    </div>
+
+    <div>
+      <p class="text-xs text-gray-500">Blood Bank Type</p>
+      <p class="font-semibold" id="profileBloodBankType">—</p>
+    </div>
+
+    <div>
+      <p class="text-xs text-gray-500">Year Established</p>
+      <p class="font-semibold" id="profileYearEstablished">—</p>
+    </div>
+
+    <div>
+      <p class="text-xs text-gray-500">Website</p>
+      <p class="font-semibold" id="profileWebsite">—</p>
+    </div>
+
+  </div>
+</div>
+<div class="bg-white p-6 rounded-xl shadow-lg">
+  <h3 class="text-xl font-bold mb-6 flex items-center">
+    <i class="fas fa-clinic-medical text-red-600 mr-3"></i> Medical Facilities
+  </h3>
+
+  <div class="grid md:grid-cols-3 gap-4">
+
+    <div class="facility-item" id="facilityEmergency"></div>
+    <div class="facility-item" id="facilityICU"></div>
+    <div class="facility-item" id="facilityOT"></div>
+    <div class="facility-item" id="facilityStorage"></div>
+    <div class="facility-item" id="facilityTesting"></div>
+    <div class="facility-item" id="facilityCamp"></div>
+
+  </div>
+</div>
+
+            <div class="mt-6 flex flex-wrap items-center justify-between gap-4 p-4 bg-gray-50 rounded-xl">
+              <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-800">Verification status</p>
+                  <p class="text-xs text-gray-500">Your hospital is verified</p>
+                </div>
+              </div>
+              <button onclick="updateHospitalProfile()"
+                class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all hover:scale-105 active:scale-95 shadow-md flex items-center gap-2">
+                <i class="fas fa-save"></i> Update Profile
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white p-5 rounded-xl shadow flex items-center space-x-4 transition-all hover:shadow-md">
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+              <i class="fas fa-tint text-red-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Total donations received</p>
+              <p class="text-2xl font-bold" id="profileDonationStat">245</p>
+            </div>
+          </div>
+          <div class="bg-white p-5 rounded-xl shadow flex items-center space-x-4 transition-all hover:shadow-md">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+              <i class="fas fa-clock text-blue-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Pending requests</p>
+              <p class="text-2xl font-bold" id="profilePendingStat">3</p>
+            </div>
+          </div>
+          <div class="bg-white p-5 rounded-xl shadow flex items-center space-x-4 transition-all hover:shadow-md">
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <i class="fas fa-calendar-check text-green-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Member since</p>
+              <p class="font-bold" id="profileMemberSince">Jan 2023</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- ================= MODALS ================= -->
+<div id="requestDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+  <div class="modal-card bg-white rounded-xl w-full max-w-2xl">
+    <div class="p-6 border-b">
+      <h3 class="text-xl font-semibold">Request Details</h3>
+    </div>
+    <div class="p-6" id="requestDetailsContent"></div>
+    <div class="p-6 border-t flex justify-end space-x-3">
+      <button onclick="closeModal('requestDetailsModal')" class="px-4 py-2 border rounded-lg">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="stockAlertModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+  <div class="bg-white rounded-xl w-full max-w-md">
+    <div class="p-6 border-b">
+      <h3 class="text-xl font-semibold">Stock Alert</h3>
+    </div>
+    <div class="p-6" id="stockAlertContent"></div>
+    <div class="p-6 border-t flex justify-end">
+      <button onclick="closeModal('stockAlertModal')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Acknowledge</button>
+    </div>
+  </div>
+</div>
+
+<div id="statusModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+  <div class="bg-white rounded-xl w-full max-w-md">
+    <div class="p-6 border-b">
+      <h3 id="statusModalTitle" class="text-xl font-semibold">Status</h3>
+    </div>
+    <div class="p-6" id="statusModalContent"></div>
+    <div class="p-6 border-t flex justify-end">
+      <button onclick="closeModal('statusModal')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">OK</button>
+    </div>
+  </div>
+</div>
+
+<div id="hospitalOtpModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+  <div class="bg-white rounded-xl w-full max-w-md">
+    <div class="p-6 border-b">
+      <h3 class="text-xl font-semibold">Donor OTP Generated</h3>
+      <p class="text-sm text-gray-500 mt-1">Share this OTP with the donor for dashboard confirmation</p>
+    </div>
+    <div class="p-6">
+      <div id="hospitalOtpCode" class="text-5xl font-bold tracking-widest text-red-600 text-center bg-red-50 border-2 border-red-200 rounded-xl py-5"></div>
+      <p class="text-xs text-gray-500 mt-3 text-center">OTP expires in 24 hours</p>
+    </div>
+    <div class="p-6 border-t flex justify-end">
+      <button onclick="closeModal('hospitalOtpModal')" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= JS ================= -->
+<script>
+ // Global variables
+  let hospitalData = {};
+  let stockData = [];
+  let rawStockData = [];
+  let overviewRequestsData = [];
+  let requestsData = [];
+	  let showMatchedDonors = false;
+	  let stockChartInstance = null;
+	  let overviewStockByTypeData = {};
+  let stockDistributionChartInstance = null;
+  let stockMinCompareChartInstance = null;
+  let shownHospitalPopupKeys = new Set();
+  let shownNoMatchEscalationModal = new Set();
+  let requestStatusChartInstance = null;
+  let requestUrgencyChartInstance = null;
+  let hospitalTierPollTimer = null;
+  let activeTierRequestId = null;
+  
+  // Sidebar collapse state
+  let isSidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+  
+  function authHeaders() {
+    const token = localStorage.getItem("hospitalToken");
+    return {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json"
+    };
+  }
+function showLoading(message = "Processing...") {
+  document.getElementById("loadingMessage").textContent = message;
+  document.getElementById("loadingOverlay").classList.remove("hidden");
+}
+
+function hideLoading() {
+  document.getElementById("loadingOverlay").classList.add("hidden");
+}
+function stopHospitalTierPolling() {
+  if (hospitalTierPollTimer) {
+    clearInterval(hospitalTierPollTimer);
+    hospitalTierPollTimer = null;
+  }
+  activeTierRequestId = null;
+}
+
+function startHospitalTierPolling(requestId) {
+  if (!requestId) return;
+
+  if (activeTierRequestId !== requestId) {
+    stopHospitalTierPolling();
+    activeTierRequestId = requestId;
+  }
+
+  const refreshTierStatus = async () => {
+    try {
+      if (activeTierRequestId !== requestId) return;
+      const escRes = await fetch(
+        `http://127.0.0.1:8000/api/hospital/request/${requestId}/escalation-status/`,
+        { headers: authHeaders() }
+      );
+      if (!escRes.ok || activeTierRequestId !== requestId) return;
+      const esc = await escRes.json();
+      renderDonorTierStatus(esc, requestId);
+    } catch (err) {
+      console.error("Tier polling failed:", err);
+    }
+  };
+
+  refreshTierStatus();
+  if (hospitalTierPollTimer) clearInterval(hospitalTierPollTimer);
+  hospitalTierPollTimer = setInterval(refreshTierStatus, 5000);
+}
+
+function isDonorAvailable(donor) {
+  const availability = String(donor?.availability || '').trim().toLowerCase();
+  if (availability === 'available') return true;
+  if (availability === 'unavailable') return false;
+
+  const status = String(donor?.status || '').trim().toLowerCase();
+  if (status === 'available') return true;
+  if (status === 'unavailable') return false;
+
+  if (typeof donor?.is_available === 'boolean') return donor.is_available;
+  return false;
+}
+  
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.querySelector('.toggle-btn i');
+    
+    isSidebarCollapsed = !isSidebarCollapsed;
+    localStorage.setItem('sidebarCollapsed', isSidebarCollapsed);
+    
+    if (isSidebarCollapsed) {
+      sidebar.classList.add('collapsed');
+      toggleBtn.style.transform = 'rotate(180deg)';
+    } else {
+      sidebar.classList.remove('collapsed');
+      toggleBtn.style.transform = 'rotate(0deg)';
+    }
+  }
+
+  // Initialize sidebar state
+  document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.querySelector('.toggle-btn i');
+    
+    if (isSidebarCollapsed) {
+      sidebar.classList.add('collapsed');
+      toggleBtn.style.transform = 'rotate(180deg)';
+    }
+    
+    updateCurrentDate();
+    
+    try {
+      loadHospitalData();
+      loadOverviewData();
+      loadStockData();
+      loadRequests();
+    } catch (err) {
+      console.error("Initialization error:", err);
+    }
+    
+    setInterval(loadOverviewData, 300000);
+  });
+
+  // Tab Management with animation
+  const tabs = document.querySelectorAll(".tab-btn");
+  const sections = document.querySelectorAll(".tab-section");
+
+  tabs.forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      // Remove active class from all tabs
+      tabs.forEach(b => b.classList.remove("bg-red-50", "text-red-600"));
+      
+      // Add active class to clicked tab
+      btn.classList.add("bg-red-50", "text-red-600");
+      
+      // Hide all sections
+      sections.forEach(sec => sec.classList.add("hidden"));
+      
+      // Show selected section with animation
+      const tabId = btn.dataset.tab;
+      const targetSection = document.getElementById(tabId);
+      targetSection.classList.remove("hidden");
+      targetSection.style.animation = 'none';
+      targetSection.offsetHeight; // Trigger reflow
+      targetSection.style.animation = 'fadeIn 0.3s ease';
+      
+      // Update page title
+      document.getElementById('pageTitle').textContent = 
+        btn.textContent.trim().replace(/[\n\r]+|[\s]{2,}/g, ' ');
+      
+      // Load specific data for tab
+      switch(tabId) {
+        case 'stock':
+          loadStockData();
+          break;
+        case 'request':
+          loadRequests();
+          break;
+        case 'donors':
+  // Init map first (needs the DOM element to exist)
+  setTimeout(() => {
+    initDonorMap();
+    if (!isMatchedView) {
+      loadDonors();
+    } else {
+      // Re-render with existing data after tab animation
+      applyDonorFilters();
+    }
+    if (donorMapInstance) donorMapInstance.invalidateSize();
+  }, 50);
+  break;
+        case 'history':
+          loadStockHistory();
+          break;
+        case 'profile':
+          loadHospitalProfile();
+          break;
+      }
+    });
+  });
+
+  function switchTab(tabName) {
+    document.querySelector(`[data-tab="${tabName}"]`).click();
+  }
+
+  function updateCurrentDate() {
+    const now = new Date();
+    document.getElementById('currentDate').textContent = 
+      now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  function logoutHospital() {
+    localStorage.removeItem("hospitalToken");
+    window.location.href = "hospital-login.html";
+  }
+
+  function showStatusModal(title, message, type = 'info') {
+    const titleEl = document.getElementById('statusModalTitle');
+    const contentEl = document.getElementById('statusModalContent');
+    if (!titleEl || !contentEl) return;
+
+    const tone = type === 'error'
+      ? 'text-red-700 bg-red-50 border-red-200'
+      : type === 'success'
+        ? 'text-green-700 bg-green-50 border-green-200'
+        : 'text-blue-700 bg-blue-50 border-blue-200';
+
+    titleEl.textContent = title || 'Status';
+    contentEl.innerHTML = `<div class="p-3 rounded-lg border ${tone} text-sm">${message}</div>`;
+    document.getElementById('statusModal').classList.remove('hidden');
+  }
+
+  async function loadHospitalData() {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/hospital/profile/", {
+        headers: authHeaders()
+
+
+      });
+      const data = await response.json();
+      hospitalData = data;
+      document.getElementById('hospitalName').textContent = data.name || 'Hospital';
+      document.getElementById('hospitalId').textContent = data.hospital_id || 'N/A';
+    } catch (error) {
+      console.error('Error loading hospital data:', error);
+    }
+  }
+
+  async function loadOverviewData() {
+    try {
+      // Load dashboard statistics
+      const [dashboardRes, requestsRes] = await Promise.all([
+        fetch("http://127.0.0.1:8000/api/hospital/dashboard/", {
+          headers: authHeaders()
+        }),
+        fetch("http://127.0.0.1:8000/api/hospital/blood-requests/", {
+          headers: authHeaders()
+        })
+      ]);
+      const data = await dashboardRes.json();
+      overviewRequestsData = await requestsRes.json();
+      
+      // Update overview cards
+      document.getElementById('totalRequests').textContent = data.total_requests || 0;
+      document.getElementById('approvedRequests').textContent = data.approved_requests || 0;
+      document.getElementById('pendingRequests').textContent = data.pending_requests || 0;
+      document.getElementById('totalStock').textContent = data.total_stock || 0;
+      document.getElementById('criticalStock').textContent = data.critical_stock || 0;
+      document.getElementById('profilePendingStat').textContent = data.pending_requests || 0;
+      document.getElementById('profileDonationStat').textContent = data.completed_requests || 0;
+      
+      // Update stock chart with overview filter support
+      overviewStockByTypeData = data.stock_by_type || {};
+      applyOverviewStockFilter();
+
+      // Show backend-driven stock scarcity/expiry popups
+      maybeShowBackendStockPopups(data);
+      
+      // Update recent activity
+      updateRecentActivity(data.recent_activity || []);
+      updateOverviewRequestCharts(overviewRequestsData || []);
+      
+      document.getElementById('lastSync').textContent = 'Last sync: ' + new Date().toLocaleTimeString();
+    } catch (error) {
+      console.error('Error loading overview data:', error);
+    }
+  }
+
+  function maybeShowBackendStockPopups(data) {
+    if (!data) return;
+
+    const scarcity = data.scarcity_popup || {};
+    const expiry = data.expiry_popup || {};
+
+    const scarceTypes = Array.isArray(scarcity.scarce_blood_types) ? scarcity.scarce_blood_types : [];
+    const unavailableTypes = Array.isArray(scarcity.unavailable_blood_types) ? scarcity.unavailable_blood_types : [];
+    const expiringUnits = Array.isArray(expiry.expiring_units) ? expiry.expiring_units : [];
+
+    const scarcityKey = `scarcity:${[...unavailableTypes, ...scarceTypes].sort().join(",")}`;
+    const expiryKey = `expiry:${expiringUnits.map(e => `${e.blood_type}:${e.expiry_date || ""}`).sort().join(",")}`;
+
+    if (scarcity.show && !shownHospitalPopupKeys.has(scarcityKey)) {
+      shownHospitalPopupKeys.add(scarcityKey);
+      const content = document.getElementById('stockAlertContent');
+      content.innerHTML = `
+        <div class="space-y-4">
+          <div class="p-4 rounded-lg bg-red-50 border border-red-200">
+            <p class="font-semibold text-red-700">${scarcity.title || "Blood Stock Alert"}</p>
+            <p class="text-sm text-red-600 mt-1">${scarcity.message || "Some blood types are low or unavailable."}</p>
+          </div>
+          ${unavailableTypes.length ? `
+            <div>
+              <p class="text-sm font-semibold text-gray-700 mb-2">Unavailable blood types</p>
+              <div class="flex flex-wrap gap-2">
+                ${unavailableTypes.map(bt => `<span class="px-2 py-1 rounded bg-red-100 text-red-700 text-xs font-medium">${bt}</span>`).join("")}
+              </div>
+            </div>
+          ` : ""}
+          ${scarceTypes.length ? `
+            <div>
+              <p class="text-sm font-semibold text-gray-700 mb-2">Scarce blood types</p>
+              <div class="flex flex-wrap gap-2">
+                ${scarceTypes.map(bt => `<span class="px-2 py-1 rounded bg-yellow-100 text-yellow-700 text-xs font-medium">${bt}</span>`).join("")}
+              </div>
+            </div>
+          ` : ""}
+        </div>
+      `;
+      document.getElementById('stockAlertModal').classList.remove('hidden');
+      return;
+    }
+
+    if (expiry.show && !shownHospitalPopupKeys.has(expiryKey)) {
+      shownHospitalPopupKeys.add(expiryKey);
+      const content = document.getElementById('stockAlertContent');
+      content.innerHTML = `
+        <div class="space-y-4">
+          <div class="p-4 rounded-lg bg-amber-50 border border-amber-200">
+            <p class="font-semibold text-amber-700">${expiry.title || "Blood Expiry Alert"}</p>
+            <p class="text-sm text-amber-600 mt-1">${expiry.message || "Some blood units are nearing expiry."}</p>
+          </div>
+          ${expiringUnits.length ? `
+            <div class="space-y-2">
+              ${expiringUnits.map(item => `
+                <div class="p-3 rounded bg-gray-50 border text-sm flex justify-between">
+                  <span class="font-medium">${item.blood_type}</span>
+                  <span>${item.units} unit(s), expires ${item.expiry_date ? new Date(item.expiry_date).toLocaleDateString() : "soon"}</span>
+                </div>
+              `).join("")}
+            </div>
+          ` : ""}
+        </div>
+      `;
+      document.getElementById('stockAlertModal').classList.remove('hidden');
+    }
+  }
+
+  async function loadStockData() {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/hospital/blood-stock/", {
+       headers: authHeaders()
+
+
+      });
+      const data = await response.json();
+      rawStockData = Array.isArray(data) ? data : [];
+      applyStockFilters();
+    } catch (error) {
+      console.error('Error loading stock data:', error);
+    }
+  }
+
+  function applyStockFilters() {
+    const bloodTypeFilterEl = document.getElementById('stockBloodTypeFilter');
+    const levelFilterEl = document.getElementById('stockLevelFilter');
+    const bloodType = bloodTypeFilterEl ? bloodTypeFilterEl.value : 'all';
+    const level = levelFilterEl ? levelFilterEl.value : 'all';
+
+    const filtered = (rawStockData || []).filter(item => {
+      const typeOk = bloodType === 'all' || item.blood_type === bloodType;
+      if (!typeOk) return false;
+
+      if (level === 'critical') return item.units < 5;
+      if (level === 'low') return item.units >= 5 && item.units < item.minimum_required;
+      if (level === 'adequate') return item.units >= item.minimum_required;
+      return true;
+    });
+
+    filtered.sort((a, b) => {
+      const aExpiry = a.expiry_date ? new Date(a.expiry_date).getTime() : Number.MAX_SAFE_INTEGER;
+      const bExpiry = b.expiry_date ? new Date(b.expiry_date).getTime() : Number.MAX_SAFE_INTEGER;
+      return aExpiry - bExpiry;
+    });
+
+    stockData = filtered;
+    updateStockTable(filtered);
+    updateStockAlerts(filtered);
+    updateStockDistributionChart(filtered);
+    updateStockCounts(filtered);
+    updateStockMinCompareChart(filtered);
+  }
+
+  function updateStockTable(stock) {
+    const table = document.getElementById('stockTable');
+    table.innerHTML = '';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    stock.forEach(item => {
+      const expiryObj = item.expiry_date ? new Date(item.expiry_date) : null;
+      const isExpired = expiryObj && expiryObj < today;
+      const status = isExpired ? "Expired" : getStockStatus(item.units, item.minimum_required);
+      const statusClass = getStatusClass(status);
+      
+      const row = `
+        <tr class="border-b hover:bg-gray-50">
+          <td class="px-4 py-3">
+            <div class="flex items-center">
+              <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+              <span class="font-medium">${item.blood_type}</span>
+            </div>
+          </td>
+          <td class="px-4 py-3">
+            <span class="text-2xl font-bold ${getStockColorClass(item.units, item.minimum_required)}">
+              ${item.units}
+            </span>
+            <span class="text-sm text-gray-500 ml-1">units</span>
+          </td>
+          <td class="px-4 py-3 text-sm ${isExpired ? 'text-red-600 font-semibold' : 'text-gray-500'}">
+            ${item.expiry_date ? new Date(item.expiry_date).toLocaleDateString() : 'N/A'}
+          </td>
+          <td class="px-4 py-3">${item.minimum_required} units</td>
+          <td class="px-4 py-3">
+            <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
+              ${status}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-sm text-gray-500">
+            ${new Date(item.last_updated).toLocaleDateString()}
+          </td>
+          <td class="px-4 py-3">
+            <button onclick="showStockAlert('${item.blood_type}')" 
+              class="px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded hover:bg-blue-200">
+              Details
+            </button>
+          </td>
+        </tr>
+      `;
+      table.innerHTML += row;
+    });
+  }
+
+  function updateStockAlerts(stock) {
+    const alertsContainer = document.getElementById('stockAlerts');
+    alertsContainer.innerHTML = '';
+    
+    const criticalStock = stock.filter(item => item.units < 5);
+    const lowStock = stock.filter(item => item.units >= 5 && item.units < item.minimum_required);
+    
+    if (criticalStock.length === 0 && lowStock.length === 0) {
+      alertsContainer.innerHTML = `
+        <div class="p-4 bg-green-50 rounded-lg">
+          <div class="flex items-center">
+            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            <div>
+              <p class="font-medium">All stock levels are adequate</p>
+              <p class="text-sm text-green-600">No immediate action required</p>
+            </div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+    
+    criticalStock.forEach(item => {
+      alertsContainer.innerHTML += `
+        <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="font-medium text-red-700">CRITICAL: ${item.blood_type}</p>
+              <p class="text-sm text-red-600">Only ${item.units} units remaining</p>
+              <p class="text-xs text-red-500 mt-1">Minimum required: ${item.minimum_required} units</p>
+            </div>
+            <button onclick="createEmergencyRequest('${item.blood_type}')"
+              class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+              Request Urgently
+            </button>
+          </div>
+        </div>
+      `;
+    });
+    
+    lowStock.forEach(item => {
+      alertsContainer.innerHTML += `
+        <div class="p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="font-medium text-yellow-700">LOW: ${item.blood_type}</p>
+              <p class="text-sm text-yellow-600">${item.units} units remaining</p>
+              <p class="text-xs text-yellow-500 mt-1">Below minimum of ${item.minimum_required} units</p>
+            </div>
+            <button onclick="switchTab('inventory')"
+              class="px-3 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700">
+              Restock
+            </button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  function updateStockCounts(stock) {
+    let critical = 0, low = 0, adequate = 0, total = 0;
+    
+    stock.forEach(item => {
+      total += item.units;
+      if (item.units < 5) {
+        critical++;
+      } else if (item.units < item.minimum_required) {
+        low++;
+      } else {
+        adequate++;
+      }
+    });
+    
+    document.getElementById('criticalCount').textContent = critical;
+    document.getElementById('lowCount').textContent = low;
+    document.getElementById('adequateCount').textContent = adequate;
+    document.getElementById('totalUnits').textContent = total;
+  }
+
+  function updateStockChart(stockByType) {
+  const ctx = document.getElementById('stockChart').getContext('2d');
+
+  if (stockChartInstance) {
+    stockChartInstance.destroy();
+  }
+
+  stockChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(stockByType),
+      datasets: [{
+        label: 'Available Units',
+        data: Object.values(stockByType),
+        backgroundColor: '#EF4444',
+        borderColor: '#DC2626',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: { display: true, text: 'Units' }
+        }
+      }
+    }
+  });
+}
+
+function updateStockDistributionChart(stock) {
+  const ctx = document.getElementById('stockDistributionChart').getContext('2d');
+
+  if (stockDistributionChartInstance) {
+    stockDistributionChartInstance.destroy();
+  }
+
+  const labels = stock.map(item => item.blood_type);
+  const data = stock.map(item => item.units);
+
+  stockDistributionChartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: stock.map(item => {
+          if (item.units < 5) return '#EF4444';
+          if (item.units < item.minimum_required) return '#F59E0B';
+          return '#10B981';
+        })
+      }]
+    }
+  });
+}
+
+function applyOverviewStockFilter() {
+  const typeFilter = document.getElementById('overviewStockTypeFilter')?.value || 'all';
+  const source = overviewStockByTypeData || {};
+
+  if (typeFilter === 'all') {
+    updateStockChart(source);
+    return;
+  }
+
+  const filtered = {};
+  if (source[typeFilter] !== undefined) {
+    filtered[typeFilter] = source[typeFilter];
+  }
+  updateStockChart(filtered);
+}
+
+function updateStockMinCompareChart(stock) {
+  const canvas = document.getElementById('stockMinCompareChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  if (stockMinCompareChartInstance) {
+    stockMinCompareChartInstance.destroy();
+  }
+
+  const labels = stock.map(item => item.blood_type);
+  const current = stock.map(item => item.units);
+  const minimum = stock.map(item => item.minimum_required);
+
+  stockMinCompareChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Current Units', data: current, backgroundColor: '#3B82F6' },
+        { label: 'Minimum Required', data: minimum, backgroundColor: '#F59E0B' }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true, title: { display: true, text: 'Units' } } }
+    }
+  });
+}
+
+function updateOverviewRequestCharts(requests) {
+  const daysFilter = document.getElementById('overviewDaysFilter')?.value || '7';
+  const statusFilter = document.getElementById('overviewRequestStatusFilter')?.value || 'all';
+  const now = new Date();
+
+  const filtered = (requests || []).filter(r => {
+    const created = r.created_at ? new Date(r.created_at) : null;
+    if (daysFilter !== 'all' && created) {
+      const days = Number(daysFilter);
+      const diff = (now - created) / (1000 * 60 * 60 * 24);
+      if (diff > days) return false;
+    }
+    if (statusFilter !== 'all' && r.status !== statusFilter) return false;
+    return true;
+  });
+
+  const statusCounts = { pending: 0, approved: 0, rejected: 0, completed: 0 };
+  const urgencyCounts = { Normal: 0, High: 0, Critical: 0 };
+  filtered.forEach(r => {
+    if (statusCounts[r.status] !== undefined) statusCounts[r.status] += 1;
+    if (urgencyCounts[r.urgency] !== undefined) urgencyCounts[r.urgency] += 1;
+  });
+
+  const statusCtx = document.getElementById('requestStatusChart')?.getContext('2d');
+  if (statusCtx) {
+    if (requestStatusChartInstance) requestStatusChartInstance.destroy();
+    requestStatusChartInstance = new Chart(statusCtx, {
+      type: 'pie',
+      data: {
+        labels: ['Pending', 'Approved', 'Rejected', 'Completed'],
+        datasets: [{
+          data: [statusCounts.pending, statusCounts.approved, statusCounts.rejected, statusCounts.completed],
+          backgroundColor: ['#F59E0B', '#10B981', '#EF4444', '#3B82F6']
+        }]
+      },
+      options: { responsive: true }
+    });
+  }
+
+  const urgCtx = document.getElementById('requestUrgencyChart')?.getContext('2d');
+  if (urgCtx) {
+    if (requestUrgencyChartInstance) requestUrgencyChartInstance.destroy();
+    requestUrgencyChartInstance = new Chart(urgCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Normal', 'High', 'Critical'],
+        datasets: [{
+          label: 'Requests',
+          data: [urgencyCounts.Normal, urgencyCounts.High, urgencyCounts.Critical],
+          backgroundColor: ['#60A5FA', '#F59E0B', '#EF4444']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+}
+
+  async function createBloodRequest() {
+  const patientName = document.getElementById('patientName').value;
+  const bloodType = document.getElementById('bloodType').value;
+  const units = parseInt(document.getElementById('units').value || "0", 10);
+  const urgency = document.getElementById('urgency').value;
+  const notes = document.getElementById('requestNotes').value;
+  const hospitalDoc = document.getElementById('hospitalDoc').files[0];
+
+  if (!bloodType || !units || units <= 0) {
+    showStatusModal("Invalid Request", "Please select blood type and valid units.", "error");
+    return;
+  }
+
+  const ownStock = (rawStockData || []).find(s => s.blood_type === bloodType);
+  const ownUnits = Number(ownStock?.units || 0);
+  if (ownUnits >= units) {
+    showStatusModal(
+      "Request Blocked",
+      `You already have ${ownUnits} units of ${bloodType} in stock (requested ${units}).`,
+      "error"
+    );
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("patient_name", patientName);
+  formData.append("blood_type", bloodType);
+  formData.append("units", String(units));
+  formData.append("urgency", urgency);
+  formData.append("notes", notes);
+  if (hospitalDoc) formData.append("hospital_doc", hospitalDoc);
+
+  showLoading("Submitting blood request...");   // ← ADD THIS
+  try {
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/hospital/blood-request/create/",
+      {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${localStorage.getItem("hospitalToken")}` },
+        body: formData
+      }
+    );
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.error(data);
+      throw new Error("Server responded with error");
+    }
+
+    showStatusModal("Request Submitted", "Blood request submitted successfully.", "success");
+    loadRequests();
+    loadOverviewData();
+  } catch (err) {
+    console.error("Fetch error:", err);
+    showStatusModal("Request Failed", "Blood request submission failed.", "error");
+  } finally {
+    hideLoading();   
+  }
+}
+  async function loadRequests() {
+    try {
+      const filter = document.getElementById('requestFilter').value;
+      let url = "http://127.0.0.1:8000/api/hospital/blood-requests/";
+      if (filter !== 'all') {
+        url += `?status=${filter}`;
+      }
+      
+      const response = await fetch(url, {
+        headers: authHeaders()
+      });
+      const data = await response.json();
+      requestsData = data;
+      updateRequestsTable(data);
+    } catch (error) {
+      console.error('Error loading requests:', error);
+    }
+  }
+
+function updateRequestsTable(requests) {
+    const table = document.getElementById('requestTable');
+    table.innerHTML = '';
+    
+    if (requests.length === 0) {
+      table.innerHTML = `
+        <tr>
+          <td colspan="8" class="px-4 py-8 text-center text-gray-500">
+            No blood requests found
+          </td>
+        </tr>
+      `;
+      return;
+    }
+    
+    requests.forEach(request => {
+      const statusClass = getRequestStatusClass(request.status);
+      const urgencyClass = getUrgencyClass(request.urgency);
+      let actionsHtml = `
+        <button onclick="showRequestDetails(${request.id})"
+          class="px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200">
+          View
+        </button>
+      `;
+      if (request.status === "approved") {
+        actionsHtml += `
+          <button onclick="confirmDonorReceipt(${request.id})"
+            class="mt-2 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700">
+            Donor Fulfilled (OTP)
+          </button>
+          <button onclick="confirmBankStockFulfillment(${request.id})"
+            class="mt-2 px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700">
+            Blood Bank/Hospital Fulfilled
+          </button>
+        `;
+      }
+      
+      const row = `
+        <tr class="border-b hover:bg-gray-50">
+          <td class="px-4 py-3">
+            <p class="font-medium">
+  ${request.patient_name || request.hospital_name || "Hospital Request"}
+</p>
+            <p class="text-xs text-gray-500">ID: ${request.id}</p>
+          </td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-1 bg-red-100 text-red-700 rounded text-sm">
+              ${request.blood_type}
+            </span>
+          </td>
+          <td class="px-4 py-3 font-medium">${request.units} units</td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-1 rounded text-sm ${urgencyClass}">
+              ${request.urgency}
+            </span>
+          </td>
+          <td class="px-4 py-3">
+            <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
+              ${request.status}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-sm text-gray-500">
+            ${new Date(request.created_at).toLocaleDateString()}
+          </td>
+          <td class="px-4 py-3">
+            ${actionsHtml}
+          </td>
+        </tr>
+      `;
+      table.innerHTML += row;
+    });
+}
+
+  async function confirmDonorReceipt(requestId) {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/hospital/request/${requestId}/confirm-donor-receipt/`,
+        {
+          method: "POST",
+          headers: authHeaders(),
+        }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        showStatusModal("OTP Generation Failed", data.message || "Could not generate donor OTP.", "error");
+        return;
+      }
+
+      document.getElementById("hospitalOtpCode").textContent = data.confirmation_code || "----";
+      document.getElementById("hospitalOtpModal").classList.remove("hidden");
+      showStatusModal("OTP Sent", "OTP generated and sent to donor notification/email.", "success");
+      loadRequests();
+      loadOverviewData();
+    } catch (error) {
+      console.error("Error generating donor OTP:", error);
+      showStatusModal("Network Error", "Could not generate donor OTP.", "error");
+    }
+  }
+
+  async function confirmBankStockFulfillment(requestId) {
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/hospital/request/${requestId}/confirm-bank-fulfillment/`,
+        {
+          method: "POST",
+          headers: authHeaders(),
+        }
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        showStatusModal("Completion Failed", data.message || "Could not mark request completed.", "error");
+        return;
+      }
+
+      showStatusModal("Request Completed", data.message || "Request marked as completed.", "success");
+      loadRequests();
+      loadOverviewData();
+    } catch (error) {
+      console.error("Error confirming bank fulfillment:", error);
+      showStatusModal("Network Error", "Could not confirm completion.", "error");
+    }
+  }
+
+  // ── Donor map globals ──────────────────────────────────────────
+let donorMapInstance = null;
+let donorMapMarkers = [];
+let allDonorsData = [];
+let matchedDonorIds = new Set();
+let isMatchedView = false;
+let hospitalLatLng = null;
+
+// ── Init / refresh ─────────────────────────────────────────────
+function initDonorMap() {
+  if (donorMapInstance) return;
+
+  donorMapInstance = L.map('donorMap', { zoomControl: true });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 18
+  }).addTo(donorMapInstance);
+
+  // Default center: Kathmandu — will re-center once hospital coords load
+  donorMapInstance.setView([27.7172, 85.3240], 12);
+}
+
+function refreshDonorMap() {
+  loadDonors();
+}
+
+async function loadDonors() {
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/hospital/donors/", {
+      headers: authHeaders()
+    });
+    const data = await response.json();
+    allDonorsData = Array.isArray(data) ? data : [];
+    applyDonorFilters();
+  } catch (error) {
+    console.error('Error loading donors:', error);
+  }
+}
+
+function applyDonorFilters() {
+  const btFilter = document.getElementById('donorBloodTypeFilter')?.value || 'all';
+  const avFilter = document.getElementById('donorAvailFilter')?.value || 'all';
+
+  let filtered = allDonorsData.filter(d => {
+    const btOk = btFilter === 'all' || d.blood_type === btFilter;
+    const isAvail = isDonorAvailable(d);
+    const avOk = avFilter === 'all' || (avFilter === 'available' ? isAvail : !isAvail);
+    return btOk && avOk;
+  });
+
+  renderDonorMap(filtered);
+  updateDonorsList(filtered);
+  updateDonorStats(filtered);
+}
+
+// ── Map rendering ──────────────────────────────────────────────
+function renderDonorMap(donors) {
+  initDonorMap();
+
+  // Clear existing markers
+  donorMapMarkers.forEach(m => donorMapInstance.removeLayer(m));
+  donorMapMarkers = [];
+
+  const bounds = [];
+
+  // Hospital marker (blue)
+  if (hospitalData?.latitude && hospitalData?.longitude) {
+    hospitalLatLng = [parseFloat(hospitalData.latitude), parseFloat(hospitalData.longitude)];
+    const hospitalIcon = L.divIcon({
+      className: '',
+      html: `<div style="
+  width:36px;height:36px;border-radius:50%;
+  background:#1d4ed8;border:3px solid #fff;
+  box-shadow:0 2px 6px rgba(0,0,0,0.3);
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:16px;">
+  <i class='fas fa-hospital'></i>
+</div>`,
+      iconSize: [36, 36],
+      iconAnchor: [18, 18]
+    });
+    const hMarker = L.marker(hospitalLatLng, { icon: hospitalIcon })
+      .addTo(donorMapInstance)
+      .bindPopup(`<b>${hospitalData.name || 'Your Hospital'}</b><br>Hospital location`);
+    donorMapMarkers.push(hMarker);
+    bounds.push(hospitalLatLng);
+  }
+
+  // Donor markers
+  donors.forEach(donor => {
+    if (!donor.latitude || !donor.longitude) return;
+
+    const lat = parseFloat(donor.latitude);
+    const lng = parseFloat(donor.longitude);
+    if (isNaN(lat) || isNaN(lng)) return;
+
+    const isAvailable = isDonorAvailable(donor);
+    const isMatched = matchedDonorIds.has(donor.id);
+
+    const color = isAvailable ? '#16a34a' : '#ef4444';
+    const borderColor = isMatched ? '#d97706' : '#fff';
+
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="
+        width:28px;height:28px;border-radius:50%;
+        background:${color};border:2.5px solid ${borderColor};
+        box-shadow:0 1px 4px rgba(0,0,0,0.25);
+        display:flex;align-items:center;justify-content:center;
+        color:white;font-size:12px;font-weight:700;">
+        ${donor.blood_type || '?'}
+      </div>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
+    });
+
+    const dist = donor.distance_km != null ? `${Number(donor.distance_km).toFixed(1)} km away` : 'Distance N/A';
+    const lastDon = donor.last_donation ? new Date(donor.last_donation).toLocaleDateString() : 'Never';
+
+    const marker = L.marker([lat, lng], { icon })
+      .addTo(donorMapInstance)
+      .bindPopup(`
+        <div style="min-width:160px;font-family:sans-serif;">
+          <p style="font-weight:600;margin:0 0 4px;">${donor.name}</p>
+          <p style="margin:0;font-size:13px;color:#555;">
+            ${donor.blood_type} · ${isAvailable ? '<span style="color:#16a34a">Available</span>' : '<span style="color:#ef4444">Unavailable</span>'}
+            ${isMatched ? ' · <span style="color:#d97706;font-weight:600">Matched</span>' : ''}
+          </p>
+          <p style="margin:4px 0 0;font-size:12px;color:#666;">${dist}</p>
+          <p style="margin:2px 0 0;font-size:12px;color:#666;">Last donation: ${lastDon}</p>
+          <p style="margin:4px 0 0;font-size:12px;">${donor.phone || ''}</p>
+        </div>
+      `);
+
+    donorMapMarkers.push(marker);
+    bounds.push([lat, lng]);
+  });
+
+  // Fit map to all markers
+  if (bounds.length > 0) {
+    donorMapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+  }
+
+  document.getElementById('donorStatShowing').textContent = donors.filter(
+    d => d.latitude && d.longitude
+  ).length;
+}
+
+// ── Donor cards ────────────────────────────────────────────────
+function updateDonorsList(donors) {
+  const container = document.getElementById('donorList');
+  const countEl = document.getElementById('donorListCount');
+  container.innerHTML = '';
+
+  countEl.textContent = `${donors.length} donor${donors.length !== 1 ? 's' : ''}`;
+
+  if (donors.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full text-center py-8">
+        <i class="fas fa-user-slash text-4xl text-gray-300 mb-3"></i>
+        <p class="text-gray-500">No donors found</p>
+      </div>
+    `;
+    return;
+  }
+
+  donors.forEach(donor => {
+    const isAvailable = isDonorAvailable(donor);
+const isMatched = matchedDonorIds.has(donor.id);
+const availClass = isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+    const locationText = donor.city || donor.location || donor.address || 'Location N/A';
+    const distanceText = donor.distance_km != null
+      ? `${Number(donor.distance_km).toFixed(1)} km away`
+      : 'Distance N/A';
+
+    const matchedBadge = isMatched
+      ? `<span class="px-2 py-0.5 text-xs rounded bg-yellow-100 text-yellow-700 font-medium ml-1">Matched</span>`
+      : '';
+
+    const card = `
+      <div class="bg-white border-2 rounded-xl p-4 hover:shadow-md transition ${isMatched ? 'border-yellow-400' : 'border-gray-100'}">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <div class="flex items-center gap-1">
+              <h4 class="font-semibold">${donor.name}</h4>
+              ${matchedBadge}
+            </div>
+            <p class="text-sm text-gray-600 mt-0.5">${donor.blood_type}</p>
+          </div>
+          <span class="px-2 py-1 text-xs rounded ${availClass}">
+            ${isAvailable ? 'Available' : 'Unavailable'}
+          </span>
+        </div>
+        <div class="space-y-1.5 text-sm text-gray-600">
+          <div class="flex items-center gap-2">
+            <i class="fas fa-phone text-gray-400 w-4"></i>
+            <span>${donor.phone || 'N/A'}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-envelope text-gray-400 w-4"></i>
+            <span class="truncate">${donor.email || 'N/A'}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-map-marker-alt text-gray-400 w-4"></i>
+            <span>${locationText}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-route text-gray-400 w-4"></i>
+            <span>${distanceText}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <i class="fas fa-calendar-alt text-gray-400 w-4"></i>
+            <span>Last donation: ${donor.last_donation ? new Date(donor.last_donation).toLocaleDateString() : 'Never'}</span>
+          </div>
+        </div>
+        <div class="mt-3 pt-3 border-t flex gap-2">
+          <button onclick="contactDonor(${donor.id})"
+            class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+            <i class="fas fa-phone mr-1"></i> Contact
+          </button>
+          ${donor.latitude && donor.longitude ? `
+          <button onclick="focusDonorOnMap(${donor.latitude}, ${donor.longitude})"
+            class="px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200">
+            <i class="fas fa-map-marker-alt"></i>
+          </button>` : ''}
+        </div>
+      </div>
+    `;
+    container.innerHTML += card;
+  });
+}
+
+function updateDonorStats(filtered) {
+  const availCount = allDonorsData.filter(d => isDonorAvailable(d)).length;
+  document.getElementById('donorStatTotal').textContent = allDonorsData.length;
+  document.getElementById('donorStatAvailable').textContent = availCount;
+  document.getElementById('donorStatMatched').textContent =
+    matchedDonorIds.size > 0 ? matchedDonorIds.size : '—';
+}
+
+function focusDonorOnMap(lat, lng) {
+  if (!donorMapInstance) return;
+  donorMapInstance.setView([parseFloat(lat), parseFloat(lng)], 15, { animate: true });
+  // Open the popup of that marker
+  donorMapMarkers.forEach(m => {
+    const pos = m.getLatLng();
+    if (Math.abs(pos.lat - parseFloat(lat)) < 0.0001 && Math.abs(pos.lng - parseFloat(lng)) < 0.0001) {
+      m.openPopup();
+    }
+  });
+}
+
+// ── Reset to "all donors" view ─────────────────────────────────
+function resetDonorView() {
+  stopHospitalTierPolling();
+  isMatchedView = false;
+  matchedDonorIds = new Set();
+  showMatchedDonors = false;
+
+  document.getElementById('donorModeBanner').classList.add('hidden');
+  document.getElementById('donorTierStatus').classList.add('hidden');
+  document.getElementById('donorListTitle').textContent = 'All donors near hospital';
+  document.getElementById('donorStatMatched').textContent = '—';
+  document.getElementById('pageTitle').textContent = 'Donors Near Hospital';
+
+  document.getElementById('donorBloodTypeFilter').value = 'all';
+  document.getElementById('donorAvailFilter').value = 'all';
+
+  applyDonorFilters();
+}
+
+// ── Open matched donors from a request ────────────────────────
+async function openDonorMatch(requestId) {
+  if (!requestId) return;
+
+  try {
+    const [donorRes, escRes] = await Promise.all([
+      fetch(`http://127.0.0.1:8000/api/hospital/request/${requestId}/donors/`, { headers: authHeaders() }),
+      fetch(`http://127.0.0.1:8000/api/hospital/request/${requestId}/escalation-status/`, { headers: authHeaders() })
+    ]);
+
+    const donorData = await donorRes.json();
+    const esc = escRes.ok ? await escRes.json() : null;
+
+    const matched = donorData.donors || [];
+    matchedDonorIds = new Set(matched.map(d => d.id));
+    isMatchedView = true;
+    showMatchedDonors = true;
+
+    // Merge matched donors into allDonorsData (avoid duplicates)
+    matched.forEach(d => {
+      if (!allDonorsData.find(x => x.id === d.id)) allDonorsData.push(d);
+    });
+
+    switchTab('donors');
+
+    // Show banner
+    const banner = document.getElementById('donorModeBanner');
+    banner.classList.remove('hidden');
+    document.getElementById('donorModeBannerTitle').textContent = `Matched donors for Request #${requestId}`;
+    document.getElementById('donorModeBannerSub').textContent =
+      `${matched.length} compatible donor${matched.length !== 1 ? 's' : ''} found near hospital`;
+
+    document.getElementById('donorListTitle').textContent = `Matched donors — Request #${requestId}`;
+    document.getElementById('pageTitle').textContent = `Donors — Request #${requestId}`;
+
+    // Apply filters with matched data
+    applyDonorFilters();
+    renderDonorTierStatus(esc, requestId);
+    startHospitalTierPolling(requestId);
+
+  } catch (err) {
+    console.error('openDonorMatch error:', err);
+  }
+}
+
+// ── Tier status panel ──────────────────────────────────────────
+function renderDonorTierStatus(esc, requestId) {
+  const box = document.getElementById('donorTierStatus');
+  if (!box) return;
+
+  if (!esc) {
+    box.classList.remove('hidden');
+    box.innerHTML = `
+      <div class="p-3 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600">
+        Tier status not available for request #${requestId}.
+      </div>
+    `;
+    return;
+  }
+
+  const tiers = [
+    { name: 'Tier 1', d: esc.tier_1 },
+    { name: 'Tier 2', d: esc.tier_2 },
+    { name: 'Tier 3', d: esc.tier_3 },
+    { name: 'Tier 4', d: esc.tier_4 },
+  ];
+  const tiersCompleted = tiers.every(t => !!t.d?.completed);
+  const completedCount = tiers.filter(t => !!t.d?.completed).length;
+  const progressPct = tiersCompleted ? 100 : Math.max(10, Math.round((completedCount / 4) * 100));
+  const stockCheck = esc?.stock_check || {};
+  const bankUnits = Number(esc?.stock_check?.blood_bank_units || 0);
+  const hospitalStockMap = esc?.stock_check?.hospital_stock || {};
+  const ownName = (hospitalData?.name || '').trim().toLowerCase();
+  const hospitalStockRows = Object.entries(hospitalStockMap)
+    .filter(([name]) => (name || '').trim().toLowerCase() !== ownName);
+  const noMatchFound = !!esc?.no_match_found;
+
+  box.classList.remove('hidden');
+  box.innerHTML = `
+    <div class="p-4 rounded-xl border border-blue-200 bg-blue-50">
+      <div class="flex items-center justify-between mb-3">
+        <h4 class="font-semibold text-blue-800">Tier progress — Request #${requestId}</h4>
+        <span class="text-xs px-2 py-1 rounded ${esc.completed_at ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+          ${esc.completed_at ? 'Completed' : 'In progress'}
+        </span>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+        ${tiers.map(t => `
+          <div class="bg-white border rounded-lg p-3">
+            <p class="text-xs text-gray-500">${t.name}</p>
+            <p class="text-sm font-semibold">${t.d?.donors_notified || 0} donors</p>
+            <p class="text-xs ${t.d?.completed ? 'text-green-600' : 'text-yellow-600'}">${t.d?.completed ? 'Done' : 'Running'}</p>
+          </div>
+        `).join('')}
+      </div>
+      ${tiersCompleted ? `
+        <div class="p-3 rounded-lg border border-blue-100 bg-white text-sm">
+          <p class="text-blue-900 mb-2">Blood bank units found: <b>${bankUnits}</b> · Other hospitals with stock: <b>${hospitalStockRows.length}</b></p>
+          ${hospitalStockRows.length ? `
+            <div class="space-y-1 max-h-32 overflow-y-auto">
+              ${hospitalStockRows.map(([name, info]) => `
+                <div class="flex items-center justify-between rounded border border-gray-200 bg-gray-50 px-3 py-1.5">
+                  <div>
+                    <p class="text-xs font-semibold text-gray-800">${name}</p>
+                    <p class="text-xs text-gray-500">${info?.district || 'N/A'}</p>
+                  </div>
+                  <p class="text-xs font-semibold text-red-600">${info?.units || 0} units</p>
+                </div>
+              `).join('')}
+            </div>
+          ` : '<p class="text-xs text-gray-500">No nearby hospital stock found.</p>'}
+        </div>
+      ` : `
+        <div class="p-3 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-700">
+          Stock details will appear after all donor tiers are completed.
+        </div>
+      `}
+      ${noMatchFound ? `
+        <div class="mt-3 p-3 rounded-lg border border-red-200 bg-red-50 text-sm text-red-700">
+          We tried all donor tiers and stock checks for request #${requestId}, but no donor or stock was found yet.
+        </div>
+      ` : ``}
+    </div>
+  `;
+
+  if (noMatchFound && !shownNoMatchEscalationModal.has(requestId)) {
+    shownNoMatchEscalationModal.add(requestId);
+  }
+}
+
+  async function loadStockHistory() {
+    try {
+      const startDate = document.getElementById('historyStartDate').value;
+      const endDate = document.getElementById('historyEndDate').value;
+      const txnType = document.getElementById('historyTxnType')
+        ? document.getElementById('historyTxnType').value
+        : '';
+
+      // Validate: start date must be <= end date
+      if (startDate && endDate && startDate > endDate) {
+        alert('Start date cannot be after end date.');
+        return;
+      }
+
+      let url = "http://127.0.0.1:8000/api/hospital/stock-history/";
+      const params = [];
+      if (startDate) params.push(`start_date=${encodeURIComponent(startDate)}`);
+      if (endDate) params.push(`end_date=${encodeURIComponent(endDate)}`);
+      if (txnType) params.push(`transaction_type=${encodeURIComponent(txnType)}`);
+      if (params.length > 0) {
+        url += '?' + params.join('&');
+      }
+
+      const response = await fetch(url, {
+        headers: authHeaders()
+      });
+      let data = await response.json();
+
+      // Client-side fallback filters (in case backend ignores query params)
+      if (Array.isArray(data)) {
+        if (startDate) {
+          const s = new Date(startDate + 'T00:00:00');
+          data = data.filter(t => new Date(t.timestamp) >= s);
+        }
+        if (endDate) {
+          const e = new Date(endDate + 'T23:59:59');
+          data = data.filter(t => new Date(t.timestamp) <= e);
+        }
+        if (txnType) {
+          data = data.filter(t => t.transaction_type === txnType);
+        }
+      }
+
+      updateStockHistoryTable(data);
+    } catch (error) {
+      console.error('Error loading stock history:', error);
+    }
+  }
+
+  // Reset all history filters and reload
+  function clearHistoryFilter() {
+    document.getElementById('historyStartDate').value = '';
+    document.getElementById('historyEndDate').value = '';
+    const typeEl = document.getElementById('historyTxnType');
+    if (typeEl) typeEl.value = '';
+    loadStockHistory();
+  }
+
+  // Apply a preset date range to the history filter and reload
+  function setHistoryDateRange(range) {
+    const startEl = document.getElementById('historyStartDate');
+    const endEl = document.getElementById('historyEndDate');
+    const today = new Date();
+    const fmt = (d) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+
+    let start = null;
+    let end = today;
+
+    switch (range) {
+      case 'today':
+        start = today;
+        break;
+      case '7':
+        start = new Date();
+        start.setDate(today.getDate() - 6);
+        break;
+      case '30':
+        start = new Date();
+        start.setDate(today.getDate() - 29);
+        break;
+      case 'month':
+        start = new Date(today.getFullYear(), today.getMonth(), 1);
+        break;
+      case 'all':
+      default:
+        startEl.value = '';
+        endEl.value = '';
+        loadStockHistory();
+        return;
+    }
+
+    startEl.value = fmt(start);
+    endEl.value = fmt(end);
+    loadStockHistory();
+  }
+
+  function updateStockHistoryTable(history) {
+    const table = document.getElementById('historyTable');
+    table.innerHTML = '';
+    
+    if (history.length === 0) {
+      table.innerHTML = `
+        <tr>
+          <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+            No transaction history found
+          </td>
+        </tr>
+      `;
+      return;
+    }
+    
+    history.forEach(transaction => {
+      const typeClass = transaction.transaction_type === 'add' ? 
+        'text-green-600 bg-green-50' : 'text-red-600 bg-red-50';
+      
+      const row = `
+        <tr class="border-b hover:bg-gray-50">
+          <td class="px-4 py-3">
+            ${new Date(transaction.timestamp).toLocaleString()}
+          </td>
+          <td class="px-4 py-3">
+            <span class="font-medium">${transaction.blood_type}</span>
+          </td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-1 rounded text-sm ${typeClass}">
+              ${transaction.transaction_type === 'add' ? 'Addition' : 'Removal'}
+            </span>
+          </td>
+          <td class="px-4 py-3 font-medium">
+            ${transaction.units} units
+          </td>
+          <td class="px-4 py-3">
+            ${transaction.expiry_date ? new Date(transaction.expiry_date).toLocaleDateString() : 'N/A'}
+          </td>
+          <td class="px-4 py-3">
+            ${transaction.reason || transaction.source || 'N/A'}
+          </td>
+          <td class="px-4 py-3">
+            ${transaction.performed_by || 'System'}
+          </td>
+          <td class="px-4 py-3">
+            <span class="font-medium">${transaction.new_balance} units</span>
+          </td>
+        </tr>
+      `;
+      table.innerHTML += row;
+    });
+  }
+
+  async function addBloodStock() {
+  const bloodType = document.getElementById('addBloodType').value;
+  const units = document.getElementById('addUnits').value;
+  const source = document.getElementById('addSource').value;
+  const expiryDate = document.getElementById('addExpiryDate').value;
+
+  if (!bloodType || !units || units < 1 || !expiryDate) {
+    showStatusModal('Invalid Input', 'Please fill in all required fields correctly.', 'error');
+    return;
+  }
+
+  showLoading("Adding blood stock...");   // ← ADD THIS
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/hospital/stock/add/", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        blood_type: bloodType,
+        units: parseInt(units),
+        source: source,
+        expiry_date: expiryDate,
+        notes: "Added via hospital dashboard"
+      })
+    });
+
+    if (response.ok) {
+      showStatusModal("Stock Added", "Blood stock added successfully.", "success");
+      document.getElementById('addBloodType').value = '';
+      document.getElementById('addUnits').value = '';
+      document.getElementById('addExpiryDate').value = '';
+      loadStockData();
+      loadOverviewData();
+      loadStockHistory();
+    } else {
+      const error = await response.json();
+      showStatusModal("Add Stock Failed", error.detail || "Failed to add stock", "error");
+    }
+  } catch (error) {
+    console.error('Error adding stock:', error);
+    showStatusModal("Network Error", "Network error. Please try again.", "error");
+  } finally {
+    hideLoading();   // ← ADD THIS
+  }
+}
+
+  async function removeBloodStock() {
+  const bloodType = document.getElementById('removeBloodType').value;
+  const unitsRaw = document.getElementById('removeUnits').value;
+  const reason = document.getElementById('removeReason').value;
+  const units = Number(unitsRaw);
+
+  if (!bloodType || !Number.isFinite(units) || units <= 0 || !Number.isInteger(units)) {
+    showStatusModal('Invalid Input', 'Please enter a valid positive whole number of units.', 'error');
+    return;
+  }
+
+  const stockItem = (rawStockData || []).find(s => s.blood_type === bloodType);
+  const availableUnits = Number(stockItem?.units || 0);
+  if (availableUnits <= 0) {
+    showStatusModal('No Stock Available', `No ${bloodType} units available to remove.`, 'error');
+    return;
+  }
+  if (units > availableUnits) {
+    showStatusModal('Insufficient Stock', `You only have ${availableUnits} unit(s) of ${bloodType}.`, 'error');
+    return;
+  }
+
+  // if (!confirm(`Are you sure you want to remove ${units} units of ${bloodType}?`)) {
+  //   return;
+  // }
+
+  showLoading("Removing blood stock...");   
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/hospital/stock/remove/", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        blood_type: bloodType,
+        units: units,
+        reason: reason,
+        notes: "Removed via hospital dashboard"
+      })
+    });
+
+    if (response.ok) {
+      showStatusModal("Stock Removed", "Blood stock removed successfully.", "success");
+      document.getElementById('removeBloodType').value = '';
+      document.getElementById('removeUnits').value = '';
+      loadStockData();
+      loadOverviewData();
+      loadStockHistory();
+    } else {
+      const error = await response.json();
+      showStatusModal("Remove Stock Failed", error.detail || "Failed to remove stock", "error");
+    }
+  } catch (error) {
+    console.error('Error removing stock:', error);
+    showStatusModal("Network Error", "Network error. Please try again.", "error");
+  } finally {
+    hideLoading();  
+  }
+}
+
+  async function showRequestDetails(requestId, options = {}) {
+    const request = requestsData.find(r => r.id === requestId);
+    if (!request) return;
+
+    let escalation = null;
+    try {
+      const escRes = await fetch(
+        `http://127.0.0.1:8000/api/hospital/request/${requestId}/escalation-status/`,
+        { headers: authHeaders() }
+      );
+      if (escRes.ok) escalation = await escRes.json();
+    } catch (e) {
+      console.error("Failed to fetch escalation status:", e);
+    }
+
+    const tiers = [
+      { name: "Tier 1 (0-5 km)", data: escalation?.tier_1 },
+      { name: "Tier 2 (5-15 km)", data: escalation?.tier_2 },
+      { name: "Tier 3 (15-30 km)", data: escalation?.tier_3 },
+      { name: "Tier 4 (30+ km)", data: escalation?.tier_4 },
+    ];
+    const tiersCompleted = tiers.every(t => !!t.data?.completed);
+
+    const stockCheck = escalation?.stock_check || {};
+    const hospitalStockMap = stockCheck.hospital_stock || {};
+    const ownHospitalName = (hospitalData?.name || '').trim().toLowerCase();
+    const hospitalStockRows = Object.entries(hospitalStockMap)
+      .filter(([name]) => (name || '').trim().toLowerCase() !== ownHospitalName);
+    const noMatchFound = !!options.noMatch || !!escalation?.no_match_found;
+
+    const content = document.getElementById('requestDetailsContent');
+    content.innerHTML = `
+      <div class="space-y-4">
+        ${noMatchFound ? `
+        <div class="rounded-2xl border border-red-200 bg-gradient-to-r from-red-50 to-rose-50 px-4 py-4">
+          <div class="flex items-start gap-3">
+            <div class="w-11 h-11 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-user-slash"></i>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-red-800">No donor or stock found</p>
+              <p class="text-sm text-red-700 mt-1">
+                We completed all donor tiers and stock checks for this request, but no match was found yet.
+              </p>
+            </div>
+          </div>
+        </div>
+        ` : ''}
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-600">Patient Name</p>
+            <p class="font-medium">${request.patient_name}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Patient ID</p>
+            <p class="font-medium">${request.patient_id || 'N/A'}</p>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-600">Blood Type</p>
+            <p class="font-medium"><span class="px-2 py-1 bg-red-100 text-red-700 rounded">
+              ${request.blood_type}
+            </span></p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Units Required</p>
+            <p class="font-medium">${request.units} units</p>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-600">Urgency Level</p>
+            <p class="font-medium">
+              <span class="px-2 py-1 rounded ${getUrgencyClass(request.urgency)}">
+                ${request.urgency}
+              </span>
+            </p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Status</p>
+            <p class="font-medium">
+              <span class="px-2 py-1 rounded ${getRequestStatusClass(request.status)}">
+                ${request.status}
+              </span>
+            </p>
+          </div>
+        </div>
+        
+        <div>
+          <p class="text-sm text-gray-600">Request Date</p>
+          <p class="font-medium">${new Date(request.created_at).toLocaleString()}</p>
+        </div>
+        
+        ${request.notes ? `
+        <div>
+          <p class="text-sm text-gray-600">Additional Notes</p>
+          <p class="font-medium">${request.notes}</p>
+        </div>
+        ` : ''}
+        
+        ${request.assigned_donor ? `
+        <div class="mt-6 pt-6 border-t">
+          <h4 class="font-semibold mb-3">Assigned Donor</h4>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="font-medium">${request.assigned_donor.name}</p>
+            <p class="text-sm text-gray-600">${request.assigned_donor.blood_type} | ${request.assigned_donor.phone}</p>
+          </div>
+        </div>
+        ` : ''}
+
+        <div class="mt-6 pt-6 border-t">
+          <h4 class="font-semibold mb-3">Tier Escalation Progress</h4>
+          ${escalation ? `
+            <div class="space-y-3">
+              <div class="text-sm text-gray-600">
+                Total donors alerted: <span class="font-semibold text-gray-900">${escalation.total_donors_alerted || 0}</span>
+              </div>
+              ${tiers.map((t, index) => {
+                const notified = t.data?.donors_notified || 0;
+                const isDone = !!t.data?.completed;
+                const progress = isDone ? 100 : (notified > 0 ? 100 : 0);
+                return `
+                <div class="p-4 rounded-xl border ${isDone ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}">
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <p class="font-semibold text-gray-900">${t.name}</p>
+                      <p class="text-xs text-gray-500 mt-0.5">Tier ${index + 1} donor search</p>
+                    </div>
+                    <span class="text-xs px-2 py-1 rounded-full ${isDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                      ${isDone ? 'Completed' : 'In Progress'}
+                    </span>
+                  </div>
+                  <div class="mt-3 h-2 rounded-full bg-gray-200 overflow-hidden">
+                    <div class="h-full rounded-full ${isDone ? 'bg-green-500' : 'bg-yellow-400'}" style="width:${progress}%"></div>
+                  </div>
+                  <p class="text-sm text-gray-600 mt-2">Donors notified: <span class="font-semibold text-gray-900">${notified}</span></p>
+                </div>`;
+              }).join('')}
+            </div>
+          ` : `
+            <p class="text-sm text-gray-500">Escalation details are not available yet.</p>
+          `}
+        </div>
+
+        <div class="mt-6 pt-6 border-t">
+          <h4 class="font-semibold mb-3">Stock Check (Blood Bank + Other Hospitals)</h4>
+          ${escalation ? `
+            ${tiersCompleted ? `
+              <div class="space-y-3">
+                <div class="p-3 rounded-lg border border-blue-200 bg-blue-50">
+                  <p class="text-sm text-blue-700">
+                    Blood bank units found:
+                    <span class="font-semibold">${stockCheck.blood_bank_units || 0}</span>
+                  </p>
+                  <p class="text-xs text-blue-600 mt-1">
+                    ${stockCheck.blood_bank_contact?.contact_phone ? `Contact: ${stockCheck.blood_bank_contact.contact_phone}` : 'Contact: N/A'}
+                    ${stockCheck.blood_bank_contact?.contact_email ? ` · ${stockCheck.blood_bank_contact.contact_email}` : ''}
+                  </p>
+                </div>
+                <div class="p-3 rounded-lg border border-gray-200 bg-gray-50">
+                  <p class="text-sm font-medium mb-2">Other hospitals stock:</p>
+                  ${hospitalStockRows.length ? `
+                    <div class="space-y-2">
+                      ${hospitalStockRows.map(([name, info]) => `
+                        <div class="flex items-center justify-between bg-white border rounded p-2 gap-3">
+                          <div>
+                            <p class="font-medium text-sm">${name}</p>
+                            <p class="text-xs text-gray-500">${info?.district || 'District N/A'}</p>
+                            <p class="text-xs text-gray-500">
+                              ${info?.contact_phone ? `Contact: ${info.contact_phone}` : 'Contact: N/A'}
+                              ${info?.contact_email ? ` · ${info.contact_email}` : ''}
+                            </p>
+                          </div>
+                          <div class="text-sm font-semibold text-red-600">${info?.units || 0} units</div>
+                        </div>
+                      `).join('')}
+                    </div>
+                  ` : `<p class="text-sm text-gray-500">No nearby hospital stock found yet.</p>`}
+                </div>
+              </div>
+            ` : `
+              <p class="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                Stock check starts only after all donor tiers (Tier 1-4) are completed.
+              </p>
+            `}
+          ` : `
+            <p class="text-sm text-gray-500">Stock check details are not available yet.</p>
+          `}
+        </div>
+      </div>
+    `;
+    
+    document.getElementById('requestDetailsModal').classList.remove('hidden');
+  }
+
+  function showStockAlert(bloodType) {
+    const stockItem = stockData.find(item => item.blood_type === bloodType);
+    if (!stockItem) return;
+    
+    const content = document.getElementById('stockAlertContent');
+    const status = getStockStatus(stockItem.units, stockItem.minimum_required);
+    
+    content.innerHTML = `
+      <div class="space-y-4">
+        <div class="flex items-center justify-center mb-4">
+          <div class="text-4xl font-bold ${getStockColorClass(stockItem.units, stockItem.minimum_required)}">
+            ${stockItem.units}
+          </div>
+          <div class="ml-4">
+            <p class="text-2xl font-bold">${stockItem.blood_type}</p>
+            <p class="text-gray-600">Available Units</p>
+          </div>
+        </div>
+        
+        <div class="space-y-3">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Minimum Required:</span>
+            <span class="font-medium">${stockItem.minimum_required} units</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Status:</span>
+            <span class="px-3 py-1 rounded-full text-sm ${getStatusClass(status)}">
+              ${status}
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Last Updated:</span>
+            <span class="font-medium">${new Date(stockItem.last_updated).toLocaleDateString()}</span>
+          </div>
+        </div>
+        
+        <div class="mt-6 pt-6 border-t">
+          <h4 class="font-semibold mb-3">Recommendations</h4>
+          <ul class="space-y-2 text-sm">
+            ${stockItem.units < 5 ? `
+            <li class="flex items-start">
+              <i class="fas fa-exclamation-triangle text-red-500 mt-1 mr-2"></i>
+              <span>CRITICAL: Request emergency supply immediately</span>
+            </li>
+            ` : ''}
+            ${stockItem.units < stockItem.minimum_required ? `
+            <li class="flex items-start">
+              <i class="fas fa-info-circle text-yellow-500 mt-1 mr-2"></i>
+              <span>Schedule blood donation camp for ${stockItem.blood_type}</span>
+            </li>
+            ` : ''}
+            <li class="flex items-start">
+              <i class="fas fa-calendar-alt text-blue-500 mt-1 mr-2"></i>
+              <span>Next scheduled donation: ${getNextDonationDate(stockItem.blood_type)}</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    `;
+    
+    document.getElementById('stockAlertModal').classList.remove('hidden');
+  }
+
+  function closeModal(modalId) {
+    document.getElementById(modalId).classList.add('hidden');
+  }
+
+  function createEmergencyRequest(bloodType) {
+    switchTab('request');
+    document.getElementById('bloodType').value = bloodType;
+    document.getElementById('urgency').value = 'Critical';
+    document.getElementById('units').value = 5;
+    document.getElementById('requestNotes').value = 'EMERGENCY REQUEST: Critical stock levels';
+  }
+
+  function exportStockData() {
+    const dataStr = JSON.stringify(stockData, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `blood-stock-${new Date().toISOString().split('T')[0]}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  }
+
+  function refreshAllData() {
+    loadOverviewData();
+    loadStockData();
+    loadRequests();
+    loadDonors();
+    
+    // Show refresh notification
+    const lastSync = document.getElementById('lastSync');
+    lastSync.textContent = 'Refreshing...';
+    lastSync.className = 'text-xs text-blue-600';
+    
+    setTimeout(() => {
+      lastSync.textContent = 'Last sync: ' + new Date().toLocaleTimeString();
+      lastSync.className = 'text-xs text-gray-500';
+    }, 1000);
+  }
+
+  function contactDonor(donorId) {
+    alert(`Contact functionality for donor ${donorId} would be implemented here`);
+  }
+
+  function updateRecentActivity(activities) {
+    const container = document.getElementById('recentActivity');
+    container.innerHTML = '';
+    
+    if (activities.length === 0) {
+      container.innerHTML = `
+        <div class="text-center py-4 text-gray-500">
+          No recent activity
+        </div>
+      `;
+      return;
+    }
+    
+    activities.forEach(activity => {
+      const icon = getActivityIcon(activity.type);
+      const color = getActivityColor(activity.type);
+      
+      container.innerHTML += `
+        <div class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+          <i class="fas fa-${icon} ${color} mr-3"></i>
+          <div class="flex-1">
+            <p class="text-sm font-medium">${activity.description}</p>
+            <p class="text-xs text-gray-500">${new Date(activity.timestamp).toLocaleString()}</p>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // Helper functions
+  function getStockStatus(units, minimum) {
+    if (units < 5) return 'Critical';
+    if (units < minimum) return 'Low';
+    return 'Adequate';
+  }
+
+  function getStatusClass(status) {
+    switch(status) {
+      case 'Critical': return 'bg-red-100 text-red-800';
+      case 'Expired': return 'bg-red-100 text-red-800';
+      case 'Low': return 'bg-yellow-100 text-yellow-800';
+      case 'Adequate': return 'bg-green-100 text-green-800';
+      case 'Pending': return 'bg-yellow-100 text-yellow-800';
+      case 'Approved': return 'bg-green-100 text-green-800';
+      case 'Rejected': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  }
+
+  function getStockColorClass(units, minimum) {
+    if (units < 5) return 'text-red-600';
+    if (units < minimum) return 'text-yellow-600';
+    return 'text-green-600';
+  }
+
+  function getRequestStatusClass(status) {
+    switch(status.toLowerCase()) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'approved': return 'bg-green-100 text-green-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      case 'completed': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  }
+
+  function getUrgencyClass(urgency) {
+    switch(urgency.toLowerCase()) {
+      case 'critical': return 'bg-red-100 text-red-700';
+      case 'high': return 'bg-orange-100 text-orange-700';
+      case 'normal': return 'bg-blue-100 text-blue-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  }
+
+  function getActivityIcon(type) {
+    switch(type) {
+      case 'request': return 'file-medical';
+      case 'stock_add': return 'plus-circle';
+      case 'stock_remove': return 'minus-circle';
+      case 'donor': return 'user-heart';
+      default: return 'bell';
+    }
+  }
+
+  function getActivityColor(type) {
+    switch(type) {
+      case 'request': return 'text-red-500';
+      case 'stock_add': return 'text-green-500';
+      case 'stock_remove': return 'text-yellow-500';
+      case 'donor': return 'text-blue-500';
+      default: return 'text-gray-500';
+    }
+  }
+
+  function getNextDonationDate(bloodType) {
+    // This would come from the API in a real implementation
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    return nextWeek.toLocaleDateString();
+  }
+  async function loadHospitalProfile() {
+  try {
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/hospital/profile/",
+      { headers: authHeaders() }
+    );
+
+    const data = await response.json();
+
+    // display name
+    const nameDisplay = document.getElementById("profileNameDisplay");
+    if (nameDisplay) nameDisplay.textContent = data.name || "N/A";
+
+    const hospitalId = document.getElementById("profileHospitalIdField");
+    if (hospitalId) hospitalId.value = data.hospital_id || "-";
+
+    const email = document.getElementById("profileEmail");
+    if (email) email.value = data.email || "";
+
+    const phone = document.getElementById("profilePhone");
+    if (phone) phone.value = data.contact_number || "";
+
+    const address = document.getElementById("profileAddress");
+    if (address) address.value = data.address || "";
+
+    const editableName = document.getElementById("profileName");
+    if (editableName) editableName.value = data.name || "";
+
+    document.getElementById("profileRegistrationNumber").textContent =
+      data.registration_number || "-";
+
+    document.getElementById("profileHospitalType").textContent =
+      data.hospital_type || "-";
+
+    document.getElementById("profileBedCapacity").textContent =
+      data.bed_capacity || "-";
+
+    document.getElementById("profileBloodBankType").textContent =
+      data.blood_bank_type || "-";
+
+    document.getElementById("profileYearEstablished").textContent =
+      data.year_established || "-";
+
+    document.getElementById("profileWebsite").textContent =
+      data.website || "-";
+
+    document.getElementById("facilityEmergency").innerHTML =
+      facilityBadge("Emergency Service", data.has_emergency);
+
+    document.getElementById("facilityICU").innerHTML =
+      facilityBadge("ICU", data.has_icu);
+
+    document.getElementById("facilityOT").innerHTML =
+      facilityBadge("Operation Theater", data.has_operation_theater);
+
+    document.getElementById("facilityStorage").innerHTML =
+      facilityBadge("Blood Storage", data.has_blood_storage);
+
+    document.getElementById("facilityTesting").innerHTML =
+      facilityBadge("Blood Testing", data.has_blood_testing);
+
+    document.getElementById("facilityCamp").innerHTML =
+      facilityBadge("Donation Camp Host", data.hosts_donation_camp);
+
+  } catch (err) {
+    console.error("Error loading profile:", err);
+  }
+}
+async function updateHospitalProfile() {
+
+  const body = {
+  name: document.getElementById("profileName").value,
+  email: document.getElementById("profileEmail").value,
+  contact_number: document.getElementById("profilePhone").value,
+  address: document.getElementById("profileAddress").value
+};
+
+  try {
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/hospital/profile/",
+      {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify(body)
+      }
+    );
+
+    if(response.ok){
+      showStatusModal("Profile Updated", "Profile updated successfully.", "success");
+      loadHospitalData();
+    } else {
+      showStatusModal("Update Failed", "Failed to update profile.", "error");
+    }
+
+  } catch(err){
+    console.error(err);
+  }
+
+}
+function facilityBadge(label, enabled){
+  return `
+  <div class="p-4 border rounded-lg flex items-center gap-3">
+    <div class="w-8 h-8 rounded-full flex items-center justify-center
+      ${enabled ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-400"}">
+      <i class="fas ${enabled ? "fa-check" : "fa-times"}"></i>
+    </div>
+    <span class="font-medium">${label}</span>
+  </div>`;
+}
+async function loadHospitalNotifications() {
+
+  try {
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/hospital/notifications/",
+      { headers: authHeaders() }
+    );
+
+    const data = await response.json();
+    const container = document.getElementById("notificationList");
+    const countBadge = document.getElementById("notificationCount");
+    container.innerHTML = "";
+
+    const unreadCount = (data || []).filter(n => !n.is_read).length;
+
+    if(unreadCount > 0){
+        countBadge.textContent = unreadCount;
+        countBadge.classList.remove("hidden");
+    }else{
+        countBadge.classList.add("hidden");
+    }
+
+    if (!data.length) {
+      container.innerHTML = `<div class="p-4 text-sm text-gray-500">No notifications yet</div>`;
+      return;
+    }
+
+    data.forEach(n => {
+      const rowClass = n.is_read ? "bg-white" : "bg-blue-50";
+      const clickTarget = (
+        (n.type === "blood_request_approved" || n.type === "blood_request_failed" || n.type === "system_alert")
+        && n.request_id
+      )
+        ? `onclick="handleHospitalNotificationClick(${n.id}, ${n.request_id}, '${n.type || ""}')"`
+        : `onclick="markHospitalNotificationRead(${n.id})"`;
+
+      container.innerHTML += `
+        <div class="p-3 border-b hover:bg-gray-50 cursor-pointer ${rowClass}" ${clickTarget}>
+          <div class="flex items-start justify-between gap-2">
+            <p class="font-semibold text-sm">${n.title}</p>
+            ${n.is_read ? "" : '<span class="text-[10px] px-2 py-0.5 bg-blue-600 text-white rounded-full">NEW</span>'}
+          </div>
+          <p class="text-xs text-gray-600 mt-1">${n.message}</p>
+          <p class="text-xs text-gray-400 mt-1">
+            ${new Date(n.created_at).toLocaleString()}
+          </p>
+        </div>
+      `;
+    });
+
+  } catch(err){
+    console.error("Notification load error", err);
+  }
+
+}
+async function markHospitalNotificationRead(notificationId) {
+  if (!notificationId) return;
+  try {
+    await fetch(`http://127.0.0.1:8000/api/hospital/notifications/${notificationId}/read/`, {
+      method: "POST",
+      headers: authHeaders()
+    });
+    loadHospitalNotifications();
+  } catch (err) {
+    console.error("Failed to mark notification read", err);
+  }
+}
+async function markAllHospitalNotificationsRead() {
+  try {
+    await fetch("http://127.0.0.1:8000/api/hospital/notifications/mark-all-read/", {
+      method: "POST",
+      headers: authHeaders()
+    });
+    loadHospitalNotifications();
+  } catch (err) {
+    console.error("Failed to mark all notifications read", err);
+  }
+}
+async function handleHospitalNotificationClick(notificationId, requestId, notificationType = "") {
+  await markHospitalNotificationRead(notificationId);
+  if (requestId) {
+    await openDonorMatch(requestId);
+    const box = document.getElementById("notificationBox");
+    box.classList.add("hidden");
+  }
+  const nType = (notificationType || "").toLowerCase();
+  if (nType === "blood_request_failed" || nType === "system_alert") {
+    await showRequestDetails(requestId, { noMatch: true });
+  }
+}
+function toggleNotifications(){
+
+  const box = document.getElementById("notificationBox");
+
+  box.classList.toggle("hidden");
+
+  if(!box.classList.contains("hidden")){
+      loadHospitalNotifications();
+  }
+
+}
+async function openDonorMatch(requestId){
+
+  if(!requestId){
+    console.error("Invalid request ID");
+    return;
+  }
+
+  try{
+
+    const response = await fetch(
+      `http://127.0.0.1:8000/api/hospital/request/${requestId}/donors/`,
+      { headers: authHeaders() }
+    );
+    const escRes = await fetch(
+      `http://127.0.0.1:8000/api/hospital/request/${requestId}/escalation-status/`,
+      { headers: authHeaders() }
+    );
+
+    const data = await response.json();
+    const esc = escRes.ok ? await escRes.json() : null;
+
+    const donors = data.donors || [];
+
+    showMatchedDonors = true;
+
+    switchTab("donors");   // ✅ CORRECT
+
+    updateDonorsList(donors);
+    renderDonorTierStatus(esc, requestId);
+
+    document.getElementById("pageTitle").textContent =
+      `Donors Near Hospital for Request #${requestId}`;
+
+  }catch(err){
+    console.error(err);
+  }
+
+}
+
+function renderDonorTierStatus(esc, requestId) {
+  const box = document.getElementById('donorTierStatus');
+  if (!box) return;
+
+  if (!esc) {
+    box.classList.remove('hidden');
+    box.innerHTML = `
+      <div class="p-3 rounded-lg border border-gray-200 bg-gray-50 text-sm text-gray-600">
+        Tier status not available for request #${requestId}.
+      </div>
+    `;
+    return;
+  }
+
+  const tiers = [
+    { name: 'Tier 1', d: esc.tier_1 },
+    { name: 'Tier 2', d: esc.tier_2 },
+    { name: 'Tier 3', d: esc.tier_3 },
+    { name: 'Tier 4', d: esc.tier_4 },
+  ];
+  const tiersCompleted = tiers.every(t => !!t.d?.completed);
+  const completedCount = tiers.filter(t => !!t.d?.completed).length;
+  const progressPct = tiersCompleted ? 100 : Math.max(10, Math.round((completedCount / 4) * 100));
+  const bankUnits = Number(esc?.stock_check?.blood_bank_units || 0);
+  const hospitalStockMap = esc?.stock_check?.hospital_stock || {};
+  const ownHospitalName = (hospitalData?.name || '').trim().toLowerCase();
+  const hospitalStockRows = Object.entries(hospitalStockMap)
+    .filter(([name]) => (name || '').trim().toLowerCase() !== ownHospitalName);
+  const hospitalsFound = hospitalStockRows.length;
+  const noMatchFound = !!esc?.no_match_found;
+
+  box.classList.remove('hidden');
+  box.innerHTML = `
+    <div class="p-4 rounded-lg border border-blue-200 bg-blue-50">
+      <div class="flex items-center justify-between mb-2">
+        <h4 class="font-semibold text-blue-800">Tier Progress (Request #${requestId})</h4>
+        <span class="text-xs px-2 py-1 rounded ${esc.completed_at ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+          ${esc.completed_at ? 'Completed' : 'In Progress'}
+        </span>
+      </div>
+      <div class="mb-3">
+        <div class="flex items-center justify-between mb-1.5">
+          <p class="text-xs font-medium text-blue-900">Search progress</p>
+          <p class="text-xs text-blue-700">${completedCount}/4 tiers complete</p>
+        </div>
+        <div class="h-2 rounded-full bg-blue-100 overflow-hidden">
+          <div class="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-700 ${tiersCompleted ? '' : 'animate-pulse'}" style="width:${progressPct}%"></div>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+        ${tiers.map(t => `
+          <div class="bg-white border rounded p-2">
+            <p class="text-xs text-gray-500">${t.name}</p>
+            <p class="text-sm font-semibold">${t.d?.donors_notified || 0} donors</p>
+            <p class="text-xs ${t.d?.completed ? 'text-green-600' : 'text-yellow-600'}">${t.d?.completed ? 'done' : 'running'}</p>
+          </div>
+        `).join('')}
+      </div>
+      ${tiersCompleted ? `
+        <div class="mt-3 p-3 rounded-lg border border-blue-100 bg-white">
+          <p class="text-xs text-blue-900">
+            Blood bank units found: <b>${bankUnits}</b> | Other hospitals with stock: <b>${hospitalsFound}</b>
+          </p>
+          <p class="text-xs text-blue-700 mt-1">
+            ${stockCheck?.blood_bank_contact?.contact_phone ? `Central blood bank contact: ${stockCheck.blood_bank_contact.contact_phone}` : 'Central blood bank contact: N/A'}
+            ${stockCheck?.blood_bank_contact?.contact_email ? ` · ${stockCheck.blood_bank_contact.contact_email}` : ''}
+          </p>
+          <div class="mt-2 space-y-2 max-h-44 overflow-y-auto pr-1">
+            ${hospitalStockRows.length ? hospitalStockRows.map(([name, info]) => `
+              <div class="flex items-center justify-between rounded border border-gray-200 bg-gray-50 p-2 gap-3">
+                <div>
+                  <p class="text-xs font-semibold text-gray-800">${name || 'Hospital'}</p>
+                  <p class="text-xs text-gray-500">${info?.district || 'District N/A'}</p>
+                  <p class="text-xs text-gray-500">
+                    ${info?.contact_phone ? `Contact: ${info.contact_phone}` : 'Contact: N/A'}
+                    ${info?.contact_email ? ` · ${info.contact_email}` : ''}
+                  </p>
+                </div>
+                <p class="text-xs font-semibold text-red-600">${info?.units || 0} units</p>
+              </div>
+            `).join('') : `<p class="text-xs text-gray-500">No nearby hospital stock found yet.</p>`}
+          </div>
+        </div>
+      ` : `
+        <div class="mt-3 p-3 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-700">
+          Stock details will appear after Tier 1-4 donor search is completed.
+        </div>
+      `}
+      ${noMatchFound ? `
+        <div class="mt-3 p-3 rounded-lg border border-red-200 bg-red-50 text-sm text-red-700">
+          ${esc?.final_message || "We tried all donor tiers and stock checks, but no donor or stock was found yet."}
+        </div>
+      ` : ``}
+    </div>
+  `;
+
+  if (noMatchFound && !shownNoMatchEscalationModal.has(requestId)) {
+    shownNoMatchEscalationModal.add(requestId);
+  }
+}
+</script>
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-[9999]">
+  <div class="bg-white rounded-xl p-8 flex flex-col items-center gap-4 shadow-xl min-w-[220px]">
+    <div class="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+    <p id="loadingMessage" class="text-gray-700 font-medium text-center">Processing...</p>
+  </div>
+</div>
+</body>
+</html>
