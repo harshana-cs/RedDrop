@@ -4505,7 +4505,12 @@ async function chooseReceiptByBank() {
   closeReceiptChoiceModal();
   if (requestId) await confirmBankFulfillment(requestId);
 }
-
+// function canConfirmReceipt(req) {
+//   const approvedAt = req.approved_at || req.created_at;
+//   if (!approvedAt) return false;
+//   const readyTime = new Date(approvedAt).getTime() + (3 * 60 * 60 * 1000);
+//   return Date.now() >= readyTime;
+// }
 function buildRequestActionCell(req) {
   if (isScheduledFutureRequest(req)) {
     const meta = getScheduledMeta(req);
@@ -4513,14 +4518,31 @@ function buildRequestActionCell(req) {
   }
 
   if (req.status === "approved") {
+    // Uncomment this line when you want the 3-hour delay to work
+    /*
+    const canConfirm = canConfirmReceipt(req);
+    */
+
     if (req.accepted_donor_id) {
       if (req.patient_confirmed) {
         return `<span class="text-blue-600 text-xs font-medium flex items-center"><i class="fas fa-key w-3 h-3 mr-1"></i>OTP generated</span>`;
       }
+      /*
+      if (!canConfirm) {
+        return `<span class="text-gray-500 text-xs font-medium flex items-center"><i class="fas fa-clock w-3 h-3 mr-1"></i>Available after 3 hours</span>`;
+      }
+      */
+
       return `<button onclick="openReceiptChoiceModal(${req.id}, true, ${req.stock_found ? "true" : "false"})" class="text-green-600 hover:text-green-900 text-xs font-medium hover:underline flex items-center"><i class="fas fa-check-circle w-3 h-3 mr-1"></i>Confirm Receipt</button>`;
     }
 
     if (req.stock_found) {
+      /*
+      if (!canConfirm) {
+        return `<span class="text-gray-500 text-xs font-medium flex items-center"><i class="fas fa-clock w-3 h-3 mr-1"></i>Available after 3 hours</span>`;
+      }
+      */
+
       return `<button onclick="openReceiptChoiceModal(${req.id}, false, true)" class="text-cyan-700 hover:text-cyan-900 text-xs font-medium hover:underline flex items-center"><i class="fas fa-check-circle w-3 h-3 mr-1"></i>Confirm Receipt</button>`;
     }
 
@@ -4536,7 +4558,7 @@ function buildRequestActionCell(req) {
     return `<span class="text-green-600 text-xs font-medium flex items-center"><i class="fas fa-check w-3 h-3 mr-1"></i>✓ Received (${sourceLabel})</span>`;
   }
 
-  return `<span class="text-yellow-600 text-xs flex items-center"><i class="fas fa-hourglass-half w-3 h-3 mr-1"></i>Waiting for approval</span>`;
+  return `<span class="text-gray-400 text-xs">—</span>`;
 }
 
 function getDaysAwayFromRequiredDate(requiredDate) {
