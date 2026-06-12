@@ -1,0 +1,24 @@
+# Secrets and environment files
+.env
+.env.*
+Backend/.env
+
+# Uploaded/generated media
+Backend/media/
+
+# Python caches and bytecode
+__pycache__/
+*.py[cod]
+*.pyc.*
+
+# Node dependencies
+node_modules/
+Frontend/node_modules/
+
+# Virtual environments
+.venv/
+venv/
+Backend/venv/
+
+# OS clutter
+.DS_Store
