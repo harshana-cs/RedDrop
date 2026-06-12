@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RedDrop | Digital Blood Bank</title>
+
+  <!-- Tailwind CSS CDN for testing -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Awesome for icons -->
+  <link href="../../dist/output.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-25px); }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+    
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Animation classes */
+    .animate-bounce {
+      animation: bounce 1s infinite;
+    }
+    
+    .animate-pulse-slow {
+      animation: pulse 3s ease-in-out infinite;
+    }
+    
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .animate-fade-in {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+    
+    .animate-slide-in {
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    /* Custom styles */
+    .gradient-text {
+      background: linear-gradient(90deg, #B91C1C, #991B1B);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(185, 28, 28, 0.15);
+    }
+    
+    .blood-drop {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .blood-drop::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: -10px;
+      width: 8px;
+      height: 8px;
+      background-color: #B91C1C;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    /* Donor avatar styling */
+    .donor-avatar {
+      background: linear-gradient(135deg, #B91C1C 0%, #991B1B 100%);
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #FEE2E2;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #B91C1C;
+      border-radius: 10px;
+    }
+
+    /* Blinking badge for urgent requests */
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; background-color: #dc2626; }
+    }
+    .urgent-badge {
+      animation: blink 1.5s ease-in-out infinite;
+    }
+    
+    /* Modal styles */
+    .modal-overlay {
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
+    @keyframes pulse-slow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+/* Chatbot widget */
+.chatbot-panel {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 6.5rem;
+  width: min(92vw, 380px);
+  max-height: 70vh;
+  display: none;
+  flex-direction: column;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 20px 45px rgba(0,0,0,0.2);
+  z-index: 60;
+  background: #fff;
+  border: 1px solid #f0d3d3;
+}
+.chatbot-messages {
+  padding: 0.9rem;
+  overflow-y: auto;
+  background: #fff7f7;
+}
+.chat-msg {
+  border-radius: 0.8rem;
+  padding: 0.55rem 0.7rem;
+  margin-bottom: 0.55rem;
+  line-height: 1.35;
+  font-size: 0.92rem;
+}
+.chat-msg.user { background: #b91c1c; color: #fff; margin-left: 1.3rem; }
+.chat-msg.bot { background: #ffffff; color: #242424; border: 1px solid #f3d0d0; margin-right: 1.3rem; }
+  </style>
+</head>
+
+<body class="bg-[#FFF5F5] text-gray-800 font-sans overflow-x-hidden">
+
+  <!-- Navbar -->
+ <header class="bg-[#B91C1C] text-white fixed top-0 left-0 w-full z-50 shadow-lg backdrop-blur-md bg-opacity-95">
+    <nav class="container mx-auto flex justify-between items-center py-4 px-6">
+     <div class="flex items-center space-x-3 group cursor-pointer">
+  <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-500 border-2 border-white/30">
+    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-inner">
+  <i class="fas fa-tint text-[#B91C1C] text-2xl animate-pulse-slow"></i>
+</div>
+  </div>
+  <a href="index.html" class="ml-2">
+    <h1 class="text-3xl font-bold tracking-wide">
+      Red<span class="font-extrabold text-yellow-300 drop-shadow-lg">Drop</span>
+    </h1>
+    <p class="text-xs text-red-200 mt-0.5 tracking-wider" data-i18n="brand.tagline">SAVE LIVES - DONATE BLOOD</p>
+  </a>
+</div>
+
+      <!-- Desktop Menu -->
+      <div class="hidden md:flex space-x-8 items-center text-lg">
+        <a href="#why" class="hover:text-[#FEE2E2] transition flex items-center space-x-1">
+          <i class="fas fa-heart text-sm"></i>
+          <span data-i18n="nav.why">Why RedDrop</span>
+        </a>
+        <a href="#work" class="hover:text-[#FEE2E2] transition flex items-center space-x-1">
+          <i class="fas fa-handshake text-sm"></i>
+          <span data-i18n="nav.work">Our Work</span>
+        </a>
+        <a href="#about" class="hover:text-[#FEE2E2] transition flex items-center space-x-1">
+          <i class="fas fa-users text-sm"></i>
+          <span data-i18n="nav.about">About Us</span>
+        </a>
+        <a href="#involved" class="hover:text-[#FEE2E2] transition flex items-center space-x-1">
+          <i class="fas fa-hands-helping text-sm"></i>
+          <span data-i18n="nav.involved">Get Involved</span>
+        </a>
+        <a href="#stories" class="hover:text-[#FEE2E2] transition flex items-center space-x-1">
+          <i class="fas fa-book-open text-sm"></i>
+          <span data-i18n="nav.stories">Blood Stories</span>
+        </a>
+        <a href="#donors" class="hover:text-[#FEE2E2] transition flex items-center space-x-1">
+          <i class="fas fa-users text-sm"></i>
+          <span data-i18n="nav.donors">Our Donors</span>
+        </a>
+        <a href="#bloodRequests" class="hover:text-[#FEE2E2] transition flex items-center space-x-1 relative">
+          <i class="fas fa-tint text-sm"></i>
+          <span data-i18n="nav.requests">Blood Requests</span>
+          <span class="absolute -top-1 -right-3 w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></span>
+        </a>
+        <a href="#partner" class="hover:text-[#FEE2E2] transition flex items-center space-x-1">
+          <i class="fas fa-handshake text-sm"></i>
+          <span data-i18n="nav.partner">Become a Partner</span>
+        </a>
+
+          <a href="login-signup.html"
+             class="border border-white px-5 py-2 rounded-full hover:bg-white hover:text-[#B91C1C] transition font-medium flex items-center space-x-2">
+            <i class="fas fa-sign-in-alt"></i>
+            <span data-i18n="nav.login">Login</span>
+          </a>
+
+          <a href="login-signup.html"
+             class="bg-white text-[#B91C1C] px-6 py-2.5 rounded-full hover:bg-gray-100 transition font-medium shadow-lg flex items-center space-x-2">
+            <i class="fas fa-user-plus"></i>
+            <span data-i18n="nav.signup">Sign Up</span>
+          </a>
+          <button id="langToggleDesktop" type="button" class="border border-white/80 px-4 py-2 rounded-full hover:bg-white/10 transition font-medium text-sm">
+            <span data-i18n="nav.language">EN / नेपाली</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button id="menu-toggle" class="md:hidden bg-white/10 p-2 rounded-lg">
+        <i class="fas fa-bars text-xl"></i>
+      </button>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu"
+      class="hidden md:hidden bg-[#991B1B] text-white w-full flex flex-col items-center space-y-4 py-6 px-4 animate-fade-in">
+      <a href="#why" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
+        <i class="fas fa-heart"></i><span data-i18n="nav.why">Why RedDrop</span>
+      </a>
+      <a href="#work" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
+        <i class="fas fa-handshake"></i><span data-i18n="nav.work">Our Work</span>
+      </a>
+      <a href="#about" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
+        <i class="fas fa-users"></i><span data-i18n="nav.about">About Us</span>
+      </a>
+      <a href="#involved" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
+        <i class="fas fa-hands-helping"></i><span data-i18n="nav.involved">Get Involved</span>
+      </a>
+      <a href="#stories" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
+        <i class="fas fa-book-open"></i><span data-i18n="nav.stories">Blood Stories</span>
+      </a>
+      <a href="#donors" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
+        <i class="fas fa-users"></i><span data-i18n="nav.donors">Our Donors</span>
+      </a>
+      <a href="#bloodRequests" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2 relative">
+        <i class="fas fa-tint"></i><span data-i18n="nav.requests">Blood Requests</span>
+      </a>
+      <a href="#partner" class="w-full text-center py-3 hover:bg-[#B91C1C] rounded-lg transition flex items-center justify-center space-x-2">
+        <i class="fas fa-handshake"></i><span data-i18n="nav.partner">Become a Partner</span>
+      </a>
+
+      <div class="flex flex-col space-y-4 w-full px-8 pt-4">
+        <a href="login-signup.html"
+           class="border border-white px-4 py-3 rounded-full hover:bg-white hover:text-[#B91C1C] transition text-center">
+          <i class="fas fa-sign-in-alt mr-2"></i><span data-i18n="nav.login">Login</span>
+        </a>
+        <a href="login-signup.html"
+           class="bg-white text-[#B91C1C] px-4 py-3 rounded-full hover:bg-gray-100 transition text-center font-medium">
+          <i class="fas fa-user-plus mr-2"></i><span data-i18n="nav.signup">Sign Up</span>
+        </a>
+        <button id="langToggleMobile" type="button" class="w-full border border-white/80 px-4 py-3 rounded-full hover:bg-white/10 transition font-medium">
+          <span data-i18n="nav.language">EN / नेपाली</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative min-h-screen flex items-center overflow-hidden">
+    <div class="absolute inset-0 z-0">
+      <div class="absolute top-1/4 left-10 w-72 h-72 bg-[#B91C1C]/10 rounded-full blur-3xl animate-float"></div>
+      <div class="absolute bottom-1/4 right-10 w-96 h-96 bg-[#991B1B]/10 rounded-full blur-3xl animate-float" style="animation-delay: 2s;"></div>
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-r from-[#B91C1C]/40 via-[#B91C1C]/30 to-transparent z-0"></div>
+    <div class="absolute inset-0 bg-cover bg-center z-0" style="background-image: url('https://images.unsplash.com/photo-1603988363659-489cf6a11e4b?auto=format&fit=crop&w=1470&q=80&brightness=0.9')"></div>
+    <div class="relative container mx-auto px-6 mt-16 z-10 animate-fade-in">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center space-x-3 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+          <i class="fas fa-heartbeat text-white"></i>
+          <span class="text-white font-medium" data-i18n="hero.badge">Saving Lives Since 2025</span>
+        </div>
+        <h2 class="text-5xl md:text-7xl font-extrabold text-white drop-shadow-2xl leading-tight"><span data-i18n="hero.title1">Give Blood</span><span class="blood-drop">.</span><br><span class="text-[#FEE2E2]" data-i18n="hero.title2">Save Lives</span></h2>
+        <p class="text-xl md:text-2xl text-white mt-8 mb-10 max-w-2xl opacity-95 leading-relaxed" data-i18n="hero.description">Join Nepal's largest digital blood bank network. Connect donors, recipients, and hospitals efficiently and securely.</p>
+        <div class="flex flex-col sm:flex-row gap-6 mt-12">
+          <a href="login-signup.html" class="bg-white text-[#B91C1C] px-10 py-4 rounded-full text-lg shadow-xl hover:bg-gray-100 transition-all duration-300 font-bold text-center hover:scale-105 transform flex items-center justify-center space-x-3"><i class="fas fa-tint"></i><span data-i18n="hero.donate">Donate Blood</span></a>
+          <a href="login-signup.html" class="bg-[#FEE2E2] text-[#B91C1C] px-10 py-4 rounded-full text-lg hover:bg-white transition-all duration-300 font-bold text-center hover:scale-105 transform flex items-center justify-center space-x-3"><i class="fas fa-hand-holding-medical"></i><span data-i18n="hero.request">Request Blood</span></a>
+        </div>
+        <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div class="text-center"><div class="text-3xl font-bold text-white">10K+</div><div class="text-[#FEE2E2] text-sm" data-i18n="hero.stat1">Donors Registered</div></div>
+          <div class="text-center"><div class="text-3xl font-bold text-white">500+</div><div class="text-[#FEE2E2] text-sm" data-i18n="hero.stat2">Lives Saved</div></div>
+          <div class="text-center"><div class="text-3xl font-bold text-white">50+</div><div class="text-[#FEE2E2] text-sm" data-i18n="hero.stat3">Partner Hospitals</div></div>
+          <div class="text-center"><div class="text-3xl font-bold text-white">24/7</div><div class="text-[#FEE2E2] text-sm" data-i18n="hero.stat4">Emergency Service</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce"><a href="#why" class="text-white text-2xl"><i class="fas fa-chevron-down"></i></a></div>
+  </section>
+
+  <!-- Why RedDrop Section -->
+  <section id="why" class="py-24 container mx-auto px-6">
+    <div class="text-center mb-16">
+      <div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4">
+        <span class="text-[#B91C1C] font-semibold" data-i18n="why.badge">Why Choose Us</span>
+      </div>
+      <h3 class="text-5xl font-bold gradient-text mb-6" data-i18n="why.title">Why RedDrop?</h3>
+      <p class="text-gray-600 text-lg max-w-2xl mx-auto" data-i18n="why.description">We bridge the gap between blood donors and those in need with cutting-edge technology</p>
+    </div>
+  </section>
+
+  <!-- Our Work Section -->
+  <section id="work" class="py-24 bg-[#FFF5F5] container mx-auto px-6">
+    <div class="text-center mb-16">
+      <div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4">
+        <span class="text-[#B91C1C] font-semibold" data-i18n="work.badge">Our Impact</span>
+      </div>
+      <h3 class="text-5xl font-bold gradient-text mb-6" data-i18n="work.title">Our Work</h3>
+      <p class="text-gray-600 text-lg max-w-2xl mx-auto" data-i18n="work.description">How RedDrop transforms blood donation across Nepal using technology</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-10">
+      <div class="bg-white p-8 rounded-3xl shadow-xl card-hover"><i class="fas fa-network-wired text-4xl text-[#B91C1C] mb-5"></i><h4 class="text-2xl font-bold mb-3" data-i18n="work.card1.title">Donor Network</h4><p class="text-gray-600" data-i18n="work.card1.description">We connect verified donors with hospitals and recipients instantly using smart matching.</p></div>
+      <div class="bg-white p-8 rounded-3xl shadow-xl card-hover"><i class="fas fa-clock text-4xl text-[#B91C1C] mb-5"></i><h4 class="text-2xl font-bold mb-3" data-i18n="work.card2.title">Emergency Response</h4><p class="text-gray-600" data-i18n="work.card2.description">Critical blood requests are prioritized and notified in real-time for faster response.</p></div>
+      <div class="bg-white p-8 rounded-3xl shadow-xl card-hover"><i class="fas fa-shield-alt text-4xl text-[#B91C1C] mb-5"></i><h4 class="text-2xl font-bold mb-3" data-i18n="work.card3.title">Safe & Verified</h4><p class="text-gray-600" data-i18n="work.card3.description">Every donor and hospital is verified to ensure safety, trust, and reliability.</p></div>
+    </div>
+  </section>
+  
+  <!-- DONORS SECTION -->
+  <section id="donors" class="py-24 bg-white container mx-auto px-6">
+    <div class="text-center mb-16">
+      <div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4"><span class="text-[#B91C1C] font-semibold" data-i18n="donors.badge">Our Heroes</span></div>
+      <h3 class="text-5xl font-bold gradient-text mb-6" data-i18n="donors.title">Meet Our Donors</h3>
+      <p class="text-gray-600 text-lg max-w-2xl mx-auto" data-i18n="donors.description">These inspiring individuals have pledged to save lives through regular blood donation. Join them in making a difference.</p>
+    </div>
+    <div id="donorListContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="col-span-3 text-center text-gray-500 py-10"><i class="fas fa-spinner fa-pulse text-3xl text-[#B91C1C]"></i><p class="mt-2" data-i18n="donors.loading">Loading our amazing donors...</p></div>
+    </div>
+    <div class="text-center mt-12"><a href="login-signup.html" class="inline-flex items-center bg-[#B91C1C] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#991B1B] transition-all shadow-lg hover:scale-105"><i class="fas fa-tint mr-2"></i><span data-i18n="donors.cta">Become a Donor Today</span></a></div>
+  </section>
+
+  <!-- PARTNER SECTION with Register Camp Button -->
+  <section id="partner" class="py-24 bg-gradient-to-r from-[#FEE2E2] to-white">
+    <div class="container mx-auto px-6">
+      <div class="max-w-4xl mx-auto text-center mb-12">
+        <div class="inline-block bg-[#B91C1C]/10 rounded-full px-4 py-2 mb-4"><span class="text-[#B91C1C] font-semibold" data-i18n="partner.badge">Collaborate With Us</span></div>
+        <h3 class="text-5xl font-bold gradient-text mb-6" data-i18n="partner.title">Become a Partner</h3>
+        <p class="text-gray-600 text-lg max-w-2xl mx-auto" data-i18n="partner.description">Join hands with RedDrop to strengthen Nepal's blood donation ecosystem. Whether you're a hospital, NGO, or corporate, your partnership saves lives.</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="bg-white p-8 rounded-3xl shadow-xl text-center card-hover">
+          <i class="fas fa-hospital text-5xl text-[#B91C1C] mb-5"></i>
+          <h4 class="text-2xl font-bold mb-3" data-i18n="partner.hospital.title">Hospitals</h4>
+          <p class="text-gray-600 mb-4" data-i18n="partner.hospital.description">Access real-time inventory, instant donor matching, and emergency blood requests.</p>
+          <a href="hospital-registration.html" class="inline-block mt-2 text-[#B91C1C] font-semibold hover:underline" data-i18n="partner.hospital.link">Partner Now -></a>
+        </div>
+        <div class="bg-white p-8 rounded-3xl shadow-xl text-center card-hover">
+          <i class="fas fa-building text-5xl text-[#B91C1C] mb-5"></i>
+          <h4 class="text-2xl font-bold mb-3" data-i18n="partner.corporate.title">Corporate</h4>
+          <p class="text-gray-600 mb-4" data-i18n="partner.corporate.description">Organize blood donation camps, engage employees, and earn CSR recognition.</p>
+          <button onclick="openCampRegistrationModal()" class="inline-flex items-center mt-2 bg-[#B91C1C] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#991B1B] transition-all shadow-lg">
+            <i class="fas fa-calendar-plus mr-2"></i><span data-i18n="partner.camp">Register a Camp</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Camp Registration Modal -->
+<div id="campModal" class="fixed inset-0 hidden items-center justify-center z-[1000] modal-overlay">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 animate-slide-in flex flex-col max-h-[90vh]">
+    <div class="bg-[#B91C1C] text-white rounded-t-2xl px-6 py-4 flex justify-between items-center flex-shrink-0">
+      <h3 class="text-2xl font-bold" data-i18n="camp.title">Register Donation Camp</h3>
+      <button onclick="closeCampModal()" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+    </div>
+    <form id="campRegistrationForm" class="overflow-y-auto flex-1 p-6 space-y-4">
+      <div>
+        <label class="block text-gray-700 font-semibold mb-2" data-i18n="camp.field.title">Camp Title *</label>
+        <input type="text" id="campTitle" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+      </div>
+      
+      <div>
+        <label class="block text-gray-700 font-semibold mb-2" data-i18n="camp.field.description">Description</label>
+        <textarea id="campDescription" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]"></textarea>
+      </div>
+      
+      <div>
+        <label class="block text-gray-700 font-semibold mb-2" data-i18n="camp.field.hospital">Hospital/Organization Name *</label>
+        <input type="text" id="campHospital" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+      </div>
+      
+      <div>
+        <label class="block text-gray-700 font-semibold mb-2" data-i18n="camp.field.location">Location *</label>
+        <input type="text" id="campLocation" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-gray-700 font-semibold mb-2" data-i18n="camp.field.date">Date *</label>
+          <input type="date" id="campDate" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+        </div>
+        <div>
+          <label class="block text-gray-700 font-semibold mb-2" data-i18n="camp.field.start">Start Time *</label>
+          <input type="time" id="campStartTime" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-gray-700 font-semibold mb-2" data-i18n="camp.field.end">End Time *</label>
+          <input type="time" id="campEndTime" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+        </div>
+        <div>
+          <label class="block text-gray-700 font-semibold mb-2" data-i18n="camp.field.contact">Contact Number *</label>
+          <input type="text" id="campContact" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold mb-2" data-i18n="camp.field.map">Google Map Link</label>
+        <input type="url" id="campMapLink" placeholder="https://maps.google.com/?q=..." class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+      </div>
+
+      
+      <div id="campFormMessage" class="hidden p-3 rounded-lg text-sm"></div>
+      <div>
+  <label class="block text-gray-700 font-semibold mb-2">
+    <span data-i18n="camp.field.letter">Authorization Letter *</span>
+    <span class="text-xs text-gray-400 font-normal ml-1" data-i18n="camp.field.letterHint">(PDF, JPG, PNG - max 5MB)</span>
+  </label>
+  <input type="file" id="campAuthLetter" accept=".pdf,.jpg,.jpeg,.png"
+    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#B91C1C]">
+  <p class="text-xs text-gray-400 mt-1">
+    <i class="fas fa-info-circle mr-1"></i>
+    <span data-i18n="camp.field.letterHelp">Upload a signed letter on official letterhead confirming you are authorized to organize this camp</span>
+  </p>
+</div>
+<div class="flex items-center">
+        <input type="checkbox" id="campUrgent" class="w-4 h-4 text-[#B91C1C] focus:ring-[#B91C1C]">
+        <label class="ml-2 text-gray-700" data-i18n="camp.field.urgent">Mark as Urgent (requires immediate attention)</label>
+      </div>
+      <div class="flex gap-3 pt-4">
+        <button type="button" onclick="closeCampModal()" class="flex-1 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition" data-i18n="common.cancel">Cancel</button>
+        <button type="submit" class="flex-1 bg-[#B91C1C] text-white px-4 py-2 rounded-lg hover:bg-[#991B1B] transition font-semibold" data-i18n="camp.submit">Submit for Approval</button>
+      </div>
+      
+    </form>
+  </div>
+</div>
+
+  <!-- Blood Requests Section -->
+  <section id="bloodRequests" class="py-24 bg-white">
+    <div class="container mx-auto px-6">
+      <div class="text-center mb-14">
+        <div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4"><span class="text-[#B91C1C] font-semibold flex items-center"><i class="fas fa-exclamation-triangle mr-2 text-red-600"></i><span data-i18n="requests.badge">Emergency</span></span></div>
+        <h3 class="text-5xl font-bold gradient-text mb-4" data-i18n="requests.title">Urgent Blood Requests</h3>
+        <p class="text-gray-600 text-lg max-w-2xl mx-auto" data-i18n="requests.description">These patients urgently need blood. If you are eligible, please help save a life.</p>
+      </div>
+      <div id="bloodRequestContainer" class="grid md:grid-cols-3 gap-8"></div>
+
+<div id="showMoreWrap" class="text-center mt-8 hidden">
+  <button id="showMoreBtn" onclick="showMoreRequests()"
+    class="border border-gray-300 text-gray-600 px-8 py-3 rounded-full hover:bg-gray-50 transition font-medium">
+    <i class="fas fa-chevron-down mr-2"></i><span data-i18n="requests.more">Show more requests</span>
+  </button>
+</div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="py-24 bg-white container mx-auto px-6">
+    <div class="grid md:grid-cols-2 gap-14 items-center">
+      <div>
+        <div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4"><span class="text-[#B91C1C] font-semibold" data-i18n="about.badge">Who We Are</span></div>
+        <h3 class="text-5xl font-bold gradient-text mb-6" data-i18n="about.title">About RedDrop</h3>
+        <p class="text-gray-600 text-lg mb-6 leading-relaxed" data-i18n="about.description1">RedDrop is Nepal's digital blood bank designed to connect donors, recipients, and hospitals in the fastest and safest way possible.</p>
+        <p class="text-gray-600 text-lg leading-relaxed" data-i18n="about.description2">We use technology to eliminate delays, panic, and shortages during medical emergencies.</p>
+      </div>
+      <div class="bg-[#FEE2E2] p-10 rounded-3xl shadow-xl">
+        <ul class="space-y-5 text-lg">
+          <li class="flex items-center"><i class="fas fa-heartbeat text-[#B91C1C] mr-4"></i><span data-i18n="about.point1">Life-saving mission</span></li>
+          <li class="flex items-center"><i class="fas fa-users text-[#B91C1C] mr-4"></i><span data-i18n="about.point2">Community driven</span></li>
+          <li class="flex items-center"><i class="fas fa-laptop-code text-[#B91C1C] mr-4"></i><span data-i18n="about.point3">Technology powered</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Get Involved Section -->
+  <section id="involved" class="py-24 bg-gradient-to-r from-[#B91C1C] to-[#991B1B] text-white">
+    <div class="container mx-auto px-6 text-center"><div class="inline-block bg-white/20 rounded-full px-4 py-2 mb-5"><span class="font-semibold" data-i18n="involved.badge">Be Part of the Change</span></div><h3 class="text-5xl font-bold mb-6" data-i18n="involved.title">Get Involved</h3><p class="text-xl text-white/90 max-w-2xl mx-auto mb-12" data-i18n="involved.description">Donate blood, request help, or spread awareness - every action saves lives.</p><div class="flex flex-col md:flex-row gap-6 justify-center"><a href="login-signup.html" class="bg-white text-[#B91C1C] px-10 py-4 rounded-full font-bold text-lg hover:scale-105 transition flex items-center space-x-3"><i class="fas fa-tint"></i> <span data-i18n="involved.donate">Donate Blood</span></a><a href="login-signup.html" class="border-2 border-white px-10 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-[#B91C1C] transition flex items-center space-x-3"><i class="fas fa-ambulance"></i> <span data-i18n="involved.request">Request Blood</span></a></div></div>
+  </section>
+
+  <!-- Stories Section -->
+  <section id="stories" class="py-24 bg-[#FFF5F5] container mx-auto px-6">
+    <div class="text-center mb-16"><div class="inline-block bg-[#FEE2E2] rounded-full px-4 py-2 mb-4"><span class="text-[#B91C1C] font-semibold" data-i18n="stories.badge">Real Stories</span></div><h3 class="text-5xl font-bold gradient-text mb-6" data-i18n="stories.title">Blood Stories</h3><p class="text-gray-600 text-lg max-w-2xl mx-auto" data-i18n="stories.description">Real lives changed because someone chose to donate.</p></div>
+    <div class="grid md:grid-cols-3 gap-10"><div class="bg-white p-8 rounded-3xl shadow-xl card-hover"><p class="text-gray-600 mb-6" data-i18n="stories.quote1">"A stranger's blood saved my father's life during surgery."</p><span class="font-bold text-[#B91C1C]" data-i18n="stories.city1">- Kathmandu</span></div><div class="bg-white p-8 rounded-3xl shadow-xl card-hover"><p class="text-gray-600 mb-6" data-i18n="stories.quote2">"I donated once and helped save a newborn baby."</p><span class="font-bold text-[#B91C1C]" data-i18n="stories.city2">- Pokhara</span></div><div class="bg-white p-8 rounded-3xl shadow-xl card-hover"><p class="text-gray-600 mb-6" data-i18n="stories.quote3">"Finding blood at night used to be impossible. Not anymore."</p><span class="font-bold text-[#B91C1C]" data-i18n="stories.city3">- Lalitpur</span></div></div>
+  </section>
+
+  <footer class="bg-gradient-to-r from-[#991B1B] to-[#B91C1C] text-white py-12">
+    <div class="container mx-auto px-6">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-8 md:mb-0"><div class="flex items-center space-x-3 mb-4"><div class="w-12 h-12 bg-white rounded-full flex items-center justify-center"><i class="fas fa-tint text-[#B91C1C] text-2xl"></i></div><h2 class="text-3xl font-bold">RedDrop</h2></div><p class="text-white/80 max-w-md" data-i18n="footer.description">Connecting hearts through blood donation.<br>Every drop counts, every donor matters.</p><div class="flex space-x-4 mt-6"><a href="https://www.facebook.com/" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-facebook-f"></i></a><a href="https://twitter.com/" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-twitter"></i></a><a href="https://www.instagram.com/" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-instagram"></i></a><a href="https://www.linkedin.com/company/reddrop" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-[#B91C1C] transition"><i class="fab fa-linkedin-in"></i></a></div></div>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-10"><div><h4 class="font-bold text-lg mb-4" data-i18n="footer.quick">Quick Links</h4><ul class="space-y-2"><li><a href="#why" class="text-white/80 hover:text-white transition" data-i18n="footer.whyDonate">Why Donate</a></li><li><a href="#work" class="text-white/80 hover:text-white transition" data-i18n="footer.impact">Our Impact</a></li><li><a href="#stories" class="text-white/80 hover:text-white transition" data-i18n="footer.stories">Success Stories</a></li></ul></div><div><h4 class="font-bold text-lg mb-4" data-i18n="footer.resources">Resources</h4><ul class="space-y-2"><li><a href="#" onclick="openResourceModal('donor'); return false;" class="text-white/80 hover:text-white transition" data-i18n="footer.donorGuide">Donor Guide</a></li><li><a href="#" onclick="openResourceModal('safety'); return false;" class="text-white/80 hover:text-white transition" data-i18n="footer.bloodSafety">Blood Safety</a></li><li><a href="hospital-login.html" class="text-white/80 hover:text-white transition" data-i18n="footer.hospitalPortal">Hospital Portal</a></li></ul></div><div><h4 class="font-bold text-lg mb-4" data-i18n="footer.contact">Contact</h4><ul class="space-y-2"><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-phone"></i><span>+977-9847373171</span></li><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-envelope"></i><span>rdrop7214@gmail.com</span></li><li class="flex items-center space-x-2 text-white/80"><i class="fas fa-map-marker-alt"></i><span data-i18n="footer.address">Kathmandu, Nepal</span></li></ul></div></div>
+      </div>
+      <div class="border-t border-white/20 mt-10 pt-8 text-center"><p class="text-white/70" data-i18n="footer.copy">&copy; 2025 RedDrop | Digital Blood Bank. All Rights Reserved.</p><p class="text-white/60 text-sm mt-2" data-i18n="footer.made">Made with <i class="fas fa-heart text-red-300"></i> for Nepal</p></div>
+    </div>
+  </footer>
+
+  <a href="#"
+     onclick="toggleChatbot(); return false;"
+     class="fixed bottom-8 right-8 w-16 h-16 bg-[#B91C1C] text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all duration-300 z-50 animate-pulse-slow">
+    <i class="fas fa-tint text-2xl"></i>
+  </a>
+
+  <div id="chatbotPanel" class="chatbot-panel">
+    <div class="bg-[#B91C1C] text-white px-4 py-3 flex items-center justify-between">
+      <div>
+        <p class="font-semibold" data-i18n="chat.title">RedDrop Assistant</p>
+        <p class="text-xs text-red-100" data-i18n="chat.subtitle">Answers only from blood system knowledge sheet</p>
+      </div>
+      <button onclick="toggleChatbot()" class="text-white/90 hover:text-white text-xl leading-none">&times;</button>
+    </div>
+    <div id="chatbotMessages" class="chatbot-messages h-80">
+      <div class="chat-msg bot" data-i18n="chat.welcome">Ask me anything about blood donation, blood requests, eligibility, and process.</div>
+    </div>
+    <div class="p-3 border-t bg-white flex gap-2">
+      <input id="chatbotInput" type="text" placeholder="Type your question..." class="flex-1 border border-red-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-300" data-i18n-placeholder="chat.placeholder" onkeydown="if(event.key==='Enter'){sendChatbotQuestion();}">
+      <button id="chatbotSendBtn" onclick="sendChatbotQuestion()" class="px-4 py-2 bg-[#B91C1C] text-white rounded-lg hover:bg-[#991B1B] text-sm" data-i18n="chat.send">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const toggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('mobile-menu');
+    if(toggle && menu) toggle.addEventListener('click', () => menu.classList.toggle('hidden'));
+    const desktopLangToggle = document.getElementById("langToggleDesktop");
+    const mobileLangToggle = document.getElementById("langToggleMobile");
+    if (desktopLangToggle) desktopLangToggle.addEventListener("click", () => applyLanguage(currentLanguage === "en" ? "ne" : "en"));
+    if (mobileLangToggle) mobileLangToggle.addEventListener("click", () => applyLanguage(currentLanguage === "en" ? "ne" : "en"));
+    
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        if(targetId === '#') return;
+        const targetElement = document.querySelector(targetId);
+        if(targetElement) {
+          window.scrollTo({ top: targetElement.offsetTop - 80, behavior: 'smooth' });
+          if(menu && !menu.classList.contains('hidden')) menu.classList.add('hidden');
+        }
+      });
+    });
+    
+    window.addEventListener('scroll', function() {
+      const header = document.querySelector('header');
+      if (window.scrollY > 50) header.classList.add('shadow-xl');
+      else header.classList.remove('shadow-xl');
+    });
+
+    const TRANSLATIONS = {
+      en: {
+        "page.title": "RedDrop | Digital Blood Bank",
+        "brand.tagline": "SAVE LIVES - DONATE BLOOD",
+        "nav.why": "Why RedDrop",
+        "nav.work": "Our Work",
+        "nav.about": "About Us",
+        "nav.involved": "Get Involved",
+        "nav.stories": "Blood Stories",
+        "nav.donors": "Our Donors",
+        "nav.requests": "Blood Requests",
+        "nav.partner": "Become a Partner",
+        "nav.login": "Login",
+        "nav.signup": "Sign Up",
+        "nav.language": "EN / नेपाली",
+        "hero.badge": "Saving Lives Since 2025",
+        "hero.title1": "Give Blood",
+        "hero.title2": "Save Lives",
+        "hero.description": "Join Nepal's largest digital blood bank network. Connect donors, recipients, and hospitals efficiently and securely.",
+        "hero.donate": "Donate Blood",
+        "hero.request": "Request Blood",
+        "hero.stat1": "Donors Registered",
+        "hero.stat2": "Lives Saved",
+        "hero.stat3": "Partner Hospitals",
+        "hero.stat4": "Emergency Service",
+        "why.badge": "Why Choose Us",
+        "why.title": "Why RedDrop?",
+        "why.description": "We bridge the gap between blood donors and those in need with cutting-edge technology",
+        "work.badge": "Our Impact",
+        "work.title": "Our Work",
+        "work.description": "How RedDrop transforms blood donation across Nepal using technology",
+        "work.card1.title": "Donor Network",
+        "work.card1.description": "We connect verified donors with hospitals and recipients instantly using smart matching.",
+        "work.card2.title": "Emergency Response",
+        "work.card2.description": "Critical blood requests are prioritized and notified in real-time for faster response.",
+        "work.card3.title": "Safe & Verified",
+        "work.card3.description": "Every donor and hospital is verified to ensure safety, trust, and reliability.",
+        "donors.badge": "Our Heroes",
+        "donors.title": "Meet Our Donors",
+        "donors.description": "These inspiring individuals have pledged to save lives through regular blood donation. Join them in making a difference.",
+        "donors.loading": "Loading our amazing donors...",
+        "donors.empty": "No approved donors yet. Be the first to join!",
+        "donors.cta": "Become a Donor Today",
+        "partner.badge": "Collaborate With Us",
+        "partner.title": "Become a Partner",
+        "partner.description": "Join hands with RedDrop to strengthen Nepal's blood donation ecosystem. Whether you're a hospital, NGO, or corporate, your partnership saves lives.",
+        "partner.hospital.title": "Hospitals",
+        "partner.hospital.description": "Access real-time inventory, instant donor matching, and emergency blood requests.",
+        "partner.hospital.link": "Partner Now ->",
+        "partner.corporate.title": "Corporate",
+        "partner.corporate.description": "Organize blood donation camps, engage employees, and earn CSR recognition.",
+        "partner.camp": "Register a Camp",
+        "camp.title": "Register Donation Camp",
+        "camp.field.title": "Camp Title *",
+        "camp.field.description": "Description",
+        "camp.field.hospital": "Hospital/Organization Name *",
+        "camp.field.location": "Location *",
+        "camp.field.date": "Date *",
+        "camp.field.start": "Start Time *",
+        "camp.field.end": "End Time *",
+        "camp.field.contact": "Contact Number *",
+        "camp.field.map": "Google Map Link",
+        "camp.field.letter": "Authorization Letter *",
+        "camp.field.letterHint": "(PDF, JPG, PNG - max 5MB)",
+        "camp.field.letterHelp": "Upload a signed letter on official letterhead confirming you are authorized to organize this camp",
+        "camp.field.urgent": "Mark as Urgent (requires immediate attention)",
+        "camp.submit": "Submit for Approval",
+        "camp.submitting": "Submitting...",
+        "camp.fileRequired": "Please upload the authorization letter.",
+        "camp.fileTooLarge": "File size exceeds 5MB limit.",
+        "camp.submitted": "Camp submitted for approval!",
+        "camp.failed": "Submission failed.",
+        "camp.network": "Network error. Please try again.",
+        "common.cancel": "Cancel",
+        "requests.badge": "Emergency",
+        "requests.title": "Urgent Blood Requests",
+        "requests.description": "These patients urgently need blood. If you are eligible, please help save a life.",
+        "requests.more": "Show more requests",
+        "requests.none": "No urgent requests right now.",
+        "requests.noneRecent": "No requests in the last 2 days.",
+        "requests.loadError": "Unable to load urgent requests.",
+        "about.badge": "Who We Are",
+        "about.title": "About RedDrop",
+        "about.description1": "RedDrop is Nepal's digital blood bank designed to connect donors, recipients, and hospitals in the fastest and safest way possible.",
+        "about.description2": "We use technology to eliminate delays, panic, and shortages during medical emergencies.",
+        "about.point1": "Life-saving mission",
+        "about.point2": "Community driven",
+        "about.point3": "Technology powered",
+        "involved.badge": "Be Part of the Change",
+        "involved.title": "Get Involved",
+        "involved.description": "Donate blood, request help, or spread awareness - every action saves lives.",
+        "involved.donate": "Donate Blood",
+        "involved.request": "Request Blood",
+        "stories.badge": "Real Stories",
+        "stories.title": "Blood Stories",
+        "stories.description": "Real lives changed because someone chose to donate.",
+        "stories.quote1": "\"A stranger's blood saved my father's life during surgery.\"",
+        "stories.quote2": "\"I donated once and helped save a newborn baby.\"",
+        "stories.quote3": "\"Finding blood at night used to be impossible. Not anymore.\"",
+        "stories.city1": "- Kathmandu",
+        "stories.city2": "- Pokhara",
+        "stories.city3": "- Lalitpur",
+        "footer.description": "Connecting hearts through blood donation. Every drop counts, every donor matters.",
+        "footer.quick": "Quick Links",
+        "footer.whyDonate": "Why Donate",
+        "footer.impact": "Our Impact",
+        "footer.stories": "Success Stories",
+        "footer.resources": "Resources",
+        "footer.donorGuide": "Donor Guide",
+        "footer.bloodSafety": "Blood Safety",
+        "footer.hospitalPortal": "Hospital Portal",
+        "footer.contact": "Contact",
+        "footer.address": "Kathmandu, Nepal",
+        "footer.copy": "2025 RedDrop | Digital Blood Bank. All Rights Reserved.",
+        "footer.made": "Made with heart for Nepal",
+        "chat.title": "RedDrop Assistant",
+        "chat.subtitle": "Answers only from blood system knowledge sheet",
+        "chat.welcome": "Ask me anything about blood donation, blood requests, eligibility, and process.",
+        "chat.placeholder": "Type your question...",
+        "chat.send": "Send",
+        "donor.card.bloodType": "Blood Type",
+        "donor.card.donations": "Donations",
+        "donor.card.hero": "Hero",
+        "donor.card.donor": "Donor",
+        "donor.card.anonymous": "Anonymous Donor",
+        "donor.card.location": "Location not specified",
+        "donor.card.notSpecified": "Not specified",
+        "donor.card.loading": "Loading our amazing donors...",
+        "donor.card.empty": "No approved donors yet. Be the first to join!",
+        "request.units": "Units Needed:",
+        "request.hospital": "Hospital:",
+        "request.urgency": "Urgency:",
+        "request.donateNow": "Donate Now",
+        "request.justNow": "Just now",
+        "request.hoursAgo": "h ago",
+        "request.daysAgo": "d ago",
+        "resource.donor.title": "Donor Guide",
+        "resource.safety.title": "Blood Safety",
+        "resource.close": "Close",
+        "admin.title": "Admin Access",
+        "admin.prompt": "Enter Secret Key to Continue",
+        "admin.placeholder": "Enter Secret Key",
+        "admin.cancel": "Cancel",
+        "admin.enter": "Enter",
+        "admin.invalid": "Invalid Secret Key",
+        "chat.sending": "Sending...",
+        "chat.noAnswer": "No answer found.",
+        "chat.serviceError": "Could not connect to chatbot service. Please try again."
+      },
+      ne: {
+        "page.title": "रेडड्रप | डिजिटल ब्लड बैंक",
+        "brand.tagline": "ज्यान बचाऔं - रगत दान गरौं",
+        "nav.why": "रेडड्रप किन",
+        "nav.work": "हाम्रो काम",
+        "nav.about": "हाम्रो बारेमा",
+        "nav.involved": "सामेल हुनुहोस्",
+        "nav.stories": "रक्त कथाहरू",
+        "nav.donors": "हाम्रा दाता",
+        "nav.requests": "रक्त अनुरोध",
+        "nav.partner": "साझेदार बन्नुहोस्",
+        "nav.login": "लग इन",
+        "nav.signup": "साइन अप",
+        "nav.language": "EN / नेपाली",
+        "hero.badge": "2025 देखि ज्यान बचाउँदै",
+        "hero.title1": "रगत दान गर्नुहोस्",
+        "hero.title2": "ज्यान बचाउनुहोस्",
+        "hero.description": "नेपालको सबैभन्दा ठूलो डिजिटल रक्त बैंक नेटवर्कमा सामेल हुनुहोस्। दाता, बिरामी, र अस्पतालहरूलाई छिटो र सुरक्षित रूपमा जोड्नुहोस्।",
+        "hero.donate": "रगत दान गर्नुहोस्",
+        "hero.request": "रक्त अनुरोध गर्नुहोस्",
+        "hero.stat1": "दर्ता भएका दाता",
+        "hero.stat2": "बचाइएका जीवन",
+        "hero.stat3": "साझेदार अस्पताल",
+        "hero.stat4": "आपतकालीन सेवा",
+        "why.badge": "हामीलाई किन छान्ने",
+        "why.title": "रेडड्रप किन?",
+        "why.description": "हामी आधुनिक प्रविधि प्रयोग गरेर रगत दाता र आवश्यक पर्ने व्यक्तिबीचको दूरी घटाउँछौं।",
+        "work.badge": "हाम्रो प्रभाव",
+        "work.title": "हाम्रो काम",
+        "work.description": "रेडड्रपले प्रविधिको प्रयोग गरेर नेपालभर रक्तदानलाई कसरी रूपान्तरण गर्छ।",
+        "work.card1.title": "दाता नेटवर्क",
+        "work.card1.description": "हामी प्रमाणित दाता, अस्पताल, र बिरामीलाई स्मार्ट म्याचिङमार्फत तुरुन्त जोड्छौं।",
+        "work.card2.title": "आपतकालीन प्रतिक्रिया",
+        "work.card2.description": "गम्भीर रक्त अनुरोधलाई प्राथमिकता दिइन्छ र छिटो प्रतिक्रिया लागि तुरुन्त सूचना पठाइन्छ।",
+        "work.card3.title": "सुरक्षित र प्रमाणित",
+        "work.card3.description": "प्रत्येक दाता र अस्पतालको प्रमाणीकरण गरेर सुरक्षा, विश्वास, र भरपर्दोपन सुनिश्चित गरिन्छ।",
+        "donors.badge": "हाम्रा नायक",
+        "donors.title": "हाम्रा दाता भेट्नुहोस्",
+        "donors.description": "यी प्रेरणादायी व्यक्तिहरूले नियमित रक्तदान गरेर जीवन बचाउने प्रतिबद्धता जनाएका छन्। तपाईं पनि साथ दिनुहोस्।",
+        "donors.loading": "हाम्रा अद्भुत दाताहरू लोड हुँदैछन्...",
+        "donors.empty": "अहिलेसम्म अनुमोदित दाता छैनन्। पहिलो बन्नुहोस्!",
+        "donors.cta": "आजै दाता बन्नुहोस्",
+        "partner.badge": "हाम्रोसँग सहकार्य गर्नुहोस्",
+        "partner.title": "साझेदार बन्नुहोस्",
+        "partner.description": "नेपालको रक्तदान प्रणाली बलियो बनाउन रेडड्रपसँग हातेमालो गर्नुहोस्। अस्पताल, एनजीओ, वा संस्था जे भए पनि, तपाईंको सहकार्यले जीवन बचाउँछ।",
+        "partner.hospital.title": "अस्पतालहरू",
+        "partner.hospital.description": "रियल-टाइम सूची, तुरुन्त दाता मिलान, र आपतकालीन रक्त अनुरोधमा पहुँच पाउनुहोस्।",
+        "partner.hospital.link": "अहिले साझेदार बन्नुहोस् ->",
+        "partner.corporate.title": "कर्पोरेट",
+        "partner.corporate.description": "रक्तदान शिविर आयोजना गर्नुहोस्, कर्मचारीलाई संलग्न गराउनुहोस्, र CSR मान्यता प्राप्त गर्नुहोस्।",
+        "partner.camp": "शिविर दर्ता गर्नुहोस्",
+        "camp.title": "रक्तदान शिविर दर्ता गर्नुहोस्",
+        "camp.field.title": "शिविर शीर्षक *",
+        "camp.field.description": "विवरण",
+        "camp.field.hospital": "अस्पताल/संस्थाको नाम *",
+        "camp.field.location": "स्थान *",
+        "camp.field.date": "मिति *",
+        "camp.field.start": "सुरु समय *",
+        "camp.field.end": "समाप्ति समय *",
+        "camp.field.contact": "सम्पर्क नम्बर *",
+        "camp.field.map": "गुगल म्याप लिङ्क",
+        "camp.field.letter": "अनुमतिपत्र *",
+        "camp.field.letterHint": "(PDF, JPG, PNG - अधिकतम 5MB)",
+        "camp.field.letterHelp": "यो शिविर आयोजना गर्न तपाईं अधिकृत हुनुहुन्छ भनेर पुष्टि गर्ने आधिकारिक लेटरहेडमा हस्ताक्षर गरिएको पत्र अपलोड गर्नुहोस्",
+        "camp.field.urgent": "अत्यावश्यकको रूपमा चिन्ह लगाउनुहोस् (तुरुन्त ध्यान आवश्यक)",
+        "camp.submit": "स्वीकृतिका लागि पेश गर्नुहोस्",
+        "camp.submitting": "पेश गर्दै...",
+        "camp.fileRequired": "कृपया अनुमतिपत्र अपलोड गर्नुहोस्।",
+        "camp.fileTooLarge": "फाइलको आकार 5MB भन्दा ठूलो छ।",
+        "camp.submitted": "शिविर स्वीकृतिका लागि पेश गरियो!",
+        "camp.failed": "पेश गर्न असफल भयो।",
+        "camp.network": "नेटवर्क त्रुटि। कृपया फेरि प्रयास गर्नुहोस्।",
+        "common.cancel": "रद्द गर्नुहोस्",
+        "requests.badge": "आपतकाल",
+        "requests.title": "अत्यावश्यक रक्त अनुरोध",
+        "requests.description": "यी बिरामीहरूलाई तुरुन्त रगत आवश्यक छ। यदि तपाईं योग्य हुनुहुन्छ भने, कृपया जीवन बचाउन मद्दत गर्नुहोस्।",
+        "requests.more": "थप अनुरोधहरू देखाउनुहोस्",
+        "requests.none": "अहिले कुनै अत्यावश्यक अनुरोध छैन।",
+        "requests.noneRecent": "अन्तिम 2 दिनभित्र कुनै अनुरोध छैन।",
+        "requests.loadError": "अत्यावश्यक अनुरोधहरू लोड गर्न सकिएन।",
+        "about.badge": "हामी को हौं",
+        "about.title": "रेडड्रप बारे",
+        "about.description1": "रेडड्रप नेपालको डिजिटल ब्लड बैंक हो, जसले दाता, बिरामी, र अस्पताललाई सबैभन्दा छिटो र सुरक्षित तरिकाले जोड्छ।",
+        "about.description2": "हामी प्रविधिको प्रयोग गरेर ढिलाइ, त्रास, र अभावलाई हटाउँछौं।",
+        "about.point1": "जीवन बचाउने लक्ष्य",
+        "about.point2": "समुदाय-केन्द्रित",
+        "about.point3": "प्रविधिबाट सशक्त",
+        "involved.badge": "परिवर्तनको हिस्सा बन्नुहोस्",
+        "involved.title": "सामेल हुनुहोस्",
+        "involved.description": "रगत दान गर्नुहोस्, सहयोग माग्नुहोस्, वा जागरूकता फैलाउनुहोस् - हरेक कदमले जीवन बचाउँछ।",
+        "involved.donate": "रगत दान गर्नुहोस्",
+        "involved.request": "रक्त अनुरोध गर्नुहोस्",
+        "stories.badge": "वास्तविक कथाहरू",
+        "stories.title": "रक्त कथाहरू",
+        "stories.description": "कसैले दान गर्ने निर्णय गर्दा कति जीवन परिवर्तन हुन्छन् भन्ने वास्तविक कथाहरू।",
+        "stories.quote1": "\"एक अपरिचितको रगतले शल्यक्रियाका बेला मेरा बुवाको जीवन बचायो।\"",
+        "stories.quote2": "\"मैले एकपटक दान गरेँ र एक नवजात शिशुको जीवन बचाउन मद्दत गरें।\"",
+        "stories.quote3": "\"राति रगत पाउन असम्भव जस्तै थियो। अब त्यस्तो छैन।\"",
+        "stories.city1": "- काठमाडौं",
+        "stories.city2": "- पोखरा",
+        "stories.city3": "- ललितपुर",
+        "footer.description": "रक्तदानमार्फत मुटुहरू जोड्दै। हरेक थोपा महत्वपूर्ण छ, हरेक दाता मूल्यवान छ।",
+        "footer.quick": "द्रुत लिङ्क",
+        "footer.whyDonate": "किन दान गर्ने",
+        "footer.impact": "हाम्रो प्रभाव",
+        "footer.stories": "सफलताको कथाहरू",
+        "footer.resources": "स्रोतहरू",
+        "footer.donorGuide": "दाता मार्गदर्शन",
+        "footer.bloodSafety": "रगत सुरक्षा",
+        "footer.hospitalPortal": "अस्पताल पोर्टल",
+        "footer.contact": "सम्पर्क",
+        "footer.address": "काठमाडौं, नेपाल",
+        "footer.copy": "2025 रेडड्रप | डिजिटल ब्लड बैंक। सबै अधिकार सुरक्षित।",
+        "footer.made": "नेपालका लागि माया सहित बनाइएको",
+        "chat.title": "रेडड्रप सहायक",
+        "chat.subtitle": "रक्त प्रणाली ज्ञानशीटबाट मात्र उत्तर दिन्छ",
+        "chat.welcome": "रक्तदान, रक्त अनुरोध, योग्यता, र प्रक्रियाबारे जे पनि सोध्न सक्नुहुन्छ।",
+        "chat.placeholder": "आफ्नो प्रश्न टाइप गर्नुहोस्...",
+        "chat.send": "पठाउनुहोस्",
+        "donor.card.bloodType": "रगत समूह",
+        "donor.card.donations": "दान",
+        "donor.card.hero": "नायक",
+        "donor.card.donor": "दाता",
+        "donor.card.anonymous": "अज्ञात दाता",
+        "donor.card.location": "स्थान उल्लेख छैन",
+        "donor.card.notSpecified": "उल्लेख छैन",
+        "donor.card.loading": "हाम्रा अद्भुत दाताहरू लोड हुँदैछन्...",
+        "donor.card.empty": "अहिलेसम्म अनुमोदित दाता छैनन्। पहिलो बन्नुहोस्!",
+        "request.units": "आवश्यक युनिट:",
+        "request.hospital": "अस्पताल:",
+        "request.urgency": "अत्यावश्यकता:",
+        "request.donateNow": "अहिले दान गर्नुहोस्",
+        "request.justNow": "अहिले नै",
+        "request.hoursAgo": "घण्टा अघि",
+        "request.daysAgo": "दिन अघि",
+        "resource.donor.title": "दाता मार्गदर्शन",
+        "resource.safety.title": "रगत सुरक्षा",
+        "resource.close": "बन्द गर्नुहोस्",
+        "admin.title": "प्रशासक पहुँच",
+        "admin.prompt": "जारी राख्न गोप्य कुञ्जी प्रविष्ट गर्नुहोस्",
+        "admin.placeholder": "गोप्य कुञ्जी प्रविष्ट गर्नुहोस्",
+        "admin.cancel": "रद्द गर्नुहोस्",
+        "admin.enter": "प्रवेश",
+        "admin.invalid": "अमान्य गोप्य कुञ्जी",
+        "chat.sending": "पठाउँदै...",
+        "chat.noAnswer": "कुनै उत्तर भेटिएन।",
+        "chat.serviceError": "च्याटबोट सेवासँग जडान गर्न सकिएन। कृपया फेरि प्रयास गर्नुहोस्।",
+        "donor.status.active": "सक्रिय दाता",
+        "donor.status.month": "यस महिना रक्तदान गरेको",
+        "donor.status.regular": "नियमित दाता",
+        "donor.status.lifetime": "आजीवन सदस्य",
+        "donor.status.hero": "नायक दाता",
+
+        "request.donateNow": "अहिले रक्तदान गर्नुहोस्",
+        "request.justNow": "भर्खरै",
+        "request.hoursAgo": "घण्टा अघि",
+        "request.daysAgo": "दिन अघि",
+
+        "footer.quick": "द्रुत लिङ्कहरू",
+        "footer.resources": "स्रोतहरू",
+        "footer.contact": "सम्पर्क",
+
+        "chat.placeholder": "आफ्नो प्रश्न टाइप गर्नुहोस्...",
+        "chat.send": "पठाउनुहोस्",
+
+        "camp.field.map": "गुगल म्याप लिङ्क",
+        "camp.field.letter": "अनुमतिपत्र *",
+        "camp.field.letterHint": "(PDF, JPG, PNG - अधिकतम 5MB)",
+        "camp.field.urgent": "अत्यावश्यकको रूपमा चिन्ह लगाउनुहोस् (तुरुन्त ध्यान आवश्यक)",
+
+        "stories.city1": "- काठमाडौं",
+        "stories.city2": "- पोखरा",
+        "stories.city3": "- ललितपुर",
+
+        "about.point1": "जीवन बचाउने लक्ष्य",
+        "about.point2": "समुदाय-केन्द्रित",
+        "about.point3": "प्रविधिद्वारा सञ्चालित",
+
+        "why.badge": "हामीलाई किन छान्ने",
+        "work.badge": "हाम्रो प्रभाव",
+        "about.badge": "हामी को हौं",
+
+        "resource.close": "बन्द गर्नुहोस्",
+        "common.cancel": "रद्द गर्नुहोस्",
+
+        "donor.card.location": "स्थान उल्लेख गरिएको छैन",
+        "donor.card.notSpecified": "उल्लेख गरिएको छैन",
+        "donor.card.anonymous": "अज्ञात दाता",
+        "why.badge": "हामीलाई किन छान्ने",
+"why.title": "रेडड्रप किन?",
+"why.description": "हामी आधुनिक प्रविधिको प्रयोग गरेर रक्तदाता र आवश्यक परेकाहरूबीचको दूरी कम गर्छौं।",
+
+"work.badge": "हाम्रो प्रभाव",
+"work.title": "हाम्रो काम",
+"work.description": "रेडड्रपले प्रविधिको प्रयोगमार्फत नेपालभर रक्तदानलाई कसरी रूपान्तरण गर्छ।",
+
+"work.card1.title": "दाता सञ्जाल",
+"work.card1.description": "हामी प्रमाणित रक्तदाता, अस्पताल र बिरामीलाई स्मार्ट मिलान प्रणालीमार्फत तुरुन्त जोड्छौं।",
+
+"work.card2.title": "आपतकालीन प्रतिक्रिया",
+"work.card2.description": "अत्यावश्यक रक्त अनुरोधलाई प्राथमिकता दिई छिटो प्रतिक्रिया दिन रियल-टाइम सूचना पठाइन्छ।",
+
+"work.card3.title": "सुरक्षित र प्रमाणित",
+"work.card3.description": "हरेक रक्तदाता र अस्पताललाई प्रमाणीकरण गरी सुरक्षा, विश्वास र भरपर्दोपन सुनिश्चित गरिन्छ।"
+      }
+    };
+
+    let currentLanguage = localStorage.getItem("reddrop-language") || "en";
+    let languageBootstrapped = false;
+
+    function t(key) {
+      return (TRANSLATIONS[currentLanguage] && TRANSLATIONS[currentLanguage][key]) || TRANSLATIONS.en[key] || key;
+    }
+
+    function applyLanguage(lang) {
+      currentLanguage = TRANSLATIONS[lang] ? lang : "en";
+      localStorage.setItem("reddrop-language", currentLanguage);
+      document.documentElement.lang = currentLanguage;
+      document.title = t("page.title");
+
+      document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const key = el.dataset.i18n;
+        const value = t(key);
+        if (el.dataset.i18nHtml === "true") el.innerHTML = value;
+        else el.textContent = value;
+      });
+
+      document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+        el.placeholder = t(el.dataset.i18nPlaceholder);
+      });
+
+      const desktopToggle = document.getElementById("langToggleDesktop");
+      const mobileToggle = document.getElementById("langToggleMobile");
+      const label = currentLanguage === "en" ? "EN / नेपाली" : "नेपाली / EN";
+      if (desktopToggle) desktopToggle.querySelector("span").textContent = label;
+      if (mobileToggle) mobileToggle.querySelector("span").textContent = label;
+
+      if (languageBootstrapped) {
+        if (typeof renderDonors === "function") renderDonors();
+        if (typeof loadBloodRequests === "function") loadBloodRequests();
+      }
+    }
+
+    applyLanguage(currentLanguage);
+
+    // Function to fetch donors from API
+    async function fetchDonorsFromAPI() {
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/donor/approved-donors-basic/");
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error("Failed to fetch donors:", error);
+            return [];
+        }
+    }
+
+    // Function to render donors
+    async function renderDonors() {
+        const container = document.getElementById("donorListContainer");
+        if (!container) return;
+        
+        container.innerHTML = `<div class="col-span-3 text-center text-gray-500 py-10"><i class="fas fa-spinner fa-pulse text-3xl text-[#B91C1C]"></i><p class="mt-2">${t("donor.card.loading")}</p></div>`;
+        
+        const donors = await fetchDonorsFromAPI();
+        
+        if (!donors.length) {
+            container.innerHTML = `<div class="col-span-3 text-center text-gray-500 py-10"><i class="fas fa-users-slash text-4xl text-[#B91C1C] opacity-50"></i><p class="mt-2">${t("donor.card.empty")}</p></div>`;
+            return;
+        }
+        
+        container.innerHTML = "";
+        
+        donors.forEach((donor, index) => {
+            const initials = donor.name ? donor.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : "??";
+            const donationCount = Math.floor(Math.random() * 15) + 1;
+            const dates = [
+  t("donor.status.active"),
+  t("donor.status.month"),
+  t("donor.status.regular"),
+  t("donor.status.lifetime"),
+  t("donor.status.hero")
+];
+            const randomDate = dates[Math.floor(Math.random() * dates.length)];
+            
+            const card = document.createElement("div");
+            card.className = "bg-[#FFF5F5] rounded-2xl p-6 shadow-lg border border-[#FEE2E2] transition-all hover:shadow-xl hover:-translate-y-1 animate-fade-in";
+            card.style.animationDelay = `${index * 0.1}s`;
+            
+            card.innerHTML = `
+                <div class="flex items-center space-x-4 mb-4">
+                    <div class="w-16 h-16 donor-avatar rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md">${initials}</div>
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-800">${escapeHtml(donor.name || "Anonymous Donor")}</h4>
+                        <div class="flex items-center space-x-2 text-sm text-gray-500">
+                            <i class="fas fa-map-marker-alt text-[#B91C1C]"></i>
+                            <span>${escapeHtml(donor.city || donor.address || "Location not specified")}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-white rounded-xl p-2 text-center shadow-sm">
+                        <span class="text-xs text-gray-500">${t("donor.card.bloodType")}</span>
+                        <p class="font-bold text-lg text-[#B91C1C]">${donor.blood_type || t("donor.card.notSpecified")}</p>
+                    </div>
+                    <div class="bg-white rounded-xl p-2 text-center shadow-sm">
+                        <span class="text-xs text-gray-500">${t("donor.card.donations")}</span>
+                        <p class="font-bold text-lg text-gray-700">${donationCount}</p>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t border-[#FEE2E2]">
+                    <span class="text-xs text-gray-400"><i class="far fa-calendar-alt mr-1"></i>${randomDate}</span>
+                    <span class="bg-[#FEE2E2] text-[#B91C1C] text-xs px-3 py-1 rounded-full font-semibold">${donationCount > 10 ? t("donor.card.hero") : t("donor.card.donor")}</span>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function escapeHtml(text) {
+        if (!text) return "";
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Camp Registration Functions
+    function openCampRegistrationModal() {
+        document.getElementById('campModal').classList.remove('hidden');
+        document.getElementById('campModal').style.display = 'flex';
+    }
+
+    function closeCampModal() {
+        document.getElementById('campModal').classList.add('hidden');
+        document.getElementById('campModal').style.display = 'none';
+        document.getElementById('campRegistrationForm').reset();
+        document.getElementById('campFormMessage').classList.add('hidden');
+    }
+
+    // Submit camp registration
+    document.getElementById('campRegistrationForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const messageDiv = document.getElementById('campFormMessage');
+    const submitBtn  = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+
+    // ── Validate file ───────────────────────────────────────
+    const authFile = document.getElementById('campAuthLetter').files[0];
+    if (!authFile) {
+        messageDiv.className = 'p-3 rounded-lg text-sm bg-red-100 text-red-700';
+        messageDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>' + t("camp.fileRequired");
+        messageDiv.classList.remove('hidden');
+        return;
+    }
+    if (authFile.size > 5 * 1024 * 1024) {
+        messageDiv.className = 'p-3 rounded-lg text-sm bg-red-100 text-red-700';
+        messageDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>' + t("camp.fileTooLarge");
+        messageDiv.classList.remove('hidden');
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> ' + t("camp.submitting");
+
+    // ── Build FormData (supports file upload) ───────────────
+    const formData = new FormData();
+    formData.append('title',                document.getElementById('campTitle').value);
+    formData.append('description',          document.getElementById('campDescription').value);
+    formData.append('hospital_name',        document.getElementById('campHospital').value);
+    formData.append('location',             document.getElementById('campLocation').value);
+    formData.append('date',                 document.getElementById('campDate').value);
+    formData.append('start_time',           document.getElementById('campStartTime').value);
+    formData.append('end_time',             document.getElementById('campEndTime').value);
+    formData.append('is_urgent',            document.getElementById('campUrgent').checked);
+    formData.append('contact_number',       document.getElementById('campContact').value);
+    formData.append('map_link',             document.getElementById('campMapLink').value);
+    formData.append('authorization_letter', authFile);
+
+    try {
+        const response = await fetch('http://127.0.0.1:8000/api/admin/partner/create-camp/', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            messageDiv.className = 'p-3 rounded-lg text-sm bg-green-100 text-green-700';
+            messageDiv.innerHTML = '<i class="fas fa-check-circle mr-2"></i>' + t("camp.submitted");
+            messageDiv.classList.remove('hidden');
+            setTimeout(() => closeCampModal(), 2000);
+        } else {
+            messageDiv.className = 'p-3 rounded-lg text-sm bg-red-100 text-red-700';
+            messageDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>' + (data.message || t("camp.failed"));
+            messageDiv.classList.remove('hidden');
+        }
+    } catch (error) {
+        messageDiv.className = 'p-3 rounded-lg text-sm bg-red-100 text-red-700';
+        messageDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>' + t("camp.network");
+        messageDiv.classList.remove('hidden');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    }
+});
+
+    const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+let _olderRequests = [];
+
+function timeAgo(iso) {
+  if (!iso) return "";
+  const h = Math.floor((Date.now() - new Date(iso).getTime()) / 3600000);
+  if (h < 1) return t("request.justNow");
+  if (h < 24) return h + " " + t("request.hoursAgo");
+  return Math.floor(h / 24) + " " + t("request.daysAgo");
+}
+
+function buildRequestCard(req) {
+  const urgencyClass = req.urgency === "Critical" ? "urgent-badge" : "";
+  return `
+    <div class="bg-[#FFF5F5] rounded-3xl p-6 shadow-lg border-l-4 border-[#B91C1C]">
+      <div class="flex justify-between items-center mb-3">
+        <h4 class="text-xl font-bold text-gray-800">${req.patient_name}</h4>
+        <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm ${urgencyClass}">${req.blood_type}</span>
+      </div>
+      <p class="text-gray-600 mb-1"><strong>${t("request.units")}</strong> ${req.units}</p>
+      <p class="text-gray-600 mb-1"><strong>${t("request.hospital")}</strong> ${req.hospital_name}</p>
+      <p class="text-gray-600 mb-1"><strong>${t("request.urgency")}</strong> ${req.urgency}</p>
+      ${req.created_at ? `<p class="text-gray-400 text-sm mb-3">${timeAgo(req.created_at)}</p>` : "<div class='mb-3'></div>"}
+      <a href="login-signup.html"
+         class="block text-center bg-[#B91C1C] text-white py-2 rounded-lg hover:bg-[#991B1B] transition">
+        ${t("request.donateNow")}
+      </a>
+    </div>`;
+}
+
+async function loadBloodRequests() {
+  const container = document.getElementById("bloodRequestContainer");
+  const moreWrap  = document.getElementById("showMoreWrap");
+  if (!container) return;
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/blood_requests/api/public-requests/");
+    const data = await response.json();
+
+    if (!data.length) {
+      container.innerHTML = `<p class='text-center col-span-3 text-gray-500'>${t("requests.none")}</p>`;
+      return;
+    }
+
+    const now = Date.now();
+    const recent = data.filter(r => !r.created_at || (now - new Date(r.created_at).getTime()) <= TWO_DAYS_MS);
+    _olderRequests = data.filter(r => r.created_at  && (now - new Date(r.created_at).getTime()) >  TWO_DAYS_MS);
+
+    container.innerHTML = recent.length
+      ? recent.map(buildRequestCard).join("")
+      : `<p class='text-center col-span-3 text-gray-500'>${t("requests.noneRecent")}</p>`;
+
+    if (moreWrap) moreWrap.classList.toggle("hidden", _olderRequests.length === 0);
+
+  } catch (error) {
+    console.error("Failed to load requests", error);
+    container.innerHTML = `<p class='text-center col-span-3 text-gray-500'>${t("requests.loadError")}</p>`;
+  }
+}
+
+function showMoreRequests() {
+  const container = document.getElementById("bloodRequestContainer");
+  const moreWrap  = document.getElementById("showMoreWrap");
+  container.innerHTML += _olderRequests.map(buildRequestCard).join("");
+  if (moreWrap) moreWrap.classList.add("hidden");
+}
+
+    const resourceContent = {
+      donor: {
+        title: "Donor Guide",
+        body: `
+          <ul class="list-disc pl-5 space-y-2 text-gray-700">
+            <li>Be 18-60 years old, healthy, and at least 50 kg.</li>
+            <li>Eat a light meal and drink enough water before donation.</li>
+            <li>Carry a valid ID and share honest medical history.</li>
+            <li>After donation, rest for 10-15 minutes and avoid heavy exercise for 24 hours.</li>
+            <li>You can usually donate whole blood again after 3 months.</li>
+          </ul>
+        `
+      },
+      safety: {
+        title: "Blood Safety",
+        body: `
+          <ul class="list-disc pl-5 space-y-2 text-gray-700">
+            <li>Use only sterile, single-use needles and sealed blood bags.</li>
+            <li>All donated blood should be screened for major transfusion infections.</li>
+            <li>Confirm donor identity, blood group, and compatibility before transfusion.</li>
+            <li>Store blood products at correct temperature with expiry checks.</li>
+            <li>Report any side effects immediately and follow hospital protocols.</li>
+          </ul>
+        `
+      }
+    };
+
+    function openResourceModal(type) {
+      const modal = document.getElementById("resourceModal");
+      const title = document.getElementById("resourceModalTitle");
+      const body = document.getElementById("resourceModalBody");
+      const selected = resourceContent[type];
+      if (!modal || !title || !body || !selected) return;
+
+      const resourceTitles = {
+        donor: t("resource.donor.title"),
+        safety: t("resource.safety.title")
+      };
+      title.textContent = resourceTitles[type] || selected.title;
+      body.innerHTML = selected.body;
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    }
+
+    function closeResourceModal() {
+      const modal = document.getElementById("resourceModal");
+      if (!modal) return;
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+
+    // Admin modal functions
+    function openAdminModal(){ document.getElementById("adminModal")?.classList.remove("hidden"); }
+    function closeAdminModal(){ document.getElementById("adminModal")?.classList.add("hidden"); }
+    async function verifyAdminKey(){
+      const key = document.getElementById("adminKey")?.value;
+      const error = document.getElementById("adminError");
+      if(!key) return;
+      const res = await fetch("http://127.0.0.1:8000/api/admin/secret-login/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ secret_key: key }) });
+      const data = await res.json();
+      if(data.success) window.location.href = data.redirect;
+      else if(error) { error.classList.remove("hidden"); error.innerText = data.message; }
+    }
+    document.addEventListener("keydown", (e)=>{ if(e.ctrlKey && e.altKey && e.key === "a") openAdminModal(); });
+    
+    function toggleChatbot() {
+      const panel = document.getElementById("chatbotPanel");
+      if (!panel) return;
+      panel.style.display = panel.style.display === "flex" ? "none" : "flex";
+    }
+
+    function appendChatMessage(role, text) {
+      const box = document.getElementById("chatbotMessages");
+      if (!box) return;
+      const div = document.createElement("div");
+      div.className = `chat-msg ${role}`;
+      div.textContent = text;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendChatbotQuestion() {
+      const input = document.getElementById("chatbotInput");
+      const btn = document.getElementById("chatbotSendBtn");
+      const q = (input?.value || "").trim();
+      if (!q) return;
+
+      appendChatMessage("user", q);
+      input.value = "";
+      btn.disabled = true;
+      btn.textContent = t("chat.sending");
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/chatbot/ask/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: q })
+        });
+        const data = await res.json();
+        appendChatMessage("bot", data.answer || data.message || t("chat.noAnswer"));
+      } catch (e) {
+        appendChatMessage("bot", t("chat.serviceError"));
+      } finally {
+        btn.disabled = false;
+        btn.textContent = t("chat.send");
+      }
+    }
+
+    let hospitalBuffer = "";
+    document.addEventListener("keydown", (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if (e.key.length === 1) { hospitalBuffer += e.key.toLowerCase(); if (hospitalBuffer.length > 8) hospitalBuffer = hospitalBuffer.slice(-8); if (hospitalBuffer === "hospital") { hospitalBuffer = ""; window.location.href = "hospital-login.html"; } }
+    });
+    
+    renderDonors();
+    loadBloodRequests();
+    languageBootstrapped = true;
+  </script>
+  
+  <div id="adminModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[999]">
+    <div class="bg-white w-96 p-6 rounded-2xl shadow-xl text-center">
+      <h2 class="text-2xl font-bold text-[#B91C1C] mb-3" data-i18n="admin.title">Admin Access</h2>
+      <p class="text-gray-600 mb-4" data-i18n="admin.prompt">Enter Secret Key to Continue</p>
+      <input id="adminKey" type="password" placeholder="Enter Secret Key" class="w-full border rounded px-3 py-2 mb-4 outline-none focus:ring focus:ring-red-300" data-i18n-placeholder="admin.placeholder">
+      <p id="adminError" class="text-red-600 text-sm mb-2 hidden" data-i18n="admin.invalid">Invalid Secret Key</p>
+      <div class="flex justify-end gap-3">
+        <button onclick="closeAdminModal()" class="px-4 py-2 border rounded" data-i18n="admin.cancel">Cancel</button>
+        <button onclick="verifyAdminKey()" class="px-4 py-2 bg-[#B91C1C] text-white rounded" data-i18n="admin.enter">Enter</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resourceModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[999] p-4">
+    <div class="bg-white w-full max-w-xl p-6 rounded-2xl shadow-xl">
+      <div class="flex items-center justify-between mb-4">
+        <h2 id="resourceModalTitle" class="text-2xl font-bold text-[#B91C1C]" data-i18n="resource.donor.title">Resource</h2>
+        <button onclick="closeResourceModal()" class="text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
+      </div>
+      <div id="resourceModalBody" class="text-gray-700"></div>
+      <div class="mt-6 text-right">
+        <button onclick="closeResourceModal()" class="bg-[#B91C1C] text-white px-5 py-2 rounded-lg hover:bg-[#991B1B] transition" data-i18n="resource.close">Close</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

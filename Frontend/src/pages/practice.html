@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type="text" id="name" placeholder="Enter name">
+<button onclick="submitData()">Submit</button>
+
+<p id="response"></p>
+
+
+
+<script>
+function submitData(){
+    const name = document.getElementById('name').value;
+    fetch('http://localhost:8000/donor/api/test/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Failed to save data");
+        }
+        return response.json();
+    })
+    .then(data => {
+        renderResponse(data);
+        alert("✅ Data saved successfully!");
+    })
+    .catch(error => {
+        console.error(error);
+        alert("❌ Error saving data");      
+    });
+}
+
+function renderResponse(data) {
+    const responseElement = document.getElementById('response');
+    responseElement.textContent = data
+}
+</script>
+</body>
+</html>

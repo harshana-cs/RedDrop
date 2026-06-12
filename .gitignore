@@ -5,20 +5,30 @@ Backend/.env
 
 # Uploaded/generated media
 Backend/media/
+media/
+uploads/
 
 # Python caches and bytecode
 __pycache__/
 *.py[cod]
 *.pyc.*
+*.pyc
+*.pyo
+*.pyd
 
-# Node dependencies
+# Node dependencies and build output
 node_modules/
 Frontend/node_modules/
+dist/
 
 # Virtual environments
 .venv/
 venv/
 Backend/venv/
+Backend/.venv/
 
 # OS clutter
 .DS_Store
+
+# Logs
+*.log

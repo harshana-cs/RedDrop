@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hospital Login | RedDrop</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen flex items-center justify-center bg-[#FFF5F5]">
+
+  <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl">
+    <h2 class="text-3xl font-bold text-[#B91C1C] text-center mb-6">
+      Hospital Login
+    </h2>
+
+    <form id="hospitalLoginForm" class="space-y-5">
+      <input
+        type="text"
+        id="username"
+        placeholder="Hospital Username"
+        required
+        class="w-full border px-4 py-3 rounded focus:ring focus:ring-red-300"
+      />
+
+      <input
+        type="password"
+        id="password"
+        placeholder="Password"
+        required
+        class="w-full border px-4 py-3 rounded focus:ring focus:ring-red-300"
+      />
+
+      <p id="errorMsg" class="text-red-600 text-sm hidden">
+        Invalid credentials
+      </p>
+
+      <button
+        type="submit"
+        class="w-full bg-[#B91C1C] text-white py-3 rounded font-bold hover:bg-[#991B1B] transition">
+        Login
+      </button>
+    </form>
+
+    <p class="text-center text-gray-500 text-sm mt-4">
+      Credentials are provided by RedDrop Admin
+    </p>
+  </div>
+
+  <script>
+    document.getElementById("hospitalLoginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      const error = document.getElementById("errorMsg");
+
+      const res = await fetch("http://127.0.0.1:8000/api/hospital/login/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem("hospitalToken", data.token);
+        window.location.href = "hospital-dashboard.html";
+      } else {
+        error.classList.remove("hidden");
+      }
+    });
+  </script>
+
+</body>
+</html>
