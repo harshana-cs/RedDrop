@@ -38,7 +38,11 @@ venv\Scripts\activate
 pip install -r requirements.txt
 python manage.py runserver
 
+cd Frontend
+npm install
+npm run dev
 
-1. `Home / Landing Page`
-<img width="1915" height="983" alt="image" src="https://github.com/user-attachments/assets/18f043d2-2c6b-4563-bbd0-ea5fe1ec7b22" />
+```
+
+
 
