@@ -8349,12 +8349,19 @@ function renderCampTable(camps) {
 
 // ================= OPEN MODAL (CREATE) =================
 function openCampModal() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayString = `${year}-${month}-${day}`;
+
     // Reset form fields
     document.getElementById('campEditId').value = '';
     document.getElementById('campTitle').value = '';
     document.getElementById('campDescription').value = '';
     document.getElementById('campHospital').value = '';
     document.getElementById('campDate').value = '';
+    document.getElementById('campDate').min = todayString;
     document.getElementById('campStartTime').value = '';
     document.getElementById('campEndTime').value = '';
     document.getElementById('campLocation').value = '';
@@ -8403,6 +8410,7 @@ function editCamp(id) {
     document.getElementById('campDescription').value = camp.description || '';
     document.getElementById('campHospital').value = camp.hospital_name || '';
     document.getElementById('campDate').value = camp.date || '';
+    document.getElementById('campDate').removeAttribute('min');
     document.getElementById('campStartTime').value = camp.start_time || '';
     document.getElementById('campEndTime').value = camp.end_time || '';
     document.getElementById('campLocation').value = camp.location || '';
@@ -8481,7 +8489,13 @@ function handleCampModalBackdrop(event) {
         closeCampModal();
     }
 }
-function validateCampForm() {
+function validateCampForm(existingDate = null) {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayString = `${year}-${month}-${day}`;
+
     const title = document.getElementById('campTitle').value.trim();
     const hospital = document.getElementById('campHospital').value.trim();
     const date = document.getElementById('campDate').value;
@@ -8501,6 +8515,11 @@ function validateCampForm() {
     
     if (!date) {
         showCampError('Camp date is required');
+        return false;
+    }
+
+    if (date < todayString && date !== existingDate) {
+        showCampError('Camp date cannot be before today');
         return false;
     }
     
@@ -8529,11 +8548,13 @@ function validateCampForm() {
 // ================= SAVE (CREATE + UPDATE) =================
 async function saveCamp() {
     // Validate form first
-    if (!validateCampForm()) {
+    const id = document.getElementById('campEditId').value;
+    const existingCamp = id ? allCamps.find(c => String(c.id) === String(id)) : null;
+
+    if (!validateCampForm(existingCamp ? existingCamp.date : null)) {
         return;
     }
-    
-    const id = document.getElementById('campEditId').value;
+
     const payload = {
         title: document.getElementById('campTitle').value.trim(),
         description: document.getElementById('campDescription').value.trim(),

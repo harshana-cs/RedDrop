@@ -1614,6 +1614,24 @@ def _serialize_camp(camp):
     }
 
 
+def _parse_and_validate_camp_date(date_value, existing_date=None):
+    camp_date = parse_date(str(date_value)) if date_value else None
+    if not camp_date:
+        return None, Response(
+            {"success": False, "message": "Camp date is required and must be a valid date."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    today = timezone.localdate()
+    if camp_date < today and camp_date != existing_date:
+        return None, Response(
+            {"success": False, "message": "Camp date cannot be before today."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    return camp_date, None
+
+
 # ================= DONATION CAMPS: LIST + CREATE =================
 @api_view(["GET", "POST"])
 @permission_classes([AllowAny])
@@ -1635,6 +1653,9 @@ def admin_donation_camps(request):
     contact_number = request.data.get("contact_number", "").strip()
     map_link       = request.data.get("map_link", "").strip()
     authorization_letter = request.FILES.get("authorization_letter")
+    camp_date, date_error = _parse_and_validate_camp_date(date_val)
+    if date_error:
+        return date_error
 
     screening = screen_uploaded_file(
         authorization_letter,
@@ -1664,7 +1685,6 @@ def admin_donation_camps(request):
     missing = []
     if not title:      missing.append("title")
     if not hospital:   missing.append("hospital_name")
-    if not date_val:   missing.append("date")
     if not start_time: missing.append("start_time")
     if not end_time:   missing.append("end_time")
     if not location:   missing.append("location")
@@ -1679,7 +1699,7 @@ def admin_donation_camps(request):
         title=title,
         description=request.data.get("description", ""),
         hospital_name=hospital,
-        date=date_val,
+        date=camp_date,
         start_time=start_time,
         end_time=end_time,
         location=location,
@@ -1762,10 +1782,14 @@ def admin_donation_camp_detail(request, camp_id):
 
     # �"��"� PUT (FULL UPDATE) �"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"��"�
     if request.method == "PUT":
+        incoming_date, date_error = _parse_and_validate_camp_date(data.get("date"), existing_date=camp.date)
+        if date_error:
+            return date_error
+
         camp.title         = data.get("title", "").strip()
         camp.description   = data.get("description", "")
         camp.hospital_name = data.get("hospital_name", "").strip()
-        camp.date          = data.get("date")
+        camp.date          = incoming_date
         camp.start_time    = data.get("start_time")
         camp.end_time      = data.get("end_time")
         camp.location      = data.get("location", "").strip()
@@ -1780,11 +1804,15 @@ def admin_donation_camp_detail(request, camp_id):
 
     # �"��"� PATCH (PARTIAL UPDATE) �"��"��"��"��"��"��"��"��"��"��"��"�
     elif request.method == "PATCH":
+        if "date" in data:
+            incoming_date, date_error = _parse_and_validate_camp_date(data.get("date"), existing_date=camp.date)
+            if date_error:
+                return date_error
+            camp.date = incoming_date
 
         if "title" in data: camp.title = data["title"].strip()
         if "description" in data: camp.description = data["description"]
         if "hospital_name" in data: camp.hospital_name = data["hospital_name"].strip()
-        if "date" in data: camp.date = data["date"]
         if "start_time" in data: camp.start_time = data["start_time"]
         if "end_time" in data: camp.end_time = data["end_time"]
         if "location" in data: camp.location = data["location"].strip()

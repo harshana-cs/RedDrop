@@ -1054,9 +1054,25 @@
     }
 
     // Camp Registration Functions
+    function getTodayDateString() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function setCampDateMin() {
+        const campDate = document.getElementById('campDate');
+        if (campDate) {
+            campDate.min = getTodayDateString();
+        }
+    }
+
     function openCampRegistrationModal() {
         document.getElementById('campModal').classList.remove('hidden');
         document.getElementById('campModal').style.display = 'flex';
+        setCampDateMin();
     }
 
     function closeCampModal() {
@@ -1073,6 +1089,15 @@
     const messageDiv = document.getElementById('campFormMessage');
     const submitBtn  = e.target.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
+    const campDate = document.getElementById('campDate');
+    const today = getTodayDateString();
+
+    if (campDate && campDate.value && campDate.value < today) {
+        messageDiv.className = 'p-3 rounded-lg text-sm bg-red-100 text-red-700';
+        messageDiv.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i>Please select today or a future date.';
+        messageDiv.classList.remove('hidden');
+        return;
+    }
 
     // ── Validate file ───────────────────────────────────────
     const authFile = document.getElementById('campAuthLetter').files[0];

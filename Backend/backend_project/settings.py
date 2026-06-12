@@ -273,7 +273,7 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'INFO',
         },
-        # ✅ Hides "Broken pipe" warnings from Django dev server
+        
         'django.request': {
             'handlers': ['console'],
             'level': 'ERROR',

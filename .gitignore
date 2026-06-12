@@ -2,6 +2,13 @@
 .env
 .env.*
 Backend/.env
+!.env.example
+
+# Python virtual environments
+venv/
+.venv/
+Backend/venv/
+Backend/.venv/
 
 # Uploaded/generated media
 Backend/media/
